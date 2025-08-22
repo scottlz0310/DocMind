@@ -28,6 +28,7 @@ from src.utils.graceful_degradation import setup_component_monitoring, get_globa
 from src.utils.cache_manager import initialize_cache_manager
 from src.utils.background_processor import initialize_task_manager
 from src.utils.memory_manager import initialize_memory_manager
+from src.utils.updater import UpdateManager
 
 
 def main():
@@ -87,10 +88,18 @@ def main():
         error_handler = get_global_error_handler()
         _setup_application_recovery_handlers(error_handler, logger)
         
+        # 更新マネージャーの初期化
+        update_manager = UpdateManager(config)
+        logger.info("更新マネージャーを初期化しました")
+        
         # メインウィンドウの作成と表示
         try:
             from src.gui.main_window import MainWindow
             main_window = MainWindow()
+            
+            # 更新マネージャーをメインウィンドウに渡す
+            main_window.set_update_manager(update_manager)
+            
             main_window.show()
             logger.info("メインウィンドウを表示しました")
         except Exception as gui_error:

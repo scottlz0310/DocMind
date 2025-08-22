@@ -1,0 +1,17 @@
+# DocMind ビルド用追加依存関係
+# 本番環境の requirements.txt に加えて、ビルド時に必要なパッケージ
+
+# パッケージ化ツール
+PyInstaller>=5.0.0
+
+# アイコン処理（オプション）
+Pillow>=9.0.0
+
+# システム情報取得
+psutil>=5.8.0
+
+# ビルドスクリプト用
+requests>=2.25.0
+
+# Inno Setup用（Windowsのみ）
+# innosetup は手動インストールが必要
