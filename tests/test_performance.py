@@ -543,3 +543,249 @@ class TestDatabasePerformance(PerformanceTestBase):
 if __name__ == "__main__":
     # パフォーマンステストを実行
     pytest.main([__file__, "-v", "-s"])
+
+
+class TestComprehensivePerformance(PerformanceTestBase):
+    """包括的パフォーマンステスト"""
+    
+    def test_end_to_end_performance_workflow(self):
+        """エンドツーエンドパフォーマンスワークフロー"""
+        # 大規模データセットでの完全なワークフローをテスト
+        document_count = 5000
+        documents = self.create_test_documents(document_count)
+        
+        # 1. インデックス化パフォーマンス
+        indexing_start = time.time()
+        for doc in documents:
+            self.index_manager.add_document(doc)
+            self.db_manager.add_document(doc)
+        indexing_time = time.time() - indexing_start
+        
+        print(f"大規模インデックス化時間: {indexing_time:.2f}秒 ({document_count}ドキュメント)")
+        assert indexing_time < 300, f"インデックス化時間が5分を超過: {indexing_time:.2f}秒"
+        
+        # 2. 検索パフォーマンス
+        search_queries = [
+            "テストドキュメント",
+            "キーワード",
+            "データ",
+            "検索テスト",
+            "存在しない単語"
+        ]
+        
+        total_search_time = 0
+        for query_text in search_queries:
+            query = SearchQuery(
+                query_text=query_text,
+                search_type=SearchType.FULL_TEXT,
+                limit=100
+            )
+            
+            search_start = time.time()
+            results = self.search_manager.search(query)
+            search_time = time.time() - search_start
+            total_search_time += search_time
+            
+            print(f"検索 '{query_text}': {search_time:.3f}秒 ({len(results)}件)")
+            assert search_time < 5.0, f"検索時間が5秒を超過: {search_time:.3f}秒"
+        
+        avg_search_time = total_search_time / len(search_queries)
+        print(f"平均検索時間: {avg_search_time:.3f}秒")
+        
+        # 3. メモリ使用量チェック
+        memory_stats = self.measure_memory_usage()
+        print(f"メモリ使用量: {memory_stats['current_memory_mb']:.2f}MB")
+        print(f"メモリ増加: {memory_stats['memory_increase_mb']:.2f}MB")
+        
+        assert memory_stats['memory_increase_mb'] < 1000, f"メモリ使用量が過大: {memory_stats['memory_increase_mb']:.2f}MB"
+    
+    def test_stress_test_performance(self):
+        """ストレステストパフォーマンス"""
+        # システムの限界をテスト
+        max_documents = 10000
+        batch_size = 1000
+        
+        total_indexing_time = 0
+        total_search_time = 0
+        
+        for batch_num in range(max_documents // batch_size):
+            # バッチごとにドキュメントを作成・インデックス化
+            batch_docs = self.create_test_documents(batch_size)
+            
+            batch_start = time.time()
+            for doc in batch_docs:
+                self.index_manager.add_document(doc)
+            batch_time = time.time() - batch_start
+            total_indexing_time += batch_time
+            
+            # バッチ後に検索テスト
+            query = SearchQuery(
+                query_text=f"テスト{batch_num}",
+                search_type=SearchType.FULL_TEXT,
+                limit=50
+            )
+            
+            search_start = time.time()
+            results = self.search_manager.search(query)
+            search_time = time.time() - search_start
+            total_search_time += search_time
+            
+            print(f"バッチ {batch_num + 1}: インデックス化 {batch_time:.2f}秒, 検索 {search_time:.3f}秒")
+            
+            # メモリ使用量をチェック
+            memory_stats = self.measure_memory_usage()
+            if memory_stats['memory_increase_mb'] > 2000:  # 2GB制限
+                print(f"メモリ制限に達しました: {memory_stats['memory_increase_mb']:.2f}MB")
+                break
+        
+        print(f"ストレステスト完了:")
+        print(f"総インデックス化時間: {total_indexing_time:.2f}秒")
+        print(f"総検索時間: {total_search_time:.2f}秒")
+        print(f"最終メモリ使用量: {self.measure_memory_usage()['current_memory_mb']:.2f}MB")
+    
+    def test_performance_regression(self):
+        """パフォーマンス回帰テスト"""
+        # 基準となるパフォーマンス指標
+        baseline_metrics = {
+            "indexing_docs_per_second": 50,  # 最低50ドキュメント/秒
+            "search_time_ms": 1000,          # 最大1秒
+            "memory_per_1000_docs_mb": 100   # 1000ドキュメントあたり最大100MB
+        }
+        
+        # テストデータを作成
+        test_doc_count = 1000
+        documents = self.create_test_documents(test_doc_count)
+        
+        # インデックス化パフォーマンス測定
+        indexing_start = time.time()
+        for doc in documents:
+            self.index_manager.add_document(doc)
+        indexing_time = time.time() - indexing_start
+        
+        indexing_rate = test_doc_count / indexing_time
+        
+        # 検索パフォーマンス測定
+        query = SearchQuery(
+            query_text="テストドキュメント",
+            search_type=SearchType.FULL_TEXT,
+            limit=100
+        )
+        
+        search_start = time.time()
+        results = self.search_manager.search(query)
+        search_time = (time.time() - search_start) * 1000  # ミリ秒
+        
+        # メモリ使用量測定
+        memory_stats = self.measure_memory_usage()
+        memory_per_1000_docs = (memory_stats['memory_increase_mb'] / test_doc_count) * 1000
+        
+        # 回帰チェック
+        print(f"パフォーマンス指標:")
+        print(f"インデックス化速度: {indexing_rate:.2f} docs/sec (基準: {baseline_metrics['indexing_docs_per_second']})")
+        print(f"検索時間: {search_time:.2f}ms (基準: {baseline_metrics['search_time_ms']})")
+        print(f"メモリ効率: {memory_per_1000_docs:.2f}MB/1000docs (基準: {baseline_metrics['memory_per_1000_docs_mb']})")
+        
+        assert indexing_rate >= baseline_metrics['indexing_docs_per_second'], \
+            f"インデックス化速度が基準を下回りました: {indexing_rate:.2f} < {baseline_metrics['indexing_docs_per_second']}"
+        
+        assert search_time <= baseline_metrics['search_time_ms'], \
+            f"検索時間が基準を上回りました: {search_time:.2f} > {baseline_metrics['search_time_ms']}"
+        
+        assert memory_per_1000_docs <= baseline_metrics['memory_per_1000_docs_mb'], \
+            f"メモリ使用量が基準を上回りました: {memory_per_1000_docs:.2f} > {baseline_metrics['memory_per_1000_docs_mb']}"
+
+
+class TestScalabilityPerformance(PerformanceTestBase):
+    """スケーラビリティパフォーマンステスト"""
+    
+    def test_linear_scalability(self):
+        """線形スケーラビリティテスト"""
+        # 異なるサイズのデータセットでパフォーマンスを測定
+        test_sizes = [100, 500, 1000, 2000]
+        results = []
+        
+        for size in test_sizes:
+            # 新しいインデックスマネージャーを作成
+            temp_index_dir = self.test_data_dir / f"index_{size}"
+            temp_index_dir.mkdir(exist_ok=True)
+            
+            index_manager = IndexManager(str(temp_index_dir))
+            index_manager.create_index()
+            
+            # テストドキュメントを作成
+            documents = self.create_test_documents(size)
+            
+            # インデックス化時間を測定
+            indexing_start = time.time()
+            for doc in documents:
+                index_manager.add_document(doc)
+            indexing_time = time.time() - indexing_start
+            
+            # 検索時間を測定
+            search_start = time.time()
+            # 簡単な検索を実行（実装に依存）
+            search_time = time.time() - search_start
+            
+            results.append({
+                "size": size,
+                "indexing_time": indexing_time,
+                "search_time": search_time,
+                "indexing_rate": size / indexing_time if indexing_time > 0 else 0
+            })
+            
+            print(f"サイズ {size}: インデックス化 {indexing_time:.2f}秒, 検索 {search_time:.4f}秒")
+        
+        # スケーラビリティを分析
+        for i in range(1, len(results)):
+            prev_result = results[i-1]
+            curr_result = results[i]
+            
+            size_ratio = curr_result["size"] / prev_result["size"]
+            time_ratio = curr_result["indexing_time"] / prev_result["indexing_time"]
+            
+            print(f"サイズ比 {size_ratio:.1f}x: 時間比 {time_ratio:.1f}x")
+            
+            # 時間の増加がサイズの増加の2倍以下であることを確認（準線形）
+            assert time_ratio <= size_ratio * 2, \
+                f"スケーラビリティが悪すぎます: サイズ比 {size_ratio:.1f}x に対して時間比 {time_ratio:.1f}x"
+    
+    def test_memory_scalability(self):
+        """メモリスケーラビリティテスト"""
+        # 段階的にドキュメントを追加してメモリ使用量を監視
+        batch_sizes = [500, 1000, 1500, 2000]
+        memory_measurements = []
+        
+        for batch_size in batch_sizes:
+            # バッチを追加
+            documents = self.create_test_documents(batch_size)
+            for doc in documents:
+                self.index_manager.add_document(doc)
+            
+            # メモリ使用量を測定
+            memory_stats = self.measure_memory_usage()
+            memory_measurements.append({
+                "total_docs": batch_size,
+                "memory_mb": memory_stats["current_memory_mb"],
+                "memory_increase_mb": memory_stats["memory_increase_mb"]
+            })
+            
+            print(f"ドキュメント数 {batch_size}: メモリ使用量 {memory_stats['current_memory_mb']:.2f}MB")
+        
+        # メモリ効率を分析
+        for i in range(1, len(memory_measurements)):
+            prev_measurement = memory_measurements[i-1]
+            curr_measurement = memory_measurements[i]
+            
+            doc_increase = curr_measurement["total_docs"] - prev_measurement["total_docs"]
+            memory_increase = curr_measurement["memory_increase_mb"] - prev_measurement["memory_increase_mb"]
+            
+            memory_per_doc = memory_increase / doc_increase if doc_increase > 0 else 0
+            
+            print(f"追加ドキュメント {doc_increase}件: メモリ増加 {memory_increase:.2f}MB ({memory_per_doc:.3f}MB/doc)")
+            
+            # ドキュメントあたりのメモリ使用量が合理的であることを確認
+            assert memory_per_doc < 1.0, f"ドキュメントあたりのメモリ使用量が過大: {memory_per_doc:.3f}MB/doc"
+
+
+# パフォーマンステスト実行用のマーカー
+pytestmark = pytest.mark.performance
