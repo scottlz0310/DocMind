@@ -57,23 +57,18 @@ def main():
         
         logger.info(f"データディレクトリ: {data_dir}")
         
-        # TODO: メインウィンドウの作成と表示
-        # from src.gui.main_window import MainWindow
-        # main_window = MainWindow()
-        # main_window.show()
+        # メインウィンドウの作成と表示
+        from src.gui.main_window import MainWindow
+        main_window = MainWindow()
+        main_window.show()
         
-        # 現在はプレースホルダーメッセージを表示
-        from PySide6.QtWidgets import QMessageBox
-        msg = QMessageBox()
-        msg.setWindowTitle("DocMind")
-        msg.setText("DocMind アプリケーションが正常に初期化されました。\n\n"
-                   "現在はプロジェクト構造のセットアップ段階です。\n"
-                   "GUIコンポーネントは後続のタスクで実装されます。")
-        msg.setIcon(QMessageBox.Information)
-        msg.exec()
+        logger.info("メインウィンドウを表示しました")
+        
+        # アプリケーションのメインループを開始
+        result = app.exec()
         
         logger.info("DocMindアプリケーションを終了しています...")
-        return 0
+        return result
         
     except Exception as e:
         # 重大なエラーが発生した場合の処理
