@@ -10,6 +10,7 @@ PySide6を使用した3ペインレイアウトのメインアプリケーショ
 """
 
 import logging
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -24,6 +25,7 @@ from PySide6.QtGui import QIcon, QKeySequence, QPixmap, QAction, QShortcut
 from src.utils.config import Config
 from src.utils.exceptions import DocMindException
 from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
+from src.gui.folder_tree import FolderTreeContainer
 
 
 class MainWindow(QMainWindow):
@@ -73,6 +75,9 @@ class MainWindow(QMainWindow):
         # スタイリングの適用
         self._apply_styling()
         
+        # フォルダツリーのシグナル接続
+        self._connect_folder_tree_signals()
+        
         self.logger.info("メインウィンドウが初期化されました")
     
     def _setup_window(self) -> None:
@@ -120,26 +125,19 @@ class MainWindow(QMainWindow):
         self.main_splitter.setCollapsible(1, False)  # 中央ペインは折りたたみ不可
         self.main_splitter.setCollapsible(2, True)   # 右ペインは折りたたみ可能
     
-    def _create_folder_pane(self) -> QFrame:
-        """左ペイン（フォルダツリー）のプレースホルダーを作成"""
-        frame = QFrame()
-        frame.setFrameStyle(QFrame.StyledPanel)
-        frame.setMinimumWidth(200)
+    def _create_folder_pane(self) -> QWidget:
+        """左ペイン（フォルダツリー）を作成"""
+        # フォルダツリーコンテナを作成
+        self.folder_tree_container = FolderTreeContainer()
+        self.folder_tree_container.setMinimumWidth(200)
         
-        layout = QVBoxLayout(frame)
+        # シグナル接続
+        self.folder_tree_container.folder_selected.connect(self._on_folder_selected)
+        self.folder_tree_container.folder_indexed.connect(self._on_folder_indexed)
+        self.folder_tree_container.folder_excluded.connect(self._on_folder_excluded)
+        self.folder_tree_container.refresh_requested.connect(self._on_folder_refresh)
         
-        # タイトルラベル
-        title_label = QLabel("フォルダツリー")
-        title_label.setStyleSheet("font-weight: bold; padding: 5px;")
-        layout.addWidget(title_label)
-        
-        # プレースホルダーメッセージ
-        placeholder_label = QLabel("フォルダツリーウィジェットは\nタスク10で実装されます")
-        placeholder_label.setAlignment(Qt.AlignCenter)
-        placeholder_label.setStyleSheet("color: gray; font-style: italic;")
-        layout.addWidget(placeholder_label)
-        
-        return frame
+        return self.folder_tree_container
     
     def _create_search_pane(self) -> QFrame:
         """中央ペイン（検索結果）のプレースホルダーを作成"""
@@ -294,8 +292,8 @@ class MainWindow(QMainWindow):
         self.setAccessibleDescription("ローカルドキュメント検索アプリケーションのメインウィンドウ")
         
         # 各ペインにアクセシブル名を設定
-        self.folder_pane.setAccessibleName("フォルダツリーペイン")
-        self.folder_pane.setAccessibleDescription("検索対象フォルダの階層構造を表示します")
+        self.folder_tree_container.setAccessibleName("フォルダツリーペイン")
+        self.folder_tree_container.setAccessibleDescription("検索対象フォルダの階層構造を表示します")
         
         self.search_pane.setAccessibleName("検索結果ペイン")
         self.search_pane.setAccessibleDescription("検索結果の一覧を表示します")
@@ -309,7 +307,7 @@ class MainWindow(QMainWindow):
         self.system_info_label.setAccessibleName("システム情報")
         
         # タブオーダーの設定（キーボードナビゲーション用）
-        self.setTabOrder(self.folder_pane, self.search_pane)
+        self.setTabOrder(self.folder_tree_container, self.search_pane)
         self.setTabOrder(self.search_pane, self.preview_pane)
     
     def _apply_styling(self) -> None:
@@ -388,6 +386,9 @@ class MainWindow(QMainWindow):
             self.logger.info(f"フォルダが選択されました: {folder_path}")
             self.folder_selected.emit(folder_path)
             self.show_status_message(f"フォルダを選択: {folder_path}", 5000)
+            
+            # フォルダツリーに追加
+            self.folder_tree_container.load_folder_structure(folder_path)
     
     def _show_search_dialog(self) -> None:
         """検索ダイアログを表示します（プレースホルダー）"""
@@ -515,6 +516,81 @@ class MainWindow(QMainWindow):
             info: システム情報文字列
         """
         self.system_info_label.setText(info)
+    
+    def _connect_folder_tree_signals(self) -> None:
+        """フォルダツリーのシグナルを接続します"""
+        # フォルダツリーのシグナルはすでに_create_folder_paneで接続済み
+        pass
+    
+    # フォルダツリーのシグナルハンドラー
+    
+    def _on_folder_selected(self, folder_path: str) -> None:
+        """
+        フォルダが選択された時の処理
+        
+        Args:
+            folder_path: 選択されたフォルダのパス
+        """
+        self.logger.info(f"フォルダツリーでフォルダが選択されました: {folder_path}")
+        self.folder_selected.emit(folder_path)
+        self.show_status_message(f"選択: {folder_path}", 3000)
+        
+        # TODO: 選択されたフォルダの内容を検索結果ペインに表示
+        # これは後のタスクで実装されます
+    
+    def _on_folder_indexed(self, folder_path: str) -> None:
+        """
+        フォルダがインデックスに追加された時の処理
+        
+        Args:
+            folder_path: インデックスに追加されたフォルダのパス
+        """
+        self.logger.info(f"フォルダがインデックスに追加されました: {folder_path}")
+        self.show_status_message(f"インデックスに追加: {os.path.basename(folder_path)}", 3000)
+        
+        # 進捗表示
+        self.show_progress(f"インデックス作成中: {os.path.basename(folder_path)}", 0)
+        
+        # TODO: 実際のインデックス処理を実行
+        # 現在はプレースホルダー
+        QTimer.singleShot(2000, lambda: self.hide_progress("インデックス作成完了"))
+        
+        # システム情報を更新
+        indexed_count = len(self.folder_tree_container.get_indexed_folders())
+        self.update_system_info(f"インデックス: {indexed_count}フォルダ")
+    
+    def _on_folder_excluded(self, folder_path: str) -> None:
+        """
+        フォルダが除外された時の処理
+        
+        Args:
+            folder_path: 除外されたフォルダのパス
+        """
+        self.logger.info(f"フォルダが除外されました: {folder_path}")
+        self.show_status_message(f"除外: {os.path.basename(folder_path)}", 3000)
+        
+        # システム情報を更新
+        indexed_count = len(self.folder_tree_container.get_indexed_folders())
+        excluded_count = len(self.folder_tree_container.get_excluded_folders())
+        info_text = f"インデックス: {indexed_count}フォルダ"
+        if excluded_count > 0:
+            info_text += f", 除外: {excluded_count}フォルダ"
+        self.update_system_info(info_text)
+    
+    def _on_folder_refresh(self) -> None:
+        """
+        フォルダツリーがリフレッシュされた時の処理
+        """
+        self.logger.info("フォルダツリーがリフレッシュされました")
+        self.show_status_message("フォルダツリーを更新しました", 2000)
+        
+        # システム情報を更新
+        indexed_count = len(self.folder_tree_container.get_indexed_folders())
+        excluded_count = len(self.folder_tree_container.get_excluded_folders())
+        info_text = f"インデックス: {indexed_count}フォルダ"
+        if excluded_count > 0:
+            info_text += f", 除外: {excluded_count}フォルダ"
+        self.update_system_info(info_text)
     
     def closeEvent(self, event) -> None:
         """
