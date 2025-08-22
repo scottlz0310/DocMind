@@ -7,6 +7,8 @@ PySide6を使用した3ペインレイアウトのメインアプリケーショ
 左ペイン: フォルダツリーナビゲーション
 中央ペイン: 検索結果表示
 右ペイン: ドキュメントプレビュー
+
+包括的エラーハンドリングと優雅な劣化機能を統合しています。
 """
 
 import logging
@@ -24,6 +26,9 @@ from PySide6.QtGui import QIcon, QKeySequence, QPixmap, QAction, QShortcut
 
 from src.utils.config import Config
 from src.utils.exceptions import DocMindException
+from src.utils.error_handler import handle_exceptions, get_global_error_handler
+from src.utils.graceful_degradation import get_global_degradation_manager
+from src.utils.logging_config import LoggerMixin
 from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.search_results import SearchResultsWidget
@@ -31,23 +36,37 @@ from src.gui.preview_widget import PreviewWidget
 from src.gui.search_interface import SearchInterface, SearchWorkerThread
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, LoggerMixin):
     """
     DocMindのメインアプリケーションウィンドウ
     
     3ペインレイアウト（フォルダツリー、検索結果、プレビュー）を提供し、
     メニューバー、ステータスバー、キーボードショートカットを含む
     完全なデスクトップアプリケーションインターフェースを実装します。
+    
+    包括的エラーハンドリングと優雅な劣化機能を統合し、
+    コンポーネント障害時の適切なフォールバック処理を提供します。
     """
     
     # シグナル定義
     folder_selected = Signal(str)  # フォルダが選択された時
     search_requested = Signal(str, str)  # 検索が要求された時 (query, search_type)
     document_selected = Signal(str)  # ドキュメントが選択された時
+    error_occurred = Signal(str, str)  # エラーが発生した時 (title, message)
     
+    @handle_exceptions(
+        context="メインウィンドウ初期化",
+        user_message="メインウィンドウの初期化中にエラーが発生しました。",
+        attempt_recovery=True,
+        reraise=True
+    )
     def __init__(self, parent: Optional[QWidget] = None):
         """
         メインウィンドウの初期化
+        
+        Args:
+            parent: 親ウィジェット
+        """
         
         Args:
             parent: 親ウィジェット（通常はNone）

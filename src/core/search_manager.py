@@ -16,6 +16,9 @@ from .index_manager import IndexManager
 from .embedding_manager import EmbeddingManager
 from ..data.models import Document, SearchResult, SearchType, SearchQuery, FileType
 from ..utils.exceptions import SearchError
+from ..utils.error_handler import handle_exceptions, get_global_error_handler
+from ..utils.graceful_degradation import with_graceful_degradation, get_global_degradation_manager
+from ..utils.logging_config import LoggerMixin
 
 
 @dataclass
@@ -32,12 +35,13 @@ class SearchWeights:
             self.semantic /= total
 
 
-class SearchManager:
+class SearchManager(LoggerMixin):
     """
     ハイブリッド検索マネージャークラス
     
     全文検索とセマンティック検索を組み合わせ、統合された検索結果を提供します。
     検索結果のランキング、マージ、スニペット生成機能を含みます。
+    エラーハンドリングと優雅な劣化機能を統合しています。
     """
     
     def __init__(self, index_manager: IndexManager, embedding_manager: EmbeddingManager):
@@ -50,7 +54,6 @@ class SearchManager:
         """
         self.index_manager = index_manager
         self.embedding_manager = embedding_manager
-        self.logger = logging.getLogger(__name__)
         
         # デフォルト検索設定
         self.default_weights = SearchWeights()
@@ -60,7 +63,57 @@ class SearchManager:
         # 検索提案用のキャッシュ
         self._suggestion_cache: Dict[str, List[str]] = {}
         self._indexed_terms: Set[str] = set()
+        
+        # エラーハンドリングと劣化管理の設定
+        self._setup_error_handling()
+        
+        self.logger.info("SearchManagerを初期化しました")
     
+    def _setup_error_handling(self):
+        """エラーハンドリングと劣化管理を設定"""
+        degradation_manager = get_global_degradation_manager()
+        error_handler = get_global_error_handler()
+        
+        # 回復ハンドラーを登録
+        def search_recovery_handler(exc: Exception, error_info: Dict[str, Any]) -> bool:
+            """検索エラーからの回復処理"""
+            try:
+                self.logger.info("検索機能の回復を試行中...")
+                
+                # キャッシュをクリア
+                self.clear_suggestion_cache()
+                
+                # インデックスマネージャーの状態をチェック
+                if hasattr(self.index_manager, 'is_healthy') and not self.index_manager.is_healthy():
+                    self.logger.warning("インデックスマネージャーが不健全な状態です")
+                    degradation_manager.mark_component_degraded(
+                        "search_manager", 
+                        ["full_text_search", "hybrid_search"],
+                        "インデックスマネージャーの問題により全文検索が無効化されました"
+                    )
+                
+                # 埋め込みマネージャーの状態をチェック
+                if hasattr(self.embedding_manager, 'is_healthy') and not self.embedding_manager.is_healthy():
+                    self.logger.warning("埋め込みマネージャーが不健全な状態です")
+                    degradation_manager.mark_component_degraded(
+                        "search_manager",
+                        ["semantic_search", "hybrid_search"],
+                        "埋め込みマネージャーの問題によりセマンティック検索が無効化されました"
+                    )
+                
+                return True
+            except Exception as recovery_exc:
+                self.logger.error(f"検索機能の回復に失敗: {recovery_exc}")
+                return False
+        
+        error_handler.register_recovery_handler(SearchError, search_recovery_handler)
+    
+    @handle_exceptions(
+        context="検索実行",
+        user_message="検索中にエラーが発生しました。検索条件を変更して再試行してください。",
+        attempt_recovery=True,
+        reraise=True
+    )
     def search(self, query: SearchQuery) -> List[SearchResult]:
         """
         統合検索を実行
@@ -74,29 +127,48 @@ class SearchManager:
         Raises:
             SearchError: 検索実行に失敗した場合
         """
-        try:
-            self.logger.info(f"検索開始: '{query.query_text}' (タイプ: {query.search_type.value})")
-            
-            if query.search_type == SearchType.FULL_TEXT:
-                results = self._full_text_search(query)
-            elif query.search_type == SearchType.SEMANTIC:
-                results = self._semantic_search(query)
-            elif query.search_type == SearchType.HYBRID:
-                results = self._hybrid_search(query)
+        degradation_manager = get_global_degradation_manager()
+        
+        self.logger.info(f"検索開始: '{query.query_text}' (タイプ: {query.search_type.value})")
+        
+        # 検索タイプに応じて機能の可用性をチェック
+        if query.search_type == SearchType.FULL_TEXT:
+            if not degradation_manager.is_capability_available("search_manager", "full_text_search"):
+                raise SearchError("全文検索機能は現在利用できません")
+            results = self._full_text_search(query)
+        elif query.search_type == SearchType.SEMANTIC:
+            if not degradation_manager.is_capability_available("search_manager", "semantic_search"):
+                raise SearchError("セマンティック検索機能は現在利用できません")
+            results = self._semantic_search(query)
+        elif query.search_type == SearchType.HYBRID:
+            if not degradation_manager.is_capability_available("search_manager", "hybrid_search"):
+                # ハイブリッド検索が利用できない場合、利用可能な検索にフォールバック
+                if degradation_manager.is_capability_available("search_manager", "full_text_search"):
+                    self.logger.warning("ハイブリッド検索が利用できないため、全文検索にフォールバック")
+                    query.search_type = SearchType.FULL_TEXT
+                    results = self._full_text_search(query)
+                elif degradation_manager.is_capability_available("search_manager", "semantic_search"):
+                    self.logger.warning("ハイブリッド検索が利用できないため、セマンティック検索にフォールバック")
+                    query.search_type = SearchType.SEMANTIC
+                    results = self._semantic_search(query)
+                else:
+                    raise SearchError("検索機能は現在利用できません")
             else:
-                raise SearchError(f"サポートされていない検索タイプ: {query.search_type}")
-            
-            # 結果の後処理
-            results = self._post_process_results(results, query)
-            
-            self.logger.info(f"検索完了: {len(results)}件の結果")
-            return results
-            
-        except Exception as e:
-            error_msg = f"検索実行に失敗しました: {e}"
-            self.logger.error(error_msg)
-            raise SearchError(error_msg) from e
+                results = self._hybrid_search(query)
+        else:
+            raise SearchError(f"サポートされていない検索タイプ: {query.search_type}")
+        
+        # 結果の後処理
+        results = self._post_process_results(results, query)
+        
+        self.logger.info(f"検索完了: {len(results)}件の結果")
+        return results
     
+    @with_graceful_degradation(
+        "search_manager",
+        disable_capabilities=["full_text_search", "hybrid_search"],
+        fallback_return=[]
+    )
     def _full_text_search(self, query: SearchQuery) -> List[SearchResult]:
         """全文検索を実行"""
         try:
@@ -118,8 +190,13 @@ class SearchManager:
             
         except Exception as e:
             self.logger.error(f"全文検索に失敗しました: {e}")
-            raise SearchError(f"全文検索エラー: {e}") from e
+            raise SearchError(f"全文検索エラー: {e}", query=query.query_text, search_type="full_text") from e
     
+    @with_graceful_degradation(
+        "search_manager",
+        disable_capabilities=["semantic_search", "hybrid_search"],
+        fallback_return=[]
+    )
     def _semantic_search(self, query: SearchQuery) -> List[SearchResult]:
         """セマンティック検索を実行"""
         try:
@@ -148,7 +225,7 @@ class SearchManager:
             
         except Exception as e:
             self.logger.error(f"セマンティック検索に失敗しました: {e}")
-            raise SearchError(f"セマンティック検索エラー: {e}") from e
+            raise SearchError(f"セマンティック検索エラー: {e}", query=query.query_text, search_type="semantic") from e
     
     def _hybrid_search(self, query: SearchQuery) -> List[SearchResult]:
         """ハイブリッド検索を実行"""
