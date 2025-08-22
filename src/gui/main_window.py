@@ -27,6 +27,7 @@ from src.utils.exceptions import DocMindException
 from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.search_results import SearchResultsWidget
+from src.gui.preview_widget import PreviewWidget
 
 
 class MainWindow(QMainWindow):
@@ -158,26 +159,17 @@ class MainWindow(QMainWindow):
         
         return self.search_results_widget
     
-    def _create_preview_pane(self) -> QFrame:
-        """右ペイン（ドキュメントプレビュー）のプレースホルダーを作成"""
-        frame = QFrame()
-        frame.setFrameStyle(QFrame.StyledPanel)
-        frame.setMinimumWidth(250)
+    def _create_preview_pane(self) -> QWidget:
+        """右ペイン（ドキュメントプレビュー）を作成"""
+        # プレビューウィジェットを作成
+        self.preview_widget = PreviewWidget()
+        self.preview_widget.setMinimumWidth(250)
         
-        layout = QVBoxLayout(frame)
+        # シグナル接続
+        self.preview_widget.zoom_changed.connect(self._on_preview_zoom_changed)
+        self.preview_widget.format_changed.connect(self._on_preview_format_changed)
         
-        # タイトルラベル
-        title_label = QLabel("ドキュメントプレビュー")
-        title_label.setStyleSheet("font-weight: bold; padding: 5px;")
-        layout.addWidget(title_label)
-        
-        # プレースホルダーメッセージ
-        placeholder_label = QLabel("ドキュメントプレビューウィジェットは\nタスク12で実装されます")
-        placeholder_label.setAlignment(Qt.AlignCenter)
-        placeholder_label.setStyleSheet("color: gray; font-style: italic;")
-        layout.addWidget(placeholder_label)
-        
-        return frame
+        return self.preview_widget
     
     def _setup_menu_bar(self) -> None:
         """メニューバーを設定します"""
@@ -296,8 +288,8 @@ class MainWindow(QMainWindow):
         self.search_results_widget.setAccessibleName("検索結果ペイン")
         self.search_results_widget.setAccessibleDescription("検索結果の一覧を表示します")
         
-        self.preview_pane.setAccessibleName("プレビューペイン")
-        self.preview_pane.setAccessibleDescription("選択されたドキュメントの内容をプレビュー表示します")
+        self.preview_widget.setAccessibleName("プレビューペイン")
+        self.preview_widget.setAccessibleDescription("選択されたドキュメントの内容をプレビュー表示します")
         
         # ステータスバーコンポーネントにアクセシブル名を設定
         self.status_label.setAccessibleName("ステータス情報")
@@ -306,7 +298,7 @@ class MainWindow(QMainWindow):
         
         # タブオーダーの設定（キーボードナビゲーション用）
         self.setTabOrder(self.folder_tree_container, self.search_results_widget)
-        self.setTabOrder(self.search_results_widget, self.preview_pane)
+        self.setTabOrder(self.search_results_widget, self.preview_widget)
     
     def _apply_styling(self) -> None:
         """基本的なスタイリングを適用します"""
@@ -414,8 +406,8 @@ class MainWindow(QMainWindow):
     
     def _toggle_preview_pane(self) -> None:
         """プレビューペインの表示を切り替えます"""
-        is_visible = self.preview_pane.isVisible()
-        self.preview_pane.setVisible(not is_visible)
+        is_visible = self.preview_widget.isVisible()
+        self.preview_widget.setVisible(not is_visible)
         
         status_msg = "プレビューペインを非表示にしました" if is_visible else "プレビューペインを表示しました"
         self.show_status_message(status_msg, 2000)
@@ -450,7 +442,7 @@ class MainWindow(QMainWindow):
     
     def _clear_preview(self) -> None:
         """プレビューペインをクリアします"""
-        # TODO: プレビューウィジェットが実装されたら実際のクリア処理を追加
+        self.preview_widget.clear_preview()
         self.show_status_message("プレビューをクリアしました", 2000)
     
     def _refresh_view(self) -> None:
@@ -629,8 +621,12 @@ class MainWindow(QMainWindow):
         self.document_selected.emit(result.document.file_path)
         self.show_status_message(f"選択: {result.document.title}", 3000)
         
-        # TODO: プレビューペインに内容を表示
-        # これは後のタスクで実装されます
+        # プレビューペインに内容を表示
+        self.preview_widget.display_document(result.document)
+        
+        # 検索語をハイライト
+        if hasattr(result, 'highlighted_terms') and result.highlighted_terms:
+            self.preview_widget.highlight_search_terms(result.highlighted_terms)
     
     def _on_preview_requested(self, result) -> None:
         """
@@ -643,8 +639,12 @@ class MainWindow(QMainWindow):
         self.document_selected.emit(result.document.file_path)
         self.show_status_message(f"プレビュー: {result.document.title}", 3000)
         
-        # TODO: プレビューペインに内容を表示
-        # これは後のタスクで実装されます
+        # プレビューペインに内容を表示
+        self.preview_widget.display_document(result.document)
+        
+        # 検索語をハイライト
+        if hasattr(result, 'highlighted_terms') and result.highlighted_terms:
+            self.preview_widget.highlight_search_terms(result.highlighted_terms)
     
     def _on_page_changed(self, page: int) -> None:
         """
@@ -675,3 +675,25 @@ class MainWindow(QMainWindow):
         """
         self.logger.debug(f"検索結果のフィルターが変更されました: {filters}")
         self.show_status_message("検索結果をフィルタリングしました", 2000)
+    
+    # プレビューウィジェットのシグナルハンドラー
+    
+    def _on_preview_zoom_changed(self, zoom_level: int) -> None:
+        """
+        プレビューのズームレベルが変更された時の処理
+        
+        Args:
+            zoom_level: 新しいズームレベル
+        """
+        self.logger.debug(f"プレビューのズームレベルが変更されました: {zoom_level}%")
+        self.show_status_message(f"ズーム: {zoom_level}%", 2000)
+    
+    def _on_preview_format_changed(self, format_name: str) -> None:
+        """
+        プレビューの表示フォーマットが変更された時の処理
+        
+        Args:
+            format_name: 新しい表示フォーマット名
+        """
+        self.logger.debug(f"プレビューの表示フォーマットが変更されました: {format_name}")
+        self.show_status_message(f"表示形式: {format_name}", 2000)
