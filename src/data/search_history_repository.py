@@ -6,6 +6,7 @@
 """
 
 import logging
+import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional, Tuple
 
@@ -403,3 +404,174 @@ class SearchHistoryRepository:
         except Exception as e:
             self.logger.error(f"検索履歴エクスポートエラー: {e}")
             raise DatabaseError(f"検索履歴のエクスポートに失敗しました: {e}")
+    
+    # 保存された検索の管理
+    
+    def save_search(self, name: str, query: str, search_type: SearchType, 
+                   search_options: Dict[str, Any] = None) -> bool:
+        """検索を保存
+        
+        Args:
+            name (str): 保存する検索の名前
+            query (str): 検索クエリ
+            search_type (SearchType): 検索タイプ
+            search_options (Dict[str, Any]): 検索オプション
+            
+        Returns:
+            bool: 成功した場合True
+        """
+        try:
+            options_json = json.dumps(search_options or {}, ensure_ascii=False)
+            
+            with self.db_manager.get_connection() as conn:
+                conn.execute("""
+                    INSERT OR REPLACE INTO saved_searches (
+                        name, query, search_type, search_options
+                    ) VALUES (?, ?, ?, ?)
+                """, (name, query, search_type.value, options_json))
+                
+                conn.commit()
+                self.logger.info(f"検索を保存: {name}")
+                return True
+                
+        except Exception as e:
+            self.logger.error(f"検索保存エラー: {e}")
+            raise DatabaseError(f"検索の保存に失敗しました: {e}")
+    
+    def get_saved_searches(self) -> List[Dict[str, Any]]:
+        """保存された検索を取得
+        
+        Returns:
+            List[Dict[str, Any]]: 保存された検索のリスト
+        """
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.execute("""
+                    SELECT id, name, query, search_type, search_options,
+                           created_date, last_used, use_count
+                    FROM saved_searches
+                    ORDER BY use_count DESC, last_used DESC
+                """)
+                
+                return [
+                    {
+                        'id': row[0],
+                        'name': row[1],
+                        'query': row[2],
+                        'search_type': SearchType(row[3]),
+                        'search_options': json.loads(row[4]) if row[4] else {},
+                        'created_date': datetime.fromisoformat(row[5]) if row[5] else None,
+                        'last_used': datetime.fromisoformat(row[6]) if row[6] else None,
+                        'use_count': row[7]
+                    }
+                    for row in cursor.fetchall()
+                ]
+                
+        except Exception as e:
+            self.logger.error(f"保存された検索取得エラー: {e}")
+            raise DatabaseError(f"保存された検索の取得に失敗しました: {e}")
+    
+    def use_saved_search(self, search_id: int) -> Optional[Dict[str, Any]]:
+        """保存された検索を使用（使用回数を更新）
+        
+        Args:
+            search_id (int): 保存された検索のID
+            
+        Returns:
+            Optional[Dict[str, Any]]: 検索情報（存在しない場合はNone）
+        """
+        try:
+            with self.db_manager.get_connection() as conn:
+                # 使用回数と最終使用日時を更新
+                conn.execute("""
+                    UPDATE saved_searches 
+                    SET use_count = use_count + 1, last_used = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                """, (search_id,))
+                
+                # 更新された検索情報を取得
+                cursor = conn.execute("""
+                    SELECT id, name, query, search_type, search_options,
+                           created_date, last_used, use_count
+                    FROM saved_searches
+                    WHERE id = ?
+                """, (search_id,))
+                
+                row = cursor.fetchone()
+                if row:
+                    conn.commit()
+                    return {
+                        'id': row[0],
+                        'name': row[1],
+                        'query': row[2],
+                        'search_type': SearchType(row[3]),
+                        'search_options': json.loads(row[4]) if row[4] else {},
+                        'created_date': datetime.fromisoformat(row[5]) if row[5] else None,
+                        'last_used': datetime.fromisoformat(row[6]) if row[6] else None,
+                        'use_count': row[7]
+                    }
+                
+                return None
+                
+        except Exception as e:
+            self.logger.error(f"保存された検索使用エラー: {e}")
+            raise DatabaseError(f"保存された検索の使用に失敗しました: {e}")
+    
+    def delete_saved_search(self, search_id: int) -> bool:
+        """保存された検索を削除
+        
+        Args:
+            search_id (int): 削除する検索のID
+            
+        Returns:
+            bool: 成功した場合True
+        """
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.execute("""
+                    DELETE FROM saved_searches WHERE id = ?
+                """, (search_id,))
+                
+                deleted_count = cursor.rowcount
+                conn.commit()
+                
+                if deleted_count > 0:
+                    self.logger.info(f"保存された検索を削除: ID {search_id}")
+                    return True
+                else:
+                    self.logger.warning(f"削除対象の検索が見つかりません: ID {search_id}")
+                    return False
+                
+        except Exception as e:
+            self.logger.error(f"保存された検索削除エラー: {e}")
+            raise DatabaseError(f"保存された検索の削除に失敗しました: {e}")
+    
+    def rename_saved_search(self, search_id: int, new_name: str) -> bool:
+        """保存された検索の名前を変更
+        
+        Args:
+            search_id (int): 検索のID
+            new_name (str): 新しい名前
+            
+        Returns:
+            bool: 成功した場合True
+        """
+        try:
+            with self.db_manager.get_connection() as conn:
+                cursor = conn.execute("""
+                    UPDATE saved_searches SET name = ? WHERE id = ?
+                """, (new_name, search_id))
+                
+                updated_count = cursor.rowcount
+                conn.commit()
+                
+                if updated_count > 0:
+                    self.logger.info(f"保存された検索の名前を変更: ID {search_id} -> {new_name}")
+                    return True
+                else:
+                    self.logger.warning(f"更新対象の検索が見つかりません: ID {search_id}")
+                    return False
+                
+        except Exception as e:
+            self.logger.error(f"保存された検索名前変更エラー: {e}")
+            raise DatabaseError(f"保存された検索の名前変更に失敗しました: {e}")

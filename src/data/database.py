@@ -160,6 +160,22 @@ class DatabaseManager:
             )
         """)
         
+        # 保存された検索テーブル
+        conn.execute("""
+            CREATE TABLE saved_searches (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                query TEXT NOT NULL,
+                search_type TEXT NOT NULL,
+                search_options TEXT DEFAULT '{}',
+                created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_used TIMESTAMP,
+                use_count INTEGER DEFAULT 0,
+                CONSTRAINT chk_search_type CHECK (search_type IN ('full_text', 'semantic', 'hybrid')),
+                CONSTRAINT chk_use_count CHECK (use_count >= 0)
+            )
+        """)
+        
         # インデックス作成
         self._create_indexes(conn)
         
@@ -180,6 +196,11 @@ class DatabaseManager:
         conn.execute("CREATE INDEX IF NOT EXISTS idx_search_history_timestamp ON search_history(timestamp)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_search_history_type ON search_history(search_type)")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_search_history_query ON search_history(query)")
+        
+        # 保存された検索テーブルのインデックス
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_saved_searches_name ON saved_searches(name)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_saved_searches_last_used ON saved_searches(last_used)")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_saved_searches_use_count ON saved_searches(use_count)")
         
         self.logger.info("データベースインデックスを作成しました")
     
@@ -237,6 +258,10 @@ class DatabaseManager:
                 # 検索履歴数
                 cursor = conn.execute("SELECT COUNT(*) FROM search_history")
                 stats['search_history_count'] = cursor.fetchone()[0]
+                
+                # 保存された検索数
+                cursor = conn.execute("SELECT COUNT(*) FROM saved_searches")
+                stats['saved_searches_count'] = cursor.fetchone()[0]
                 
                 # ファイルタイプ別統計
                 cursor = conn.execute("""

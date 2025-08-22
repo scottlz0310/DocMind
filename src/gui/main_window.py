@@ -28,6 +28,7 @@ from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.search_results import SearchResultsWidget
 from src.gui.preview_widget import PreviewWidget
+from src.gui.search_interface import SearchInterface, SearchWorkerThread
 
 
 class MainWindow(QMainWindow):
@@ -146,18 +147,34 @@ class MainWindow(QMainWindow):
     
     def _create_search_pane(self) -> QWidget:
         """中央ペイン（検索結果）を作成"""
+        # 中央ペインのコンテナを作成
+        search_container = QWidget()
+        search_layout = QVBoxLayout(search_container)
+        search_layout.setContentsMargins(5, 5, 5, 5)
+        search_layout.setSpacing(5)
+        
+        # 検索インターフェースを作成
+        self.search_interface = SearchInterface()
+        search_layout.addWidget(self.search_interface)
+        
         # 検索結果ウィジェットを作成
         self.search_results_widget = SearchResultsWidget()
         self.search_results_widget.setMinimumWidth(300)
+        search_layout.addWidget(self.search_results_widget)
         
-        # シグナル接続
+        # 検索インターフェースのシグナル接続
+        self.search_interface.search_requested.connect(self._on_search_requested)
+        self.search_interface.search_cancelled.connect(self._on_search_cancelled)
+        
+        # 検索結果ウィジェットのシグナル接続
         self.search_results_widget.result_selected.connect(self._on_search_result_selected)
         self.search_results_widget.preview_requested.connect(self._on_preview_requested)
         self.search_results_widget.page_changed.connect(self._on_page_changed)
         self.search_results_widget.sort_changed.connect(self._on_sort_changed)
         self.search_results_widget.filter_changed.connect(self._on_filter_changed)
         
-        return self.search_results_widget
+        search_container.setMinimumWidth(400)
+        return search_container
     
     def _create_preview_pane(self) -> QWidget:
         """右ペイン（ドキュメントプレビュー）を作成"""
@@ -381,12 +398,9 @@ class MainWindow(QMainWindow):
             self.folder_tree_container.load_folder_structure(folder_path)
     
     def _show_search_dialog(self) -> None:
-        """検索ダイアログを表示します（プレースホルダー）"""
-        QMessageBox.information(
-            self,
-            "検索",
-            "検索機能はタスク13で実装されます。"
-        )
+        """検索インターフェースにフォーカスを設定"""
+        self.search_interface.search_input.setFocus()
+        self.search_interface.search_input.selectAll()
     
     def _rebuild_index(self) -> None:
         """インデックス再構築を実行します（プレースホルダー）"""
@@ -697,3 +711,73 @@ class MainWindow(QMainWindow):
         """
         self.logger.debug(f"プレビューの表示フォーマットが変更されました: {format_name}")
         self.show_status_message(f"表示形式: {format_name}", 2000)
+    
+    # 検索インターフェースのシグナルハンドラー
+    
+    def _on_search_requested(self, search_query) -> None:
+        """
+        検索要求時の処理
+        
+        Args:
+            search_query: 検索クエリオブジェクト
+        """
+        self.logger.info(f"検索要求: '{search_query.query_text}' ({search_query.search_type.value})")
+        
+        # TODO: 実際の検索処理を実装
+        # 現在はプレースホルダー
+        self.show_status_message(f"検索実行: '{search_query.query_text}'", 3000)
+        
+        # 検索ワーカースレッドを作成して実行
+        # self.search_worker = SearchWorkerThread(self.search_manager, search_query)
+        # self.search_worker.progress_updated.connect(self.search_interface.progress_widget.update_progress)
+        # self.search_worker.search_completed.connect(self._on_search_completed)
+        # self.search_worker.search_error.connect(self._on_search_error)
+        # self.search_worker.start()
+        
+        # プレースホルダー: 2秒後に完了を通知
+        QTimer.singleShot(2000, lambda: self.search_interface.on_search_completed([], 2.0))
+    
+    def _on_search_cancelled(self) -> None:
+        """検索キャンセル時の処理"""
+        self.logger.info("検索がキャンセルされました")
+        self.show_status_message("検索がキャンセルされました", 3000)
+        
+        # TODO: 実際の検索キャンセル処理を実装
+        # if hasattr(self, 'search_worker') and self.search_worker.isRunning():
+        #     self.search_worker.cancel()
+        #     self.search_worker.wait()
+    
+    def _on_search_completed(self, results, execution_time: float) -> None:
+        """
+        検索完了時の処理
+        
+        Args:
+            results: 検索結果
+            execution_time: 実行時間（秒）
+        """
+        self.logger.info(f"検索完了: {len(results)}件, {execution_time:.1f}秒")
+        
+        # 検索結果を表示
+        self.search_results_widget.display_results(results)
+        
+        # 検索インターフェースに完了を通知
+        self.search_interface.on_search_completed(results, execution_time)
+        
+        # ステータス更新
+        result_count = len(results)
+        self.show_status_message(f"検索完了: {result_count}件の結果 ({execution_time:.1f}秒)", 5000)
+    
+    def _on_search_error(self, error_message: str) -> None:
+        """
+        検索エラー時の処理
+        
+        Args:
+            error_message: エラーメッセージ
+        """
+        self.logger.error(f"検索エラー: {error_message}")
+        
+        # 検索インターフェースにエラーを通知
+        self.search_interface.on_search_error(error_message)
+        
+        # ステータス更新
+        self.show_status_message("検索エラーが発生しました", 5000)
