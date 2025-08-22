@@ -25,6 +25,9 @@ from src.utils.config import Config
 from src.utils.logging_config import setup_logging
 from src.utils.error_handler import setup_global_exception_handler, get_global_error_handler
 from src.utils.graceful_degradation import setup_component_monitoring, get_global_degradation_manager
+from src.utils.cache_manager import initialize_cache_manager
+from src.utils.background_processor import initialize_task_manager
+from src.utils.memory_manager import initialize_memory_manager
 
 
 def main():
@@ -67,6 +70,17 @@ def main():
         data_dir = Path(config.get_data_directory())
         _ensure_directories_exist(data_dir, logger)
         
+        # パフォーマンス最適化コンポーネントの初期化
+        cache_manager = initialize_cache_manager(str(data_dir / "cache"))
+        task_manager = initialize_task_manager()
+        memory_manager = initialize_memory_manager()
+        
+        # バックグラウンド処理を開始
+        task_manager.start_all()
+        memory_manager.start()
+        
+        logger.info("パフォーマンス最適化コンポーネントを初期化しました")
+        
         logger.info(f"データディレクトリ: {data_dir}")
         
         # エラーハンドラーの初期化
@@ -95,7 +109,18 @@ def main():
         logger.info("アプリケーションのメインループを開始します")
         result = app.exec()
         
+        # クリーンアップ処理
         logger.info("DocMindアプリケーションを終了しています...")
+        
+        # パフォーマンス最適化コンポーネントの停止
+        try:
+            task_manager.stop_all()
+            memory_manager.stop()
+            cache_manager.save_persistent_caches()
+            logger.info("パフォーマンス最適化コンポーネントを停止しました")
+        except Exception as cleanup_error:
+            logger.error(f"クリーンアップ処理でエラー: {cleanup_error}")
+        
         return result
         
     except Exception as e:
@@ -142,7 +167,8 @@ def _ensure_directories_exist(data_dir: Path, logger: logging.Logger) -> None:
         data_dir / "logs",
         data_dir / "models", 
         data_dir / "whoosh_index",
-        data_dir / "error_reports"
+        data_dir / "error_reports",
+        data_dir / "cache"
     ]
     
     for directory in directories:

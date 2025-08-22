@@ -8,7 +8,7 @@ SearchManager - ハイブリッド検索マネージャー
 
 import logging
 import re
-from typing import Dict, List, Optional, Set, Tuple, Any
+from typing import Dict, List, Optional, Set, Tuple, Any, Callable
 from dataclasses import dataclass
 from collections import defaultdict
 
@@ -19,6 +19,8 @@ from ..utils.exceptions import SearchError
 from ..utils.error_handler import handle_exceptions, get_global_error_handler
 from ..utils.graceful_degradation import with_graceful_degradation, get_global_degradation_manager
 from ..utils.logging_config import LoggerMixin
+from ..utils.cache_manager import get_global_cache_manager
+from ..utils.background_processor import get_global_task_manager, TaskPriority
 
 
 @dataclass
@@ -63,6 +65,10 @@ class SearchManager(LoggerMixin):
         # 検索提案用のキャッシュ
         self._suggestion_cache: Dict[str, List[str]] = {}
         self._indexed_terms: Set[str] = set()
+        
+        # キャッシュマネージャーとタスクマネージャーを取得
+        self._cache_manager = get_global_cache_manager()
+        self._task_manager = get_global_task_manager()
         
         # エラーハンドリングと劣化管理の設定
         self._setup_error_handling()
@@ -116,7 +122,7 @@ class SearchManager(LoggerMixin):
     )
     def search(self, query: SearchQuery) -> List[SearchResult]:
         """
-        統合検索を実行
+        統合検索を実行（キャッシュ機能付き）
         
         Args:
             query: 検索クエリオブジェクト
@@ -131,6 +137,37 @@ class SearchManager(LoggerMixin):
         
         self.logger.info(f"検索開始: '{query.query_text}' (タイプ: {query.search_type.value})")
         
+        # キャッシュから結果を取得を試行
+        filters = {
+            "file_types": [ft.value for ft in query.file_types] if query.file_types else None,
+            "date_from": query.date_from.isoformat() if query.date_from else None,
+            "date_to": query.date_to.isoformat() if query.date_to else None,
+            "folder_paths": query.folder_paths,
+            "limit": query.limit,
+            "weights": query.weights
+        }
+        
+        cached_results = self._cache_manager.search_cache.get_search_results(
+            query.query_text, query.search_type.value, filters
+        )
+        
+        if cached_results is not None:
+            self.logger.debug(f"キャッシュから検索結果を取得: {len(cached_results)}件")
+            return cached_results
+        
+        # キャッシュにない場合は検索を実行
+        results = self._execute_search(query, degradation_manager)
+        
+        # 結果をキャッシュに保存
+        self._cache_manager.search_cache.cache_search_results(
+            query.query_text, query.search_type.value, results, filters
+        )
+        
+        self.logger.info(f"検索完了: {len(results)}件の結果")
+        return results
+    
+    def _execute_search(self, query: SearchQuery, degradation_manager) -> List[SearchResult]:
+        """実際の検索処理を実行"""
         # 検索タイプに応じて機能の可用性をチェック
         if query.search_type == SearchType.FULL_TEXT:
             if not degradation_manager.is_capability_available("search_manager", "full_text_search"):
@@ -160,8 +197,6 @@ class SearchManager(LoggerMixin):
         
         # 結果の後処理
         results = self._post_process_results(results, query)
-        
-        self.logger.info(f"検索完了: {len(results)}件の結果")
         return results
     
     @with_graceful_degradation(
@@ -551,7 +586,54 @@ class SearchManager(LoggerMixin):
         """検索提案キャッシュをクリア"""
         self._suggestion_cache.clear()
         self._indexed_terms.clear()
+        # グローバルキャッシュもクリア
+        self._cache_manager.search_cache.invalidate_cache()
         self.logger.info("検索提案キャッシュをクリアしました")
+    
+    def search_async(self, query: SearchQuery, 
+                    completion_callback: Optional[Callable[[List[SearchResult]], None]] = None,
+                    progress_callback: Optional[Callable[[Any], None]] = None) -> str:
+        """
+        非同期検索を実行
+        
+        Args:
+            query: 検索クエリ
+            completion_callback: 完了時のコールバック
+            progress_callback: 進捗更新コールバック
+            
+        Returns:
+            タスクID
+        """
+        def search_task(progress_tracker=None):
+            """検索タスクの実装"""
+            if progress_tracker:
+                progress_tracker.update(10, "検索を開始しています...")
+            
+            results = self.search(query)
+            
+            if progress_tracker:
+                progress_tracker.complete("検索が完了しました")
+            
+            return results
+        
+        def task_completion_callback(task):
+            """タスク完了時のコールバック"""
+            if task.status.value == "completed" and completion_callback:
+                completion_callback(task.result)
+            elif task.status.value == "failed":
+                self.logger.error(f"非同期検索が失敗しました: {task.error}")
+        
+        # 検索タスクを送信
+        task_id = self._task_manager.submit_search_task(
+            name=f"検索: {query.query_text}",
+            func=search_task,
+            priority=TaskPriority.HIGH,
+            progress_callback=progress_callback,
+            completion_callback=task_completion_callback
+        )
+        
+        self.logger.info(f"非同期検索タスクを送信: {task_id}")
+        return task_id
     
     def get_search_stats(self) -> Dict[str, Any]:
         """検索統計情報を取得"""

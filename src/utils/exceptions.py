@@ -196,3 +196,18 @@ class DocumentNotFoundError(DocMindException):
         super().__init__(message, details)
         self.document_id = document_id
         self.file_path = file_path
+
+
+class BackgroundProcessingError(DocMindException):
+    """バックグラウンド処理エラー"""
+    pass
+
+
+class CacheError(DocMindException):
+    """キャッシュ操作エラー"""
+    pass
+
+
+class MemoryError(DocMindException):
+    """メモリ管理エラー"""
+    pass
