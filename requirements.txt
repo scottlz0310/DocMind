@@ -11,6 +11,7 @@ Whoosh>=2.7.4
 sentence-transformers>=2.0.0
 torch>=1.9.0
 numpy>=1.21.0
+scikit-learn>=1.0.0        # コサイン類似度計算用
 
 # ドキュメント処理
 PyMuPDF>=1.20.0          # PDF処理
