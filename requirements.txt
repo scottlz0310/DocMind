@@ -1,0 +1,32 @@
+# DocMind - ローカルAI搭載ドキュメント検索アプリケーション
+# 必要な依存関係
+
+# GUI フレームワーク
+PySide6>=6.0.0
+
+# 検索エンジン
+Whoosh>=2.7.4
+
+# AI/ML - セマンティック検索
+sentence-transformers>=2.0.0
+torch>=1.9.0
+numpy>=1.21.0
+
+# ドキュメント処理
+PyMuPDF>=1.20.0          # PDF処理
+python-docx>=0.8.11      # Word文書処理
+openpyxl>=3.0.0          # Excel処理
+
+# ファイルシステム監視
+watchdog>=2.1.0
+
+# データベース（SQLiteは標準ライブラリに含まれる）
+# sqlite3は標準ライブラリ
+
+# ユーティリティ
+python-magic>=0.4.24     # ファイルタイプ検出（オプション）
+
+# 開発・テスト用依存関係
+pytest>=7.0.0
+pytest-qt>=4.0.0        # PySide6テスト用
+pytest-cov>=4.0.0       # カバレッジ測定
