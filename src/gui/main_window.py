@@ -26,6 +26,7 @@ from src.utils.config import Config
 from src.utils.exceptions import DocMindException
 from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
 from src.gui.folder_tree import FolderTreeContainer
+from src.gui.search_results import SearchResultsWidget
 
 
 class MainWindow(QMainWindow):
@@ -77,6 +78,9 @@ class MainWindow(QMainWindow):
         
         # フォルダツリーのシグナル接続
         self._connect_folder_tree_signals()
+        
+        # 検索結果ウィジェットのシグナル接続
+        self._connect_search_results_signals()
         
         self.logger.info("メインウィンドウが初期化されました")
     
@@ -139,26 +143,20 @@ class MainWindow(QMainWindow):
         
         return self.folder_tree_container
     
-    def _create_search_pane(self) -> QFrame:
-        """中央ペイン（検索結果）のプレースホルダーを作成"""
-        frame = QFrame()
-        frame.setFrameStyle(QFrame.StyledPanel)
-        frame.setMinimumWidth(300)
+    def _create_search_pane(self) -> QWidget:
+        """中央ペイン（検索結果）を作成"""
+        # 検索結果ウィジェットを作成
+        self.search_results_widget = SearchResultsWidget()
+        self.search_results_widget.setMinimumWidth(300)
         
-        layout = QVBoxLayout(frame)
+        # シグナル接続
+        self.search_results_widget.result_selected.connect(self._on_search_result_selected)
+        self.search_results_widget.preview_requested.connect(self._on_preview_requested)
+        self.search_results_widget.page_changed.connect(self._on_page_changed)
+        self.search_results_widget.sort_changed.connect(self._on_sort_changed)
+        self.search_results_widget.filter_changed.connect(self._on_filter_changed)
         
-        # タイトルラベル
-        title_label = QLabel("検索結果")
-        title_label.setStyleSheet("font-weight: bold; padding: 5px;")
-        layout.addWidget(title_label)
-        
-        # プレースホルダーメッセージ
-        placeholder_label = QLabel("検索結果表示ウィジェットは\nタスク11で実装されます")
-        placeholder_label.setAlignment(Qt.AlignCenter)
-        placeholder_label.setStyleSheet("color: gray; font-style: italic;")
-        layout.addWidget(placeholder_label)
-        
-        return frame
+        return self.search_results_widget
     
     def _create_preview_pane(self) -> QFrame:
         """右ペイン（ドキュメントプレビュー）のプレースホルダーを作成"""
@@ -295,8 +293,8 @@ class MainWindow(QMainWindow):
         self.folder_tree_container.setAccessibleName("フォルダツリーペイン")
         self.folder_tree_container.setAccessibleDescription("検索対象フォルダの階層構造を表示します")
         
-        self.search_pane.setAccessibleName("検索結果ペイン")
-        self.search_pane.setAccessibleDescription("検索結果の一覧を表示します")
+        self.search_results_widget.setAccessibleName("検索結果ペイン")
+        self.search_results_widget.setAccessibleDescription("検索結果の一覧を表示します")
         
         self.preview_pane.setAccessibleName("プレビューペイン")
         self.preview_pane.setAccessibleDescription("選択されたドキュメントの内容をプレビュー表示します")
@@ -307,8 +305,8 @@ class MainWindow(QMainWindow):
         self.system_info_label.setAccessibleName("システム情報")
         
         # タブオーダーの設定（キーボードナビゲーション用）
-        self.setTabOrder(self.folder_tree_container, self.search_pane)
-        self.setTabOrder(self.search_pane, self.preview_pane)
+        self.setTabOrder(self.folder_tree_container, self.search_results_widget)
+        self.setTabOrder(self.search_results_widget, self.preview_pane)
     
     def _apply_styling(self) -> None:
         """基本的なスタイリングを適用します"""
@@ -522,6 +520,11 @@ class MainWindow(QMainWindow):
         # フォルダツリーのシグナルはすでに_create_folder_paneで接続済み
         pass
     
+    def _connect_search_results_signals(self) -> None:
+        """検索結果ウィジェットのシグナルを接続します"""
+        # 検索結果ウィジェットのシグナルはすでに_create_search_paneで接続済み
+        pass
+    
     # フォルダツリーのシグナルハンドラー
     
     def _on_folder_selected(self, folder_path: str) -> None:
@@ -612,3 +615,63 @@ class MainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
+    
+    # 検索結果ウィジェットのシグナルハンドラー
+    
+    def _on_search_result_selected(self, result) -> None:
+        """
+        検索結果が選択された時の処理
+        
+        Args:
+            result: 選択された検索結果
+        """
+        self.logger.info(f"検索結果が選択されました: {result.document.title}")
+        self.document_selected.emit(result.document.file_path)
+        self.show_status_message(f"選択: {result.document.title}", 3000)
+        
+        # TODO: プレビューペインに内容を表示
+        # これは後のタスクで実装されます
+    
+    def _on_preview_requested(self, result) -> None:
+        """
+        プレビューが要求された時の処理
+        
+        Args:
+            result: プレビューが要求された検索結果
+        """
+        self.logger.info(f"プレビューが要求されました: {result.document.title}")
+        self.document_selected.emit(result.document.file_path)
+        self.show_status_message(f"プレビュー: {result.document.title}", 3000)
+        
+        # TODO: プレビューペインに内容を表示
+        # これは後のタスクで実装されます
+    
+    def _on_page_changed(self, page: int) -> None:
+        """
+        ページが変更された時の処理
+        
+        Args:
+            page: 新しいページ番号
+        """
+        self.logger.debug(f"検索結果のページが変更されました: {page}")
+        self.show_status_message(f"ページ {page} を表示中", 2000)
+    
+    def _on_sort_changed(self, sort_order) -> None:
+        """
+        ソート順が変更された時の処理
+        
+        Args:
+            sort_order: 新しいソート順
+        """
+        self.logger.debug(f"検索結果のソート順が変更されました: {sort_order}")
+        self.show_status_message("検索結果を並び替えました", 2000)
+    
+    def _on_filter_changed(self, filters: dict) -> None:
+        """
+        フィルターが変更された時の処理
+        
+        Args:
+            filters: 新しいフィルター設定
+        """
+        self.logger.debug(f"検索結果のフィルターが変更されました: {filters}")
+        self.show_status_message("検索結果をフィルタリングしました", 2000)
