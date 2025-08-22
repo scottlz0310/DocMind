@@ -10,7 +10,7 @@ import os
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 
 class Config:
@@ -48,7 +48,25 @@ class Config:
             "window_height": 800,
             "enable_file_watching": True,
             "batch_size": 100,
-            "cache_size": 1000
+            "cache_size": 1000,
+            # 検索設定
+            "max_results": 100,
+            "semantic_weight": 50,
+            # フォルダ管理
+            "indexed_folders": [],
+            "exclude_patterns": ["*.tmp", "*.log", "__pycache__/*", ".git/*", "node_modules/*"],
+            # ログ設定
+            "console_logging": True,
+            "file_logging": True,
+            "log_file": "logs/docmind.log",
+            # UI設定
+            "font_family": "システムデフォルト",
+            "font_size": 10,
+            # パフォーマンス設定
+            "enable_preview_cache": True,
+            "preview_cache_size": 50,
+            "enable_search_history": True,
+            "search_history_limit": 1000
         }
         
         # 設定の初期化（デフォルト値で開始）
@@ -191,4 +209,174 @@ class Config:
     
     def get_cache_size(self) -> int:
         """キャッシュサイズを取得"""
-        return int(self.get("cache_size"))
+        return int(self.get("cache_size"))    
+
+    def get_indexed_folders(self) -> List[str]:
+        """インデックス対象フォルダのリストを取得"""
+        folders = self.get("indexed_folders", [])
+        return folders if isinstance(folders, list) else []
+    
+    def add_indexed_folder(self, folder_path: str) -> bool:
+        """インデックス対象フォルダを追加"""
+        try:
+            folders = self.get_indexed_folders()
+            if folder_path not in folders:
+                folders.append(folder_path)
+                self.set("indexed_folders", folders)
+                return True
+            return False
+        except Exception as e:
+            self.logger.error(f"フォルダの追加に失敗しました: {e}")
+            return False
+    
+    def remove_indexed_folder(self, folder_path: str) -> bool:
+        """インデックス対象フォルダを削除"""
+        try:
+            folders = self.get_indexed_folders()
+            if folder_path in folders:
+                folders.remove(folder_path)
+                self.set("indexed_folders", folders)
+                return True
+            return False
+        except Exception as e:
+            self.logger.error(f"フォルダの削除に失敗しました: {e}")
+            return False
+    
+    def get_exclude_patterns(self) -> List[str]:
+        """除外パターンのリストを取得"""
+        patterns = self.get("exclude_patterns", [])
+        return patterns if isinstance(patterns, list) else []
+    
+    def set_exclude_patterns(self, patterns: List[str]) -> None:
+        """除外パターンを設定"""
+        self.set("exclude_patterns", patterns)
+    
+    def get_log_file_path(self) -> str:
+        """ログファイルのフルパスを取得"""
+        log_file = self.get("log_file", "logs/docmind.log")
+        if os.path.isabs(log_file):
+            return log_file
+        return os.path.join(self.get_data_directory(), log_file)
+    
+    def is_console_logging_enabled(self) -> bool:
+        """コンソールログが有効かどうかを取得"""
+        return bool(self.get("console_logging", True))
+    
+    def is_file_logging_enabled(self) -> bool:
+        """ファイルログが有効かどうかを取得"""
+        return bool(self.get("file_logging", True))
+    
+    def get_font_settings(self) -> Dict[str, Any]:
+        """フォント設定を取得"""
+        return {
+            "family": self.get("font_family", "システムデフォルト"),
+            "size": int(self.get("font_size", 10))
+        }
+    
+    def get_ui_theme(self) -> str:
+        """UIテーマを取得"""
+        return self.get("ui_theme", "default")
+    
+    def get_search_settings(self) -> Dict[str, Any]:
+        """検索関連設定を取得"""
+        return {
+            "max_results": int(self.get("max_results", 100)),
+            "semantic_weight": float(self.get("semantic_weight", 50)),
+            "enable_search_history": bool(self.get("enable_search_history", True)),
+            "search_history_limit": int(self.get("search_history_limit", 1000))
+        }
+    
+    def get_performance_settings(self) -> Dict[str, Any]:
+        """パフォーマンス関連設定を取得"""
+        return {
+            "enable_preview_cache": bool(self.get("enable_preview_cache", True)),
+            "preview_cache_size": int(self.get("preview_cache_size", 50)),
+            "batch_size": self.get_batch_size(),
+            "cache_size": self.get_cache_size()
+        }
+    
+    def validate_settings(self) -> List[str]:
+        """設定の妥当性を検証し、問題があれば警告メッセージのリストを返す"""
+        warnings = []
+        
+        try:
+            # データディレクトリの検証
+            data_dir = Path(self.get_data_directory())
+            if not data_dir.parent.exists():
+                warnings.append(f"データディレクトリの親ディレクトリが存在しません: {data_dir.parent}")
+            
+            # インデックス対象フォルダの検証
+            for folder in self.get_indexed_folders():
+                if not Path(folder).exists():
+                    warnings.append(f"インデックス対象フォルダが存在しません: {folder}")
+            
+            # 数値設定の検証
+            if self.get_max_documents() < 1000:
+                warnings.append("最大ドキュメント数は1000以上である必要があります")
+            
+            if self.get_search_timeout() < 1.0:
+                warnings.append("検索タイムアウトは1秒以上である必要があります")
+            
+            if self.get_batch_size() < 10:
+                warnings.append("バッチサイズは10以上である必要があります")
+            
+            if self.get_cache_size() < 100:
+                warnings.append("キャッシュサイズは100以上である必要があります")
+            
+            # ログファイルの検証
+            log_file = Path(self.get_log_file_path())
+            if not log_file.parent.exists():
+                warnings.append(f"ログファイルのディレクトリが存在しません: {log_file.parent}")
+            
+        except Exception as e:
+            warnings.append(f"設定の検証中にエラーが発生しました: {e}")
+        
+        return warnings
+    
+    def reset_to_defaults(self) -> None:
+        """設定をデフォルト値にリセット"""
+        self._config = self._defaults.copy()
+        self.logger.info("設定をデフォルト値にリセットしました")
+    
+    def export_settings(self, file_path: str) -> bool:
+        """設定をファイルにエクスポート"""
+        try:
+            export_data = {
+                "version": "1.0",
+                "timestamp": Path(file_path).stat().st_mtime if Path(file_path).exists() else None,
+                "settings": self._config.copy()
+            }
+            
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(export_data, f, indent=2, ensure_ascii=False)
+            
+            self.logger.info(f"設定をエクスポートしました: {file_path}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"設定のエクスポートに失敗しました: {e}")
+            return False
+    
+    def import_settings(self, file_path: str) -> bool:
+        """ファイルから設定をインポート"""
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                import_data = json.load(f)
+            
+            if "settings" in import_data:
+                # バージョンチェック（将来の拡張用）
+                version = import_data.get("version", "1.0")
+                if version == "1.0":
+                    self._config.update(import_data["settings"])
+                    self.logger.info(f"設定をインポートしました: {file_path}")
+                    return True
+                else:
+                    self.logger.warning(f"サポートされていない設定ファイルのバージョンです: {version}")
+                    return False
+            else:
+                self.logger.error("無効な設定ファイル形式です")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"設定のインポートに失敗しました: {e}")
+            return False

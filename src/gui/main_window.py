@@ -427,8 +427,78 @@ class MainWindow(QMainWindow):
         self.show_status_message(status_msg, 2000)
     
     def _show_settings_dialog(self) -> None:
-        """設定ダイアログを表示します（プレースホルダー）"""
-        QMessageBox.information(
+        """設定ダイアログを表示します"""
+        from src.gui.settings_dialog import SettingsDialog
+        
+        try:
+            dialog = SettingsDialog(self.config, self)
+            dialog.settings_changed.connect(self._on_settings_changed)
+            
+            if dialog.exec() == SettingsDialog.Accepted:
+                self.logger.info("設定が更新されました")
+                self.show_status_message("設定が保存されました", 3000)
+                
+        except Exception as e:
+            self.logger.error(f"設定ダイアログの表示に失敗しました: {e}")
+            QMessageBox.critical(
+                self, "エラー", 
+                f"設定ダイアログの表示に失敗しました:\n{e}"
+            )
+    
+    def _on_settings_changed(self, settings: dict) -> None:
+        """設定変更時の処理"""
+        try:
+            # ログ設定の更新
+            from src.utils.logging_config import reconfigure_logging
+            reconfigure_logging(
+                level=settings.get("log_level"),
+                enable_console=settings.get("console_logging"),
+                enable_file=settings.get("file_logging")
+            )
+            
+            # ウィンドウサイズの更新
+            if "window_width" in settings and "window_height" in settings:
+                self.resize(settings["window_width"], settings["window_height"])
+            
+            # UIテーマの更新
+            if "ui_theme" in settings:
+                self._apply_theme(settings["ui_theme"])
+            
+            # フォント設定の更新
+            if "font_family" in settings or "font_size" in settings:
+                self._apply_font_settings(settings)
+            
+            self.logger.info("設定変更が適用されました")
+            
+        except Exception as e:
+            self.logger.error(f"設定変更の適用に失敗しました: {e}")
+            QMessageBox.warning(
+                self, "警告", 
+                f"一部の設定変更の適用に失敗しました:\n{e}"
+            )
+    
+    def _apply_theme(self, theme: str) -> None:
+        """UIテーマを適用"""
+        # 基本的なテーマ適用（将来の拡張用）
+        if theme == "dark":
+            # ダークテーマの適用（実装は将来の拡張）
+            pass
+        elif theme == "light":
+            # ライトテーマの適用
+            pass
+        # デフォルトテーマは現在のスタイルを維持
+    
+    def _apply_font_settings(self, settings: dict) -> None:
+        """フォント設定を適用"""
+        from PySide6.QtGui import QFont
+        
+        font_family = settings.get("font_family", "システムデフォルト")
+        font_size = settings.get("font_size", 10)
+        
+        if font_family != "システムデフォルト":
+            font = QFont(font_family, font_size)
+            self.setFont(font)
+            QApplication.instance().setFont(font)
             self,
             "設定",
             "設定機能はタスク14で実装されます。"
