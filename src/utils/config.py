@@ -155,6 +155,26 @@ class Config:
         """データディレクトリのパス（プロパティ）"""
         return self.get_data_directory()
     
+    @property
+    def database_file(self) -> str:
+        """データベースファイル名を取得"""
+        return self.get("database_file")
+    
+    @property
+    def embeddings_file(self) -> str:
+        """埋め込みファイル名を取得"""
+        return self.get("embeddings_file")
+    
+    @property
+    def index_dir(self) -> str:
+        """インデックスディレクトリ名を取得"""
+        return self.get("whoosh_index_dir")
+    
+    @property
+    def log_dir(self) -> str:
+        """ログディレクトリ名を取得"""
+        return "logs"
+    
     def get_log_level(self) -> str:
         """ログレベルを取得"""
         return self.get("log_level")

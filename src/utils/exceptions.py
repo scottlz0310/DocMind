@@ -211,3 +211,24 @@ class CacheError(DocMindException):
 class MemoryError(DocMindException):
     """メモリ管理エラー"""
     pass
+
+
+class UpdateError(DocMindException):
+    """アップデート操作中に発生するエラー
+    
+    アプリケーションのアップデートチェック、ダウンロード、インストールなどで
+    問題が発生した場合に発生します。
+    """
+    
+    def __init__(self, message: str, update_version: str = None, operation: str = None, details: str = None):
+        """アップデートエラーを初期化
+        
+        Args:
+            message (str): エラーメッセージ
+            update_version (str, optional): アップデート対象のバージョン
+            operation (str, optional): 失敗した操作の種類
+            details (str, optional): 詳細なエラー情報
+        """
+        super().__init__(message, details)
+        self.update_version = update_version
+        self.operation = operation

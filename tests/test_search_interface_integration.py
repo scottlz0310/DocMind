@@ -238,7 +238,9 @@ class TestSearchProgressWidget:
         assert not widget.timer.isActive()
         
         # 2秒後に非表示になることを確認
-        QTimer.singleShot(2100, lambda: assert not widget.isVisible())
+        def check_visibility():
+            assert not widget.isVisible()
+        QTimer.singleShot(2100, check_visibility)
     
     def test_cancel_signal(self, widget, qtbot):
         """キャンセルシグナルのテスト"""

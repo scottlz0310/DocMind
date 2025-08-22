@@ -359,8 +359,8 @@ class SettingsDialog(QDialog):
         layout.addStretch()
         
         self.tab_widget.addTab(tab, "UI")    
-    d
-ef _load_current_settings(self):
+    
+    def _load_current_settings(self):
         """現在の設定値をUIに読み込み"""
         try:
             # 一般設定

@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox, QPushButton,
     QLabel, QFrame, QGroupBox, QCheckBox, QDateEdit, QSpinBox, QSlider,
-    QProgressBar, QListWidget, QListWidgetItem, QCompleter, QMenu, QAction,
+    QProgressBar, QListWidget, QListWidgetItem, QCompleter, QMenu,
     QSplitter, QTabWidget, QTextEdit, QScrollArea, QButtonGroup, QRadioButton,
     QToolButton, QSizePolicy, QMessageBox
 )
@@ -24,7 +24,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import (
     QIcon, QPixmap, QFont, QFontMetrics, QPalette, QColor, QKeySequence,
-    QShortcut, QValidator, QRegularExpressionValidator
+    QShortcut, QValidator, QRegularExpressionValidator, QAction
 )
 
 from ..data.models import SearchType, FileType, SearchQuery

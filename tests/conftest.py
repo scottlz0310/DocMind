@@ -39,16 +39,19 @@ def test_config(test_data_dir):
     テスト用設定オブジェクト
     """
     config = Config()
-    config.data_dir = test_data_dir / "data"
-    config.index_dir = test_data_dir / "index"
-    config.embeddings_file = test_data_dir / "embeddings.pkl"
-    config.database_file = test_data_dir / "test_documents.db"
-    config.log_dir = test_data_dir / "logs"
+    # 設定値を直接更新
+    config._config.update({
+        "data_directory": str(test_data_dir / "data"),
+        "whoosh_index_dir": str(test_data_dir / "index"),
+        "embeddings_file": str(test_data_dir / "embeddings.pkl"),
+        "database_file": str(test_data_dir / "test_documents.db"),
+        "log_file": str(test_data_dir / "logs" / "docmind.log")
+    })
     
     # ディレクトリを作成
-    config.data_dir.mkdir(parents=True, exist_ok=True)
-    config.index_dir.mkdir(parents=True, exist_ok=True)
-    config.log_dir.mkdir(parents=True, exist_ok=True)
+    (test_data_dir / "data").mkdir(parents=True, exist_ok=True)
+    (test_data_dir / "index").mkdir(parents=True, exist_ok=True)
+    (test_data_dir / "logs").mkdir(parents=True, exist_ok=True)
     
     return config
 

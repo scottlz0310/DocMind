@@ -1,0 +1,94 @@
+{
+  "test_structure": {
+    "conftest_exists": true,
+    "fixtures_dir_exists": true,
+    "pytest_ini_exists": true,
+    "run_tests_script_exists": true,
+    "test_data_generator_exists": true,
+    "fixture_files": [
+      "__init__.py",
+      "sample_text.txt",
+      "sample_markdown.md",
+      "sample_json.json",
+      "sample_csv.csv"
+    ],
+    "fixture_count": 5
+  },
+  "coverage_analysis": {
+    "total_test_files": 25,
+    "total_source_files": 28,
+    "test_files": [
+      "tests/test_search_manager.py",
+      "tests/test_search_results.py",
+      "tests/test_preview_widget.py",
+      "tests/test_data_generator.py",
+      "tests/test_error_handling_integration.py",
+      "tests/test_comprehensive_suite.py",
+      "tests/test_document_processing.py",
+      "tests/test_gui_integration.py",
+      "tests/test_search_interface_integration.py",
+      "tests/test_graceful_degradation.py",
+      "tests/test_performance.py",
+      "tests/test_folder_tree.py",
+      "tests/test_database.py",
+      "tests/test_config.py",
+      "tests/test_settings_dialog.py",
+      "tests/test_index_manager.py",
+      "tests/test_embedding_integration.py",
+      "tests/test_end_to_end_integration.py",
+      "tests/test_file_watcher.py",
+      "tests/test_main_window.py",
+      "tests/test_logging_config.py",
+      "tests/test_embedding_manager.py",
+      "tests/test_storage.py",
+      "tests/test_hybrid_search_integration.py",
+      "tests/test_error_handler.py"
+    ],
+    "source_files": [
+      "src/utils/cache_manager.py",
+      "src/utils/memory_manager.py",
+      "src/utils/config.py",
+      "src/utils/logging_config.py",
+      "src/utils/error_handler.py",
+      "src/utils/background_processor.py",
+      "src/utils/exceptions.py",
+      "src/utils/graceful_degradation.py",
+      "src/utils/updater.py",
+      "src/data/database.py",
+      "src/data/storage.py",
+      "src/data/document_repository.py",
+      "src/data/models.py",
+      "src/data/search_history_repository.py",
+      "src/core/document_processor.py",
+      "src/core/index_manager.py",
+      "src/core/file_watcher_integration.py",
+      "src/core/search_manager.py",
+      "src/core/file_watcher.py",
+      "src/core/embedding_manager.py",
+      "src/gui/resources.py",
+      "src/gui/folder_tree.py",
+      "src/gui/main_window.py",
+      "src/gui/settings_dialog.py",
+      "src/gui/error_dialog.py",
+      "src/gui/preview_widget.py",
+      "src/gui/search_interface.py",
+      "src/gui/search_results.py"
+    ],
+    "coverage_ratio": 0.8928571428571429
+  },
+  "dependencies": {
+    "required": {
+      "pytest": true,
+      "pytest-cov": true,
+      "pytest-mock": true,
+      "psutil": true
+    },
+    "optional": {
+      "PySide6": true,
+      "reportlab": false,
+      "python-docx": false,
+      "openpyxl": true
+    }
+  },
+  "timestamp": "2025-08-22 23:44:26"
+}

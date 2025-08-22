@@ -34,6 +34,8 @@ from src.gui.folder_tree import FolderTreeContainer
 from src.gui.search_results import SearchResultsWidget
 from src.gui.preview_widget import PreviewWidget
 from src.gui.search_interface import SearchInterface, SearchWorkerThread
+from src.core.search_manager import SearchManager
+from src.data.database import DatabaseManager
 
 
 class MainWindow(QMainWindow, LoggerMixin):
@@ -63,10 +65,6 @@ class MainWindow(QMainWindow, LoggerMixin):
     def __init__(self, parent: Optional[QWidget] = None):
         """
         メインウィンドウの初期化
-        
-        Args:
-            parent: 親ウィジェット
-        """
         
         Args:
             parent: 親ウィジェット（通常はNone）
@@ -518,6 +516,11 @@ class MainWindow(QMainWindow, LoggerMixin):
             font = QFont(font_family, font_size)
             self.setFont(font)
             QApplication.instance().setFont(font)
+    
+    def _show_settings_dialog(self) -> None:
+        """設定ダイアログを表示します"""
+        # TODO: 設定ダイアログの実装
+        QMessageBox.information(
             self,
             "設定",
             "設定機能はタスク14で実装されます。"
