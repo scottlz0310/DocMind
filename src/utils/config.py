@@ -132,6 +132,11 @@ class Config:
         """データディレクトリのパスを取得"""
         return self.get("data_directory")
     
+    @property
+    def data_dir(self) -> str:
+        """データディレクトリのパス（プロパティ）"""
+        return self.get_data_directory()
+    
     def get_log_level(self) -> str:
         """ログレベルを取得"""
         return self.get("log_level")

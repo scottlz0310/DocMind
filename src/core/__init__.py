@@ -3,5 +3,6 @@
 
 from .index_manager import IndexManager
 from .embedding_manager import EmbeddingManager
+from .file_watcher import FileWatcher
 
-__all__ = ['IndexManager', 'EmbeddingManager']
+__all__ = ['IndexManager', 'EmbeddingManager', 'FileWatcher']
