@@ -211,8 +211,8 @@ docmind_data/
 *.db
 *.pkl
 whoosh_index/
-models/
+models_cache/
 logs/
-config.json
+user_config.json
 validation_results/
 test_results/
