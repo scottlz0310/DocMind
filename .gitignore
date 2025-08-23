@@ -207,12 +207,12 @@ marimo/_lsp/
 __marimo__/
 
 # DocMind specific
-docmind_data/          # ランタイムデータディレクトリ
-*.db                   # SQLiteデータベースファイル
-*.pkl                  # Pickleファイル（埋め込みキャッシュ）
-whoosh_index/          # Whoosh検索インデックス
-models/                # キャッシュされたAIモデル
-logs/                  # ログファイル
-config.json            # ユーザー設定ファイル
-validation_results/    # 検証結果ファイル（HTML、JSON、ログ）
-test_results/          # テスト結果ファイル
+docmind_data/
+*.db
+*.pkl
+whoosh_index/
+models/
+logs/
+config.json
+validation_results/
+test_results/
