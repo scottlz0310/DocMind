@@ -147,13 +147,25 @@ class Config:
         self._config[key] = value
     
     def get_data_directory(self) -> str:
-        """データディレクトリのパスを取得"""
+        """
+        データディレクトリのパスを文字列で取得
+        
+        既存のAPIとの互換性を維持
+        
+        Returns:
+            データディレクトリのパス（文字列）
+        """
         return self.get("data_directory")
     
     @property
-    def data_dir(self) -> str:
-        """データディレクトリのパス（プロパティ）"""
-        return self.get_data_directory()
+    def data_dir(self) -> Path:
+        """
+        データディレクトリのパスを取得
+        
+        Returns:
+            Pathオブジェクト（文字列ではなく）
+        """
+        return Path(self.get_data_directory())
     
     @property
     def database_file(self) -> str:
@@ -166,14 +178,22 @@ class Config:
         return self.get("embeddings_file")
     
     @property
-    def index_dir(self) -> str:
-        """インデックスディレクトリ名を取得"""
-        return self.get("whoosh_index_dir")
+    def index_dir(self) -> Path:
+        """インデックスディレクトリのパスを取得
+        
+        Returns:
+            Pathオブジェクト（文字列ではなく）
+        """
+        return Path(self.get_index_path())
     
     @property
-    def log_dir(self) -> str:
-        """ログディレクトリ名を取得"""
-        return "logs"
+    def log_dir(self) -> Path:
+        """ログディレクトリのパスを取得
+        
+        Returns:
+            Pathオブジェクト（文字列ではなく）
+        """
+        return self.data_dir / "logs"
     
     def get_log_level(self) -> str:
         """ログレベルを取得"""
@@ -400,3 +420,28 @@ class Config:
         except Exception as e:
             self.logger.error(f"設定のインポートに失敗しました: {e}")
             return False
+
+# グローバル設定インスタンス
+_global_config = None
+
+
+def get_config() -> Config:
+    """グローバル設定インスタンスを取得
+    
+    Returns:
+        Config: グローバル設定インスタンス
+    """
+    global _global_config
+    if _global_config is None:
+        _global_config = Config()
+    return _global_config
+
+
+def set_config(config: Config) -> None:
+    """グローバル設定インスタンスを設定
+    
+    Args:
+        config: 設定するConfigインスタンス
+    """
+    global _global_config
+    _global_config = config

@@ -71,7 +71,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         """
         super().__init__(parent)
         
-        self.logger = logging.getLogger(__name__)
+        # LoggerMixinのloggerプロパティを使用
         self.config = Config()
         
         # ウィンドウの基本設定

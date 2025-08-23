@@ -1,0 +1,181 @@
+{
+  "timestamp": "20250823_124108",
+  "execution_time_seconds": 2.22747,
+  "test_summary": {
+    "total_tests": 1,
+    "successful_tests": 0,
+    "success_rate": 0.0
+  },
+  "validation_results": [
+    {
+      "test_name": "test_character_encoding_compatibility",
+      "success": false,
+      "execution_time": 2.2252469062805176,
+      "memory_usage": 0.0,
+      "error_message": "文字エンコーディング互換性なし: ['エンコーディング utf-8 のサポート不完全: 0.67', 'エンコーディング shift_jis のサポート不完全: 0.25', 'エンコーディング euc-jp のサポート不完全: 0.58', 'エンコーディング iso-2022-jp のサポート不完全: 0.58', 'エンコーディング cp932 のサポート不完全: 0.62']",
+      "details": {
+        "traceback": "Traceback (most recent call last):\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/base_validator.py\", line 152, in _run_single_test\n    method()\n    ~~~~~~^^\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/compatibility_validator.py\", line 706, in test_character_encoding_compatibility\n    self.assert_condition(\n    ~~~~~~~~~~~~~~~~~~~~~^\n        compatibility_level != \"INCOMPATIBLE\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        f\"文字エンコーディング互換性なし: {encoding_issues}\"\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/base_validator.py\", line 295, in assert_condition\n    raise AssertionError(message)\nAssertionError: 文字エンコーディング互換性なし: ['エンコーディング utf-8 のサポート不完全: 0.67', 'エンコーディング shift_jis のサポート不完全: 0.25', 'エンコーディング euc-jp のサポート不完全: 0.58', 'エンコーディング iso-2022-jp のサポート不完全: 0.58', 'エンコーディング cp932 のサポート不完全: 0.62']\n"
+      }
+    }
+  ],
+  "compatibility_metrics": [
+    {
+      "test_name": "character_encoding_compatibility",
+      "compatibility_level": "INCOMPATIBLE",
+      "os_version": "",
+      "python_version": "",
+      "memory_available_mb": 0,
+      "disk_space_available_mb": 0,
+      "screen_resolution": [
+        0,
+        0
+      ],
+      "filesystem_type": "",
+      "encoding_support": {
+        "utf-8": false,
+        "shift_jis": false,
+        "euc-jp": false,
+        "iso-2022-jp": false,
+        "cp932": false
+      },
+      "feature_compatibility": {
+        "basic_encoding_support": 0.0,
+        "file_processing_support": 1.0,
+        "search_functionality_support": 0.0
+      },
+      "performance_metrics": {},
+      "limitations": [
+        "エンコーディング utf-8 のサポート不完全: 0.67",
+        "エンコーディング shift_jis のサポート不完全: 0.25",
+        "エンコーディング euc-jp のサポート不完全: 0.58",
+        "エンコーディング iso-2022-jp のサポート不完全: 0.58",
+        "エンコーディング cp932 のサポート不完全: 0.62"
+      ],
+      "recommendations": [
+        "サポートされていないエンコーディングのファイルはUTF-8に変換してください",
+        "Shift_JISファイルはUTF-8に変換することを推奨します",
+        "EUC-JPファイルはUTF-8に変換することを推奨します",
+        "ISO-2022-JPファイルはUTF-8に変換することを推奨します",
+        "サポートされていないエンコーディングのファイルはUTF-8に変換してください"
+      ],
+      "additional_details": {
+        "encoding_support_details": {
+          "utf-8": {
+            "japanese_hiragana": true,
+            "japanese_katakana": true,
+            "japanese_kanji": true,
+            "japanese_mixed": true,
+            "special_chars": true,
+            "symbols": true,
+            "ascii": true,
+            "unicode_emoji": true
+          },
+          "shift_jis": {
+            "japanese_hiragana": true,
+            "japanese_katakana": true,
+            "japanese_kanji": true,
+            "japanese_mixed": true,
+            "special_chars": false,
+            "symbols": true,
+            "ascii": true,
+            "unicode_emoji": false
+          },
+          "euc-jp": {
+            "japanese_hiragana": true,
+            "japanese_katakana": true,
+            "japanese_kanji": true,
+            "japanese_mixed": true,
+            "special_chars": false,
+            "symbols": true,
+            "ascii": true,
+            "unicode_emoji": false
+          },
+          "iso-2022-jp": {
+            "japanese_hiragana": true,
+            "japanese_katakana": true,
+            "japanese_kanji": true,
+            "japanese_mixed": true,
+            "special_chars": false,
+            "symbols": true,
+            "ascii": true,
+            "unicode_emoji": false
+          },
+          "cp932": {
+            "japanese_hiragana": true,
+            "japanese_katakana": true,
+            "japanese_kanji": true,
+            "japanese_mixed": true,
+            "special_chars": true,
+            "symbols": true,
+            "ascii": true,
+            "unicode_emoji": false
+          }
+        },
+        "processing_results": {
+          "utf-8": {
+            "japanese": true,
+            "special": true,
+            "symbols": true,
+            "ascii": true,
+            "unicode": true
+          },
+          "shift": {
+            "jis": true
+          },
+          "euc-jp": {
+            "japanese": true,
+            "symbols": true,
+            "ascii": true
+          },
+          "iso-2022-jp": {
+            "japanese": true,
+            "symbols": true,
+            "ascii": true
+          },
+          "cp932": {
+            "japanese": true,
+            "special": true,
+            "symbols": true,
+            "ascii": true
+          }
+        },
+        "search_results": {
+          "utf-8": {
+            "basic_search": false,
+            "japanese_search": false
+          },
+          "shift_jis": {
+            "basic_search": false,
+            "japanese_search": false
+          },
+          "euc-jp": {
+            "basic_search": false,
+            "japanese_search": false
+          },
+          "iso-2022-jp": {
+            "basic_search": false,
+            "japanese_search": false
+          },
+          "cp932": {
+            "basic_search": false,
+            "japanese_search": false
+          }
+        },
+        "test_files_created": 33,
+        "supported_encodings_list": [
+          "utf-8",
+          "shift_jis",
+          "euc-jp",
+          "iso-2022-jp",
+          "cp932"
+        ]
+      }
+    }
+  ],
+  "statistics": {
+    "basic_statistics": {
+      "total_tests": 1,
+      "successful_tests": 0,
+      "failed_tests": 1,
+      "overall_success_rate": 0.0,
+      "execution_time_stats": 

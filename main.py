@@ -97,8 +97,8 @@ def main():
             from src.gui.main_window import MainWindow
             main_window = MainWindow()
             
-            # 更新マネージャーをメインウィンドウに渡す
-            main_window.set_update_manager(update_manager)
+            # 更新マネージャーは将来の機能として保持
+            # main_window.set_update_manager(update_manager)
             
             main_window.show()
             logger.info("メインウィンドウを表示しました")

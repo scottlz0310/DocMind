@@ -1,0 +1,97 @@
+{
+  "timestamp": "20250823_123810",
+  "execution_time_seconds": 0.290362,
+  "test_summary": {
+    "total_tests": 1,
+    "successful_tests": 0,
+    "success_rate": 0.0
+  },
+  "validation_results": [
+    {
+      "test_name": "test_windows_environment_compatibility",
+      "success": false,
+      "execution_time": 0.28762245178222656,
+      "memory_usage": 0.0,
+      "error_message": "Windows環境で互換性なし: ['サポートされていないWindows版本: 非Windows', '機能テスト失敗: search', '機能テスト失敗: embedding']",
+      "details": {
+        "traceback": "Traceback (most recent call last):\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/base_validator.py\", line 152, in _run_single_test\n    method()\n    ~~~~~~^^\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/compatibility_validator.py\", line 532, in test_windows_environment_compatibility\n    self.assert_condition(\n    ~~~~~~~~~~~~~~~~~~~~~^\n        compatibility_level != \"INCOMPATIBLE\",\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        f\"Windows環境で互換性なし: {compatibility_issues}\"\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/base_validator.py\", line 295, in assert_condition\n    raise AssertionError(message)\nAssertionError: Windows環境で互換性なし: ['サポートされていないWindows版本: 非Windows', '機能テスト失敗: search', '機能テスト失敗: embedding']\n"
+      }
+    }
+  ],
+  "compatibility_metrics": [
+    {
+      "test_name": "windows_environment_compatibility",
+      "compatibility_level": "INCOMPATIBLE",
+      "os_version": "非Windows",
+      "python_version": "3.13.3",
+      "memory_available_mb": 17642,
+      "disk_space_available_mb": 911786,
+      "screen_resolution": [
+        0,
+        0
+      ],
+      "filesystem_type": "",
+      "encoding_support": {},
+      "feature_compatibility": {
+        "document_processing": true,
+        "indexing": true,
+        "search": false,
+        "embedding": false,
+        "gui": true
+      },
+      "performance_metrics": {
+        "startup_time_seconds": 0.10021615028381348,
+        "search_time_seconds": 0.010908365249633789,
+        "memory_usage_mb": 849
+      },
+      "limitations": [
+        "サポートされていないWindows版本: 非Windows",
+        "機能テスト失敗: search",
+        "機能テスト失敗: embedding"
+      ],
+      "recommendations": [
+        "Windows 10 (バージョン1903以降) またはWindows 11にアップグレードしてください",
+        "必要な依存関係がインストールされているか確認してください",
+        "必要な依存関係がインストールされているか確認してください"
+      ],
+      "additional_details": {
+        "system_info": {
+          "os_name": "Linux",
+          "os_version": "#3 SMP Sat Jul 6 19:17:44 JST 2024",
+          "os_release": "5.15.153.1-microsoft-standard-WSL2+",
+          "machine": "x86_64",
+          "processor": "x86_64",
+          "python_version": "3.13.3",
+          "python_implementation": "CPython",
+          "total_memory_mb": 23926,
+          "available_memory_mb": 17642,
+          "memory_percent": 26.3,
+          "total_disk_mb": 1031018,
+          "free_disk_mb": 911786,
+          "disk_percent": 6.477762580299423,
+          "cpu_count": 20,
+          "cpu_count_logical": 20,
+          "cpu_freq": {
+            "current": 3609.5999999999995,
+            "min": 0.0,
+            "max": 0.0
+          },
+          "locale": [
+            "ja_JP",
+            "UTF-8"
+          ],
+          "encoding": "UTF-8"
+        },
+        "windows_supported": false,
+        "total_features_tested": 5,
+        "failed_features_count": 2
+      }
+    }
+  ],
+  "statistics": {
+    "basic_statistics": {
+      "total_tests": 1,
+      "successful_tests": 0,
+      "failed_tests": 1,
+      "overall_success_rate": 0.0,
+      "execution_time_stats": 

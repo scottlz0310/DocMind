@@ -219,20 +219,20 @@ class SearchTypeSelector(QWidget):
         # 全文検索ラジオボタン
         self.full_text_radio = QRadioButton("全文検索")
         self.full_text_radio.setToolTip("キーワードの完全一致による検索")
-        self.button_group.addButton(self.full_text_radio, SearchType.FULL_TEXT.value.__hash__())
+        self.button_group.addButton(self.full_text_radio, 0)  # 単純な整数IDを使用
         layout.addWidget(self.full_text_radio)
         
         # セマンティック検索ラジオボタン
         self.semantic_radio = QRadioButton("セマンティック検索")
         self.semantic_radio.setToolTip("意味的類似性による検索")
-        self.button_group.addButton(self.semantic_radio, SearchType.SEMANTIC.value.__hash__())
+        self.button_group.addButton(self.semantic_radio, 1)  # 単純な整数IDを使用
         layout.addWidget(self.semantic_radio)
         
         # ハイブリッド検索ラジオボタン（デフォルト選択）
         self.hybrid_radio = QRadioButton("ハイブリッド検索")
         self.hybrid_radio.setToolTip("全文検索とセマンティック検索の組み合わせ")
         self.hybrid_radio.setChecked(True)
-        self.button_group.addButton(self.hybrid_radio, SearchType.HYBRID.value.__hash__())
+        self.button_group.addButton(self.hybrid_radio, 2)  # 単純な整数IDを使用
         layout.addWidget(self.hybrid_radio)
         
         # スペーサー

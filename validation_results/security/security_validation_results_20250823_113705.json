@@ -1,0 +1,56 @@
+{
+  "validation_type": "security",
+  "timestamp": "20250823_113705",
+  "results": [
+    "ValidationResult(test_name='test_local_processing_verification', success=False, execution_time=0.5267493724822998, memory_usage=821.18359375, error_message='検索機能は現在利用できません', details={'traceback': 'Traceback (most recent call last):\\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/base_validator.py\", line 152, in _run_single_test\\n    method()\\n    ~~~~~~^^\\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/security_validator.py\", line 414, in test_local_processing_verification\\n    results = search_manager.search(query)\\n  File \"/home/hiro/Projects/DocMind/src/utils/error_handler.py\", line 326, in wrapper\\n    return func(*args, **kwargs)\\n  File \"/home/hiro/Projects/DocMind/src/core/search_manager.py\", line 159, in search\\n    results = self._execute_search(query, degradation_manager)\\n  File \"/home/hiro/Projects/DocMind/src/core/search_manager.py\", line 192, in _execute_search\\n    raise SearchError(\"検索機能は現在利用できません\")\\nsrc.utils.exceptions.SearchError: 検索機能は現在利用できません\\n'}, timestamp=datetime.datetime(2025, 8, 23, 11, 36, 59, 398908))",
+    "ValidationResult(test_name='test_file_access_permissions_verification', success=False, execution_time=0.028072595596313477, memory_usage=826.69140625, error_message=\"セキュアでないファイル権限が検出されました: ['/tmp/docmind_security_test_o8aq9t75/world_readable.txt']\", details={'traceback': 'Traceback (most recent call last):\\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/base_validator.py\", line 152, in _run_single_test\\n    method()\\n    ~~~~~~^^\\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/security_validator.py\", line 517, in test_file_access_permissions_verification\\n    self.assert_condition(\\n    ~~~~~~~~~~~~~~~~~~~~~^\\n        len(insecure_files) == 0,\\n        ^^^^^^^^^^^^^^^^^^^^^^^^^\\n        f\"セキュアでないファイル権限が検出されました: {insecure_files}\"\\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n    )\\n    ^\\n  File \"/home/hiro/Projects/DocMind/tests/validation_framework/base_validator.py\", line 295, in assert_condition\\n    raise AssertionError(message)\\nAssertionError: セキュアでないファイル権限が検出されました: [\\'/tmp/docmind_security_test_o8aq9t75/world_readable.txt\\']\\n'}, timestamp=datetime.datetime(2025, 8, 23, 11, 37, 0, 951724))",
+    "ValidationResult(test_name='test_data_encryption_verification', success=True, execution_time=0.30620336532592773, memory_usage=830.1875, error_message=None, details={}, timestamp=datetime.datetime(2025, 8, 23, 11, 37, 3, 286914))"
+  ],
+  "summary": {
+    "test_summary": {
+      "total_tests": 2,
+      "secure_tests": 0,
+      "warning_tests": 1,
+      "critical_tests": 1,
+      "overall_security_level": "CRITICAL"
+    },
+    "compliance_statistics": {
+      "average_compliance_score": 0.5833333333333334,
+      "min_compliance_score": 0.5,
+      "max_compliance_score": 0.6666666666666667
+    },
+    "vulnerability_analysis": {
+      "total_vulnerabilities": 3,
+      "unique_vulnerabilities": 3,
+      "vulnerability_list": [
+        "設定ファイルが暗号化されていません",
+        "メモリ内機密データ: 機密パターン検出: private",
+        "セキュアでないファイル権限: /tmp/docmind_security_test_o8aq9t75/world_readable.txt"
+      ]
+    },
+    "detailed_metrics": [
+      {
+        "test_name": "file_access_permissions_verification",
+        "security_level": "CRITICAL",
+        "compliance_score": 0.6666666666666667,
+        "vulnerabilities_count": 1,
+        "external_connections": 0
+      },
+      {
+        "test_name": "data_encryption_verification",
+        "security_level": "WARNING",
+        "compliance_score": 0.5,
+        "vulnerabilities_count": 2,
+        "external_connections": 0
+      }
+    ]
+  },
+  "validator_config": {
+    "quick_mode": true,
+    "test_methods": [
+      "test_local_processing_verification",
+      "test_file_access_permissions_verification",
+      "test_data_encryption_verification"
+    ]
+  }
+}

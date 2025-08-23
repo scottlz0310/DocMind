@@ -1,0 +1,22 @@
+{
+  "start_time": "2025-08-23T11:12:13.991681",
+  "validation_type": "error_handling_recovery",
+  "config": {
+    "performance_monitoring": true,
+    "memory_monitoring": true,
+    "error_injection": true,
+    "max_execution_time": 600.0,
+    "max_memory_usage": 2048.0
+  },
+  "results": {},
+  "summary": {},
+  "errors": [
+    {
+      "error_type": "AttributeError",
+      "error_message": "'TestDataGenerator' object has no attribute 'setup_test_environment'",
+      "timestamp": "2025-08-23T11:12:13.993187"
+    }
+  ],
+  "overall_success": false,
+  "end_time": "2025-08-23T11:12:13.994004"
+}

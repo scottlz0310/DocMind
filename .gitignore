@@ -214,3 +214,5 @@ whoosh_index/          # Whoosh検索インデックス
 models/                # キャッシュされたAIモデル
 logs/                  # ログファイル
 config.json            # ユーザー設定ファイル
+validation_results/    # 検証結果ファイル（HTML、JSON、ログ）
+test_results/          # テスト結果ファイル

@@ -31,12 +31,26 @@ class TestMainWindow:
         # QApplicationが存在しない場合は作成
         if not QApplication.instance():
             cls.app = QApplication(sys.argv)
+            # ヘッドレスモードでテストを実行
+            cls.app.setAttribute(Qt.AA_DisableWindowContextHelpButton, True)
         else:
             cls.app = QApplication.instance()
     
     def setup_method(self):
         """各テストメソッドの前に実行されるセットアップ"""
-        self.main_window = MainWindow()
+        # 重い初期化処理をモックしてテストを高速化
+        with patch('src.gui.search_interface.SearchInterface') as mock_search_interface, \
+             patch('src.gui.folder_tree.FolderTreeContainer') as mock_folder_tree, \
+             patch('src.gui.search_results.SearchResultsWidget') as mock_search_results, \
+             patch('src.gui.preview_widget.PreviewWidget') as mock_preview_widget:
+            
+            # モックオブジェクトの設定
+            mock_search_interface.return_value = Mock()
+            mock_folder_tree.return_value = Mock()
+            mock_search_results.return_value = Mock()
+            mock_preview_widget.return_value = Mock()
+            
+            self.main_window = MainWindow()
     
     def teardown_method(self):
         """各テストメソッドの後に実行されるクリーンアップ"""

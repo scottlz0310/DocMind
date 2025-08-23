@@ -1,0 +1,38 @@
+{
+  "timestamp": "2025-08-23T11:20:36.355117",
+  "exception_type": "SearchError",
+  "exception_message": "全文検索機能は現在利用できません",
+  "context": "検索実行",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/hiro/Projects/DocMind/src/utils/error_handler.py\", line 326, in wrapper\n    return func(*args, **kwargs)\n  File \"/home/hiro/Projects/DocMind/src/core/search_manager.py\", line 159, in search\n    results = self._execute_search(query, degradation_manager)\n  File \"/home/hiro/Projects/DocMind/src/core/search_manager.py\", line 174, in _execute_search\n    raise SearchError(\"全文検索機能は現在利用できません\")\nsrc.utils.exceptions.SearchError: 全文検索機能は現在利用できません\n",
+  "system_info": {
+    "platform": "Linux-5.15.153.1-microsoft-standard-WSL2+-x86_64-with-glibc2.41",
+    "python_version": "3.13.3 (main, Aug 14 2025, 11:53:40) [GCC 14.2.0]",
+    "cpu_count": 20,
+    "memory_total": 25088520192,
+    "disk_usage": {
+      "total": 1081101176832,
+      "free": 956160569344
+    }
+  },
+  "application_state": {
+    "memory_usage": {
+      "rss": 939810816,
+      "vms": 7011287040
+    },
+    "data_directory": {
+      "exists": true,
+      "size": 61081,
+      "path": "docmind_data"
+    },
+    "thread_count": 42
+  },
+  "docmind_details": {
+    "details": null,
+    "custom_attributes": {
+      "add_note": "<built-in method add_note of SearchError object at 0x7fc4bfaa83d0>",
+      "query": null,
+      "search_type": null,
+      "with_traceback": "<built-in method with_traceback of SearchError object at 0x7fc4bfaa83d0>"
+    }
+  }
+}

@@ -99,7 +99,10 @@ class TestConfig(unittest.TestCase):
         """ヘルパーメソッドのテスト"""
         # データディレクトリ
         self.assertEqual(self.config.get_data_directory(), "./docmind_data")
-        self.assertEqual(self.config.data_dir, "./docmind_data")
+        # data_dirプロパティはPathオブジェクトを返す
+        from pathlib import Path
+        self.assertIsInstance(self.config.data_dir, Path)
+        self.assertEqual(str(self.config.data_dir), "docmind_data")
         
         # ログレベル
         self.assertEqual(self.config.get_log_level(), "INFO")

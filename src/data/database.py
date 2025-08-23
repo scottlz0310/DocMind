@@ -153,8 +153,26 @@ class DatabaseManager(LoggerMixin):
         }
         self._stats_lock = threading.Lock()
         
-        # データベースを初期化
+        # 初期化フラグ
+        self._initialized = False
+        
+        # 自動初期化（既存動作を維持）
+        self.initialize()
+    
+    def initialize(self) -> None:
+        """
+        データベースの初期化
+        
+        冪等性を保証し、複数回呼び出しても安全。
+        テストでの明示的な初期化呼び出しをサポート。
+        """
+        if self._initialized:
+            self.logger.debug("データベースは既に初期化済みです")
+            return
+        
         self._initialize_database()
+        self._initialized = True
+        self.logger.info("データベースが初期化されました")
     
     def _initialize_database(self):
         """データベースの初期化とスキーマ作成"""
