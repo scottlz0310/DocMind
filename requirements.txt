@@ -8,8 +8,11 @@ PySide6>=6.0.0
 Whoosh>=2.7.4
 
 # AI/ML - セマンティック検索
-sentence-transformers>=2.0.0
-torch>=1.9.0
+# 注意: 以下のバージョンは互換性が確認されています
+sentence-transformers>=2.2.0,<3.0.0
+transformers>=4.36.0,<4.37.0
+huggingface-hub>=0.19.0,<0.20.0
+torch>=1.11.0
 numpy>=1.21.0
 scikit-learn>=1.0.0        # コサイン類似度計算用
 
@@ -33,3 +36,9 @@ psutil>=5.8.0            # システム情報取得（エラーハンドリン�
 pytest>=7.0.0
 pytest-qt>=4.0.0        # PySide6テスト用
 pytest-cov>=4.0.0       # カバレッジ測定
+
+# バージョン互換性メモ:
+# - sentence-transformers 2.7.0 が動作確認済み
+# - transformers 4.36.2 が動作確認済み
+# - huggingface-hub 0.19.4 が動作確認済み
+# - これらのバージョンは互いに互換性があります

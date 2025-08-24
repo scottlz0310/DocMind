@@ -8,14 +8,14 @@ DocMindアプリケーション用のカスタム例外クラス
 
 class DocMindException(Exception):
     """DocMindアプリケーションのベース例外クラス
-    
+
     すべてのDocMind固有の例外はこのクラスを継承します。
     これにより、アプリケーション固有のエラーを一括でキャッチできます。
     """
-    
+
     def __init__(self, message: str, details: str = None):
         """例外を初期化
-        
+
         Args:
             message (str): エラーメッセージ
             details (str, optional): 詳細なエラー情報
@@ -23,7 +23,7 @@ class DocMindException(Exception):
         super().__init__(message)
         self.message = message
         self.details = details
-    
+
     def __str__(self) -> str:
         """例外の文字列表現を返す"""
         if self.details:
@@ -33,14 +33,14 @@ class DocMindException(Exception):
 
 class DocumentProcessingError(DocMindException):
     """ドキュメント処理中に発生するエラー
-    
+
     ファイルの読み込み、テキスト抽出、フォーマット解析などの
     ドキュメント処理で問題が発生した場合に発生します。
     """
-    
+
     def __init__(self, message: str, file_path: str = None, file_type: str = None, details: str = None):
         """ドキュメント処理エラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             file_path (str, optional): 問題が発生したファイルのパス
@@ -52,16 +52,37 @@ class DocumentProcessingError(DocMindException):
         self.file_type = file_type
 
 
+class ThreadManagementError(DocMindException):
+    """スレッド管理中に発生するエラー
+
+    スレッドの作成、開始、停止、クリーンアップなどの
+    スレッド管理処理で問題が発生した場合に発生します。
+    """
+
+    def __init__(self, message: str, thread_id: str = None, operation: str = None, details: str = None):
+        """スレッド管理エラーを初期化
+
+        Args:
+            message (str): エラーメッセージ
+            thread_id (str, optional): 問題が発生したスレッドのID
+            operation (str, optional): 実行中だった操作
+            details (str, optional): 詳細なエラー情報
+        """
+        super().__init__(message, details)
+        self.thread_id = thread_id
+        self.operation = operation
+
+
 class IndexingError(DocMindException):
     """インデックス操作中に発生するエラー
-    
+
     Whooshインデックスの作成、更新、検索などの操作で
     問題が発生した場合に発生します。
     """
-    
+
     def __init__(self, message: str, index_path: str = None, operation: str = None, details: str = None):
         """インデックスエラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             index_path (str, optional): インデックスのパス
@@ -75,14 +96,14 @@ class IndexingError(DocMindException):
 
 class SearchError(DocMindException):
     """検索操作中に発生するエラー
-    
+
     全文検索、セマンティック検索、ハイブリッド検索などの
     検索操作で問題が発生した場合に発生します。
     """
-    
+
     def __init__(self, message: str, query: str = None, search_type: str = None, details: str = None):
         """検索エラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             query (str, optional): 検索クエリ
@@ -96,14 +117,14 @@ class SearchError(DocMindException):
 
 class EmbeddingError(DocMindException):
     """埋め込み操作中に発生するエラー
-    
+
     sentence-transformersモデルの読み込み、埋め込み生成、
     類似度計算などで問題が発生した場合に発生します。
     """
-    
+
     def __init__(self, message: str, model_name: str = None, operation: str = None, details: str = None):
         """埋め込みエラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             model_name (str, optional): 使用していたモデル名
@@ -117,14 +138,14 @@ class EmbeddingError(DocMindException):
 
 class DatabaseError(DocMindException):
     """データベース操作中に発生するエラー
-    
+
     SQLiteデータベースの接続、クエリ実行、データ操作などで
     問題が発生した場合に発生します。
     """
-    
+
     def __init__(self, message: str, database_path: str = None, operation: str = None, details: str = None):
         """データベースエラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             database_path (str, optional): データベースファイルのパス
@@ -138,14 +159,14 @@ class DatabaseError(DocMindException):
 
 class ConfigurationError(DocMindException):
     """設定関連のエラー
-    
+
     アプリケーション設定の読み込み、検証、保存などで
     問題が発生した場合に発生します。
     """
-    
+
     def __init__(self, message: str, config_key: str = None, config_value: str = None, details: str = None):
         """設定エラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             config_key (str, optional): 問題が発生した設定キー
@@ -159,14 +180,14 @@ class ConfigurationError(DocMindException):
 
 class FileSystemError(DocMindException):
     """ファイルシステム操作中に発生するエラー
-    
+
     ファイルの監視、ディレクトリの作成、ファイルアクセス権限などで
     問題が発生した場合に発生します。
     """
-    
+
     def __init__(self, message: str, path: str = None, operation: str = None, details: str = None):
         """ファイルシステムエラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             path (str, optional): 問題が発生したパス
@@ -180,13 +201,13 @@ class FileSystemError(DocMindException):
 
 class DocumentNotFoundError(DocMindException):
     """ドキュメントが見つからない場合のエラー
-    
+
     指定されたIDやパスのドキュメントがデータベースに存在しない場合に発生します。
     """
-    
+
     def __init__(self, message: str, document_id: str = None, file_path: str = None, details: str = None):
         """ドキュメント未発見エラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             document_id (str, optional): 見つからなかったドキュメントID
@@ -215,14 +236,14 @@ class MemoryError(DocMindException):
 
 class UpdateError(DocMindException):
     """アップデート操作中に発生するエラー
-    
+
     アプリケーションのアップデートチェック、ダウンロード、インストールなどで
     問題が発生した場合に発生します。
     """
-    
+
     def __init__(self, message: str, update_version: str = None, operation: str = None, details: str = None):
         """アップデートエラーを初期化
-        
+
         Args:
             message (str): エラーメッセージ
             update_version (str, optional): アップデート対象のバージョン
