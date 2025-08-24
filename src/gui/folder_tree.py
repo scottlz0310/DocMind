@@ -530,13 +530,7 @@ class FolderTreeWidget(QTreeWidget):
             # ロードワーカーの停止
             if self.load_worker:
                 if self.load_worker.isRunning():
-                    # シグナル接続を切断（安全な方法）
-                    try:
-                        self.load_worker.started.disconnect()
-                        self.load_worker.finished.disconnect()
-                    except (TypeError, RuntimeError):
-                        # シグナルが接続されていない場合のエラーは無視
-                        pass
+                    # deleteLater()により自動的にクリーンアップされる
                     
                     # スレッドの安全な終了
                     self.load_worker.quit()
