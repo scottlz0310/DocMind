@@ -1,0 +1,32 @@
+#!/bin/bash
+# DocMind プロジェクト用の環境設定
+
+# 仮想環境の自動アクティベート
+if [ -f "venv/bin/activate" ]; then
+    source venv/bin/activate
+    echo "DocMind仮想環境をアクティベートしました"
+fi
+
+# プロジェクト固有の環境変数
+export PYTHONPATH="${PWD}:${PYTHONPATH}"
+export QT_QPA_PLATFORM=xcb
+
+# よく使用するエイリアス
+alias pytest-search='python -m pytest tests/test_search_manager.py -v'
+alias pytest-all='python -m pytest tests/ -v'
+alias run-docmind='python main.py'
+alias format-code='black src/ tests/ main.py --line-length 100'
+alias type-check='mypy src/ --ignore-missing-imports'
+
+# プロジェクト情報表示
+echo "DocMind開発環境"
+echo "Python: $(python --version 2>&1)"
+echo "作業ディレクトリ: $(pwd)"
+echo ""
+echo "利用可能なコマンド:"
+echo "  pytest-search  : 検索マネージャーのテスト実行"
+echo "  pytest-all     : 全テストの実行"
+echo "  run-docmind    : アプリケーション実行"
+echo "  format-code    : コードフォーマット"
+echo "  type-check     : 型チェック"
+echo ""

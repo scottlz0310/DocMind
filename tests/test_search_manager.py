@@ -24,6 +24,11 @@ class TestSearchManager(unittest.TestCase):
     
     def setUp(self):
         """テスト前の準備"""
+        # 劣化管理マネージャーを初期化し、検索機能を有効化
+        from src.utils.graceful_degradation import get_global_degradation_manager
+        degradation_manager = get_global_degradation_manager()
+        degradation_manager.mark_component_healthy("search_manager")
+        
         # モックオブジェクトを作成
         self.mock_index_manager = Mock(spec=IndexManager)
         self.mock_embedding_manager = Mock(spec=EmbeddingManager)

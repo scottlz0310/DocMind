@@ -150,6 +150,29 @@ class GracefulDegradationManager:
         
         self.logger.info(f"コンポーネント劣化: {component_name} - {error_message}")
     
+    def mark_component_healthy(self, component_name: str) -> None:
+        """
+        コンポーネントを健全状態にマーク
+        
+        Args:
+            component_name: コンポーネント名
+        """
+        if component_name not in self._components:
+            # コンポーネントが未登録の場合は自動登録
+            self.register_component(component_name)
+        
+        component = self._components[component_name]
+        component.status = ComponentStatus.HEALTHY
+        component.error_message = None
+        component.fallback_active = False
+        component.retry_count = 0
+        
+        # 全機能を有効化
+        for capability in component.capabilities:
+            component.capabilities[capability] = True
+        
+        self.logger.debug(f"コンポーネントを健全状態にマーク: {component_name}")
+    
     def is_component_healthy(self, component_name: str) -> bool:
         """
         コンポーネントが正常かチェック
@@ -343,6 +366,8 @@ def get_global_degradation_manager() -> GracefulDegradationManager:
     global _global_degradation_manager
     if _global_degradation_manager is None:
         _global_degradation_manager = GracefulDegradationManager()
+        # 初回作成時にコンポーネント監視を設定
+        setup_component_monitoring()
     return _global_degradation_manager
 
 
@@ -352,7 +377,7 @@ def setup_component_monitoring():
     """
     manager = get_global_degradation_manager()
     
-    # 主要コンポーネントを登録
+    # 主要コンポーネントを登録（デフォルトで健全状態）
     manager.register_component("search_manager", {
         "full_text_search": True,
         "semantic_search": True,
@@ -389,3 +414,8 @@ def setup_component_monitoring():
         "search_history": True,
         "document_management": True
     })
+    
+    # 全コンポーネントを健全状態に設定
+    for component_name in ["search_manager", "index_manager", "embedding_manager", 
+                          "document_processor", "file_watcher", "database"]:
+        manager.mark_component_healthy(component_name)

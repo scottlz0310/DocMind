@@ -35,6 +35,8 @@ from src.gui.search_results import SearchResultsWidget
 from src.gui.preview_widget import PreviewWidget
 from src.gui.search_interface import SearchInterface, SearchWorkerThread
 from src.core.search_manager import SearchManager
+from src.core.index_manager import IndexManager
+from src.core.embedding_manager import EmbeddingManager
 from src.data.database import DatabaseManager
 
 
@@ -74,6 +76,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         # LoggerMixinのloggerプロパティを使用
         self.config = Config()
         
+        # 検索関連コンポーネントの初期化
+        self._initialize_search_components()
+        
         # ウィンドウの基本設定
         self._setup_window()
         
@@ -102,6 +107,46 @@ class MainWindow(QMainWindow, LoggerMixin):
         self._connect_search_results_signals()
         
         self.logger.info("メインウィンドウが初期化されました")
+    
+    def _initialize_search_components(self) -> None:
+        """検索関連コンポーネントを初期化"""
+        try:
+            # データベースパスを設定
+            db_path = self.config.data_dir / "documents.db"
+            
+            # データベースマネージャーの初期化
+            self.database_manager = DatabaseManager(str(db_path))
+            
+            # インデックスパスを設定
+            index_path = self.config.data_dir / "whoosh_index"
+            
+            # インデックスマネージャーの初期化
+            self.index_manager = IndexManager(str(index_path))
+            
+            # 埋め込みマネージャーの初期化
+            self.embedding_manager = EmbeddingManager()
+            
+            # 検索マネージャーの初期化
+            self.search_manager = SearchManager(
+                self.index_manager,
+                self.embedding_manager
+            )
+            
+            # 劣化管理マネージャーで検索機能を有効化
+            degradation_manager = get_global_degradation_manager()
+            degradation_manager.mark_component_healthy("search_manager")
+            
+            self.logger.info("検索コンポーネントが初期化されました")
+            
+        except Exception as e:
+            self.logger.error(f"検索コンポーネントの初期化に失敗: {e}")
+            # 劣化管理で検索機能を無効化
+            degradation_manager = get_global_degradation_manager()
+            degradation_manager.mark_component_degraded(
+                "search_manager",
+                ["full_text_search", "semantic_search", "hybrid_search"],
+                f"検索コンポーネントの初期化に失敗: {e}"
+            )
     
     def _setup_window(self) -> None:
         """ウィンドウの基本設定を行います"""
@@ -182,6 +227,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         # 検索インターフェースのシグナル接続
         self.search_interface.search_requested.connect(self._on_search_requested)
         self.search_interface.search_cancelled.connect(self._on_search_cancelled)
+        
+        # 検索提案機能の接続
+        self.search_interface.search_input.textChanged.connect(self._on_search_text_changed)
         
         # 検索結果ウィジェットのシグナル接続
         self.search_results_widget.result_selected.connect(self._on_search_result_selected)
@@ -732,10 +780,20 @@ class MainWindow(QMainWindow, LoggerMixin):
             if hasattr(self, 'search_interface') and self.search_interface:
                 # 実行中のタスクがあればキャンセル
                 try:
-                    self.search_interface.cancel_search()
+                    if hasattr(self, 'search_worker') and self.search_worker.isRunning():
+                        self.search_worker.cancel()
+                        self.search_worker.wait()
                 except:
                     pass
                 self.logger.info("検索インターフェースをクリーンアップしました")
+            
+            # 検索コンポーネントのクリーンアップ
+            if hasattr(self, 'search_manager'):
+                try:
+                    self.search_manager.clear_suggestion_cache()
+                except:
+                    pass
+                self.logger.info("検索マネージャーをクリーンアップしました")
                 
             # プレビューウィジェットのクリーンアップ
             if hasattr(self, 'preview_widget') and self.preview_widget:
@@ -846,29 +904,30 @@ class MainWindow(QMainWindow, LoggerMixin):
         """
         self.logger.info(f"検索要求: '{search_query.query_text}' ({search_query.search_type.value})")
         
-        # TODO: 実際の検索処理を実装
-        # 現在はプレースホルダー
+        if not hasattr(self, 'search_manager') or self.search_manager is None:
+            error_msg = "検索機能が初期化されていません"
+            self.logger.error(error_msg)
+            self.search_interface.on_search_error(error_msg)
+            return
+        
         self.show_status_message(f"検索実行: '{search_query.query_text}'", 3000)
         
         # 検索ワーカースレッドを作成して実行
-        # self.search_worker = SearchWorkerThread(self.search_manager, search_query)
-        # self.search_worker.progress_updated.connect(self.search_interface.progress_widget.update_progress)
-        # self.search_worker.search_completed.connect(self._on_search_completed)
-        # self.search_worker.search_error.connect(self._on_search_error)
-        # self.search_worker.start()
-        
-        # プレースホルダー: 2秒後に完了を通知
-        QTimer.singleShot(2000, lambda: self.search_interface.on_search_completed([], 2.0))
+        self.search_worker = SearchWorkerThread(self.search_manager, search_query)
+        self.search_worker.progress_updated.connect(self.search_interface.progress_widget.update_progress)
+        self.search_worker.search_completed.connect(self._on_search_completed)
+        self.search_worker.search_error.connect(self._on_search_error)
+        self.search_worker.start()
     
     def _on_search_cancelled(self) -> None:
         """検索キャンセル時の処理"""
         self.logger.info("検索がキャンセルされました")
         self.show_status_message("検索がキャンセルされました", 3000)
         
-        # TODO: 実際の検索キャンセル処理を実装
-        # if hasattr(self, 'search_worker') and self.search_worker.isRunning():
-        #     self.search_worker.cancel()
-        #     self.search_worker.wait()
+        # 実際の検索キャンセル処理
+        if hasattr(self, 'search_worker') and self.search_worker.isRunning():
+            self.search_worker.cancel()
+            self.search_worker.wait()
     
     def _on_search_completed(self, results, execution_time: float) -> None:
         """
@@ -904,3 +963,18 @@ class MainWindow(QMainWindow, LoggerMixin):
         
         # ステータス更新
         self.show_status_message("検索エラーが発生しました", 5000)
+    
+    def _on_search_text_changed(self, text: str) -> None:
+        """
+        検索テキスト変更時の処理（検索提案を更新）
+        
+        Args:
+            text: 入力されたテキスト
+        """
+        if hasattr(self, 'search_manager') and self.search_manager and len(text.strip()) >= 2:
+            try:
+                suggestions = self.search_manager.get_search_suggestions(text.strip(), limit=10)
+                self.search_interface.update_search_suggestions(suggestions)
+            except Exception as e:
+                self.logger.debug(f"検索提案の取得に失敗: {e}")
+                # エラーが発生しても検索提案は必須機能ではないため、ログのみ出力
