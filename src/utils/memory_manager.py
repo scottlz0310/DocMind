@@ -46,6 +46,12 @@ class MemoryMonitor(LoggerMixin):
     システムとプロセスのメモリ使用量を監視し、
     メモリ圧迫時にアラートを発行します。
     """
+    """
+    メモリ監視クラス
+    
+    システムとプロセスのメモリ使用量を監視し、
+    メモリ圧迫時にアラートを発行します。
+    """
     
     def __init__(self, check_interval: float = 30.0):
         """
@@ -69,6 +75,13 @@ class MemoryMonitor(LoggerMixin):
         }
         
         self._last_pressure_level = MemoryPressureLevel.LOW
+    
+    def __del__(self):
+        """デストラクタでリソースをクリーンアップ"""
+        try:
+            self.stop_monitoring()
+        except Exception:
+            pass
         
     def start_monitoring(self) -> None:
         """メモリ監視を開始"""
@@ -89,11 +102,12 @@ class MemoryMonitor(LoggerMixin):
                 return
             
             self._monitoring = False
-            
-            if self._monitor_thread and self._monitor_thread.is_alive():
-                self._monitor_thread.join(timeout=5.0)
-            
-            self.logger.info("メモリ監視を停止しました")
+        
+        # ロック外でスレッド終了を待機
+        if self._monitor_thread and self._monitor_thread.is_alive():
+            self._monitor_thread.join(timeout=2.0)
+        
+        self.logger.info("メモリ監視を停止しました")
     
     def add_callback(self, callback: Callable[[MemoryStats], None]) -> None:
         """メモリ統計更新時のコールバックを追加"""
@@ -213,6 +227,13 @@ class MemoryManager(LoggerMixin):
         """メモリ管理を停止"""
         self.monitor.stop_monitoring()
         self.logger.info("メモリ管理を停止しました")
+    
+    def __del__(self):
+        """デストラクタでリソースをクリーンアップ"""
+        try:
+            self.stop()
+        except Exception:
+            pass
     
     def add_optimization_callback(self, callback: Callable[[], None]) -> None:
         """メモリ最適化コールバックを追加"""

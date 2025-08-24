@@ -55,7 +55,10 @@ def main():
         config = Config()
         
         # ログの設定
-        setup_logging(config.get_log_level())
+        setup_logging(
+            level=config.get_log_level(),
+            log_file=config.get_log_file_path()
+        )
         logger = logging.getLogger(__name__)
         logger.info("DocMindアプリケーションを開始しています...")
         
@@ -121,14 +124,36 @@ def main():
         # クリーンアップ処理
         logger.info("DocMindアプリケーションを終了しています...")
         
-        # パフォーマンス最適化コンポーネントの停止
+        # メインウィンドウのクリーンアップ
         try:
-            task_manager.stop_all()
+            if 'main_window' in locals() and main_window:
+                main_window.close()
+            logger.info("メインウィンドウをクリーンアップしました")
+        except Exception as cleanup_error:
+            logger.error(f"メインウィンドウクリーンアップでエラー: {cleanup_error}")
+        
+        # パフォーマンス最適化コンポーネントの停止（順序重要）
+        try:
+            logger.info("バックグラウンドコンポーネントの停止を開始")
             memory_manager.stop()
+            logger.info("メモリマネージャーを停止")
+            task_manager.stop_all()
+            logger.info("タスクマネージャーを停止")
             cache_manager.save_persistent_caches()
             logger.info("パフォーマンス最適化コンポーネントを停止しました")
         except Exception as cleanup_error:
             logger.error(f"クリーンアップ処理でエラー: {cleanup_error}")
+        
+        # 少し待機してからQt終了
+        import time
+        time.sleep(0.5)
+        
+        # Qtアプリケーションの終了処理
+        try:
+            if app:
+                app.quit()
+        except Exception as cleanup_error:
+            logger.error(f"Qtアプリケーション終了処理でエラー: {cleanup_error}")
         
         return result
         

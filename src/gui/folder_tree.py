@@ -354,9 +354,7 @@ class FolderTreeWidget(QTreeWidget):
             return
         
         # 既存のワーカーを停止
-        if self.load_worker and self.load_worker.isRunning():
-            self.load_worker.stop()
-            self.load_worker.wait()
+        self._cleanup_worker_thread()
         
         # ツリーをクリア
         self.clear()
@@ -378,7 +376,7 @@ class FolderTreeWidget(QTreeWidget):
         # ルートアイテムを展開
         root_item.setExpanded(True)
         
-        self.logger.info(f"フォルダ構造の読み込みを開始: {root_path}")
+        self.logger.info(f"フォルダ構造の読み込み完了: {root_path}")
     
     def _load_subfolders_async(self, path: str):
         """
@@ -391,6 +389,7 @@ class FolderTreeWidget(QTreeWidget):
         self.load_worker.folder_loaded.connect(self._on_folder_loaded)
         self.load_worker.load_error.connect(self._on_load_error)
         self.load_worker.load_finished.connect(self._on_load_finished)
+        self.load_worker.finished.connect(self.load_worker.deleteLater)
         self.load_worker.start()
     
     def _on_folder_loaded(self, path: str, subdirectories: List[str]):
@@ -924,23 +923,26 @@ class FolderTreeWidget(QTreeWidget):
     
     def closeEvent(self, event):
         """ウィジェット終了時の処理"""
-        # ワーカースレッドを停止
-        if self.load_worker and self.load_worker.isRunning():
-            self.load_worker.stop()
-            self.load_worker.wait(1000)  # 1秒でタイムアウト
-            if self.load_worker.isRunning():
-                self.load_worker.terminate()
-        
+        self._cleanup_worker_thread()
         super().closeEvent(event)
+    
+    def _cleanup_worker_thread(self):
+        """ワーカースレッドをクリーンアップします"""
+        if hasattr(self, 'load_worker') and self.load_worker:
+            if self.load_worker.isRunning():
+                self.load_worker.stop()
+                if not self.load_worker.wait(2000):  # 2秒待機
+                    self.logger.warning("ワーカースレッドの終了を強制します")
+                    self.load_worker.terminate()
+                    self.load_worker.wait(1000)  # 終了待機
+            self.load_worker = None
     
     def __del__(self):
         """デストラクタ"""
-        # ワーカースレッドを確実に停止
-        if hasattr(self, 'load_worker') and self.load_worker and self.load_worker.isRunning():
-            self.load_worker.stop()
-            self.load_worker.wait(1000)
-            if self.load_worker.isRunning():
-                self.load_worker.terminate()
+        try:
+            self._cleanup_worker_thread()
+        except Exception:
+            pass  # デストラクタでは例外を無視
 
 
 class FolderTreeContainer(QWidget):
@@ -1105,3 +1107,9 @@ class FolderTreeContainer(QWidget):
     def expand_to_path(self, path: str):
         """指定されたパスまでツリーを展開します"""
         self.tree_widget.expand_to_path(path)
+    
+    def closeEvent(self, event):
+        """ウィジェット終了時の処理"""
+        if hasattr(self, 'tree_widget') and self.tree_widget:
+            self.tree_widget._cleanup_worker_thread()
+        super().closeEvent(event)

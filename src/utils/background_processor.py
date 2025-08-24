@@ -133,6 +133,11 @@ class BackgroundProcessor(LoggerMixin):
     
     タスクキューイング、並行処理、進捗追跡機能を提供します。
     """
+    """
+    バックグラウンド処理管理クラス
+    
+    タスクキューイング、並行処理、進捗追跡機能を提供します。
+    """
     
     def __init__(self, max_workers: int = 4, queue_size: int = 100):
         """
@@ -165,6 +170,13 @@ class BackgroundProcessor(LoggerMixin):
         
         self.logger.info(f"バックグラウンドプロセッサーを初期化: ワーカー数={max_workers}")
     
+    def __del__(self):
+        """デストラクタでリソースをクリーンアップ"""
+        try:
+            self.stop(timeout=1.0)
+        except Exception:
+            pass
+    
     def start(self) -> None:
         """バックグラウンド処理を開始"""
         with self._lock:
@@ -193,23 +205,26 @@ class BackgroundProcessor(LoggerMixin):
             
             self._shutdown = True
             self._running = False
-            
-            # 実行中のタスクをキャンセル
-            for task_id, future in self._futures.items():
-                if not future.done():
-                    future.cancel()
-                    task = self._tasks.get(task_id)
-                    if task:
-                        task.status = TaskStatus.CANCELLED
-            
-            # エグゼキューターをシャットダウン
-            self._executor.shutdown(wait=True)
-            
-            # ワーカースレッドの終了を待機
-            if self._worker_thread and self._worker_thread.is_alive():
-                self._worker_thread.join(timeout=timeout)
-            
-            self.logger.info("バックグラウンド処理を停止しました")
+        
+        # 実行中のタスクをキャンセル
+        for task_id, future in list(self._futures.items()):
+            if not future.done():
+                future.cancel()
+                task = self._tasks.get(task_id)
+                if task:
+                    task.status = TaskStatus.CANCELLED
+        
+        # ワーカースレッドの終了を待機
+        if self._worker_thread and self._worker_thread.is_alive():
+            self._worker_thread.join(timeout=min(timeout, 5.0))
+        
+        # エグゼキューターをシャットダウン
+        try:
+            self._executor.shutdown(wait=False)
+        except Exception as e:
+            self.logger.warning(f"エグゼキューターシャットダウンでエラー: {e}")
+        
+        self.logger.info("バックグラウンド処理を停止しました")
     
     def submit_task(self, task: BackgroundTask) -> str:
         """

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- グラデーション定義 -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="docGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F3F4F6;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="brainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="searchGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景円 -->
+  <circle cx="128" cy="128" r="120" fill="url(#bgGradient)" stroke="#1F2937" stroke-width="4"/>
+  
+  <!-- 文書のベース -->
+  <rect x="60" y="80" width="120" height="140" rx="8" fill="url(#docGradient)" stroke="#E5E7EB" stroke-width="2"/>
+  
+  <!-- 文書の折り目 -->
+  <path d="M 60 100 L 180 100" stroke="#D1D5DB" stroke-width="1" opacity="0.6"/>
+  <path d="M 60 120 L 180 120" stroke="#D1D5DB" stroke-width="1" opacity="0.4"/>
+  <path d="M 60 140 L 180 140" stroke="#D1D5DB" stroke-width="1" opacity="0.3"/>
+  
+  <!-- 文書の角の折り目 -->
+  <path d="M 160 80 L 180 100 L 160 100 Z" fill="#E5E7EB"/>
+  
+  <!-- AI知能の表現（脳のシンボル） -->
+  <g transform="translate(100, 110)">
+    <!-- 脳の左半球 -->
+    <path d="M 20 20 Q 15 30 15 40 Q 15 50 20 60 Q 25 70 30 65 Q 35 60 35 50 Q 35 40 30 35 Q 25 30 20 20 Z" 
+          fill="url(#brainGradient)" opacity="0.8"/>
+    
+    <!-- 脳の右半球 -->
+    <path d="M 40 20 Q 45 30 45 40 Q 45 50 40 60 Q 35 70 30 65 Q 25 60 25 50 Q 25 40 30 35 Q 35 30 40 20 Z" 
+          fill="url(#brainGradient)" opacity="0.8"/>
+    
+    <!-- 脳の中央部分 -->
+    <ellipse cx="30" cy="45" rx="8" ry="12" fill="url(#brainGradient)" opacity="0.6"/>
+    
+    <!-- 知能の光（点） -->
+    <circle cx="25" cy="35" r="2" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="35" cy="35" r="2" fill="#FFFFFF" opacity="0.8"/>
+    <circle cx="30" cy="55" r="1.5" fill="#FFFFFF" opacity="0.6"/>
+  </g>
+  
+  <!-- 検索機能の表現（虫眼鏡） -->
+  <g transform="translate(140, 150)">
+    <!-- 虫眼鏡のレンズ -->
+    <circle cx="0" cy="0" r="18" fill="none" stroke="url(#searchGradient)" stroke-width="3" opacity="0.8"/>
+    
+    <!-- 虫眼鏡のハンドル -->
+    <path d="M 12 12 L 25 25" stroke="url(#searchGradient)" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+    
+    <!-- 検索の光線 -->
+    <path d="M -15 -15 L -25 -25" stroke="url(#searchGradient)" stroke-width="2" opacity="0.6"/>
+    <path d="M 15 -15 L 25 -25" stroke="url(#searchGradient)" stroke-width="2" opacity="0.6"/>
+  </g>
+  
+  <!-- 文書の内容（テキストライン） -->
+  <rect x="70" y="180" width="60" height="2" rx="1" fill="#9CA3AF" opacity="0.7"/>
+  <rect x="70" y="185" width="80" height="2" rx="1" fill="#9CA3AF" opacity="0.5"/>
+  <rect x="70" y="190" width="50" height="2" rx="1" fill="#9CA3AF" opacity="0.6"/>
+  
+  <!-- 装飾的な要素（小さな円） -->
+  <circle cx="85" cy="95" r="3" fill="#8B5CF6" opacity="0.6"/>
+  <circle cx="175" cy="125" r="2" fill="#06B6D4" opacity="0.5"/>
+  <circle cx="75" cy="200" r="2" fill="#10B981" opacity="0.4"/>
+  
+  <!-- アプリ名の略称 "DM" -->
+  <text x="128" y="240" font-family="Arial, sans-serif" font-size="16" font-weight="bold" 
+        text-anchor="middle" fill="#FFFFFF" opacity="0.9">DocMind</text>
+</svg>

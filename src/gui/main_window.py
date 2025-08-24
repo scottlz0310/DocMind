@@ -710,6 +710,17 @@ class MainWindow(QMainWindow, LoggerMixin):
         
         if reply == QMessageBox.Yes:
             self.logger.info("アプリケーションを終了します")
+            
+            # フォルダツリーのワーカースレッドを停止
+            if hasattr(self, 'folder_tree_container') and self.folder_tree_container:
+                tree_widget = self.folder_tree_container.tree_widget
+                if hasattr(tree_widget, 'load_worker') and tree_widget.load_worker:
+                    if tree_widget.load_worker.isRunning():
+                        tree_widget.load_worker.stop()
+                        tree_widget.load_worker.wait(1000)
+                        if tree_widget.load_worker.isRunning():
+                            tree_widget.load_worker.terminate()
+            
             event.accept()
         else:
             event.ignore()
