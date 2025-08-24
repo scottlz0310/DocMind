@@ -711,19 +711,39 @@ class MainWindow(QMainWindow, LoggerMixin):
         if reply == QMessageBox.Yes:
             self.logger.info("アプリケーションを終了します")
             
-            # フォルダツリーのワーカースレッドを停止
-            if hasattr(self, 'folder_tree_container') and self.folder_tree_container:
-                tree_widget = self.folder_tree_container.tree_widget
-                if hasattr(tree_widget, 'load_worker') and tree_widget.load_worker:
-                    if tree_widget.load_worker.isRunning():
-                        tree_widget.load_worker.stop()
-                        tree_widget.load_worker.wait(1000)
-                        if tree_widget.load_worker.isRunning():
-                            tree_widget.load_worker.terminate()
+            # すべてのコンポーネントを適切にクリーンアップ
+            self._cleanup_all_components()
             
             event.accept()
         else:
             event.ignore()
+    
+    def _cleanup_all_components(self):
+        """
+        すべてのコンポーネントをクリーンアップします
+        """
+        try:
+            # フォルダツリーのクリーンアップ
+            if hasattr(self, 'folder_tree_container') and self.folder_tree_container:
+                self.folder_tree_container.tree_widget._cleanup_worker()
+                self.logger.info("フォルダツリーをクリーンアップしました")
+            
+            # 検索インターフェースのクリーンアップ（ワーカースレッドがあれば）
+            if hasattr(self, 'search_interface') and self.search_interface:
+                # 実行中のタスクがあればキャンセル
+                try:
+                    self.search_interface.cancel_search()
+                except:
+                    pass
+                self.logger.info("検索インターフェースをクリーンアップしました")
+                
+            # プレビューウィジェットのクリーンアップ
+            if hasattr(self, 'preview_widget') and self.preview_widget:
+                self.preview_widget.clear_preview()
+                self.logger.info("プレビューウィジェットをクリーンアップしました")
+                
+        except Exception as e:
+            self.logger.error(f"コンポーネントクリーンアップ中にエラーが発生しました: {e}")
     
     # 検索結果ウィジェットのシグナルハンドラー
     

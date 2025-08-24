@@ -258,14 +258,6 @@ class SearchTypeSelector(QWidget):
                 border-radius: 8px;
                 background-color: #4CAF50;
             }
-            QRadioButton::indicator:checked::after {
-                content: '';
-                width: 6px;
-                height: 6px;
-                border-radius: 3px;
-                background-color: white;
-                margin: 3px;
-            }
         """)
     
     def _setup_connections(self) -> None:

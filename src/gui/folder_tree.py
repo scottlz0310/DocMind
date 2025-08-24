@@ -18,10 +18,125 @@ from PySide6.QtWidgets import (
     QLineEdit, QPushButton, QMenu, QMessageBox, QFileDialog,
     QLabel, QFrame, QSplitter, QCheckBox, QComboBox
 )
-from PySide6.QtCore import Qt, Signal, QTimer, QThread
+from PySide6.QtCore import Qt, Signal, QTimer, QThread, QObject
 from PySide6.QtGui import QIcon, QAction, QKeySequence, QShortcut
 
 from src.utils.exceptions import DocMindException
+
+
+class FolderLoadWorker(QObject):
+    """
+    フォルダ構造を非同期で読み込むワーカー
+    """
+    
+    # シグナル定義
+    folder_loaded = Signal(str, list)  # path, subdirectories
+    load_error = Signal(str, str)      # path, error_message
+    finished = Signal()
+    
+    def __init__(self, root_path: str, max_depth: int = 3):
+        super().__init__()
+        self.root_path = root_path
+        self.max_depth = max_depth
+        self.should_stop = False
+        
+    def do_work(self):
+        """フォルダ構造を読み込みます"""
+        try:
+            self._load_folder_recursive(self.root_path, 0)
+        except Exception as e:
+            if not self.should_stop:
+                self.load_error.emit(self.root_path, str(e))
+        finally:
+            self.finished.emit()
+    
+    def stop(self):
+        """読み込みを停止します"""
+        self.should_stop = True
+    
+    def _load_folder_recursive(self, path: str, depth: int):
+        """
+        再帰的にフォルダ構造を読み込みます
+        
+        Args:
+            path: 読み込み対象パス
+            depth: 現在の深度
+        """
+        if self.should_stop or depth > self.max_depth:
+            return
+            
+        try:
+            # パスの妥当性チェック
+            if not os.path.exists(path) or not os.path.isdir(path):
+                return
+                
+            # アクセス権限チェック
+            if not os.access(path, os.R_OK):
+                self.load_error.emit(path, "アクセス権限がありません")
+                return
+                
+            # ファイル数制限（メモリ保護）
+            try:
+                items = os.listdir(path)
+                if len(items) > 10000:  # 大量ファイル制限
+                    self.load_error.emit(
+                        path, "ファイル数が多すぎます（10,000件以上）"
+                    )
+                    return
+                    
+                # 深さ制限によるメモリ保護
+                if depth > 5:  # 最大深さ5レベルまで
+                    self.load_error.emit(
+                        path, "フォルダの深さが深すぎます（5レベル以上）"
+                    )
+                    return
+                    
+            except OSError as e:
+                self.load_error.emit(path, f"ディレクトリ読み込みエラー: {e}")
+                return
+                
+            subdirs = []
+            
+            for item in items:
+                if self.should_stop:
+                    break
+                    
+                try:
+                    item_path = os.path.join(path, item)
+                    
+                    # シンボリックリンクの安全な処理
+                    if os.path.islink(item_path):
+                        try:
+                            real_path = os.path.realpath(item_path)
+                            if os.path.isdir(real_path) and not item.startswith('.'):
+                                subdirs.append(item_path)
+                        except (OSError, RuntimeError):
+                            # シンボリックリンクの解決に失敗した場合はスキップ
+                            continue
+                    elif os.path.isdir(item_path) and not item.startswith('.'):
+                        subdirs.append(item_path)
+                        
+                except (OSError, PermissionError):
+                    # 個別アイテムのエラーはログに記録してスキップ
+                    continue
+            
+            if not self.should_stop:
+                self.folder_loaded.emit(path, subdirs)
+            
+            if depth < self.max_depth:
+                for subdir in subdirs:
+                    if not self.should_stop:
+                        self._load_folder_recursive(subdir, depth + 1)
+                        
+        except PermissionError:
+            if not self.should_stop:
+                self.load_error.emit(path, "アクセス権限がありません")
+        except OSError as e:
+            if not self.should_stop:
+                self.load_error.emit(path, f"OSエラー: {e}")
+        except Exception as e:
+            if not self.should_stop:
+                self.load_error.emit(path, f"予期しないエラー: {type(e).__name__}: {str(e)}")
 
 
 class FolderItemType(Enum):
@@ -120,72 +235,7 @@ class FolderTreeItem(QTreeWidgetItem):
         self.setText(0, display_text)
 
 
-class FolderLoadWorker(QThread):
-    """
-    フォルダ構造を非同期で読み込むワーカースレッド
-    """
-    
-    # シグナル定義
-    folder_loaded = Signal(str, list)  # path, subdirectories
-    load_error = Signal(str, str)      # path, error_message
-    load_finished = Signal()
-    
-    def __init__(self, root_path: str, max_depth: int = 3):
-        super().__init__()
-        self.root_path = root_path
-        self.max_depth = max_depth
-        self.should_stop = False
-        
-    def run(self):
-        """フォルダ構造を読み込みます"""
-        try:
-            self._load_folder_recursive(self.root_path, 0)
-        except Exception as e:
-            self.load_error.emit(self.root_path, str(e))
-        finally:
-            self.load_finished.emit()
-    
-    def stop(self):
-        """読み込みを停止します"""
-        self.should_stop = True
-    
-    def _load_folder_recursive(self, path: str, depth: int):
-        """
-        再帰的にフォルダ構造を読み込みます
-        
-        Args:
-            path: 読み込み対象パス
-            depth: 現在の深度
-        """
-        if self.should_stop or depth > self.max_depth:
-            return
-            
-        try:
-            subdirs = []
-            
-            for item in os.listdir(path):
-                if self.should_stop:
-                    break
-                    
-                item_path = os.path.join(path, item)
-                
-                if os.path.isdir(item_path) and not item.startswith('.'):
-                    # 隠しフォルダは除外
-                    subdirs.append(item_path)
-            
-            # 結果を送信
-            self.folder_loaded.emit(path, subdirs)
-            
-            # 次の階層を読み込み（深度制限内の場合）
-            if depth < self.max_depth:
-                for subdir in subdirs:
-                    if not self.should_stop:
-                        self._load_folder_recursive(subdir, depth + 1)
-                        
-        except PermissionError:
-            self.load_error.emit(path, "アクセス権限がありません")
-        except Exception as e:
-            self.load_error.emit(path, f"読み込みエラー: {str(e)}")
+
 
 
 class FolderTreeWidget(QTreeWidget):
@@ -221,7 +271,8 @@ class FolderTreeWidget(QTreeWidget):
         self.item_map: Dict[str, FolderTreeItem] = {}      # パス→アイテムのマッピング
         
         # ワーカースレッド
-        self.load_worker: Optional[FolderLoadWorker] = None
+        self.load_worker: Optional[QThread] = None
+        self.folder_worker: Optional['FolderLoadWorker'] = None
         
         # UI設定
         self._setup_tree_widget()
@@ -279,18 +330,6 @@ class FolderTreeWidget(QTreeWidget):
             QTreeWidget::item:hover {
                 background-color: #f0f0f0;
             }
-            
-            QTreeWidget::branch:has-children:!has-siblings:closed,
-            QTreeWidget::branch:closed:has-children:has-siblings {
-                border-image: none;
-                image: url(:/icons/branch-closed.png);
-            }
-            
-            QTreeWidget::branch:open:has-children:!has-siblings,
-            QTreeWidget::branch:open:has-children:has-siblings {
-                border-image: none;
-                image: url(:/icons/branch-open.png);
-            }
         """)
     
     def _setup_context_menu(self):
@@ -344,39 +383,53 @@ class FolderTreeWidget(QTreeWidget):
         Args:
             root_path: ルートフォルダのパス
         """
-        if not os.path.exists(root_path) or not os.path.isdir(root_path):
-            self.logger.error(f"無効なフォルダパス: {root_path}")
-            QMessageBox.warning(
+        try:
+            if not os.path.exists(root_path) or not os.path.isdir(root_path):
+                self.logger.error(f"無効なフォルダパス: {root_path}")
+                QMessageBox.warning(
+                    self,
+                    "エラー",
+                    f"指定されたフォルダが見つかりません:\n{root_path}"
+                )
+                return
+            
+            # 既存のワーカーを停止
+            self._cleanup_worker()
+            
+            # 既存のフォルダを保持するかチェック
+            if root_path in self.root_paths:
+                self.logger.info(f"フォルダは既に追加されています: {root_path}")
+                return
+            
+            # ルートアイテムを作成
+            root_item = FolderTreeItem()
+            root_item.set_folder_data(root_path, FolderItemType.ROOT)
+            self.addTopLevelItem(root_item)
+            self.item_map[root_path] = root_item
+            
+            # ルートパスを記録
+            self.root_paths.append(root_path)
+            
+            # 非同期でサブフォルダを読み込み
+            self._load_subfolders_async(root_path)
+            
+            # ルートアイテムを展開
+            root_item.setExpanded(True)
+            
+            self.logger.info(f"フォルダ構造の読み込み完了: {root_path}")
+            
+        except Exception as e:
+            self.logger.error(f"フォルダ構造の読み込み中にエラーが発生しました: {e}")
+            QMessageBox.critical(
                 self,
                 "エラー",
-                f"指定されたフォルダが見つかりません:\n{root_path}"
+                f"フォルダ構造の読み込みに失敗しました:\n{str(e)}"
             )
-            return
-        
-        # 既存のワーカーを停止
-        self._cleanup_worker_thread()
-        
-        # ツリーをクリア
-        self.clear()
-        self.item_map.clear()
-        
-        # ルートアイテムを作成
-        root_item = FolderTreeItem()
-        root_item.set_folder_data(root_path, FolderItemType.ROOT)
-        self.addTopLevelItem(root_item)
-        self.item_map[root_path] = root_item
-        
-        # ルートパスを記録
-        if root_path not in self.root_paths:
-            self.root_paths.append(root_path)
-        
-        # 非同期でサブフォルダを読み込み
-        self._load_subfolders_async(root_path)
-        
-        # ルートアイテムを展開
-        root_item.setExpanded(True)
-        
-        self.logger.info(f"フォルダ構造の読み込み完了: {root_path}")
+            # エラーが発生した場合は、追加されたパスを削除
+            if root_path in self.root_paths:
+                self.root_paths.remove(root_path)
+            if root_path in self.item_map:
+                self.item_map.pop(root_path, None)
     
     def _load_subfolders_async(self, path: str):
         """
@@ -385,12 +438,34 @@ class FolderTreeWidget(QTreeWidget):
         Args:
             path: 読み込み対象パス
         """
-        self.load_worker = FolderLoadWorker(path, max_depth=2)
-        self.load_worker.folder_loaded.connect(self._on_folder_loaded)
-        self.load_worker.load_error.connect(self._on_load_error)
-        self.load_worker.load_finished.connect(self._on_load_finished)
-        self.load_worker.finished.connect(self.load_worker.deleteLater)
-        self.load_worker.start()
+        try:
+            # 既存のワーカーを確実にクリーンアップ
+            self._cleanup_worker()
+            
+            # 新しいワーカー作成
+            self.load_worker = QThread()
+            self.folder_worker = FolderLoadWorker(path, max_depth=2)
+            
+            # ワーカーをスレッドに移動
+            self.folder_worker.moveToThread(self.load_worker)
+            
+            # シグナル接続（安全な接続方法 - Qt.QueuedConnection使用）
+            self.load_worker.started.connect(self.folder_worker.do_work, Qt.QueuedConnection)
+            self.folder_worker.finished.connect(self.load_worker.quit, Qt.QueuedConnection)
+            self.folder_worker.finished.connect(self.folder_worker.deleteLater, Qt.QueuedConnection)
+            self.load_worker.finished.connect(self.load_worker.deleteLater, Qt.QueuedConnection)
+            
+            # アプリケーションシグナル接続（安全な接続方法）
+            self.folder_worker.folder_loaded.connect(self._on_folder_loaded, Qt.QueuedConnection)
+            self.folder_worker.load_error.connect(self._on_load_error, Qt.QueuedConnection)
+            self.folder_worker.finished.connect(self._on_load_finished, Qt.QueuedConnection)
+            
+            self.load_worker.start()
+            
+        except Exception as e:
+            self.logger.error(f"サブフォルダの非同期読み込み開始エラー: {e}")
+            # エラー時のフォールバック処理
+            self._cleanup_worker()
     
     def _on_folder_loaded(self, path: str, subdirectories: List[str]):
         """
@@ -435,6 +510,57 @@ class FolderTreeWidget(QTreeWidget):
             item.is_accessible = False
             item.setDisabled(True)
             item.setToolTip(0, f"{path}\n{error_message}")
+    
+    def _cleanup_worker(self):
+        """ワーカーをクリーンアップします"""
+        try:
+            # フォルダワーカーの停止
+            if self.folder_worker:
+                self.folder_worker.stop()
+                # シグナル接続を切断（安全な方法）
+                try:
+                    self.folder_worker.folder_loaded.disconnect()
+                    self.folder_worker.load_error.disconnect()
+                    self.folder_worker.finished.disconnect()
+                except (TypeError, RuntimeError):
+                    # シグナルが接続されていない場合のエラーは無視
+                    pass
+                self.folder_worker = None
+            
+            # ロードワーカーの停止
+            if self.load_worker:
+                if self.load_worker.isRunning():
+                    # シグナル接続を切断（安全な方法）
+                    try:
+                        self.load_worker.started.disconnect()
+                        self.load_worker.finished.disconnect()
+                    except (TypeError, RuntimeError):
+                        # シグナルが接続されていない場合のエラーは無視
+                        pass
+                    
+                    # スレッドの安全な終了
+                    self.load_worker.quit()
+                    
+                    # スレッドが終了するまで待機（最大3秒）
+                    if not self.load_worker.wait(3000):
+                        self.logger.warning(
+                            "ワーカースレッドの終了を強制終了します"
+                        )
+                        self.load_worker.terminate()
+                        self.load_worker.wait(1000)
+                        
+                    # スレッドの状態確認
+                    if self.load_worker.isRunning():
+                        self.logger.error("スレッドの終了に失敗しました")
+                        
+                self.load_worker = None
+                
+        except Exception as e:
+            self.logger.error(f"ワーカークリーンアップ中にエラーが発生しました: {e}")
+        finally:
+            # 確実にNoneに設定
+            self.folder_worker = None
+            self.load_worker = None
     
     def _on_load_finished(self):
         """フォルダ読み込み完了時の処理"""
@@ -533,16 +659,24 @@ class FolderTreeWidget(QTreeWidget):
     
     def _add_folder(self):
         """フォルダを追加します"""
-        folder_path = QFileDialog.getExistingDirectory(
-            self,
-            "追加するフォルダを選択",
-            str(Path.home()),
-            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
-        )
-        
-        if folder_path:
-            self.load_folder_structure(folder_path)
-            self.logger.info(f"フォルダが追加されました: {folder_path}")
+        try:
+            folder_path = QFileDialog.getExistingDirectory(
+                self,
+                "追加するフォルダを選択",
+                str(Path.home()),
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
+            )
+            
+            if folder_path:
+                self.load_folder_structure(folder_path)
+                self.logger.info(f"フォルダが追加されました: {folder_path}")
+        except Exception as e:
+            self.logger.error(f"フォルダ追加中にエラーが発生しました: {e}")
+            QMessageBox.critical(
+                self,
+                "エラー",
+                f"フォルダの追加に失敗しました:\n{str(e)}"
+            )
     
     def _remove_folder(self):
         """選択されたフォルダを削除します"""
@@ -923,26 +1057,14 @@ class FolderTreeWidget(QTreeWidget):
     
     def closeEvent(self, event):
         """ウィジェット終了時の処理"""
-        self._cleanup_worker_thread()
+        self._cleanup_worker()
         super().closeEvent(event)
     
-    def _cleanup_worker_thread(self):
-        """ワーカースレッドをクリーンアップします"""
-        if hasattr(self, 'load_worker') and self.load_worker:
-            if self.load_worker.isRunning():
-                self.load_worker.stop()
-                if not self.load_worker.wait(2000):  # 2秒待機
-                    self.logger.warning("ワーカースレッドの終了を強制します")
-                    self.load_worker.terminate()
-                    self.load_worker.wait(1000)  # 終了待機
-            self.load_worker = None
+
     
     def __del__(self):
         """デストラクタ"""
-        try:
-            self._cleanup_worker_thread()
-        except Exception:
-            pass  # デストラクタでは例外を無視
+        self._cleanup_worker()
 
 
 class FolderTreeContainer(QWidget):
@@ -1111,5 +1233,5 @@ class FolderTreeContainer(QWidget):
     def closeEvent(self, event):
         """ウィジェット終了時の処理"""
         if hasattr(self, 'tree_widget') and self.tree_widget:
-            self.tree_widget._cleanup_worker_thread()
+            self.tree_widget._cleanup_worker()
         super().closeEvent(event)

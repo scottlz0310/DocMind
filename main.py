@@ -101,7 +101,7 @@ def main():
             main_window = MainWindow()
             
             # 更新マネージャーは将来の機能として保持
-            # main_window.set_update_manager(update_manager)
+            # TODO: 更新マネージャーの統合は将来のタスクで実装
             
             main_window.show()
             logger.info("メインウィンドウを表示しました")
@@ -124,36 +124,33 @@ def main():
         # クリーンアップ処理
         logger.info("DocMindアプリケーションを終了しています...")
         
-        # メインウィンドウのクリーンアップ
-        try:
-            if 'main_window' in locals() and main_window:
+        # メインウィンドウの強制クリーンアップ（GUIスレッドをブロックしないように）
+        if 'main_window' in locals() and main_window:
+            try:
+                # GUIコンポーネントを先にクリーンアップ
+                main_window._cleanup_all_components()
                 main_window.close()
-            logger.info("メインウィンドウをクリーンアップしました")
-        except Exception as cleanup_error:
-            logger.error(f"メインウィンドウクリーンアップでエラー: {cleanup_error}")
+                # アプリケーションのイベント処理を完了させる
+                app.processEvents()
+            except Exception as e:
+                logger.error(f"メインウィンドウクリーンアップエラー: {e}")
+        logger.info("メインウィンドウをクリーンアップしました")
         
         # パフォーマンス最適化コンポーネントの停止（順序重要）
-        try:
-            logger.info("バックグラウンドコンポーネントの停止を開始")
+        logger.info("バックグラウンドコンポーネントの停止を開始")
+        if memory_manager:
             memory_manager.stop()
             logger.info("メモリマネージャーを停止")
+        if task_manager:
             task_manager.stop_all()
             logger.info("タスクマネージャーを停止")
+        if cache_manager:
             cache_manager.save_persistent_caches()
             logger.info("パフォーマンス最適化コンポーネントを停止しました")
-        except Exception as cleanup_error:
-            logger.error(f"クリーンアップ処理でエラー: {cleanup_error}")
-        
-        # 少し待機してからQt終了
-        import time
-        time.sleep(0.5)
         
         # Qtアプリケーションの終了処理
-        try:
-            if app:
-                app.quit()
-        except Exception as cleanup_error:
-            logger.error(f"Qtアプリケーション終了処理でエラー: {cleanup_error}")
+        if app:
+            app.quit()
         
         return result
         

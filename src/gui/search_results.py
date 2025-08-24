@@ -189,7 +189,7 @@ class SearchResultItemWidget(QFrame):
             border_width = "1px"
         
         style_sheet = f"""
-        SearchResultItemWidget {{
+        QWidget {{
             background-color: {background_color};
             border: {border_width} solid {border_color};
             border-radius: 6px;
