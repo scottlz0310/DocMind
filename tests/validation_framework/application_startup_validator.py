@@ -23,7 +23,7 @@ import json
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from base_validator import BaseValidator, ValidationResult, ValidationConfig
+from .base_validator import BaseValidator, ValidationResult, ValidationConfig
 from error_injector import ErrorInjector
 
 

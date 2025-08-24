@@ -555,10 +555,13 @@ class SearchManager(LoggerMixin):
             self.logger.info("検索提案インデックスを構築中...")
             
             with self.index_manager._index.searcher() as searcher:
-                for doc in searcher.all_doc_ids():
-                    stored_doc = searcher.stored_fields(doc)
-                    content = stored_doc.get("content", "")
-                    title = stored_doc.get("title", "")
+                # 全ドキュメントを取得
+                from whoosh.query import Every
+                results = searcher.search(Every(), limit=None)
+                
+                for hit in results:
+                    content = hit.get("content", "")
+                    title = hit.get("title", "")
                     
                     terms = self._extract_indexable_terms(title + " " + content)
                     self._indexed_terms.update(terms)
