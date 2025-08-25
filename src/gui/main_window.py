@@ -484,7 +484,25 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.search_interface.search_input.selectAll()
 
     def _rebuild_index(self) -> None:
-        """インデックス再構築を実行します"""
+        """
+        インデックス再構築を実行します
+
+        このメソッドは要件1.1-1.4に基づいて実装されており、以下の処理を行います：
+        1. ユーザーに確認ダイアログを表示（要件1.1）
+        2. 現在選択されているフォルダの検証（要件1.2）
+        3. 既存インデックスのクリア（要件1.3）
+        4. IndexingThreadManagerを使用したバックグラウンド処理開始（要件1.4）
+        5. タイムアウト監視の開始（要件6.1）
+        6. 進捗表示の開始（要件2.1）
+
+        エラーハンドリング：
+        - フォルダ未選択時の適切な通知
+        - スレッド開始失敗時の詳細エラー表示
+        - システムエラー時の回復処理
+
+        Raises:
+            DocMindException: インデックス再構築処理で回復不可能なエラーが発生した場合
+        """
         try:
             # 改善された確認ダイアログの表示
             reply = self._show_rebuild_confirmation_dialog()
