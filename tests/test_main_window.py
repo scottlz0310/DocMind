@@ -31,32 +31,62 @@ class TestMainWindow:
         # QApplicationが存在しない場合は作成
         if not QApplication.instance():
             cls.app = QApplication(sys.argv)
-            # ヘッドレスモードでテストを実行
-            cls.app.setAttribute(Qt.AA_DisableWindowContextHelpButton, True)
+            # ヘッドレスモードでテストを実行（存在する属性のみ使用）
+            try:
+                cls.app.setAttribute(Qt.AA_DisableWindowContextHelpButton, True)
+            except AttributeError:
+                # PySide6のバージョンによっては存在しない属性なので無視
+                pass
         else:
             cls.app = QApplication.instance()
     
     def setup_method(self):
         """各テストメソッドの前に実行されるセットアップ"""
-        # 重い初期化処理をモックしてテストを高速化
-        with patch('src.gui.search_interface.SearchInterface') as mock_search_interface, \
-             patch('src.gui.folder_tree.FolderTreeContainer') as mock_folder_tree, \
-             patch('src.gui.search_results.SearchResultsWidget') as mock_search_results, \
-             patch('src.gui.preview_widget.PreviewWidget') as mock_preview_widget:
-            
-            # モックオブジェクトの設定
-            mock_search_interface.return_value = Mock()
-            mock_folder_tree.return_value = Mock()
-            mock_search_results.return_value = Mock()
-            mock_preview_widget.return_value = Mock()
-            
-            self.main_window = MainWindow()
+        # QMessageBoxを完全にモック化
+        self.msgbox_patches = [
+            patch('src.gui.main_window.QMessageBox.question'),
+            patch('src.gui.main_window.QMessageBox.warning'),
+            patch('src.gui.main_window.QMessageBox.critical'),
+            patch('src.gui.main_window.QMessageBox.information'),
+            patch('src.gui.main_window.QMessageBox.about'),
+        ]
+        
+        # QMessageBoxのモックを開始
+        self.msgbox_mocks = {}
+        for p in self.msgbox_patches:
+            mock = p.start()
+            # デフォルトは「いいえ」を返す
+            mock.return_value = QMessageBox.No
+            method_name = p.attribute.split('.')[-1]  # 'question', 'warning', etc.
+            self.msgbox_mocks[method_name] = mock
+        
+        # MainWindowクラスをインポート
+        from src.gui.main_window import MainWindow as MainWindowClass
+        
+        # MainWindowクラスを直接モック化してテスト用のインスタンスを作成
+        self.main_window = Mock(spec=MainWindowClass)
+        
+        # 必要な属性をモック化
+        self.main_window.folder_tree_container = Mock()
+        self.main_window.folder_tree_container.get_selected_folder = Mock(return_value=None)
+        self.main_window.index_manager = Mock()
+        self.main_window.thread_manager = Mock()
+        self.main_window.timeout_manager = Mock()
+        self.main_window.document_processor = Mock()
+        self.main_window.database_manager = Mock()
+        self.main_window.logger = Mock()
+        self.main_window.show_progress = Mock()
+        self.main_window.hide_progress = Mock()
+        
+        # 実際の_rebuild_indexメソッドを使用
+        self.main_window._rebuild_index = MainWindowClass._rebuild_index.__get__(self.main_window, MainWindowClass)
     
     def teardown_method(self):
         """各テストメソッドの後に実行されるクリーンアップ"""
-        if hasattr(self, 'main_window'):
-            self.main_window.close()
-            self.main_window.deleteLater()
+        # QMessageBoxパッチを停止
+        if hasattr(self, 'msgbox_patches'):
+            for p in self.msgbox_patches:
+                p.stop()
     
     def test_window_initialization(self):
         """ウィンドウの初期化をテスト"""
@@ -187,16 +217,103 @@ class TestMainWindow:
         # メッセージボックスが表示されたことを確認
         mock_msgbox.assert_called_once()
     
-    @patch('src.gui.main_window.QMessageBox.question')
-    def test_rebuild_index(self, mock_msgbox):
-        """インデックス再構築のテスト"""
-        # ユーザーが「はい」を選択した場合
-        mock_msgbox.return_value = QMessageBox.Yes
+    def test_rebuild_index_user_cancels(self):
+        """インデックス再構築でユーザーがキャンセルした場合のテスト"""
+        # ユーザーが「いいえ」を選択した場合
+        self.msgbox_mocks['question'].return_value = QMessageBox.No
         
         self.main_window._rebuild_index()
         
         # 確認ダイアログが表示されたことを確認
-        mock_msgbox.assert_called_once()
+        self.msgbox_mocks['question'].assert_called_once()
+        # 警告やエラーダイアログは表示されないことを確認
+        self.msgbox_mocks['warning'].assert_not_called()
+        self.msgbox_mocks['critical'].assert_not_called()
+
+    def test_rebuild_index_no_folder_selected(self):
+        """フォルダが選択されていない場合のテスト"""
+        # ユーザーが「はい」を選択
+        self.msgbox_mocks['question'].return_value = QMessageBox.Yes
+        
+        # フォルダが選択されていない状態をモック
+        self.main_window.folder_tree_container.get_selected_folder.return_value = None
+        
+        self.main_window._rebuild_index()
+        
+        # 確認ダイアログと警告ダイアログが表示されることを確認
+        self.msgbox_mocks['question'].assert_called_once()
+        self.msgbox_mocks['warning'].assert_called_once()
+        
+        # 警告ダイアログの内容を確認
+        args, kwargs = self.msgbox_mocks['warning'].call_args
+        assert "フォルダが選択されていません" in args[1]
+
+    def test_rebuild_index_success(self):
+        """インデックス再構築が成功する場合のテスト"""
+        # ユーザーが「はい」を選択
+        self.msgbox_mocks['question'].return_value = QMessageBox.Yes
+        
+        # フォルダが選択されている状態をモック
+        test_folder = "/test/folder"
+        self.main_window.folder_tree_container.get_selected_folder.return_value = test_folder
+        
+        # スレッド開始が成功する状態をモック
+        self.main_window.thread_manager.start_indexing_thread.return_value = "test_thread_id"
+        
+        self.main_window._rebuild_index()
+        
+        # 各メソッドが正しく呼び出されることを確認
+        self.msgbox_mocks['question'].assert_called_once()
+        self.main_window.index_manager.clear_index.assert_called_once()
+        self.main_window.thread_manager.start_indexing_thread.assert_called_once()
+        self.main_window.timeout_manager.start_timeout.assert_called_once_with("test_thread_id")
+        
+        # エラーダイアログは表示されないことを確認
+        self.msgbox_mocks['critical'].assert_not_called()
+
+    def test_rebuild_index_thread_start_failure(self):
+        """スレッド開始が失敗する場合のテスト"""
+        # ユーザーが「はい」を選択
+        self.msgbox_mocks['question'].return_value = QMessageBox.Yes
+        
+        # フォルダが選択されている状態をモック
+        test_folder = "/test/folder"
+        self.main_window.folder_tree_container.get_selected_folder.return_value = test_folder
+        
+        # スレッド開始が失敗する状態をモック
+        self.main_window.thread_manager.start_indexing_thread.return_value = None
+        
+        self.main_window._rebuild_index()
+        
+        # エラーダイアログが表示されることを確認
+        self.msgbox_mocks['critical'].assert_called_once()
+        
+        # エラーダイアログの内容を確認
+        args, kwargs = self.msgbox_mocks['critical'].call_args
+        assert "エラー" in args[1]
+        assert "インデックス再構築の開始に失敗しました" in args[2]
+
+    def test_rebuild_index_exception_handling(self):
+        """例外が発生した場合のエラーハンドリングテスト"""
+        # ユーザーが「はい」を選択
+        self.msgbox_mocks['question'].return_value = QMessageBox.Yes
+        
+        # フォルダが選択されている状態をモック
+        test_folder = "/test/folder"
+        self.main_window.folder_tree_container.get_selected_folder.return_value = test_folder
+        
+        # clear_indexで例外が発生する状態をモック
+        self.main_window.index_manager.clear_index.side_effect = Exception("テスト例外")
+        
+        self.main_window._rebuild_index()
+        
+        # エラーダイアログが表示されることを確認
+        self.msgbox_mocks['critical'].assert_called_once()
+        
+        # エラーダイアログの内容を確認
+        args, kwargs = self.msgbox_mocks['critical'].call_args
+        assert "エラー" in args[1]
+        assert "テスト例外" in args[2]
     
     def test_toggle_preview_pane(self):
         """プレビューペイン表示切り替えのテスト"""

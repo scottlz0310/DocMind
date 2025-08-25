@@ -410,15 +410,24 @@ class IndexingThreadManager(QObject):
         """
         with self.lock:
             state_counts = {}
+            active_count = 0
+            
             for info in self.active_threads.values():
                 state = info.state.value
                 state_counts[state] = state_counts.get(state, 0) + 1
+                
+                # アクティブスレッド数を直接計算（デッドロック回避）
+                if info.is_active():
+                    active_count += 1
+
+            # can_start_new_threadも直接計算（デッドロック回避）
+            can_start_new = active_count < self.max_concurrent_threads
 
             return {
                 'total_threads': len(self.active_threads),
-                'active_threads': self.get_active_thread_count(),
+                'active_threads': active_count,
                 'max_concurrent': self.max_concurrent_threads,
-                'can_start_new': self.can_start_new_thread(),
+                'can_start_new': can_start_new,
                 'state_counts': state_counts,
                 'thread_details': [
                     {

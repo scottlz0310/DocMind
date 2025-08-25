@@ -29,6 +29,7 @@ from src.core.search_manager import SearchManager
 from src.core.document_processor import DocumentProcessor
 from src.core.indexing_worker import IndexingWorker
 from src.core.thread_manager import IndexingThreadManager
+from src.core.rebuild_timeout_manager import RebuildTimeoutManager
 from src.data.database import DatabaseManager
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.preview_widget import PreviewWidget
@@ -140,6 +141,10 @@ class MainWindow(QMainWindow, LoggerMixin):
             # スレッドマネージャーの初期化
             self.thread_manager = IndexingThreadManager(max_concurrent_threads=2)
             self._connect_thread_manager_signals()
+
+            # タイムアウトマネージャーの初期化
+            self.timeout_manager = RebuildTimeoutManager(timeout_minutes=30, parent=self)
+            self._connect_timeout_manager_signals()
 
             # 劣化管理マネージャーで検索機能を有効化
             degradation_manager = get_global_degradation_manager()
@@ -484,20 +489,101 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.search_interface.search_input.selectAll()
 
     def _rebuild_index(self) -> None:
-        """インデックス再構築を実行します（プレースホルダー）"""
-        reply = QMessageBox.question(
-            self,
-            "インデックス再構築",
-            "インデックスを再構築しますか？\n\n"
-            "この操作には時間がかかる場合があります。",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
+        """インデックス再構築を実行します"""
+        try:
+            # 確認ダイアログの表示
+            reply = QMessageBox.question(
+                self,
+                "インデックス再構築",
+                "インデックスを再構築しますか？\n\n"
+                "この操作により、既存のインデックスが削除され、\n"
+                "すべてのドキュメントが再度処理されます。\n"
+                "処理には時間がかかる場合があります。\n\n"
+                "続行しますか？",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
 
-        if reply == QMessageBox.Yes:
+            if reply != QMessageBox.Yes:
+                return
+
+            # 現在選択されているフォルダパスを取得
+            current_folder = self.folder_tree_container.get_selected_folder()
+            if not current_folder:
+                QMessageBox.warning(
+                    self,
+                    "フォルダが選択されていません",
+                    "インデックスを再構築するフォルダを選択してください。"
+                )
+                return
+
+            # 既存のインデックスをクリア
+            self.logger.info(f"インデックス再構築開始: {current_folder}")
+            self.index_manager.clear_index()
+
+            # 進捗表示を開始
             self.show_progress("インデックスを再構築中...", 0)
-            # TODO: 実際のインデックス再構築処理を実装
-            QTimer.singleShot(2000, lambda: self.hide_progress("インデックス再構築が完了しました"))
+
+            # IndexingThreadManagerを使用してインデックス再構築を開始
+            try:
+                thread_id = self.thread_manager.start_indexing_thread(
+                    folder_path=current_folder,
+                    document_processor=self.document_processor,
+                    index_manager=self.index_manager
+                )
+
+                if thread_id:
+                    # タイムアウト監視を開始
+                    self.timeout_manager.start_timeout(thread_id)
+                    self.logger.info(f"インデックス再構築スレッド開始: {thread_id}")
+                    self.show_status_message(f"インデックス再構築を開始しました (ID: {thread_id})", 3000)
+                else:
+                    # スレッド開始に失敗した場合の処理
+                    self.hide_progress("インデックス再構築の開始に失敗しました")
+                    
+                    # 詳細なエラー情報を提供
+                    active_count = self.thread_manager.get_active_thread_count()
+                    max_threads = self.thread_manager.max_concurrent_threads
+                    
+                    if active_count >= max_threads:
+                        error_msg = (
+                            f"最大同時実行数に達しています ({active_count}/{max_threads})。\n"
+                            "他の処理が完了してから再試行してください。"
+                        )
+                    elif self.thread_manager._is_folder_being_processed(current_folder):
+                        error_msg = (
+                            "このフォルダは既に処理中です。\n"
+                            "処理が完了してから再試行してください。"
+                        )
+                    else:
+                        error_msg = (
+                            "インデックス再構築の開始に失敗しました。\n"
+                            "しばらく待ってから再試行してください。"
+                        )
+                    
+                    QMessageBox.critical(self, "エラー", error_msg)
+                    
+            except Exception as thread_error:
+                # スレッド開始時の例外処理
+                self.hide_progress("インデックス再構築の開始でエラーが発生しました")
+                self.logger.error(f"スレッド開始エラー: {thread_error}")
+                
+                QMessageBox.critical(
+                    self,
+                    "スレッド開始エラー",
+                    f"インデックス再構築スレッドの開始でエラーが発生しました:\n{str(thread_error)}\n\n"
+                    "システムリソースが不足している可能性があります。"
+                )
+                return
+
+        except Exception as e:
+            self.logger.error(f"インデックス再構築エラー: {e}")
+            self.hide_progress("インデックス再構築でエラーが発生しました")
+            QMessageBox.critical(
+                self,
+                "エラー",
+                f"インデックス再構築でエラーが発生しました:\n{str(e)}"
+            )
 
     def _clear_index(self) -> None:
         """インデックスをクリアします"""
@@ -911,6 +997,12 @@ class MainWindow(QMainWindow, LoggerMixin):
             # マネージャー状態変更シグナル
             self.thread_manager.manager_status_changed.connect(self._on_manager_status_changed)
 
+    def _connect_timeout_manager_signals(self) -> None:
+        """タイムアウトマネージャーのシグナルを接続"""
+        if hasattr(self, 'timeout_manager'):
+            # タイムアウト発生シグナル
+            self.timeout_manager.timeout_occurred.connect(self._handle_rebuild_timeout)
+
     # フォルダツリーのシグナルハンドラー
 
     def _on_folder_selected(self, folder_path: str) -> None:
@@ -1114,6 +1206,9 @@ class MainWindow(QMainWindow, LoggerMixin):
                 self.hide_progress(completion_message)
                 self.logger.info(f"全スレッド完了: 進捗バーを非表示")
 
+                # インデックス再構築完了時の追加処理
+                self._on_rebuild_completed(thread_id, statistics)
+
             # システム情報を更新
             indexed_count = len(self.folder_tree_container.get_indexed_folders())
 
@@ -1189,6 +1284,9 @@ class MainWindow(QMainWindow, LoggerMixin):
             error_msg = f"インデックス処理エラー ({folder_name}): {error_message}"
             self.show_status_message(error_msg, 10000)
             self.logger.error(f"全スレッド完了/エラー: 進捗バーを非表示")
+
+            # インデックス再構築エラー時の追加処理
+            self._on_rebuild_error(thread_id, error_message)
 
         # エラーログ
         self.logger.error(f"スレッドエラー: {thread_id} - {error_message}")
@@ -1468,6 +1566,11 @@ class MainWindow(QMainWindow, LoggerMixin):
                 self.thread_manager.shutdown()
                 self.logger.info("スレッドマネージャーをクリーンアップしました")
 
+            # タイムアウトマネージャーのクリーンアップ
+            if hasattr(self, 'timeout_manager') and self.timeout_manager:
+                self.timeout_manager.cancel_all_timeouts()
+                self.logger.info("タイムアウトマネージャーをクリーンアップしました")
+
             # 検索コンポーネントのクリーンアップ
             if hasattr(self, 'search_manager'):
                 try:
@@ -1680,3 +1783,181 @@ class MainWindow(QMainWindow, LoggerMixin):
             except Exception as e:
                 self.logger.debug(f"検索提案の取得に失敗: {e}")
                 # エラーが発生しても検索提案は必須機能ではないため、ログのみ出力
+    # インデックス再構築関連のシグナルハンドラー
+
+    def _on_rebuild_completed(self, thread_id: str, statistics: dict) -> None:
+        """インデックス再構築完了時の処理
+        
+        Args:
+            thread_id: 完了したスレッドID
+            statistics: 処理統計情報
+        """
+        try:
+            # タイムアウト監視をキャンセル
+            self.timeout_manager.cancel_timeout(thread_id)
+            
+            # SearchManagerのキャッシュをクリア
+            if hasattr(self, 'search_manager') and self.search_manager:
+                self.search_manager.clear_suggestion_cache()
+            
+            # システム情報ラベルを更新
+            self._update_system_info_after_rebuild(statistics)
+            
+            # フォルダツリーの状態を更新（既に_on_thread_finishedで実行済み）
+            
+            self.logger.info(f"インデックス再構築完了: {thread_id}")
+            
+        except Exception as e:
+            self.logger.error(f"インデックス再構築完了処理でエラー: {e}")
+
+    def _handle_rebuild_timeout(self, thread_id: str) -> None:
+        """インデックス再構築タイムアウト時の処理
+        
+        Args:
+            thread_id: タイムアウトが発生したスレッドID
+        """
+        try:
+            self.logger.warning(f"インデックス再構築タイムアウト: {thread_id}")
+            
+            # タイムアウトダイアログを表示
+            reply = QMessageBox.warning(
+                self,
+                "処理タイムアウト",
+                "インデックス再構築が長時間応答していません。\n\n"
+                "処理を中断しますか？\n\n"
+                "注意: 中断すると部分的に処理されたインデックスが\n"
+                "不整合な状態になる可能性があります。",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes
+            )
+            
+            if reply == QMessageBox.Yes:
+                # 強制停止処理
+                self._force_stop_rebuild(thread_id)
+            else:
+                # ユーザーが継続を選択した場合、タイムアウト監視を再開
+                self.timeout_manager.start_timeout(thread_id)
+                
+        except Exception as e:
+            self.logger.error(f"タイムアウト処理でエラー: {e}")
+
+    def _force_stop_rebuild(self, thread_id: str) -> None:
+        """インデックス再構築を強制停止
+        
+        Args:
+            thread_id: 停止対象のスレッドID
+        """
+        try:
+            # スレッドを強制停止
+            self.thread_manager.stop_thread(thread_id)
+            
+            # 部分的なインデックスをクリア
+            self.index_manager.clear_index()
+            
+            # 進捗表示を非表示
+            self.hide_progress("インデックス再構築が中断されました")
+            
+            # ユーザーに通知
+            QMessageBox.information(
+                self,
+                "処理中断",
+                "インデックス再構築が中断されました。\n\n"
+                "部分的に処理されたインデックスはクリアされました。\n"
+                "必要に応じて再度インデックス再構築を実行してください。"
+            )
+            
+            self.logger.info(f"インデックス再構築強制停止完了: {thread_id}")
+            
+        except Exception as e:
+            self.logger.error(f"強制停止処理でエラー: {e}")
+            QMessageBox.critical(
+                self,
+                "エラー",
+                f"インデックス再構築の停止処理でエラーが発生しました:\n{str(e)}"
+            )
+
+    def _update_system_info_after_rebuild(self, statistics: dict) -> None:
+        """インデックス再構築後のシステム情報更新
+        
+        Args:
+            statistics: 処理統計情報
+        """
+        try:
+            # インデックス統計を取得
+            if hasattr(self, 'index_manager') and self.index_manager:
+                index_stats = self.index_manager.get_index_stats()
+                document_count = index_stats.get('document_count', 0)
+                
+                # システム情報ラベルを更新
+                if hasattr(self, 'system_info_label'):
+                    files_processed = statistics.get('files_processed', 0)
+                    self.system_info_label.setText(
+                        f"インデックス済み: {document_count}ドキュメント | "
+                        f"処理済み: {files_processed}ファイル"
+                    )
+                    
+        except Exception as e:
+            self.logger.error(f"システム情報更新でエラー: {e}")
+
+    def _on_rebuild_error(self, thread_id: str, error_message: str) -> None:
+        """インデックス再構築エラー時の処理
+        
+        Args:
+            thread_id: エラーが発生したスレッドID
+            error_message: エラーメッセージ
+        """
+        try:
+            # タイムアウト監視をキャンセル
+            self.timeout_manager.cancel_timeout(thread_id)
+            
+            # エラータイプに応じた処理分岐
+            if "タイムアウト" in error_message:
+                # タイムアウトエラーの場合は既に_handle_rebuild_timeoutで処理済み
+                return
+            elif "ファイルアクセス" in error_message or "権限" in error_message:
+                # ファイルアクセスエラーの場合
+                self._handle_file_access_error(thread_id, error_message)
+            elif "メモリ" in error_message or "リソース" in error_message:
+                # リソースエラーの場合
+                self._handle_resource_error(thread_id, error_message)
+            else:
+                # その他のシステムエラー
+                self._handle_system_error(thread_id, error_message)
+                
+        except Exception as e:
+            self.logger.error(f"インデックス再構築エラー処理でエラー: {e}")
+
+    def _handle_file_access_error(self, thread_id: str, error_message: str) -> None:
+        """ファイルアクセスエラーの処理"""
+        QMessageBox.warning(
+            self,
+            "ファイルアクセスエラー",
+            f"一部のファイルにアクセスできませんでした:\n\n{error_message}\n\n"
+            "ファイルの権限を確認するか、管理者権限で実行してください。"
+        )
+
+    def _handle_resource_error(self, thread_id: str, error_message: str) -> None:
+        """リソースエラーの処理"""
+        # 部分的なインデックスをクリア
+        self.index_manager.clear_index()
+        
+        QMessageBox.critical(
+            self,
+            "リソースエラー",
+            f"システムリソースが不足しています:\n\n{error_message}\n\n"
+            "部分的に処理されたインデックスはクリアされました。\n"
+            "他のアプリケーションを終了してから再試行してください。"
+        )
+
+    def _handle_system_error(self, thread_id: str, error_message: str) -> None:
+        """システムエラーの処理"""
+        # 部分的なインデックスをクリア
+        self.index_manager.clear_index()
+        
+        QMessageBox.critical(
+            self,
+            "システムエラー",
+            f"インデックス再構築中にシステムエラーが発生しました:\n\n{error_message}\n\n"
+            "部分的に処理されたインデックスはクリアされました。\n"
+            "しばらく待ってから再試行してください。"
+        )

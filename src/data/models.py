@@ -331,3 +331,276 @@ class IndexStats:
             return f"{self.total_size / (1024 * 1024):.1f} MB"
         else:
             return f"{self.total_size / (1024 * 1024 * 1024):.1f} GB"
+
+
+@dataclass
+class RebuildState:
+    """インデックス再構築の状態管理
+    
+    インデックス再構築処理の状態を追跡し、タイムアウト判定機能を提供します。
+    要件2.1, 6.5に対応。
+    """
+    
+    thread_id: Optional[str] = None          # 実行中のスレッドID
+    start_time: Optional[datetime] = None    # 処理開始時刻
+    folder_path: Optional[str] = None        # 処理対象フォルダパス
+    is_active: bool = False                  # 処理が実行中かどうか
+    timeout_timer: Optional[Any] = None      # タイムアウト監視用タイマー（QTimer）
+    
+    def __post_init__(self):
+        """初期化後の検証"""
+        self._validate_fields()
+    
+    def _validate_fields(self):
+        """フィールドの検証を実行"""
+        if self.is_active and not self.thread_id:
+            raise ValueError("アクティブな状態ではthread_idが必要です")
+        
+        if self.is_active and not self.start_time:
+            raise ValueError("アクティブな状態では開始時刻が必要です")
+        
+        if self.folder_path and not os.path.exists(self.folder_path):
+            raise ValueError(f"指定されたフォルダが存在しません: {self.folder_path}")
+    
+    def is_timeout_exceeded(self, timeout_minutes: int = 30) -> bool:
+        """タイムアウトを超過しているかチェック
+        
+        Args:
+            timeout_minutes (int): タイムアウト時間（分）
+            
+        Returns:
+            bool: タイムアウトを超過している場合True
+        """
+        if not self.start_time or not self.is_active:
+            return False
+        
+        elapsed = datetime.now() - self.start_time
+        return elapsed.total_seconds() > (timeout_minutes * 60)
+    
+    def get_elapsed_time(self) -> Optional[float]:
+        """経過時間を秒単位で取得
+        
+        Returns:
+            Optional[float]: 経過時間（秒）、開始時刻が設定されていない場合はNone
+        """
+        if not self.start_time:
+            return None
+        
+        elapsed = datetime.now() - self.start_time
+        return elapsed.total_seconds()
+    
+    def get_formatted_elapsed_time(self) -> str:
+        """フォーマットされた経過時間を取得
+        
+        Returns:
+            str: 人間が読みやすい形式の経過時間
+        """
+        elapsed_seconds = self.get_elapsed_time()
+        if elapsed_seconds is None:
+            return "未開始"
+        
+        if elapsed_seconds < 60:
+            return f"{elapsed_seconds:.0f}秒"
+        elif elapsed_seconds < 3600:
+            minutes = elapsed_seconds // 60
+            seconds = elapsed_seconds % 60
+            return f"{minutes:.0f}分{seconds:.0f}秒"
+        else:
+            hours = elapsed_seconds // 3600
+            minutes = (elapsed_seconds % 3600) // 60
+            return f"{hours:.0f}時間{minutes:.0f}分"
+    
+    def start_rebuild(self, thread_id: str, folder_path: str) -> None:
+        """再構築処理を開始
+        
+        Args:
+            thread_id (str): スレッドID
+            folder_path (str): 処理対象フォルダパス
+        """
+        self.thread_id = thread_id
+        self.folder_path = folder_path
+        self.start_time = datetime.now()
+        self.is_active = True
+    
+    def stop_rebuild(self) -> None:
+        """再構築処理を停止"""
+        self.is_active = False
+        self.timeout_timer = None
+    
+    def reset(self) -> None:
+        """状態をリセット"""
+        self.thread_id = None
+        self.start_time = None
+        self.folder_path = None
+        self.is_active = False
+        self.timeout_timer = None
+
+
+@dataclass
+class RebuildProgress:
+    """再構築進捗情報
+    
+    インデックス再構築の進捗状況を管理し、表示用メッセージを生成します。
+    要件2.2に対応。
+    """
+    
+    stage: str = "idle"                      # 処理段階: "idle", "scanning", "processing", "indexing", "completed", "error"
+    current_file: str = ""                   # 現在処理中のファイル名
+    files_processed: int = 0                 # 処理済みファイル数
+    total_files: int = 0                     # 総ファイル数
+    percentage: int = 0                      # 進捗率（0-100）
+    message: str = ""                        # カスタムメッセージ
+    
+    def __post_init__(self):
+        """初期化後の検証と計算"""
+        self._validate_fields()
+        self._calculate_percentage()
+    
+    def _validate_fields(self):
+        """フィールドの検証を実行"""
+        valid_stages = ["idle", "scanning", "processing", "indexing", "completed", "error"]
+        if self.stage not in valid_stages:
+            raise ValueError(f"無効な段階です: {self.stage}. 有効な値: {valid_stages}")
+        
+        if self.files_processed < 0:
+            raise ValueError("処理済みファイル数は0以上である必要があります")
+        
+        if self.total_files < 0:
+            raise ValueError("総ファイル数は0以上である必要があります")
+        
+        # 進捗率の検証は_calculate_percentage後に行う
+        if not (0 <= self.percentage <= 100):
+            raise ValueError("進捗率は0から100の範囲である必要があります")
+    
+    def _calculate_percentage(self):
+        """進捗率を自動計算"""
+        if self.total_files > 0:
+            self.percentage = min(100, int((self.files_processed / self.total_files) * 100))
+        elif self.stage == "completed":
+            self.percentage = 100
+        else:
+            self.percentage = 0
+    
+    def get_display_message(self) -> str:
+        """表示用メッセージを生成
+        
+        Returns:
+            str: 現在の段階に応じた日本語メッセージ
+        """
+        if self.message:
+            return self.message
+        
+        if self.stage == "idle":
+            return "待機中"
+        elif self.stage == "scanning":
+            if self.total_files > 0:
+                return f"ファイルをスキャン中... ({self.total_files}個発見)"
+            else:
+                return "ファイルをスキャン中..."
+        elif self.stage == "processing":
+            if self.current_file and self.total_files > 0:
+                filename = os.path.basename(self.current_file)
+                return f"処理中: {filename} ({self.files_processed}/{self.total_files})"
+            elif self.total_files > 0:
+                return f"ドキュメントを処理中... ({self.files_processed}/{self.total_files})"
+            else:
+                return "ドキュメントを処理中..."
+        elif self.stage == "indexing":
+            if self.files_processed > 0:
+                return f"インデックスを作成中... ({self.files_processed}ファイル処理済み)"
+            else:
+                return "インデックスを作成中..."
+        elif self.stage == "completed":
+            if self.files_processed > 0:
+                return f"インデックス再構築が完了しました ({self.files_processed}ファイル処理)"
+            else:
+                return "インデックス再構築が完了しました"
+        elif self.stage == "error":
+            return "エラーが発生しました"
+        else:
+            return f"不明な段階: {self.stage}"
+    
+    def get_progress_details(self) -> Dict[str, Any]:
+        """進捗の詳細情報を取得
+        
+        Returns:
+            Dict[str, Any]: 進捗の詳細情報
+        """
+        return {
+            "stage": self.stage,
+            "current_file": self.current_file,
+            "files_processed": self.files_processed,
+            "total_files": self.total_files,
+            "percentage": self.percentage,
+            "message": self.get_display_message(),
+            "has_files": self.total_files > 0,
+            "is_active": self.stage in ["scanning", "processing", "indexing"]
+        }
+    
+    def update_scanning(self, files_found: int = 0) -> None:
+        """スキャン段階の進捗を更新
+        
+        Args:
+            files_found (int): 発見されたファイル数
+        """
+        self.stage = "scanning"
+        self.total_files = files_found
+        self.files_processed = 0
+        self.current_file = ""
+        self._calculate_percentage()
+    
+    def update_processing(self, current_file: str, processed: int, total: int) -> None:
+        """処理段階の進捗を更新
+        
+        Args:
+            current_file (str): 現在処理中のファイル
+            processed (int): 処理済みファイル数
+            total (int): 総ファイル数
+        """
+        self.stage = "processing"
+        self.current_file = current_file
+        self.files_processed = processed
+        self.total_files = total
+        self._calculate_percentage()
+    
+    def update_indexing(self, processed: int) -> None:
+        """インデックス作成段階の進捗を更新
+        
+        Args:
+            processed (int): 処理済みファイル数
+        """
+        self.stage = "indexing"
+        self.files_processed = processed
+        self.current_file = ""
+        self._calculate_percentage()
+    
+    def set_completed(self, total_processed: int) -> None:
+        """完了状態に設定
+        
+        Args:
+            total_processed (int): 処理されたファイル数
+        """
+        self.stage = "completed"
+        self.files_processed = total_processed
+        self.total_files = max(self.total_files, total_processed)
+        self.current_file = ""
+        self.percentage = 100
+    
+    def set_error(self, error_message: str = "") -> None:
+        """エラー状態に設定
+        
+        Args:
+            error_message (str): エラーメッセージ
+        """
+        self.stage = "error"
+        self.message = error_message or "処理中にエラーが発生しました"
+        self.current_file = ""
+    
+    def reset(self) -> None:
+        """進捗情報をリセット"""
+        self.stage = "idle"
+        self.current_file = ""
+        self.files_processed = 0
+        self.total_files = 0
+        self.percentage = 0
+        self.message = ""
