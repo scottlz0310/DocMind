@@ -143,8 +143,10 @@ class FolderItemType(Enum):
     """フォルダアイテムの種類"""
     ROOT = "root"           # ルートフォルダ
     FOLDER = "folder"       # 通常のフォルダ
+    INDEXING = "indexing"   # インデックス処理中フォルダ
     INDEXED = "indexed"     # インデックス済みフォルダ
     EXCLUDED = "excluded"   # 除外されたフォルダ
+    ERROR = "error"         # エラー状態のフォルダ
 
 
 class FolderTreeItem(QTreeWidgetItem):
@@ -200,10 +202,14 @@ class FolderTreeItem(QTreeWidgetItem):
         
         if self.item_type == FolderItemType.ROOT:
             icon = style.standardIcon(style.StandardPixmap.SP_DriveHDIcon)
+        elif self.item_type == FolderItemType.INDEXING:
+            icon = style.standardIcon(style.StandardPixmap.SP_BrowserReload)
         elif self.item_type == FolderItemType.INDEXED:
             icon = style.standardIcon(style.StandardPixmap.SP_DirOpenIcon)
         elif self.item_type == FolderItemType.EXCLUDED:
             icon = style.standardIcon(style.StandardPixmap.SP_DialogCancelButton)
+        elif self.item_type == FolderItemType.ERROR:
+            icon = style.standardIcon(style.StandardPixmap.SP_MessageBoxCritical)
         else:
             icon = style.standardIcon(style.StandardPixmap.SP_DirClosedIcon)
             
@@ -266,8 +272,10 @@ class FolderTreeWidget(QTreeWidget):
         # 内部状態
         self.root_paths: List[str] = []                    # ルートパスのリスト
         self.expanded_paths: Set[str] = set()              # 展開済みパスのセット
+        self.indexing_paths: Set[str] = set()              # インデックス処理中パスのセット
         self.indexed_paths: Set[str] = set()               # インデックス済みパスのセット
         self.excluded_paths: Set[str] = set()              # 除外パスのセット
+        self.error_paths: Set[str] = set()                 # エラー状態パスのセット
         self.item_map: Dict[str, FolderTreeItem] = {}      # パス→アイテムのマッピング
         
         # ワーカースレッド
@@ -487,11 +495,17 @@ class FolderTreeWidget(QTreeWidget):
                 self.item_map[subdir] = child_item
                 
                 # インデックス状態を反映
-                if subdir in self.indexed_paths:
+                if subdir in self.indexing_paths:
+                    child_item.item_type = FolderItemType.INDEXING
+                    child_item._update_icon()
+                elif subdir in self.indexed_paths:
                     child_item.item_type = FolderItemType.INDEXED
                     child_item._update_icon()
                 elif subdir in self.excluded_paths:
                     child_item.item_type = FolderItemType.EXCLUDED
+                    child_item._update_icon()
+                elif subdir in self.error_paths:
+                    child_item.item_type = FolderItemType.ERROR
                     child_item._update_icon()
     
     def _on_load_error(self, path: str, error_message: str):
@@ -630,11 +644,13 @@ class FolderTreeWidget(QTreeWidget):
             menu.addAction(self.properties_action)
             
             # アクションの有効/無効を設定
+            is_indexing = item.folder_path in self.indexing_paths
             is_indexed = item.folder_path in self.indexed_paths
             is_excluded = item.folder_path in self.excluded_paths
+            is_error = item.folder_path in self.error_paths
             
-            self.index_folder_action.setEnabled(not is_indexed and not is_excluded)
-            self.exclude_folder_action.setEnabled(not is_excluded)
+            self.index_folder_action.setEnabled(not is_indexing and not is_indexed and not is_excluded)
+            self.exclude_folder_action.setEnabled(not is_indexing and not is_excluded)
             self.remove_folder_action.setEnabled(item.folder_path in self.root_paths)
             
         else:
@@ -716,8 +732,10 @@ class FolderTreeWidget(QTreeWidget):
         for path in paths_to_remove:
             self.item_map.pop(path, None)
             self.expanded_paths.discard(path)
+            self.indexing_paths.discard(path)
             self.indexed_paths.discard(path)
             self.excluded_paths.discard(path)
+            self.error_paths.discard(path)
     
     def _index_folder(self):
         """選択されたフォルダをインデックスに追加します"""
@@ -736,17 +754,13 @@ class FolderTreeWidget(QTreeWidget):
         )
         
         if reply == QMessageBox.Yes:
-            self.indexed_paths.add(folder_path)
-            self.excluded_paths.discard(folder_path)  # 除外リストから削除
-            
-            # アイテムの表示を更新
-            current_item.item_type = FolderItemType.INDEXED
-            current_item._update_icon()
+            # インデックス処理開始時はINDEXING状態に設定
+            self.set_folder_indexing(folder_path)
             
             # シグナルを発行
             self.folder_indexed.emit(folder_path)
             
-            self.logger.info(f"フォルダがインデックスに追加されました: {folder_path}")
+            self.logger.info(f"フォルダのインデックス処理を開始: {folder_path}")
     
     def _exclude_folder(self):
         """選択されたフォルダを除外します"""
@@ -821,6 +835,10 @@ class FolderTreeWidget(QTreeWidget):
         self.clear()
         self.item_map.clear()
         self.expanded_paths.clear()
+        self.indexing_paths.clear()
+        self.indexed_paths.clear()
+        self.excluded_paths.clear()
+        self.error_paths.clear()
         self.root_paths.clear()
         
         # 各ルートフォルダを再読み込み
@@ -1021,14 +1039,141 @@ class FolderTreeWidget(QTreeWidget):
     def _update_item_types(self):
         """アイテムの種類表示を更新します"""
         for path, item in self.item_map.items():
-            if path in self.indexed_paths:
+            if path in self.indexing_paths:
+                item.item_type = FolderItemType.INDEXING
+            elif path in self.indexed_paths:
                 item.item_type = FolderItemType.INDEXED
             elif path in self.excluded_paths:
                 item.item_type = FolderItemType.EXCLUDED
+            elif path in self.error_paths:
+                item.item_type = FolderItemType.ERROR
             else:
                 item.item_type = FolderItemType.FOLDER
             
             item._update_icon()
+    
+    def set_folder_indexing(self, folder_path: str):
+        """
+        フォルダをインデックス処理中状態に設定します
+        
+        Args:
+            folder_path: フォルダパス
+        """
+        self.indexing_paths.add(folder_path)
+        self.indexed_paths.discard(folder_path)
+        self.excluded_paths.discard(folder_path)
+        self.error_paths.discard(folder_path)
+        
+        item = self.item_map.get(folder_path)
+        if item:
+            item.item_type = FolderItemType.INDEXING
+            item._update_icon()
+            
+            # 処理中の表示テキストを更新
+            folder_name = os.path.basename(folder_path) if folder_path else "ルート"
+            if not folder_name:
+                folder_name = folder_path
+            item.setText(0, f"{folder_name} (処理中...)")
+        
+        self.logger.info(f"フォルダをインデックス処理中状態に設定: {folder_path}")
+    
+    def set_folder_indexed(self, folder_path: str, file_count: int = 0, indexed_count: int = 0):
+        """
+        フォルダをインデックス済み状態に設定します
+        
+        Args:
+            folder_path: フォルダパス
+            file_count: 総ファイル数
+            indexed_count: インデックス済みファイル数
+        """
+        self.indexing_paths.discard(folder_path)
+        self.indexed_paths.add(folder_path)
+        self.excluded_paths.discard(folder_path)
+        self.error_paths.discard(folder_path)
+        
+        item = self.item_map.get(folder_path)
+        if item:
+            item.item_type = FolderItemType.INDEXED
+            item._update_icon()
+            
+            # 統計情報を更新
+            item.update_statistics(file_count, indexed_count)
+        
+        self.logger.info(f"フォルダをインデックス済み状態に設定: {folder_path} ({indexed_count}/{file_count})")
+    
+    def set_folder_error(self, folder_path: str, error_message: str = ""):
+        """
+        フォルダをエラー状態に設定します
+        
+        Args:
+            folder_path: フォルダパス
+            error_message: エラーメッセージ
+        """
+        self.indexing_paths.discard(folder_path)
+        self.indexed_paths.discard(folder_path)
+        self.excluded_paths.discard(folder_path)
+        self.error_paths.add(folder_path)
+        
+        item = self.item_map.get(folder_path)
+        if item:
+            item.item_type = FolderItemType.ERROR
+            item._update_icon()
+            
+            # エラー表示テキストを更新
+            folder_name = os.path.basename(folder_path) if folder_path else "ルート"
+            if not folder_name:
+                folder_name = folder_path
+            item.setText(0, f"{folder_name} (エラー)")
+            
+            # ツールチップにエラーメッセージを設定
+            if error_message:
+                item.setToolTip(0, f"{folder_path}\nエラー: {error_message}")
+        
+        self.logger.error(f"フォルダをエラー状態に設定: {folder_path} - {error_message}")
+    
+    def clear_folder_state(self, folder_path: str):
+        """
+        フォルダの状態をクリアして通常状態に戻します
+        
+        Args:
+            folder_path: フォルダパス
+        """
+        self.indexing_paths.discard(folder_path)
+        self.indexed_paths.discard(folder_path)
+        self.excluded_paths.discard(folder_path)
+        self.error_paths.discard(folder_path)
+        
+        item = self.item_map.get(folder_path)
+        if item:
+            item.item_type = FolderItemType.FOLDER
+            item._update_icon()
+            
+            # 表示テキストを通常に戻す
+            folder_name = os.path.basename(folder_path) if folder_path else "ルート"
+            if not folder_name:
+                folder_name = folder_path
+            item.setText(0, folder_name)
+            item.setToolTip(0, folder_path)
+        
+        self.logger.info(f"フォルダ状態をクリア: {folder_path}")
+    
+    def get_indexing_folders(self) -> List[str]:
+        """
+        インデックス処理中フォルダのリストを取得します
+        
+        Returns:
+            インデックス処理中フォルダパスのリスト
+        """
+        return list(self.indexing_paths)
+    
+    def get_error_folders(self) -> List[str]:
+        """
+        エラー状態フォルダのリストを取得します
+        
+        Returns:
+            エラー状態フォルダパスのリスト
+        """
+        return list(self.error_paths)
     
     def expand_to_path(self, path: str):
         """
@@ -1182,12 +1327,18 @@ class FolderTreeContainer(QWidget):
     def _update_stats(self):
         """統計情報を更新します"""
         total_folders = len(self.tree_widget.item_map)
+        indexing_folders = len(self.tree_widget.indexing_paths)
         indexed_folders = len(self.tree_widget.indexed_paths)
         excluded_folders = len(self.tree_widget.excluded_paths)
+        error_folders = len(self.tree_widget.error_paths)
         
         stats_text = f"フォルダ: {total_folders}, インデックス: {indexed_folders}"
+        if indexing_folders > 0:
+            stats_text += f", 処理中: {indexing_folders}"
         if excluded_folders > 0:
             stats_text += f", 除外: {excluded_folders}"
+        if error_folders > 0:
+            stats_text += f", エラー: {error_folders}"
         
         self.stats_label.setText(stats_text)
     
@@ -1219,6 +1370,34 @@ class FolderTreeContainer(QWidget):
         """除外フォルダを設定します"""
         self.tree_widget.set_excluded_folders(paths)
         self._update_stats()
+    
+    def set_folder_indexing(self, folder_path: str):
+        """フォルダをインデックス処理中状態に設定します"""
+        self.tree_widget.set_folder_indexing(folder_path)
+        self._update_stats()
+    
+    def set_folder_indexed(self, folder_path: str, file_count: int = 0, indexed_count: int = 0):
+        """フォルダをインデックス済み状態に設定します"""
+        self.tree_widget.set_folder_indexed(folder_path, file_count, indexed_count)
+        self._update_stats()
+    
+    def set_folder_error(self, folder_path: str, error_message: str = ""):
+        """フォルダをエラー状態に設定します"""
+        self.tree_widget.set_folder_error(folder_path, error_message)
+        self._update_stats()
+    
+    def clear_folder_state(self, folder_path: str):
+        """フォルダの状態をクリアします"""
+        self.tree_widget.clear_folder_state(folder_path)
+        self._update_stats()
+    
+    def get_indexing_folders(self) -> List[str]:
+        """インデックス処理中フォルダのリストを取得します"""
+        return self.tree_widget.get_indexing_folders()
+    
+    def get_error_folders(self) -> List[str]:
+        """エラー状態フォルダのリストを取得します"""
+        return self.tree_widget.get_error_folders()
     
     def expand_to_path(self, path: str):
         """指定されたパスまでツリーを展開します"""

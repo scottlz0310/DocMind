@@ -635,14 +635,7 @@ class MainWindow(QMainWindow, LoggerMixin):
             self.setFont(font)
             QApplication.instance().setFont(font)
 
-    def _show_settings_dialog(self) -> None:
-        """設定ダイアログを表示します"""
-        # TODO: 設定ダイアログの実装
-        QMessageBox.information(
-            self,
-            "設定",
-            "設定機能はタスク14で実装されます。"
-        )
+
 
     def _show_about_dialog(self) -> None:
         """バージョン情報ダイアログを表示します"""
@@ -687,13 +680,15 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.status_bar.showMessage(message, timeout)
         self.logger.debug(f"ステータスメッセージ: {message}")
 
-    def show_progress(self, message: str, value: int) -> None:
+    def show_progress(self, message: str, value: int, current: int = 0, total: int = 0) -> None:
         """
         進捗バーを表示します
 
         Args:
             message: 進捗メッセージ
             value: 進捗値（0-100、0で不定進捗）
+            current: 現在の処理数（オプション）
+            total: 総処理数（オプション）
         """
         # ステータスラベルに詳細メッセージを表示
         self.status_label.setText(message)
@@ -705,6 +700,12 @@ class MainWindow(QMainWindow, LoggerMixin):
             self.progress_bar.setFormat("処理中...")
             # 不定進捗の場合はアニメーション効果を有効化
             self.progress_bar.setStyleSheet("""
+                QProgressBar {
+                    border: 1px solid #d0d0d0;
+                    border-radius: 3px;
+                    text-align: center;
+                    font-weight: bold;
+                }
                 QProgressBar::chunk {
                     background-color: #4CAF50;
                     border-radius: 2px;
@@ -714,7 +715,12 @@ class MainWindow(QMainWindow, LoggerMixin):
             # 定進捗
             self.progress_bar.setRange(0, 100)
             self.progress_bar.setValue(value)
-            self.progress_bar.setFormat(f"{value}%")
+            
+            # 進捗表示フォーマットを改善
+            if current > 0 and total > 0:
+                self.progress_bar.setFormat(f"{value}% ({current}/{total})")
+            else:
+                self.progress_bar.setFormat(f"{value}%")
 
             # 進捗率に応じて色を変更
             if value < 30:
@@ -725,6 +731,12 @@ class MainWindow(QMainWindow, LoggerMixin):
                 color = "#4CAF50"  # 緑（完了間近）
 
             self.progress_bar.setStyleSheet(f"""
+                QProgressBar {{
+                    border: 1px solid #d0d0d0;
+                    border-radius: 3px;
+                    text-align: center;
+                    font-weight: bold;
+                }}
                 QProgressBar::chunk {{
                     background-color: {color};
                     border-radius: 2px;
@@ -732,13 +744,20 @@ class MainWindow(QMainWindow, LoggerMixin):
             """)
 
         # 進捗バーのツールチップに詳細情報を設定
-        self.progress_bar.setToolTip(message)
+        if current > 0 and total > 0:
+            tooltip = f"{message}\n進捗: {current}/{total} ({value}%)"
+        else:
+            tooltip = f"{message}\n進捗: {value}%"
+        self.progress_bar.setToolTip(tooltip)
 
         # アクセシビリティ用の説明を更新
         self.progress_bar.setAccessibleDescription(f"進捗: {message}")
 
         # ログに進捗情報を記録
-        self.logger.debug(f"進捗表示更新: {message} ({value}%)")
+        if current > 0 and total > 0:
+            self.logger.debug(f"進捗表示更新: {message} ({current}/{total}, {value}%)")
+        else:
+            self.logger.debug(f"進捗表示更新: {message} ({value}%)")
 
     def hide_progress(self, completion_message: str = "") -> None:
         """
@@ -747,16 +766,33 @@ class MainWindow(QMainWindow, LoggerMixin):
         Args:
             completion_message: 完了メッセージ
         """
+        # 進捗バーを非表示にしてリセット
         self.progress_bar.setVisible(False)
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setFormat("")
         self.progress_bar.setToolTip("")
+        
+        # スタイルシートをリセット
+        self.progress_bar.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid #d0d0d0;
+                border-radius: 3px;
+                text-align: center;
+            }
+            QProgressBar::chunk {
+                background-color: #4CAF50;
+                border-radius: 2px;
+            }
+        """)
 
         if completion_message:
             self.show_status_message(completion_message, 5000)  # 完了メッセージは少し長く表示
         else:
             self.status_label.setText("準備完了")
+            
+        # ログに非表示化を記録
+        self.logger.debug("進捗バーを非表示にしました")
 
     def update_system_info(self, info: str) -> None:
         """
@@ -766,6 +802,86 @@ class MainWindow(QMainWindow, LoggerMixin):
             info: システム情報文字列
         """
         self.system_info_label.setText(info)
+
+    def update_progress(self, current: int, total: int, message: str = "") -> None:
+        """
+        進捗率を正確に計算して表示します
+
+        Args:
+            current: 現在の処理数
+            total: 総処理数
+            message: 進捗メッセージ（オプション）
+        """
+        if total <= 0:
+            # 総数が0以下の場合は不定進捗として表示
+            self.show_progress(message or "処理中...", 0)
+            return
+
+        # 進捗率を計算（0-100の範囲）
+        percentage = min(100, max(0, int((current / total) * 100)))
+        
+        # デフォルトメッセージを生成
+        if not message:
+            message = f"処理中: {current}/{total}"
+        
+        # 進捗バーを更新
+        self.show_progress(message, percentage, current, total)
+
+    def set_progress_indeterminate(self, message: str = "処理中...") -> None:
+        """
+        不定進捗モードに設定します
+
+        Args:
+            message: 表示するメッセージ
+        """
+        self.show_progress(message, 0)
+
+    def is_progress_visible(self) -> bool:
+        """
+        進捗バーが表示されているかどうかを確認します
+
+        Returns:
+            bool: 進捗バーが表示されている場合True
+        """
+        return self.progress_bar.isVisible()
+
+    def get_progress_value(self) -> int:
+        """
+        現在の進捗値を取得します
+
+        Returns:
+            int: 現在の進捗値（0-100）
+        """
+        return self.progress_bar.value()
+
+    def set_progress_style(self, style: str) -> None:
+        """
+        進捗バーのスタイルを設定します
+
+        Args:
+            style: 'success', 'warning', 'error', 'info' のいずれか
+        """
+        color_map = {
+            'success': '#4CAF50',  # 緑
+            'warning': '#FF9800',  # オレンジ
+            'error': '#F44336',    # 赤
+            'info': '#2196F3'      # 青
+        }
+        
+        color = color_map.get(style, '#4CAF50')
+        
+        self.progress_bar.setStyleSheet(f"""
+            QProgressBar {{
+                border: 1px solid #d0d0d0;
+                border-radius: 3px;
+                text-align: center;
+                font-weight: bold;
+            }}
+            QProgressBar::chunk {{
+                background-color: {color};
+                border-radius: 2px;
+            }}
+        """)
 
     def _connect_folder_tree_signals(self) -> None:
         """フォルダツリーのシグナルを接続します"""
@@ -946,13 +1062,21 @@ class MainWindow(QMainWindow, LoggerMixin):
             folder_name = os.path.basename(thread_info.folder_path)
             self.logger.info(f"インデックス処理スレッド開始: {thread_id} ({folder_name})")
 
-            # 初期進捗表示
-            self.show_progress(f"📁 インデックス処理開始: {folder_name}", 0)
+            # フォルダツリーの状態をINDEXINGに更新
+            self.folder_tree_container.set_folder_indexing(thread_info.folder_path)
+
+            # 初期進捗表示（新しい不定進捗機能を使用）
+            start_message = f"📁 インデックス処理開始: {folder_name}"
+            self.set_progress_indeterminate(start_message)
+            self.set_progress_style('info')  # 開始時は情報スタイル
 
             # システム情報を更新
             active_count = self.thread_manager.get_active_thread_count()
             indexed_count = len(self.folder_tree_container.get_indexed_folders())
             self.update_system_info(f"インデックス: {indexed_count}フォルダ, 処理中: {active_count}スレッド")
+            
+            # ステータスメッセージも更新
+            self.show_status_message(start_message, 3000)
 
     def _on_thread_finished(self, thread_id: str, statistics: dict) -> None:
         """スレッド完了時の処理
@@ -965,12 +1089,32 @@ class MainWindow(QMainWindow, LoggerMixin):
         if thread_info:
             folder_name = os.path.basename(thread_info.folder_path)
 
+            # フォルダツリーの状態をINDEXEDに更新
+            files_processed = statistics.get('files_processed', 0)
+            documents_added = statistics.get('documents_added', 0)
+            self.folder_tree_container.set_folder_indexed(
+                thread_info.folder_path, 
+                files_processed, 
+                documents_added
+            )
+
             # 詳細な完了メッセージを生成
             completion_message = self._format_detailed_completion_message(folder_name, statistics)
-            self.hide_progress(completion_message)
+            
+            # 進捗バーの表示制御を改善
+            active_count = self.thread_manager.get_active_thread_count() - 1  # 完了したスレッドを除く
+            
+            if active_count > 0:
+                # 他のスレッドがまだ実行中の場合は進捗バーを維持
+                # 完了メッセージをステータスに表示するが進捗バーは非表示にしない
+                self.show_status_message(completion_message, 5000)
+                self.logger.info(f"スレッド完了（他のスレッド実行中）: {folder_name}")
+            else:
+                # すべてのスレッドが完了した場合のみ進捗バーを非表示
+                self.hide_progress(completion_message)
+                self.logger.info(f"全スレッド完了: 進捗バーを非表示")
 
             # システム情報を更新
-            active_count = self.thread_manager.get_active_thread_count() - 1  # 完了したスレッドを除く
             indexed_count = len(self.folder_tree_container.get_indexed_folders())
 
             if active_count > 0:
@@ -1026,16 +1170,35 @@ class MainWindow(QMainWindow, LoggerMixin):
         folder_name = "不明"
         if thread_info:
             folder_name = os.path.basename(thread_info.folder_path)
+            
+            # フォルダツリーの状態をERRORに更新
+            self.folder_tree_container.set_folder_error(thread_info.folder_path, error_message)
 
-        # 進捗バーを非表示
-        self.hide_progress("")
-
-        # エラーメッセージを表示
-        error_msg = f"インデックス処理エラー ({folder_name}): {error_message}"
-        self.show_status_message(error_msg, 10000)
+        # 進捗バーの表示制御を改善
+        active_count = self.thread_manager.get_active_thread_count() - 1  # エラーしたスレッドを除く
+        
+        if active_count > 0:
+            # 他のスレッドがまだ実行中の場合は進捗バーを維持し、エラースタイルに変更
+            self.set_progress_style('error')
+            error_msg = f"エラー発生 ({folder_name}): {error_message}"
+            self.show_status_message(error_msg, 8000)
+            self.logger.warning(f"スレッドエラー（他のスレッド実行中）: {folder_name}")
+        else:
+            # すべてのスレッドが完了/エラーした場合のみ進捗バーを非表示
+            self.hide_progress("")
+            error_msg = f"インデックス処理エラー ({folder_name}): {error_message}"
+            self.show_status_message(error_msg, 10000)
+            self.logger.error(f"全スレッド完了/エラー: 進捗バーを非表示")
 
         # エラーログ
-        self.logger.error(f"スレッドエラー: {thread_id} - {error_msg}")
+        self.logger.error(f"スレッドエラー: {thread_id} - {error_message}")
+
+        # システム情報を更新
+        indexed_count = len(self.folder_tree_container.get_indexed_folders())
+        if active_count > 0:
+            self.update_system_info(f"インデックス: {indexed_count}フォルダ, 処理中: {active_count}スレッド (エラー発生)")
+        else:
+            self.update_system_info(f"インデックス: {indexed_count}フォルダ, エラーで停止")
 
         # 必要に応じてエラーダイアログを表示
         if "予期しない" in error_message or "重大" in error_message:
@@ -1071,20 +1234,20 @@ class MainWindow(QMainWindow, LoggerMixin):
             # フォルダ名を含む完全なメッセージを作成
             full_message = f"[{folder_name}] {detailed_message}"
 
-            # ステータスメッセージを更新
-            self.show_status_message(full_message, 0)
-
-            # 進捗バーを更新
+            # 新しい進捗表示機能を使用
             if total > 0:
-                percentage = int((current / total) * 100)
-                self.show_progress(full_message, percentage)
-
+                # 正確な進捗率計算を使用
+                self.update_progress(current, total, full_message)
+                
                 # システム情報を更新（詳細な進捗情報を含む）
-                self._update_system_info_with_progress(folder_name, current, total, percentage)
+                self._update_system_info_with_progress(folder_name, current, total, self.get_progress_value())
             else:
                 # 不定進捗の場合（スキャン中など）
-                self.show_progress(full_message, 0)
+                self.set_progress_indeterminate(full_message)
                 self._update_system_info_with_progress(folder_name, current, total, 0)
+
+            # ステータスメッセージを更新
+            self.show_status_message(full_message, 0)
 
             self.logger.debug(f"スレッド進捗更新: {thread_id} - {full_message} ({current}/{total})")
 
@@ -1093,10 +1256,9 @@ class MainWindow(QMainWindow, LoggerMixin):
             # エラーが発生しても進捗表示は継続
             fallback_message = f"処理中: {message}"
             if total > 0:
-                percentage = int((current / total) * 100)
-                self.show_progress(fallback_message, percentage)
+                self.update_progress(current, total, fallback_message)
             else:
-                self.show_progress(fallback_message, 0)
+                self.set_progress_indeterminate(fallback_message)
 
     def _update_system_info_with_progress(self, folder_name: str, current: int, total: int, percentage: int) -> None:
         """
@@ -1154,44 +1316,45 @@ class MainWindow(QMainWindow, LoggerMixin):
             str: フォーマットされた進捗メッセージ
         """
         try:
+            # 進捗率を計算
+            percentage = 0
+            if total > 0:
+                percentage = min(100, max(0, int((current / total) * 100)))
+
             # 処理段階を判定してアイコンと詳細情報を追加
             if "スキャン" in message:
-                if "発見" in message:
-                    # ファイル発見数が含まれている場合
-                    return f"📁 {message}"
+                if total > 0:
+                    return f"📁 {message} ({current}/{total}ファイル)"
                 else:
                     return f"📁 {message}"
             elif "処理中:" in message:
                 # ファイル名を抽出して短縮表示
                 if total > 0:
-                    percentage = int((current / total) * 100)
-                    # ファイル名を抽出（"処理中: filename.pdf (x/y)" の形式から）
-                    if "(" in message:
-                        file_part = message.split("(")[0].strip()
-                        return f"📄 {file_part} [{current}/{total} - {percentage}%]"
+                    # ファイル名を抽出（"処理中: filename.pdf" の形式から）
+                    if ":" in message:
+                        file_part = message.split(":", 1)[1].strip()
+                        # ファイル名が長い場合は短縮
+                        if len(file_part) > 30:
+                            file_part = file_part[:27] + "..."
+                        return f"📄 処理中: {file_part} ({current}/{total} - {percentage}%)"
                     else:
-                        return f"📄 {message} [{current}/{total} - {percentage}%]"
+                        return f"📄 {message} ({current}/{total} - {percentage}%)"
                 else:
                     return f"📄 {message}"
             elif "インデックス" in message:
                 if total > 0:
-                    percentage = int((current / total) * 100)
-                    return f"🔍 {message} [{current}/{total} - {percentage}%]"
+                    return f"🔍 {message} ({current}/{total} - {percentage}%)"
                 else:
                     return f"🔍 {message}"
-            elif "監視" in message:
-                return f"👁 {message}"
-            elif "ファイル処理中" in message:
-                # 一般的なファイル処理メッセージ
-                if total > 0:
-                    percentage = int((current / total) * 100)
-                    return f"📄 {message} [{current}/{total} - {percentage}%]"
-                else:
-                    return f"📄 {message}"
+            elif "監視" in message or "FileWatcher" in message:
+                return f"👁️ {message}"
+            elif "完了" in message:
+                return f"✅ {message}"
+            elif "エラー" in message:
+                return f"❌ {message}"
             else:
-                # その他の場合は進捗率を追加
+                # その他のメッセージ
                 if total > 0:
-                    percentage = int((current / total) * 100)
                     return f"⚙️ {message} ({current}/{total} - {percentage}%)"
                 else:
                     return f"⚙️ {message}"
