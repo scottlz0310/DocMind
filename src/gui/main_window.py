@@ -33,6 +33,8 @@ from src.core.rebuild_timeout_manager import RebuildTimeoutManager
 from src.data.database import DatabaseManager
 from src.gui.dialogs.dialog_manager import DialogManager
 from src.gui.managers.progress_manager import ProgressManager
+from src.gui.managers.layout_manager import LayoutManager
+from src.gui.controllers.index_controller import IndexController
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.preview_widget import PreviewWidget
 from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
@@ -87,29 +89,23 @@ class MainWindow(QMainWindow, LoggerMixin):
         # 進捗管理マネージャーの初期化
         self.progress_manager = ProgressManager(self)
         
+        # レイアウトマネージャーの初期化
+        self.layout_manager = LayoutManager(self)
+        
+        # インデックス制御コントローラーの初期化
+        self.index_controller = IndexController(self)
+        
         # 検索関連コンポーネントの初期化
         self._initialize_search_components()
 
-        # ウィンドウの基本設定
-        self._setup_window()
-
-        # UI コンポーネントの初期化
-        self._setup_ui()
-
-        # メニューバーの設定
-        self._setup_menu_bar()
-
-        # ステータスバーの設定
-        self._setup_status_bar()
-
-        # キーボードショートカットの設定
-        self._setup_shortcuts()
-
-        # アクセシビリティ機能の設定
-        self._setup_accessibility()
-
-        # スタイリングの適用
-        self._apply_styling()
+        # UIレイアウトの設定（layout_managerに委譲）
+        self.layout_manager.setup_window()
+        self.layout_manager.setup_ui()
+        self.layout_manager.setup_menu_bar()
+        self.layout_manager.setup_status_bar()
+        self.layout_manager.setup_shortcuts()
+        self.layout_manager.setup_accessibility()
+        self.layout_manager.apply_styling()
 
         # 進捗管理マネージャーの初期化
         self.progress_manager.initialize()
@@ -168,110 +164,15 @@ class MainWindow(QMainWindow, LoggerMixin):
                 f"検索コンポーネントの初期化に失敗: {e}"
             )
 
-    def _setup_window(self) -> None:
-        """ウィンドウの基本設定を行います"""
-        self.setWindowTitle("DocMind - ローカルドキュメント検索")
-        self.setMinimumSize(1000, 700)
-        self.resize(1400, 900)
 
-        # ウィンドウアイコンの設定
-        self.setWindowIcon(get_app_icon())
 
-        # ウィンドウを画面中央に配置
-        self._center_window()
 
-    def _setup_ui(self) -> None:
-        """メインUIレイアウトを設定します"""
-        # 中央ウィジェットの作成
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
 
-        # メインレイアウトの作成
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(5, 5, 5, 5)
-        main_layout.setSpacing(5)
 
-        # 3ペインスプリッターの作成
-        self.main_splitter = QSplitter(Qt.Horizontal)
-        main_layout.addWidget(self.main_splitter)
 
-        # 左ペイン: フォルダツリー（プレースホルダー）
-        self.folder_pane = self._create_folder_pane()
-        self.main_splitter.addWidget(self.folder_pane)
 
-        # 中央ペイン: 検索結果（プレースホルダー）
-        self.search_pane = self._create_search_pane()
-        self.main_splitter.addWidget(self.search_pane)
 
-        # 右ペイン: ドキュメントプレビュー（プレースホルダー）
-        self.preview_pane = self._create_preview_pane()
-        self.main_splitter.addWidget(self.preview_pane)
 
-        # スプリッターのサイズ比率を設定 (25%, 40%, 35%)
-        self.main_splitter.setSizes([250, 400, 350])
-        self.main_splitter.setCollapsible(0, False)  # 左ペインは折りたたみ不可
-        self.main_splitter.setCollapsible(1, False)  # 中央ペインは折りたたみ不可
-        self.main_splitter.setCollapsible(2, True)   # 右ペインは折りたたみ可能
-
-    def _create_folder_pane(self) -> QWidget:
-        """左ペイン（フォルダツリー）を作成"""
-        # フォルダツリーコンテナを作成
-        self.folder_tree_container = FolderTreeContainer()
-        self.folder_tree_container.setMinimumWidth(200)
-
-        # シグナル接続
-        self.folder_tree_container.folder_selected.connect(self._on_folder_selected)
-        self.folder_tree_container.folder_indexed.connect(self._on_folder_indexed)
-        self.folder_tree_container.folder_excluded.connect(self._on_folder_excluded)
-        self.folder_tree_container.refresh_requested.connect(self._on_folder_refresh)
-
-        return self.folder_tree_container
-
-    def _create_search_pane(self) -> QWidget:
-        """中央ペイン（検索結果）を作成"""
-        # 中央ペインのコンテナを作成
-        search_container = QWidget()
-        search_layout = QVBoxLayout(search_container)
-        search_layout.setContentsMargins(5, 5, 5, 5)
-        search_layout.setSpacing(5)
-
-        # 検索インターフェースを作成
-        self.search_interface = SearchInterface()
-        search_layout.addWidget(self.search_interface)
-
-        # 検索結果ウィジェットを作成
-        self.search_results_widget = SearchResultsWidget()
-        self.search_results_widget.setMinimumWidth(300)
-        search_layout.addWidget(self.search_results_widget)
-
-        # 検索インターフェースのシグナル接続
-        self.search_interface.search_requested.connect(self._on_search_requested)
-        self.search_interface.search_cancelled.connect(self._on_search_cancelled)
-
-        # 検索提案機能の接続
-        self.search_interface.search_input.textChanged.connect(self._on_search_text_changed)
-
-        # 検索結果ウィジェットのシグナル接続
-        self.search_results_widget.result_selected.connect(self._on_search_result_selected)
-        self.search_results_widget.preview_requested.connect(self._on_preview_requested)
-        self.search_results_widget.page_changed.connect(self._on_page_changed)
-        self.search_results_widget.sort_changed.connect(self._on_sort_changed)
-        self.search_results_widget.filter_changed.connect(self._on_filter_changed)
-
-        search_container.setMinimumWidth(400)
-        return search_container
-
-    def _create_preview_pane(self) -> QWidget:
-        """右ペイン（ドキュメントプレビュー）を作成"""
-        # プレビューウィジェットを作成
-        self.preview_widget = PreviewWidget()
-        self.preview_widget.setMinimumWidth(250)
-
-        # シグナル接続
-        self.preview_widget.zoom_changed.connect(self._on_preview_zoom_changed)
-        self.preview_widget.format_changed.connect(self._on_preview_format_changed)
-
-        return self.preview_widget
 
     def _setup_menu_bar(self) -> None:
         """メニューバーを設定します"""
@@ -310,14 +211,14 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.rebuild_index_action = QAction("インデックス再構築(&R)", self)
         self.rebuild_index_action.setShortcut(QKeySequence("Ctrl+R"))
         self.rebuild_index_action.setStatusTip("検索インデックスを再構築します")
-        self.rebuild_index_action.triggered.connect(self._rebuild_index)
+        self.rebuild_index_action.triggered.connect(self.index_controller.rebuild_index)
         search_menu.addAction(self.rebuild_index_action)
 
         # インデックスクリアアクション
         self.clear_index_action = QAction("インデックスクリア(&C)", self)
         self.clear_index_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
         self.clear_index_action.setStatusTip("検索インデックスをクリアします")
-        self.clear_index_action.triggered.connect(self._clear_index)
+        self.clear_index_action.triggered.connect(self.index_controller.clear_index)
         search_menu.addAction(self.clear_index_action)
 
         # 表示メニュー
@@ -490,153 +391,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         """検索インターフェースにフォーカスを設定"""
         self.dialog_manager.show_search_dialog()
 
-    def _rebuild_index(self) -> None:
-        """
-        インデックス再構築を実行します
 
-        このメソッドは要件1.1-1.4に基づいて実装されており、以下の処理を行います：
-        1. ユーザーに確認ダイアログを表示（要件1.1）
-        2. 現在選択されているフォルダの検証（要件1.2）
-        3. 既存インデックスのクリア（要件1.3）
-        4. IndexingThreadManagerを使用したバックグラウンド処理開始（要件1.4）
-        5. タイムアウト監視の開始（要件6.1）
-        6. 進捗表示の開始（要件2.1）
 
-        エラーハンドリング：
-        - フォルダ未選択時の適切な通知
-        - スレッド開始失敗時の詳細エラー表示
-        - システムエラー時の回復処理
 
-        Raises:
-            DocMindException: インデックス再構築処理で回復不可能なエラーが発生した場合
-        """
-        try:
-            # 改善された確認ダイアログの表示
-            reply = self.dialog_manager.show_rebuild_confirmation_dialog()
-
-            if not reply:
-                return
-
-            # 現在選択されているフォルダパスを取得
-            current_folder = self.folder_tree_container.get_selected_folder()
-            if not current_folder:
-                self.dialog_manager.show_folder_not_selected_dialog()
-                return
-
-            # 既存のインデックスをクリア
-            self.logger.info(f"インデックス再構築開始: {current_folder}")
-            self.index_manager.clear_index()
-
-            # 進捗表示を開始
-            self.show_progress("インデックスを再構築中...", 0)
-
-            # IndexingThreadManagerを使用してインデックス再構築を開始
-            try:
-                thread_id = self.thread_manager.start_indexing_thread(
-                    folder_path=current_folder,
-                    document_processor=self.document_processor,
-                    index_manager=self.index_manager
-                )
-
-                if thread_id:
-                    # タイムアウト監視を開始
-                    self.timeout_manager.start_timeout(thread_id)
-                    self.logger.info(f"インデックス再構築スレッド開始: {thread_id}")
-                    self.show_status_message(f"インデックス再構築を開始しました (ID: {thread_id})", 3000)
-                else:
-                    # スレッド開始に失敗した場合の処理
-                    self.hide_progress("インデックス再構築の開始に失敗しました")
-
-                    # 詳細なエラー情報を提供
-                    active_count = self.thread_manager.get_active_thread_count()
-                    max_threads = self.thread_manager.max_concurrent_threads
-
-                    if active_count >= max_threads:
-                        error_msg = (
-                            f"最大同時実行数に達しています ({active_count}/{max_threads})。\n"
-                            "他の処理が完了してから再試行してください。"
-                        )
-                    elif self.thread_manager._is_folder_being_processed(current_folder):
-                        error_msg = (
-                            "このフォルダは既に処理中です。\n"
-                            "処理が完了してから再試行してください。"
-                        )
-                    else:
-                        error_msg = (
-                            "インデックス再構築の開始に失敗しました。\n"
-                            "しばらく待ってから再試行してください。"
-                        )
-
-                    self.dialog_manager.show_operation_failed_dialog(
-                        "スレッド開始エラー",
-                        error_msg,
-                        "しばらく待ってから再試行してください。"
-                    )
-
-            except Exception as thread_error:
-                # スレッド開始時の例外処理
-                self.hide_progress("インデックス再構築の開始でエラーが発生しました")
-                self.logger.error(f"スレッド開始エラー: {thread_error}")
-
-                self.dialog_manager.show_system_error_dialog(
-                    "スレッド開始エラー",
-                    f"インデックス再構築スレッドの開始でエラーが発生しました:\n{str(thread_error)}",
-                    "システムリソースが不足している可能性があります。"
-                )
-                return
-
-        except Exception as e:
-            self.logger.error(f"インデックス再構築エラー: {e}")
-            self.hide_progress("インデックス再構築でエラーが発生しました")
-            self.dialog_manager.show_system_error_dialog(
-                "インデックス再構築エラー",
-                f"インデックス再構築でエラーが発生しました:\n{str(e)}",
-                "しばらく待ってから再試行してください。"
-            )
-
-    def _clear_index(self) -> None:
-        """インデックスをクリアします"""
-        reply = self.dialog_manager.show_clear_index_confirmation_dialog()
-
-        if reply:
-            try:
-                self.show_progress("インデックスをクリア中...", 0)
-
-                # インデックスマネージャーからクリアを実行
-                if hasattr(self, 'index_manager') and self.index_manager:
-                    self.index_manager.clear_index()
-
-                    # 検索結果をクリア
-                    if hasattr(self, 'search_results_widget'):
-                        self.search_results_widget.clear_results()
-
-                    # プレビューをクリア
-                    if hasattr(self, 'preview_widget'):
-                        self.preview_widget.clear_preview()
-
-                    # 検索提案キャッシュをクリア
-                    if hasattr(self, 'search_manager'):
-                        self.search_manager.clear_suggestion_cache()
-
-                    self.hide_progress("インデックスクリアが完了しました")
-                    self.show_status_message("インデックスをクリアしました", 3000)
-
-                    # システム情報を更新
-                    if hasattr(self, 'system_info_label'):
-                        self.system_info_label.setText("インデックス: クリア済み")
-
-                else:
-                    self.hide_progress("")
-                    self.dialog_manager.show_component_unavailable_dialog("インデックスマネージャー")
-
-            except Exception as e:
-                self.hide_progress("")
-                self.logger.error(f"インデックスクリアに失敗しました: {e}")
-                self.dialog_manager.show_operation_failed_dialog(
-                    "インデックスクリア",
-                    f"インデックスクリアに失敗しました:\n{e}",
-                    "システムリソースを確認してから再試行してください。"
-                )
 
     def _toggle_preview_pane(self) -> None:
         """プレビューペインの表示を切り替えます"""
@@ -897,7 +654,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         if hasattr(self, 'timeout_manager') and self.timeout_manager:
             try:
                 # タイムアウト発生シグナル
-                self.timeout_manager.timeout_occurred.connect(self._handle_rebuild_timeout)
+                self.timeout_manager.timeout_occurred.connect(self.index_controller.handle_rebuild_timeout)
 
                 self.logger.debug("タイムアウトマネージャーのシグナル接続が完了しました")
 
@@ -933,58 +690,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.show_status_message(f"インデックスに追加: {os.path.basename(folder_path)}", 3000)
 
         # 実際のインデックス処理を開始
-        self._start_indexing_process(folder_path)
+        self.index_controller.start_indexing_process(folder_path)
 
-    def _start_indexing_process(self, folder_path: str) -> None:
-        """
-        実際のインデックス処理を開始
 
-        IndexingThreadManagerを使用してバックグラウンドスレッドで実行し、
-        複数の同時インデックス処理を制御します。
-
-        Args:
-            folder_path: インデックス化するフォルダのパス
-        """
-        try:
-            # 必要なコンポーネントが初期化されているかチェック
-            if not hasattr(self, 'document_processor') or not self.document_processor:
-                self.logger.error("DocumentProcessorが初期化されていません")
-                self.show_status_message("エラー: ドキュメントプロセッサーが利用できません", 5000)
-                return
-
-            if not hasattr(self, 'index_manager') or not self.index_manager:
-                self.logger.error("IndexManagerが初期化されていません")
-                self.show_status_message("エラー: インデックスマネージャーが利用できません", 5000)
-                return
-
-            if not hasattr(self, 'thread_manager') or not self.thread_manager:
-                self.logger.error("IndexingThreadManagerが初期化されていません")
-                self.show_status_message("エラー: スレッドマネージャーが利用できません", 5000)
-                return
-
-            # スレッドマネージャーを使用してインデックス処理を開始
-            thread_id = self.thread_manager.start_indexing_thread(
-                folder_path=folder_path,
-                document_processor=self.document_processor,
-                index_manager=self.index_manager
-            )
-
-            if thread_id:
-                self.logger.info(f"インデックス処理スレッドを開始しました: {thread_id} ({folder_path})")
-                self.show_status_message(f"インデックス処理を開始: {os.path.basename(folder_path)}", 3000)
-            else:
-                # 同時実行数制限などで開始できない場合
-                active_count = self.thread_manager.get_active_thread_count()
-                max_count = self.thread_manager.max_concurrent_threads
-                self.logger.warning(f"インデックス処理を開始できませんでした: {folder_path} (アクティブ: {active_count}/{max_count})")
-                self.show_status_message(
-                    f"インデックス処理を開始できません (同時実行数制限: {active_count}/{max_count})",
-                    5000
-                )
-
-        except Exception as e:
-            self.logger.error(f"インデックス処理の開始に失敗しました: {e}")
-            self.show_status_message(f"エラー: インデックス処理を開始できませんでした", 5000)
 
 
 
@@ -1110,7 +818,7 @@ class MainWindow(QMainWindow, LoggerMixin):
                 self.logger.info(f"全スレッド完了: 進捗バーを非表示")
 
                 # インデックス再構築完了時の追加処理
-                self._on_rebuild_completed(thread_id, statistics)
+                self.index_controller.handle_rebuild_completed(thread_id, statistics)
 
             # システム情報を更新
             indexed_count = len(self.folder_tree_container.get_indexed_folders())
@@ -1189,7 +897,7 @@ class MainWindow(QMainWindow, LoggerMixin):
             self.logger.error(f"全スレッド完了/エラー: 進捗バーを非表示")
 
             # インデックス再構築エラー時の追加処理
-            self._on_rebuild_error(thread_id, error_message)
+            self.index_controller.handle_rebuild_error(thread_id, error_message)
 
         # エラーログ
         self.logger.error(f"スレッドエラー: {thread_id} - {error_message}")
