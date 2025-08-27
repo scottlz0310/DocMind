@@ -32,6 +32,7 @@ from src.core.thread_manager import IndexingThreadManager
 from src.core.rebuild_timeout_manager import RebuildTimeoutManager
 from src.data.database import DatabaseManager
 from src.gui.dialogs.dialog_manager import DialogManager
+from src.gui.managers.progress_manager import ProgressManager
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.preview_widget import PreviewWidget
 from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
@@ -83,6 +84,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         # ダイアログマネージャーの初期化
         self.dialog_manager = DialogManager(self)
         
+        # 進捗管理マネージャーの初期化
+        self.progress_manager = ProgressManager(self)
+        
         # 検索関連コンポーネントの初期化
         self._initialize_search_components()
 
@@ -107,6 +111,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         # スタイリングの適用
         self._apply_styling()
 
+        # 進捗管理マネージャーの初期化
+        self.progress_manager.initialize()
+        
         # すべてのシグナル接続を統合管理
         self._connect_all_signals()
 
@@ -357,6 +364,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.progress_bar.setVisible(False)
         self.progress_bar.setMaximumWidth(200)
         self.status_bar.addPermanentWidget(self.progress_bar)
+        
+        # 進捗ラベル（progress_manager用）
+        self.progress_label = self.status_label
 
         # システム情報ラベル
         self.system_info_label = QLabel("インデックス: 未作成")
@@ -730,301 +740,25 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def show_progress(self, message: str, value: int, current: int = 0, total: int = 0) -> None:
         """
-        改善された進捗バーを表示します（タスク10対応）
-
-        Args:
-            message: 進捗メッセージ
-            value: 進捗値（0-100、0で不定進捗）
-            current: 現在の処理数（オプション）
-            total: 総処理数（オプション）
+        進捗バーを表示（progress_managerに委譲）
         """
-        # アイコン付きメッセージの生成
-        icon_message = self._get_progress_icon_message(message, value)
-        self.status_label.setText(icon_message)
-        self.progress_bar.setVisible(True)
+        self.progress_manager.show_progress(message, value, current, total)
 
-        if value == 0:
-            # 不定進捗（スキャン中など）
-            self.progress_bar.setRange(0, 0)
-            self.progress_bar.setFormat("🔄 処理中...")
 
-            # 不定進捗用のアニメーション効果
-            self.progress_bar.setStyleSheet("""
-                QProgressBar {
-                    border: 2px solid #e0e0e0;
-                    border-radius: 6px;
-                    text-align: center;
-                    font-weight: bold;
-                    font-size: 11px;
-                    background-color: #f5f5f5;
-                }
-                QProgressBar::chunk {
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 #4CAF50, stop:0.5 #66BB6A, stop:1 #4CAF50);
-                    border-radius: 4px;
-                    margin: 1px;
-                }
-            """)
-        else:
-            # 定進捗
-            self.progress_bar.setRange(0, 100)
-            self.progress_bar.setValue(value)
 
-            # 進捗表示フォーマットを改善（アイコン付き）
-            if current > 0 and total > 0:
-                self.progress_bar.setFormat(f"📊 {value}% ({current:,}/{total:,})")
-            else:
-                self.progress_bar.setFormat(f"📊 {value}%")
 
-            # 進捗段階に応じた色とアイコンの設定
-            color_info = self._get_progress_color_info(value)
 
-            self.progress_bar.setStyleSheet(f"""
-                QProgressBar {{
-                    border: 2px solid #e0e0e0;
-                    border-radius: 6px;
-                    text-align: center;
-                    font-weight: bold;
-                    font-size: 11px;
-                    background-color: #f5f5f5;
-                    color: #333333;
-                }}
-                QProgressBar::chunk {{
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 {color_info['primary']},
-                        stop:0.5 {color_info['secondary']},
-                        stop:1 {color_info['primary']});
-                    border-radius: 4px;
-                    margin: 1px;
-                }}
-            """)
 
-        # 詳細ツールチップの設定
-        tooltip = self._create_progress_tooltip(message, value, current, total)
-        self.progress_bar.setToolTip(tooltip)
-
-        # アクセシビリティ用の説明を更新
-        self.progress_bar.setAccessibleDescription(f"進捗: {message}")
-
-        # ログに進捗情報を記録
-        if current > 0 and total > 0:
-            self.logger.debug(f"進捗表示更新: {message} ({current:,}/{total:,}, {value}%)")
-        else:
-            self.logger.debug(f"進捗表示更新: {message} ({value}%)")
-
-    def _get_progress_icon_message(self, message: str, value: int) -> str:
-        """
-        進捗メッセージにアイコンを追加
-
-        Args:
-            message: 元のメッセージ
-            value: 進捗値
-
-        Returns:
-            str: アイコン付きメッセージ
-        """
-        # メッセージの内容に応じてアイコンを選択
-        if "スキャン" in message or "検索" in message:
-            icon = "🔍"
-        elif "処理" in message or "変換" in message:
-            icon = "⚙️"
-        elif "インデックス" in message:
-            icon = "📚"
-        elif "完了" in message:
-            icon = "✅"
-        elif "エラー" in message:
-            icon = "❌"
-        elif "クリア" in message:
-            icon = "🗑️"
-        else:
-            # 進捗値に応じてアイコンを選択
-            if value == 0:
-                icon = "🔄"
-            elif value < 25:
-                icon = "🚀"
-            elif value < 50:
-                icon = "⚡"
-            elif value < 75:
-                icon = "🔥"
-            elif value < 100:
-                icon = "🎯"
-            else:
-                icon = "✨"
-
-        return f"{icon} {message}"
-
-    def _get_progress_color_info(self, value: int) -> dict:
-        """
-        進捗値に応じた色情報を取得
-
-        Args:
-            value: 進捗値（0-100）
-
-        Returns:
-            dict: 色情報（primary, secondary）
-        """
-        if value < 20:
-            return {
-                'primary': '#FF5722',    # 深いオレンジ（開始）
-                'secondary': '#FF7043'   # 明るいオレンジ
-            }
-        elif value < 40:
-            return {
-                'primary': '#FF9800',    # オレンジ（初期段階）
-                'secondary': '#FFB74D'   # 明るいオレンジ
-            }
-        elif value < 60:
-            return {
-                'primary': '#2196F3',    # 青（進行中）
-                'secondary': '#42A5F5'   # 明るい青
-            }
-        elif value < 80:
-            return {
-                'primary': '#00BCD4',    # シアン（後半）
-                'secondary': '#26C6DA'   # 明るいシアン
-            }
-        else:
-            return {
-                'primary': '#4CAF50',    # 緑（完了間近）
-                'secondary': '#66BB6A'   # 明るい緑
-            }
-
-    def _create_progress_tooltip(self, message: str, value: int, current: int, total: int) -> str:
-        """
-        詳細な進捗ツールチップを作成
-
-        Args:
-            message: 進捗メッセージ
-            value: 進捗値
-            current: 現在の処理数
-            total: 総処理数
-
-        Returns:
-            str: ツールチップテキスト
-        """
-        from datetime import datetime
-
-        tooltip_lines = [
-            f"📋 処理内容: {message}",
-            f"📊 進捗率: {value}%"
-        ]
-
-        if current > 0 and total > 0:
-            remaining = total - current
-            tooltip_lines.extend([
-                f"✅ 完了: {current:,} ファイル",
-                f"⏳ 残り: {remaining:,} ファイル",
-                f"📁 総数: {total:,} ファイル"
-            ])
-
-            # 推定残り時間（簡易計算）
-            if value > 5:  # 5%以上進捗している場合のみ
-                estimated_total_time = (100 / value) * (datetime.now().timestamp())
-                # 実際の実装では開始時刻を記録して正確に計算する必要がある
-
-        tooltip_lines.append(f"🕒 更新時刻: {datetime.now().strftime('%H:%M:%S')}")
-
-        return "\n".join(tooltip_lines)
 
     def hide_progress(self, completion_message: str = "") -> None:
         """
-        改善された進捗バー非表示処理（タスク10対応）
-
-        Args:
-            completion_message: 完了メッセージ
+        進捗バーを非表示（progress_managerに委譲）
         """
-        # 完了アニメーション効果
-        if completion_message and "完了" in completion_message:
-            # 完了時は一時的に100%表示してから非表示
-            self.progress_bar.setRange(0, 100)
-            self.progress_bar.setValue(100)
-            self.progress_bar.setFormat("✅ 完了!")
+        self.progress_manager.hide_progress(completion_message)
 
-            # 完了時の緑色スタイル
-            self.progress_bar.setStyleSheet("""
-                QProgressBar {
-                    border: 2px solid #4CAF50;
-                    border-radius: 6px;
-                    text-align: center;
-                    font-weight: bold;
-                    font-size: 11px;
-                    background-color: #E8F5E8;
-                    color: #2E7D32;
-                }
-                QProgressBar::chunk {
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 #4CAF50, stop:0.5 #66BB6A, stop:1 #81C784);
-                    border-radius: 4px;
-                    margin: 1px;
-                }
-            """)
 
-            # 1秒後に非表示
-            QTimer.singleShot(1000, self._actually_hide_progress)
-        else:
-            # エラーや中断の場合は即座に非表示
-            self._actually_hide_progress()
 
-        # ステータスメッセージの設定
-        if completion_message:
-            # アイコン付きの完了メッセージ
-            icon_message = self._get_completion_icon_message(completion_message)
-            self.show_status_message(icon_message, 8000)  # 完了メッセージは長めに表示
-        else:
-            self.status_label.setText("🏠 準備完了")
 
-        # ログに非表示化を記録
-        self.logger.debug(f"進捗バー非表示: {completion_message}")
-
-    def _actually_hide_progress(self) -> None:
-        """
-        実際に進捗バーを非表示にする内部メソッド
-        """
-        # 進捗バーを非表示にしてリセット
-        self.progress_bar.setVisible(False)
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        self.progress_bar.setFormat("")
-        self.progress_bar.setToolTip("")
-
-        # スタイルシートをデフォルトにリセット
-        self.progress_bar.setStyleSheet("""
-            QProgressBar {
-                border: 1px solid #d0d0d0;
-                border-radius: 3px;
-                text-align: center;
-            }
-            QProgressBar::chunk {
-                background-color: #4CAF50;
-                border-radius: 2px;
-            }
-        """)
-
-    def _get_completion_icon_message(self, message: str) -> str:
-        """
-        完了メッセージにアイコンを追加
-
-        Args:
-            message: 元のメッセージ
-
-        Returns:
-            str: アイコン付きメッセージ
-        """
-        if "完了" in message:
-            if "インデックス" in message:
-                return f"✅ {message}"
-            elif "クリア" in message:
-                return f"🗑️ {message}"
-            else:
-                return f"✨ {message}"
-        elif "エラー" in message or "失敗" in message:
-            return f"❌ {message}"
-        elif "中断" in message or "停止" in message:
-            return f"⏹️ {message}"
-        elif "キャンセル" in message:
-            return f"🚫 {message}"
-        else:
-            return f"ℹ️ {message}"
 
     def update_system_info(self, info: str) -> None:
         """
@@ -1037,83 +771,33 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def update_progress(self, current: int, total: int, message: str = "") -> None:
         """
-        進捗率を正確に計算して表示します
-
-        Args:
-            current: 現在の処理数
-            total: 総処理数
-            message: 進捗メッセージ（オプション）
+        進捗を更新（progress_managerに委譲）
         """
-        if total <= 0:
-            # 総数が0以下の場合は不定進捗として表示
-            self.show_progress(message or "処理中...", 0)
-            return
-
-        # 進捗率を計算（0-100の範囲）
-        percentage = min(100, max(0, int((current / total) * 100)))
-
-        # デフォルトメッセージを生成
-        if not message:
-            message = f"処理中: {current}/{total}"
-
-        # 進捗バーを更新
-        self.show_progress(message, percentage, current, total)
+        self.progress_manager.update_progress(current, total, message)
 
     def set_progress_indeterminate(self, message: str = "処理中...") -> None:
         """
-        不定進捗モードに設定します
-
-        Args:
-            message: 表示するメッセージ
+        不定進捗モードに設定（progress_managerに委譲）
         """
-        self.show_progress(message, 0)
+        self.progress_manager.set_progress_indeterminate(message)
 
     def is_progress_visible(self) -> bool:
         """
-        進捗バーが表示されているかどうかを確認します
-
-        Returns:
-            bool: 進捗バーが表示されている場合True
+        進捗バーが表示されているか確認（progress_managerに委譲）
         """
-        return self.progress_bar.isVisible()
+        return self.progress_manager.is_progress_visible()
 
     def get_progress_value(self) -> int:
         """
-        現在の進捗値を取得します
-
-        Returns:
-            int: 現在の進捗値（0-100）
+        現在の進捗値を取得（progress_managerに委譲）
         """
-        return self.progress_bar.value()
+        return self.progress_manager.get_progress_value()
 
     def set_progress_style(self, style: str) -> None:
         """
-        進捗バーのスタイルを設定します
-
-        Args:
-            style: 'success', 'warning', 'error', 'info' のいずれか
+        進捗バーのスタイルを設定（progress_managerに委譲）
         """
-        color_map = {
-            'success': '#4CAF50',  # 緑
-            'warning': '#FF9800',  # オレンジ
-            'error': '#F44336',    # 赤
-            'info': '#2196F3'      # 青
-        }
-
-        color = color_map.get(style, '#4CAF50')
-
-        self.progress_bar.setStyleSheet(f"""
-            QProgressBar {{
-                border: 1px solid #d0d0d0;
-                border-radius: 3px;
-                text-align: center;
-                font-weight: bold;
-            }}
-            QProgressBar::chunk {{
-                background-color: {color};
-                border-radius: 2px;
-            }}
-        """)
+        self.progress_manager.set_progress_style(style)
 
     def _connect_all_signals(self) -> None:
         """
@@ -1980,6 +1664,11 @@ class MainWindow(QMainWindow, LoggerMixin):
             # 検索関連コンポーネントのクリーンアップ
             self._cleanup_search_components()
 
+            # 進捗管理マネージャーのクリーンアップ
+            if hasattr(self, 'progress_manager') and self.progress_manager:
+                self.progress_manager.cleanup()
+                self.logger.info("進捗管理マネージャーをクリーンアップしました")
+            
             # シグナル接続の切断
             self._disconnect_all_signals()
 
