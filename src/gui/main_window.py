@@ -34,6 +34,8 @@ from src.data.database import DatabaseManager
 from src.gui.dialogs.dialog_manager import DialogManager
 from src.gui.managers.progress_manager import ProgressManager
 from src.gui.managers.layout_manager import LayoutManager
+from src.gui.managers.signal_manager import SignalManager
+from src.gui.managers.cleanup_manager import CleanupManager
 from src.gui.controllers.index_controller import IndexController
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.preview_widget import PreviewWidget
@@ -95,6 +97,12 @@ class MainWindow(QMainWindow, LoggerMixin):
         # インデックス制御コントローラーの初期化
         self.index_controller = IndexController(self)
         
+        # シグナル管理マネージャーの初期化
+        self.signal_manager = SignalManager(self)
+        
+        # クリーンアップ管理マネージャーの初期化
+        self.cleanup_manager = CleanupManager(self)
+        
         # 検索関連コンポーネントの初期化
         self._initialize_search_components()
 
@@ -110,8 +118,8 @@ class MainWindow(QMainWindow, LoggerMixin):
         # 進捗管理マネージャーの初期化
         self.progress_manager.initialize()
         
-        # すべてのシグナル接続を統合管理
-        self._connect_all_signals()
+        # すべてのシグナル接続を統合管理（signal_managerに委譲）
+        self.signal_manager.connect_all_signals()
 
         self.logger.info("メインウィンドウが初期化されました")
 
@@ -556,112 +564,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         """
         self.progress_manager.set_progress_style(style)
 
-    def _connect_all_signals(self) -> None:
-        """
-        すべてのシグナル接続を統合管理します
 
-        メインウィンドウ初期化時に呼び出され、すべてのコンポーネントの
-        シグナル接続を一元的に管理します。
-        """
-        try:
-            # フォルダツリーのシグナル接続
-            self._connect_folder_tree_signals()
-
-            # 検索結果ウィジェットのシグナル接続
-            self._connect_search_results_signals()
-
-            # インデックス再構築関連のシグナル接続
-            self._connect_rebuild_signals()
-
-            self.logger.info("すべてのシグナル接続が完了しました")
-
-        except Exception as e:
-            self.logger.error(f"シグナル接続中にエラーが発生しました: {e}")
-            # エラーが発生してもアプリケーションは継続
-            pass
-
-    def _connect_folder_tree_signals(self) -> None:
-        """フォルダツリーのシグナルを接続します"""
-        # フォルダツリーのシグナルはすでに_create_folder_paneで接続済み
-        # 将来的に追加のシグナル接続が必要な場合はここに実装
-        pass
-
-    def _connect_search_results_signals(self) -> None:
-        """検索結果ウィジェットのシグナルを接続します"""
-        # 検索結果ウィジェットのシグナルはすでに_create_search_paneで接続済み
-        # 将来的に追加のシグナル接続が必要な場合はここに実装
-        pass
-
-    def _connect_rebuild_signals(self) -> None:
-        """
-        インデックス再構築関連のすべてのシグナル接続を管理します
-
-        要件7.3, 4.2に対応し、スレッドマネージャーとタイムアウトマネージャーの
-        シグナルを適切に接続します。
-        """
-        try:
-            # スレッドマネージャーのシグナル接続
-            self._connect_thread_manager_signals()
-
-            # タイムアウトマネージャーのシグナル接続
-            self._connect_timeout_manager_signals()
-
-            self.logger.info("インデックス再構築関連のシグナル接続が完了しました")
-
-        except Exception as e:
-            self.logger.error(f"再構築シグナル接続中にエラーが発生しました: {e}")
-            # エラーが発生してもアプリケーションは継続
-            pass
-
-    def _connect_thread_manager_signals(self) -> None:
-        """
-        スレッドマネージャーのシグナルを接続します
-
-        IndexingThreadManagerの各種シグナルを適切なハンドラーメソッドに接続し、
-        インデックス再構築処理の状態変化を監視します。
-        """
-        if hasattr(self, 'thread_manager') and self.thread_manager:
-            try:
-                # スレッド開始シグナル
-                self.thread_manager.thread_started.connect(self._on_thread_started)
-
-                # スレッド完了シグナル
-                self.thread_manager.thread_finished.connect(self._on_thread_finished)
-
-                # スレッドエラーシグナル
-                self.thread_manager.thread_error.connect(self._on_thread_error)
-
-                # スレッド進捗シグナル（インデックス再構築専用）
-                self.thread_manager.thread_progress.connect(self._on_rebuild_progress)
-
-                # マネージャー状態変更シグナル
-                self.thread_manager.manager_status_changed.connect(self._on_manager_status_changed)
-
-                self.logger.debug("スレッドマネージャーのシグナル接続が完了しました")
-
-            except Exception as e:
-                self.logger.error(f"スレッドマネージャーシグナル接続エラー: {e}")
-        else:
-            self.logger.warning("スレッドマネージャーが利用できません")
-
-    def _connect_timeout_manager_signals(self) -> None:
-        """
-        タイムアウトマネージャーのシグナルを接続します
-
-        RebuildTimeoutManagerのタイムアウト発生シグナルを適切なハンドラーに接続し、
-        長時間実行される再構築処理の監視を行います。
-        """
-        if hasattr(self, 'timeout_manager') and self.timeout_manager:
-            try:
-                # タイムアウト発生シグナル
-                self.timeout_manager.timeout_occurred.connect(self.index_controller.handle_rebuild_timeout)
-
-                self.logger.debug("タイムアウトマネージャーのシグナル接続が完了しました")
-
-            except Exception as e:
-                self.logger.error(f"タイムアウトマネージャーシグナル接続エラー: {e}")
-        else:
-            self.logger.warning("タイムアウトマネージャーが利用できません")
 
     # フォルダツリーのシグナルハンドラー
 
@@ -1330,282 +1233,16 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def closeEvent(self, event) -> None:
         """
-        ウィンドウクローズイベントをハンドルします
+        ウィンドウクローズイベントをハンドルします（cleanup_managerに委譲）
 
         Args:
             event: クローズイベント
         """
-        reply = QMessageBox.question(
-            self,
-            "終了確認",
-            "DocMindを終了しますか？",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
+        self.cleanup_manager.handle_close_event(event)
 
-        if reply == QMessageBox.Yes:
-            self.logger.info("アプリケーションを終了します")
 
-            # すべてのコンポーネントを適切にクリーンアップ
-            self._cleanup_all_components()
 
-            event.accept()
-        else:
-            event.ignore()
 
-    def _cleanup_all_components(self):
-        """
-        すべてのコンポーネントをクリーンアップします
-
-        アプリケーション終了時に呼び出され、すべてのリソースを適切に解放し、
-        実行中のスレッドやタイマーを安全に停止します。
-        """
-        try:
-            self.logger.info("アプリケーション終了時のクリーンアップを開始します")
-
-            # インデックス再構築関連のクリーンアップを最優先で実行
-            self._cleanup_rebuild_components()
-
-            # その他のUIコンポーネントのクリーンアップ
-            self._cleanup_ui_components()
-
-            # 検索関連コンポーネントのクリーンアップ
-            self._cleanup_search_components()
-
-            # 進捗管理マネージャーのクリーンアップ
-            if hasattr(self, 'progress_manager') and self.progress_manager:
-                self.progress_manager.cleanup()
-                self.logger.info("進捗管理マネージャーをクリーンアップしました")
-            
-            # シグナル接続の切断
-            self._disconnect_all_signals()
-
-            self.logger.info("すべてのコンポーネントクリーンアップが完了しました")
-
-        except Exception as e:
-            self.logger.error(f"コンポーネントクリーンアップ中にエラーが発生しました: {e}")
-
-    def _cleanup_rebuild_components(self):
-        """
-        インデックス再構築関連コンポーネントのクリーンアップ
-
-        要件7.3, 4.2に対応し、スレッドマネージャーとタイムアウトマネージャーを
-        適切にクリーンアップします。
-        """
-        try:
-            # タイムアウトマネージャーのクリーンアップ（最優先）
-            if hasattr(self, 'timeout_manager') and self.timeout_manager:
-                self.timeout_manager.cancel_all_timeouts()
-                self.logger.info("タイムアウトマネージャーをクリーンアップしました")
-
-            # スレッドマネージャーのクリーンアップ
-            if hasattr(self, 'thread_manager') and self.thread_manager:
-                # 実行中のスレッドを安全に停止
-                active_threads = self.thread_manager.get_active_thread_count()
-                if active_threads > 0:
-                    self.logger.info(f"実行中のスレッド {active_threads} 個を停止します")
-
-                # シャットダウン処理を実行
-                self.thread_manager.shutdown()
-                self.logger.info("スレッドマネージャーをクリーンアップしました")
-
-            # 古いインデックス処理スレッドのクリーンアップ（後方互換性）
-            if hasattr(self, 'indexing_worker') and self.indexing_worker:
-                try:
-                    self.indexing_worker.stop()
-                    if hasattr(self, 'indexing_thread') and self.indexing_thread:
-                        if self.indexing_thread.isRunning():
-                            self.indexing_thread.quit()
-                            self.indexing_thread.wait(3000)  # 3秒待機
-                        try:
-                            self.indexing_thread.deleteLater()
-                        except RuntimeError:
-                            pass
-                    try:
-                        self.indexing_worker.deleteLater()
-                    except RuntimeError:
-                        pass
-                    self.logger.info("レガシーインデックス処理スレッドをクリーンアップしました")
-                except Exception as cleanup_error:
-                    self.logger.debug(f"レガシーインデックス処理スレッドクリーンアップエラー: {cleanup_error}")
-
-        except Exception as e:
-            self.logger.error(f"再構築コンポーネントクリーンアップエラー: {e}")
-
-    def _cleanup_ui_components(self):
-        """UIコンポーネントのクリーンアップ"""
-        try:
-            # フォルダツリーのクリーンアップ
-            if hasattr(self, 'folder_tree_container') and self.folder_tree_container:
-                if hasattr(self.folder_tree_container, 'tree_widget') and hasattr(self.folder_tree_container.tree_widget, '_cleanup_worker'):
-                    self.folder_tree_container.tree_widget._cleanup_worker()
-                self.logger.info("フォルダツリーをクリーンアップしました")
-
-            # プレビューウィジェットのクリーンアップ
-            if hasattr(self, 'preview_widget') and self.preview_widget:
-                self.preview_widget.clear_preview()
-                self.logger.info("プレビューウィジェットをクリーンアップしました")
-
-        except Exception as e:
-            self.logger.error(f"UIコンポーネントクリーンアップエラー: {e}")
-
-    def _cleanup_search_components(self):
-        """検索関連コンポーネントのクリーンアップ"""
-        try:
-            # 検索インターフェースのクリーンアップ（ワーカースレッドがあれば）
-            if hasattr(self, 'search_interface') and self.search_interface:
-                # 実行中のタスクがあればキャンセル
-                try:
-                    if hasattr(self, 'search_worker') and self.search_worker.isRunning():
-                        self.search_worker.cancel()
-                        self.search_worker.wait()
-                except:
-                    pass
-                self.logger.info("検索インターフェースをクリーンアップしました")
-
-            # 検索マネージャーのクリーンアップ
-            if hasattr(self, 'search_manager'):
-                try:
-                    self.search_manager.clear_suggestion_cache()
-                except:
-                    pass
-                self.logger.info("検索マネージャーをクリーンアップしました")
-
-        except Exception as e:
-            self.logger.error(f"検索コンポーネントクリーンアップエラー: {e}")
-
-    def _disconnect_all_signals(self):
-        """
-        すべてのシグナル接続を切断します
-
-        メモリリークを防ぐため、アプリケーション終了時にすべてのシグナル接続を
-        明示的に切断します。
-        """
-        try:
-            # インデックス再構築関連のシグナル切断
-            self._disconnect_rebuild_signals()
-
-            # その他のシグナル切断
-            self._disconnect_ui_signals()
-
-            self.logger.info("すべてのシグナル接続を切断しました")
-
-        except Exception as e:
-            self.logger.error(f"シグナル切断中にエラーが発生しました: {e}")
-
-    def _disconnect_rebuild_signals(self):
-        """インデックス再構築関連のシグナル接続を切断"""
-        try:
-            # スレッドマネージャーのシグナル切断
-            if hasattr(self, 'thread_manager') and self.thread_manager:
-                signals_to_disconnect = [
-                    ('thread_started', self._on_thread_started),
-                    ('thread_finished', self._on_thread_finished),
-                    ('thread_error', self._on_thread_error),
-                    ('thread_progress', self._on_rebuild_progress),
-                    ('manager_status_changed', self._on_manager_status_changed)
-                ]
-
-                for signal_name, handler in signals_to_disconnect:
-                    try:
-                        signal = getattr(self.thread_manager, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        # シグナルが存在しないか、接続されていない場合は無視
-                        pass
-
-                self.logger.debug("スレッドマネージャーのシグナルを切断しました")
-
-            # タイムアウトマネージャーのシグナル切断
-            if hasattr(self, 'timeout_manager') and self.timeout_manager:
-                try:
-                    self.timeout_manager.timeout_occurred.disconnect(self._handle_rebuild_timeout)
-                    self.logger.debug("タイムアウトマネージャーのシグナルを切断しました")
-                except (AttributeError, TypeError):
-                    # シグナルが接続されていない場合は無視
-                    pass
-
-        except Exception as e:
-            self.logger.error(f"再構築シグナル切断エラー: {e}")
-
-    def _disconnect_ui_signals(self):
-        """UIコンポーネントのシグナル接続を切断"""
-        try:
-            # メインウィンドウのシグナル切断（接続されているハンドラーがある場合のみ）
-            # これらのシグナルは通常他のコンポーネントに接続されているため、
-            # 全切断ではなく特定のハンドラーのみ切断する場合は個別に実装
-
-            # フォルダツリーのシグナル切断
-            if hasattr(self, 'folder_tree_container') and self.folder_tree_container:
-                ui_signals_to_disconnect = [
-                    ('folder_selected', self._on_folder_selected),
-                    ('folder_indexed', self._on_folder_indexed),
-                    ('folder_excluded', self._on_folder_excluded),
-                    ('refresh_requested', self._on_folder_refresh)
-                ]
-
-                for signal_name, handler in ui_signals_to_disconnect:
-                    try:
-                        signal = getattr(self.folder_tree_container, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        pass
-
-            # 検索インターフェースのシグナル切断
-            if hasattr(self, 'search_interface') and self.search_interface:
-                search_signals_to_disconnect = [
-                    ('search_requested', self._on_search_requested),
-                    ('search_cancelled', self._on_search_cancelled)
-                ]
-
-                for signal_name, handler in search_signals_to_disconnect:
-                    try:
-                        signal = getattr(self.search_interface, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        pass
-
-                # 検索入力のテキスト変更シグナル
-                try:
-                    self.search_interface.search_input.textChanged.disconnect(self._on_search_text_changed)
-                except (AttributeError, TypeError):
-                    pass
-
-            # 検索結果ウィジェットのシグナル切断
-            if hasattr(self, 'search_results_widget') and self.search_results_widget:
-                result_signals_to_disconnect = [
-                    ('result_selected', self._on_search_result_selected),
-                    ('preview_requested', self._on_preview_requested),
-                    ('page_changed', self._on_page_changed),
-                    ('sort_changed', self._on_sort_changed),
-                    ('filter_changed', self._on_filter_changed)
-                ]
-
-                for signal_name, handler in result_signals_to_disconnect:
-                    try:
-                        signal = getattr(self.search_results_widget, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        pass
-
-            # プレビューウィジェットのシグナル切断
-            if hasattr(self, 'preview_widget') and self.preview_widget:
-                preview_signals_to_disconnect = [
-                    ('zoom_changed', self._on_preview_zoom_changed),
-                    ('format_changed', self._on_preview_format_changed)
-                ]
-
-                for signal_name, handler in preview_signals_to_disconnect:
-                    try:
-                        signal = getattr(self.preview_widget, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        pass
-
-            self.logger.debug("UIコンポーネントのシグナルを切断しました")
-
-        except Exception as e:
-            self.logger.error(f"UIシグナル切断エラー: {e}")
 
     # 検索結果ウィジェットのシグナルハンドラー
 
@@ -2162,7 +1799,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"権限エラー: {folder_path}")
 
         # 部分的なインデックスをクリア
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2192,7 +1829,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"リソースエラー: {folder_path}")
 
         # 部分的なインデックスをクリア
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2222,7 +1859,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"ディスク容量エラー: {folder_path}")
 
         # 部分的なインデックスをクリア
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2252,7 +1889,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"データ破損エラー: {folder_path}")
 
         # インデックス全体をクリア（破損の可能性があるため）
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2282,7 +1919,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"システムエラー: {folder_path}")
 
         # 部分的なインデックスをクリア
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2297,37 +1934,7 @@ class MainWindow(QMainWindow, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _cleanup_partial_index(self) -> None:
-        """部分的インデックスのクリーンアップ処理
 
-        要件3.3対応: 部分的に構築されたインデックスをクリアして
-        データの一貫性を保持します。
-        """
-        try:
-            if hasattr(self, 'index_manager') and self.index_manager:
-                self.logger.info("部分的インデックスのクリーンアップを開始")
-                self.index_manager.clear_index()
-
-                # 検索結果をクリア
-                if hasattr(self, 'search_results_widget'):
-                    self.search_results_widget.clear_results()
-
-                # プレビューをクリア
-                if hasattr(self, 'preview_widget'):
-                    self.preview_widget.clear_preview()
-
-                # 検索提案キャッシュをクリア
-                if hasattr(self, 'search_manager'):
-                    self.search_manager.clear_suggestion_cache()
-
-                # システム情報を更新
-                if hasattr(self, 'system_info_label'):
-                    self.system_info_label.setText("インデックス: エラーによりクリア済み")
-
-                self.logger.info("部分的インデックスのクリーンアップが完了")
-
-        except Exception as e:
-            self.logger.error(f"インデックスクリーンアップでエラー: {e}")
 
     def _perform_error_cleanup(self, thread_id: str, error_type: str, thread_info: Optional[object]) -> None:
         """エラー後の共通クリーンアップ処理
