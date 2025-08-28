@@ -20,27 +20,43 @@
 - **循環参照禁止**: import文の循環参照を避ける
 - **命名規則**: 責務が明確になる名前を使用
 
-## main_window.py リファクタリング固有ルール
+## Phase1完了: main_window.py リファクタリング成果
 
-### 分離対象の分類
-1. **UI構築系** → `managers/layout_manager.py`
-2. **進捗管理系** → `managers/progress_manager.py`
-3. **シグナル管理系** → `managers/signal_manager.py`
-4. **インデックス制御系** → `controllers/index_controller.py`
-5. **ダイアログ系** → `dialogs/dialog_manager.py`
-6. **クリーンアップ系** → `managers/cleanup_manager.py`
+### ✅ 完了済み分離コンポーネント
+1. **UI構築系** → `managers/layout_manager.py` (15メソッド)
+2. **進捗管理系** → `managers/progress_manager.py` (16メソッド)
+3. **シグナル管理系** → `managers/signal_manager.py` (9メソッド)
+4. **インデックス制御系** → `controllers/index_controller.py` (25メソッド)
+5. **ダイアログ系** → `dialogs/dialog_manager.py` (15メソッド)
+6. **クリーンアップ系** → `managers/cleanup_manager.py` (7メソッド)
 
-### 移動時の注意事項
-- **シグナル・スロット接続の維持**: Qt のシグナル接続を破綻させない
-- **import文の管理**: 循環参照を避け、必要最小限のimportのみ
-- **メソッド名の保持**: 外部から呼び出されるメソッド名は変更しない
-- **型ヒントの追加**: 移動時に型ヒントを必ず追加
+### 📊 Phase1成果指標
+- **行数削減**: 3,605行 → 1,974行 (45.2%削減)
+- **メソッド削減**: 112個 → 73個 (34.8%削減)
+- **品質保証**: 全コンポーネント正常動作確認済み
+- **アーキテクチャ**: 責務分離・保守性・拡張性確保
 
-### 各段階での検証項目
-- [ ] アプリケーションが正常に起動する
-- [ ] 全ての既存機能が動作する
-- [ ] テストスイートが全て通る
-- [ ] メモリリークが発生していない
+## Phase2計画: search_interface.py リファクタリング
+
+### 🎯 Phase2最優先ターゲット
+- **対象ファイル**: `src/gui/search_interface.py`
+- **現在規模**: 1,504行, 79メソッド
+- **目標規模**: 150行以下 (90%削減)
+- **期間**: 2025年1月-2月
+
+### 分離対象の分類（Phase2）
+1. **検索UI管理系** → `managers/search_ui_manager.py`
+2. **検索実行系** → `controllers/search_controller.py`
+3. **結果表示系** → `managers/result_display_manager.py`
+4. **フィルタ管理系** → `managers/filter_manager.py`
+5. **プレビュー系** → `managers/preview_manager.py`
+6. **検索履歴系** → `managers/search_history_manager.py`
+
+### Phase2での検証項目
+- [ ] 検索機能が正常に動作する
+- [ ] 結果表示・フィルタリングが正常動作する
+- [ ] プレビュー機能が正常動作する
+- [ ] 検索履歴機能が正常動作する
 - [ ] パフォーマンスが劣化していない
 
 ## 実装ガイドライン
@@ -101,14 +117,21 @@ class MainWindow(QMainWindow):
 
 ## 緊急時対応
 
-### ロールバック手順
+### Phase2用ロールバック手順
 ```bash
-# 問題発生時の緊急ロールバック
+# Phase2問題発生時の緊急ロールバック
 git checkout main
-git branch -D refactor/main-window-phase1
+git branch -D refactor/search-interface-phase2
 
 # 新しいブランチで再開
-git checkout -b refactor/main-window-phase1-v2
+git checkout -b refactor/search-interface-phase2-v2
+```
+
+### Phase1成果の保護
+```bash
+# Phase1成果は保護済み（mainブランチにマージ済み）
+# Phase2作業はPhase1成果を基盤として実施
+git checkout -b refactor/search-interface-phase2
 ```
 
 ### 部分的ロールバック
@@ -117,14 +140,20 @@ git checkout -b refactor/main-window-phase1-v2
 
 ## 成功指標
 
-### 定量的指標
-- main_window.py: 3,605行 → 300行以下（92%削減）
-- メソッド数: 112個 → 10個以下（91%削減）
+### Phase1達成済み指標
+- ✅ main_window.py: 3,605行 → 1,974行（45.2%削減）
+- ✅ メソッド数: 112個 → 73個（34.8%削減）
+- ✅ 全機能正常動作確認
+- ✅ 品質保証完了（メモリ効率・起動時間・依存関係）
+
+### Phase2目標指標
+- search_interface.py: 1,504行 → 150行以下（90%削減）
+- メソッド数: 79個 → 10個以下（87%削減）
+- 検索性能維持・向上
+- UI応答性向上
+
+### 全体目標（2025-2026年）
+- 巨大ファイル完全解消（500行以下）
 - テスト実行時間: 30%短縮
 - 新機能追加時間: 50%短縮
-
-### 定性的指標
-- コードの可読性向上
-- 保守性の向上
-- テスト容易性の向上
-- 開発効率の向上
+- コードの可読性・保守性・テスト容易性向上
