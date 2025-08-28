@@ -13,7 +13,7 @@ from typing import Any, Dict, Optional
 
 from PySide6.QtCore import QDate, Qt, Signal
 from PySide6.QtWidgets import (QCheckBox, QDateEdit, QGroupBox, QHBoxLayout, 
-                               QLabel, QSlider, QSpinBox, QVBoxLayout)
+                               QLabel, QSlider, QSpinBox, QVBoxLayout, QWidget)
 
 from ....data.models import FileType
 

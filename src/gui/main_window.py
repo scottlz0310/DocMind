@@ -40,7 +40,8 @@ from src.gui.controllers.index_controller import IndexController
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.preview_widget import PreviewWidget
 from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
-from src.gui.search_interface import SearchInterface, SearchWorkerThread
+from src.gui.search_interface import SearchInterface
+from src.gui.search.widgets.worker_thread import SearchWorkerThread
 from src.gui.search_results import SearchResultsWidget
 from src.utils.config import Config
 from src.utils.error_handler import get_global_error_handler, handle_exceptions
