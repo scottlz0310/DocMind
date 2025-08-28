@@ -20,6 +20,8 @@ from .search.widgets.type_selector import SearchTypeSelector
 from .search.widgets.advanced_options import AdvancedSearchOptions
 from .search.widgets.progress_widget import SearchProgressWidget
 from .search.widgets.history_widget import SearchHistoryWidget
+from .search.controllers.search_controller import SearchController
+from .search.managers.search_ui_manager import SearchUIManager
 
 
 
@@ -45,7 +47,10 @@ class SearchInterface(QWidget):
         super().__init__(parent)
 
         self.logger = logging.getLogger(__name__)
-        self.is_searching = False
+        
+        # コントローラーとマネージャーを初期化
+        self.search_controller = SearchController(self)
+        self.ui_manager = SearchUIManager(self)
 
         self._setup_ui()
         self._setup_connections()
@@ -183,6 +188,11 @@ class SearchInterface(QWidget):
         self.history_widget.search_save_requested.connect(self._on_search_save_requested)
         self.history_widget.saved_search_selected.connect(self._on_saved_search_selected)
         self.history_widget.saved_search_deleted.connect(self._on_saved_search_deleted)
+        
+        # コントローラーシグナル
+        self.search_controller.search_requested.connect(self.search_requested)
+        self.search_controller.search_cancelled.connect(self.search_cancelled)
+        self.search_controller.search_state_changed.connect(self._on_search_state_changed)
 
     def _setup_shortcuts(self) -> None:
         """キーボードショートカットの設定"""
@@ -196,88 +206,31 @@ class SearchInterface(QWidget):
 
     def _execute_search(self) -> None:
         """検索を実行"""
-        if self.is_searching:
-            self.logger.warning("既に検索が実行中です")
-            return
-
         query_text = self.search_input.text().strip()
-        if not query_text:
-            QMessageBox.warning(self, "検索エラー", "検索キーワードを入力してください。")
-            self.search_input.setFocus()
-            return
-
-        try:
-            # 検索クエリを構築
-            search_query = self._build_search_query(query_text)
-
-            # 検索状態を更新
-            self.is_searching = True
-            self.search_button.setEnabled(False)
-            self.search_button.setText("検索中...")
-
-            # 進捗表示開始
-            self.progress_widget.start_search(f"'{query_text}' を検索中...")
-
-            # 検索要求シグナルを発行
-            self.search_requested.emit(search_query)
-
-            self.logger.info(f"検索実行: '{query_text}' ({search_query.search_type.value})")
-
-        except Exception as e:
-            self.logger.error(f"検索実行エラー: {e}")
-            QMessageBox.critical(self, "検索エラー", f"検索の実行に失敗しました:\n{e}")
-            self._reset_search_state()
-
-    def _build_search_query(self, query_text: str) -> SearchQuery:
-        """検索クエリオブジェクトを構築"""
         search_type = self.search_type_selector.get_search_type()
-        options = self.advanced_options.get_search_options()
-
-        return SearchQuery(
-            query_text=query_text,
-            search_type=search_type,
-            limit=options['limit'],
-            file_types=options['file_types'],
-            date_from=options['date_from'],
-            date_to=options['date_to'],
-            weights=options['weights']
-        )
+        search_options = self.advanced_options.get_search_options()
+        
+        # 進捗表示開始
+        if query_text:
+            self.progress_widget.start_search(f"'{query_text}' を検索中...")
+        
+        # コントローラーに委譲
+        self.search_controller.execute_search(query_text, search_type, search_options)
 
     def _cancel_search(self) -> None:
         """検索をキャンセル"""
-        if self.is_searching:
-            self.search_cancelled.emit()
-            self.progress_widget.finish_search("検索がキャンセルされました")
-            self._reset_search_state()
-            self.logger.info("検索がキャンセルされました")
-
-    def _reset_search_state(self) -> None:
-        """検索状態をリセット"""
-        self.is_searching = False
-        self.search_button.setEnabled(True)
-        self.search_button.setText("検索")
+        self.progress_widget.finish_search("検索がキャンセルされました")
+        self.search_controller.cancel_search()
+        
+    def _on_search_state_changed(self, is_searching: bool) -> None:
+        """検索状態変更時の処理"""
+        self.ui_manager.update_search_button_state(self.search_button, is_searching)
 
     def _clear_all(self) -> None:
         """すべての検索関連データをクリア"""
-        try:
-            # 検索入力フィールドをクリア
-            self.search_input.clear()
-            self.search_input.setFocus()
-
-            # 検索状態をリセット
-            self._reset_search_state()
-
-            # 高度なオプションをデフォルトにリセット
-            self.advanced_options.reset_to_defaults()
-
-            # 進捗表示をクリア
-            self.progress_widget.finish_search("")
-
-            self.logger.info("検索インターフェースをクリアしました")
-
-        except Exception as e:
-            self.logger.error(f"クリア処理に失敗しました: {e}")
-            QMessageBox.warning(self, "警告", f"クリア処理に失敗しました:\n{e}")
+        self.ui_manager.clear_search_interface(
+            self.search_input, self.advanced_options, self.progress_widget
+        )
 
     def _on_suggestion_selected(self, suggestion: str) -> None:
         """検索提案選択時の処理"""
@@ -286,12 +239,7 @@ class SearchInterface(QWidget):
 
     def _on_search_type_changed(self, search_type: SearchType) -> None:
         """検索タイプ変更時の処理"""
-        self.logger.debug(f"検索タイプ変更: {search_type.value}")
-
-        # ハイブリッド検索以外では重み設定を無効化
-        weights_group = self.advanced_options.findChild(QGroupBox, "ハイブリッド検索の重み設定")
-        if weights_group:
-            weights_group.setEnabled(search_type == SearchType.HYBRID)
+        self.ui_manager.handle_search_type_change(search_type, self.advanced_options)
 
     def _on_options_changed(self, options: Dict[str, Any]) -> None:
         """検索オプション変更時の処理"""
@@ -392,11 +340,8 @@ class SearchInterface(QWidget):
         """
         result_count = len(results)
         message = f"検索完了: {result_count}件の結果 ({execution_time:.1f}秒)"
-
         self.progress_widget.finish_search(message)
-        self._reset_search_state()
-
-        self.logger.info(f"検索完了: {result_count}件, {execution_time:.1f}秒")
+        self.search_controller.on_search_completed(results, execution_time)
 
     def on_search_error(self, error_message: str) -> None:
         """
@@ -406,10 +351,7 @@ class SearchInterface(QWidget):
             error_message: エラーメッセージ
         """
         self.progress_widget.finish_search("検索エラーが発生しました")
-        self._reset_search_state()
-
-        QMessageBox.critical(self, "検索エラー", f"検索中にエラーが発生しました:\n{error_message}")
-        self.logger.error(f"検索エラー: {error_message}")
+        self.search_controller.on_search_error(error_message)
 
     def update_search_suggestions(self, suggestions: List[str]) -> None:
         """
@@ -418,7 +360,7 @@ class SearchInterface(QWidget):
         Args:
             suggestions: 提案リスト
         """
-        self.search_input.update_suggestions(suggestions)
+        self.ui_manager.update_search_suggestions(self.search_input, suggestions)
 
     def update_search_history(self, recent_searches: List[Dict[str, Any]],
                             popular_searches: List[Dict[str, Any]],
@@ -431,11 +373,9 @@ class SearchInterface(QWidget):
             popular_searches: 人気の検索リスト
             saved_searches: 保存された検索リスト
         """
-        self.history_widget.update_recent_searches(recent_searches)
-        self.history_widget.update_popular_searches(popular_searches)
-
-        if saved_searches is not None:
-            self.history_widget.update_saved_searches(saved_searches)
+        self.ui_manager.update_search_history(
+            self.history_widget, recent_searches, popular_searches, saved_searches
+        )
 
     def set_search_text(self, text: str) -> None:
         """
@@ -458,8 +398,9 @@ class SearchInterface(QWidget):
 
     def set_enabled(self, enabled: bool) -> None:
         """インターフェースの有効/無効を設定"""
-        self.search_input.setEnabled(enabled)
-        self.search_button.setEnabled(enabled and not self.is_searching)
-        self.search_type_selector.setEnabled(enabled)
-        self.advanced_options.setEnabled(enabled)
+        is_searching = self.search_controller.get_searching_state()
+        self.ui_manager.set_interface_enabled(
+            self.search_input, self.search_button, self.search_type_selector,
+            self.advanced_options, enabled, is_searching
+        )
 
