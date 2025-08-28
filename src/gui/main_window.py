@@ -31,6 +31,12 @@ from src.core.indexing_worker import IndexingWorker
 from src.core.thread_manager import IndexingThreadManager
 from src.core.rebuild_timeout_manager import RebuildTimeoutManager
 from src.data.database import DatabaseManager
+from src.gui.dialogs.dialog_manager import DialogManager
+from src.gui.managers.progress_manager import ProgressManager
+from src.gui.managers.layout_manager import LayoutManager
+from src.gui.managers.signal_manager import SignalManager
+from src.gui.managers.cleanup_manager import CleanupManager
+from src.gui.controllers.index_controller import IndexController
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.preview_widget import PreviewWidget
 from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
@@ -79,32 +85,41 @@ class MainWindow(QMainWindow, LoggerMixin):
         # LoggerMixinのloggerプロパティを使用
         self.config = Config()
 
+        # ダイアログマネージャーの初期化
+        self.dialog_manager = DialogManager(self)
+        
+        # 進捗管理マネージャーの初期化
+        self.progress_manager = ProgressManager(self)
+        
+        # レイアウトマネージャーの初期化
+        self.layout_manager = LayoutManager(self)
+        
+        # インデックス制御コントローラーの初期化
+        self.index_controller = IndexController(self)
+        
+        # シグナル管理マネージャーの初期化
+        self.signal_manager = SignalManager(self)
+        
+        # クリーンアップ管理マネージャーの初期化
+        self.cleanup_manager = CleanupManager(self)
+        
         # 検索関連コンポーネントの初期化
         self._initialize_search_components()
 
-        # ウィンドウの基本設定
-        self._setup_window()
+        # UIレイアウトの設定（layout_managerに委譲）
+        self.layout_manager.setup_window()
+        self.layout_manager.setup_ui()
+        self.layout_manager.setup_menu_bar()
+        self.layout_manager.setup_status_bar()
+        self.layout_manager.setup_shortcuts()
+        self.layout_manager.setup_accessibility()
+        self.layout_manager.apply_styling()
 
-        # UI コンポーネントの初期化
-        self._setup_ui()
-
-        # メニューバーの設定
-        self._setup_menu_bar()
-
-        # ステータスバーの設定
-        self._setup_status_bar()
-
-        # キーボードショートカットの設定
-        self._setup_shortcuts()
-
-        # アクセシビリティ機能の設定
-        self._setup_accessibility()
-
-        # スタイリングの適用
-        self._apply_styling()
-
-        # すべてのシグナル接続を統合管理
-        self._connect_all_signals()
+        # 進捗管理マネージャーの初期化
+        self.progress_manager.initialize()
+        
+        # すべてのシグナル接続を統合管理（signal_managerに委譲）
+        self.signal_manager.connect_all_signals()
 
         self.logger.info("メインウィンドウが初期化されました")
 
@@ -157,110 +172,15 @@ class MainWindow(QMainWindow, LoggerMixin):
                 f"検索コンポーネントの初期化に失敗: {e}"
             )
 
-    def _setup_window(self) -> None:
-        """ウィンドウの基本設定を行います"""
-        self.setWindowTitle("DocMind - ローカルドキュメント検索")
-        self.setMinimumSize(1000, 700)
-        self.resize(1400, 900)
 
-        # ウィンドウアイコンの設定
-        self.setWindowIcon(get_app_icon())
 
-        # ウィンドウを画面中央に配置
-        self._center_window()
 
-    def _setup_ui(self) -> None:
-        """メインUIレイアウトを設定します"""
-        # 中央ウィジェットの作成
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
 
-        # メインレイアウトの作成
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(5, 5, 5, 5)
-        main_layout.setSpacing(5)
 
-        # 3ペインスプリッターの作成
-        self.main_splitter = QSplitter(Qt.Horizontal)
-        main_layout.addWidget(self.main_splitter)
 
-        # 左ペイン: フォルダツリー（プレースホルダー）
-        self.folder_pane = self._create_folder_pane()
-        self.main_splitter.addWidget(self.folder_pane)
 
-        # 中央ペイン: 検索結果（プレースホルダー）
-        self.search_pane = self._create_search_pane()
-        self.main_splitter.addWidget(self.search_pane)
 
-        # 右ペイン: ドキュメントプレビュー（プレースホルダー）
-        self.preview_pane = self._create_preview_pane()
-        self.main_splitter.addWidget(self.preview_pane)
 
-        # スプリッターのサイズ比率を設定 (25%, 40%, 35%)
-        self.main_splitter.setSizes([250, 400, 350])
-        self.main_splitter.setCollapsible(0, False)  # 左ペインは折りたたみ不可
-        self.main_splitter.setCollapsible(1, False)  # 中央ペインは折りたたみ不可
-        self.main_splitter.setCollapsible(2, True)   # 右ペインは折りたたみ可能
-
-    def _create_folder_pane(self) -> QWidget:
-        """左ペイン（フォルダツリー）を作成"""
-        # フォルダツリーコンテナを作成
-        self.folder_tree_container = FolderTreeContainer()
-        self.folder_tree_container.setMinimumWidth(200)
-
-        # シグナル接続
-        self.folder_tree_container.folder_selected.connect(self._on_folder_selected)
-        self.folder_tree_container.folder_indexed.connect(self._on_folder_indexed)
-        self.folder_tree_container.folder_excluded.connect(self._on_folder_excluded)
-        self.folder_tree_container.refresh_requested.connect(self._on_folder_refresh)
-
-        return self.folder_tree_container
-
-    def _create_search_pane(self) -> QWidget:
-        """中央ペイン（検索結果）を作成"""
-        # 中央ペインのコンテナを作成
-        search_container = QWidget()
-        search_layout = QVBoxLayout(search_container)
-        search_layout.setContentsMargins(5, 5, 5, 5)
-        search_layout.setSpacing(5)
-
-        # 検索インターフェースを作成
-        self.search_interface = SearchInterface()
-        search_layout.addWidget(self.search_interface)
-
-        # 検索結果ウィジェットを作成
-        self.search_results_widget = SearchResultsWidget()
-        self.search_results_widget.setMinimumWidth(300)
-        search_layout.addWidget(self.search_results_widget)
-
-        # 検索インターフェースのシグナル接続
-        self.search_interface.search_requested.connect(self._on_search_requested)
-        self.search_interface.search_cancelled.connect(self._on_search_cancelled)
-
-        # 検索提案機能の接続
-        self.search_interface.search_input.textChanged.connect(self._on_search_text_changed)
-
-        # 検索結果ウィジェットのシグナル接続
-        self.search_results_widget.result_selected.connect(self._on_search_result_selected)
-        self.search_results_widget.preview_requested.connect(self._on_preview_requested)
-        self.search_results_widget.page_changed.connect(self._on_page_changed)
-        self.search_results_widget.sort_changed.connect(self._on_sort_changed)
-        self.search_results_widget.filter_changed.connect(self._on_filter_changed)
-
-        search_container.setMinimumWidth(400)
-        return search_container
-
-    def _create_preview_pane(self) -> QWidget:
-        """右ペイン（ドキュメントプレビュー）を作成"""
-        # プレビューウィジェットを作成
-        self.preview_widget = PreviewWidget()
-        self.preview_widget.setMinimumWidth(250)
-
-        # シグナル接続
-        self.preview_widget.zoom_changed.connect(self._on_preview_zoom_changed)
-        self.preview_widget.format_changed.connect(self._on_preview_format_changed)
-
-        return self.preview_widget
 
     def _setup_menu_bar(self) -> None:
         """メニューバーを設定します"""
@@ -299,14 +219,14 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.rebuild_index_action = QAction("インデックス再構築(&R)", self)
         self.rebuild_index_action.setShortcut(QKeySequence("Ctrl+R"))
         self.rebuild_index_action.setStatusTip("検索インデックスを再構築します")
-        self.rebuild_index_action.triggered.connect(self._rebuild_index)
+        self.rebuild_index_action.triggered.connect(self.index_controller.rebuild_index)
         search_menu.addAction(self.rebuild_index_action)
 
         # インデックスクリアアクション
         self.clear_index_action = QAction("インデックスクリア(&C)", self)
         self.clear_index_action.setShortcut(QKeySequence("Ctrl+Shift+C"))
         self.clear_index_action.setStatusTip("検索インデックスをクリアします")
-        self.clear_index_action.triggered.connect(self._clear_index)
+        self.clear_index_action.triggered.connect(self.index_controller.clear_index)
         search_menu.addAction(self.clear_index_action)
 
         # 表示メニュー
@@ -353,6 +273,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.progress_bar.setVisible(False)
         self.progress_bar.setMaximumWidth(200)
         self.status_bar.addPermanentWidget(self.progress_bar)
+        
+        # 進捗ラベル（progress_manager用）
+        self.progress_label = self.status_label
 
         # システム情報ラベル
         self.system_info_label = QLabel("インデックス: 未作成")
@@ -463,169 +386,22 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def _open_folder_dialog(self) -> None:
         """フォルダ選択ダイアログを表示します"""
-        folder_path = QFileDialog.getExistingDirectory(
-            self,
-            "検索対象フォルダを選択",
-            str(Path.home()),
-            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
-        )
-
+        folder_path = self.dialog_manager.open_folder_dialog()
+        
         if folder_path:
-            self.logger.info(f"フォルダが選択されました: {folder_path}")
             self.folder_selected.emit(folder_path)
             self.show_status_message(f"フォルダを選択: {folder_path}", 5000)
-
+            
             # フォルダツリーに追加
             self.folder_tree_container.load_folder_structure(folder_path)
 
     def _show_search_dialog(self) -> None:
         """検索インターフェースにフォーカスを設定"""
-        self.search_interface.search_input.setFocus()
-        self.search_interface.search_input.selectAll()
+        self.dialog_manager.show_search_dialog()
 
-    def _rebuild_index(self) -> None:
-        """
-        インデックス再構築を実行します
 
-        このメソッドは要件1.1-1.4に基づいて実装されており、以下の処理を行います：
-        1. ユーザーに確認ダイアログを表示（要件1.1）
-        2. 現在選択されているフォルダの検証（要件1.2）
-        3. 既存インデックスのクリア（要件1.3）
-        4. IndexingThreadManagerを使用したバックグラウンド処理開始（要件1.4）
-        5. タイムアウト監視の開始（要件6.1）
-        6. 進捗表示の開始（要件2.1）
 
-        エラーハンドリング：
-        - フォルダ未選択時の適切な通知
-        - スレッド開始失敗時の詳細エラー表示
-        - システムエラー時の回復処理
 
-        Raises:
-            DocMindException: インデックス再構築処理で回復不可能なエラーが発生した場合
-        """
-        try:
-            # 改善された確認ダイアログの表示
-            reply = self._show_rebuild_confirmation_dialog()
-
-            if not reply:
-                return
-
-            # 現在選択されているフォルダパスを取得
-            current_folder = self.folder_tree_container.get_selected_folder()
-            if not current_folder:
-                self._show_folder_not_selected_dialog()
-                return
-
-            # 既存のインデックスをクリア
-            self.logger.info(f"インデックス再構築開始: {current_folder}")
-            self.index_manager.clear_index()
-
-            # 進捗表示を開始
-            self.show_progress("インデックスを再構築中...", 0)
-
-            # IndexingThreadManagerを使用してインデックス再構築を開始
-            try:
-                thread_id = self.thread_manager.start_indexing_thread(
-                    folder_path=current_folder,
-                    document_processor=self.document_processor,
-                    index_manager=self.index_manager
-                )
-
-                if thread_id:
-                    # タイムアウト監視を開始
-                    self.timeout_manager.start_timeout(thread_id)
-                    self.logger.info(f"インデックス再構築スレッド開始: {thread_id}")
-                    self.show_status_message(f"インデックス再構築を開始しました (ID: {thread_id})", 3000)
-                else:
-                    # スレッド開始に失敗した場合の処理
-                    self.hide_progress("インデックス再構築の開始に失敗しました")
-
-                    # 詳細なエラー情報を提供
-                    active_count = self.thread_manager.get_active_thread_count()
-                    max_threads = self.thread_manager.max_concurrent_threads
-
-                    if active_count >= max_threads:
-                        error_msg = (
-                            f"最大同時実行数に達しています ({active_count}/{max_threads})。\n"
-                            "他の処理が完了してから再試行してください。"
-                        )
-                    elif self.thread_manager._is_folder_being_processed(current_folder):
-                        error_msg = (
-                            "このフォルダは既に処理中です。\n"
-                            "処理が完了してから再試行してください。"
-                        )
-                    else:
-                        error_msg = (
-                            "インデックス再構築の開始に失敗しました。\n"
-                            "しばらく待ってから再試行してください。"
-                        )
-
-                    self._show_thread_start_error_dialog(error_msg)
-
-            except Exception as thread_error:
-                # スレッド開始時の例外処理
-                self.hide_progress("インデックス再構築の開始でエラーが発生しました")
-                self.logger.error(f"スレッド開始エラー: {thread_error}")
-
-                self._show_system_error_dialog(
-                    "スレッド開始エラー",
-                    f"インデックス再構築スレッドの開始でエラーが発生しました:\n{str(thread_error)}",
-                    "システムリソースが不足している可能性があります。"
-                )
-                return
-
-        except Exception as e:
-            self.logger.error(f"インデックス再構築エラー: {e}")
-            self.hide_progress("インデックス再構築でエラーが発生しました")
-            self._show_system_error_dialog(
-                "インデックス再構築エラー",
-                f"インデックス再構築でエラーが発生しました:\n{str(e)}",
-                "しばらく待ってから再試行してください。"
-            )
-
-    def _clear_index(self) -> None:
-        """インデックスをクリアします"""
-        reply = self._show_clear_index_confirmation_dialog()
-
-        if reply:
-            try:
-                self.show_progress("インデックスをクリア中...", 0)
-
-                # インデックスマネージャーからクリアを実行
-                if hasattr(self, 'index_manager') and self.index_manager:
-                    self.index_manager.clear_index()
-
-                    # 検索結果をクリア
-                    if hasattr(self, 'search_results_widget'):
-                        self.search_results_widget.clear_results()
-
-                    # プレビューをクリア
-                    if hasattr(self, 'preview_widget'):
-                        self.preview_widget.clear_preview()
-
-                    # 検索提案キャッシュをクリア
-                    if hasattr(self, 'search_manager'):
-                        self.search_manager.clear_suggestion_cache()
-
-                    self.hide_progress("インデックスクリアが完了しました")
-                    self.show_status_message("インデックスをクリアしました", 3000)
-
-                    # システム情報を更新
-                    if hasattr(self, 'system_info_label'):
-                        self.system_info_label.setText("インデックス: クリア済み")
-
-                else:
-                    self.hide_progress("")
-                    self._show_component_unavailable_dialog("インデックスマネージャー")
-
-            except Exception as e:
-                self.hide_progress("")
-                self.logger.error(f"インデックスクリアに失敗しました: {e}")
-                self._show_operation_failed_dialog(
-                    "インデックスクリア",
-                    f"インデックスクリアに失敗しました:\n{e}",
-                    "システムリソースを確認してから再試行してください。"
-                )
 
     def _toggle_preview_pane(self) -> None:
         """プレビューペインの表示を切り替えます"""
@@ -637,23 +413,8 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def _show_settings_dialog(self) -> None:
         """設定ダイアログを表示します"""
-        from src.gui.settings_dialog import SettingsDialog
-
-        try:
-            dialog = SettingsDialog(self.config, self)
-            dialog.settings_changed.connect(self._on_settings_changed)
-
-            if dialog.exec() == SettingsDialog.Accepted:
-                self.logger.info("設定が更新されました")
-                self.show_status_message("設定が保存されました", 3000)
-
-        except Exception as e:
-            self.logger.error(f"設定ダイアログの表示に失敗しました: {e}")
-            self._show_operation_failed_dialog(
-                "設定ダイアログ",
-                f"設定ダイアログの表示に失敗しました:\n{e}",
-                "アプリケーションを再起動してから再試行してください。"
-            )
+        if self.dialog_manager.show_settings_dialog():
+            self.show_status_message("設定が保存されました", 3000)
 
     def _on_settings_changed(self, settings: dict) -> None:
         """設定変更時の処理"""
@@ -682,7 +443,7 @@ class MainWindow(QMainWindow, LoggerMixin):
 
         except Exception as e:
             self.logger.error(f"設定変更の適用に失敗しました: {e}")
-            self._show_partial_failure_dialog(
+            self.dialog_manager.show_partial_failure_dialog(
                 "設定変更",
                 f"一部の設定変更の適用に失敗しました:\n{e}",
                 "アプリケーションを再起動すると設定が正しく適用される可能性があります。"
@@ -715,21 +476,7 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def _show_about_dialog(self) -> None:
         """バージョン情報ダイアログを表示します"""
-        QMessageBox.about(
-            self,
-            "DocMindについて",
-            "<h3>DocMind v1.0.0</h3>"
-            "<p>ローカルAI搭載ドキュメント検索アプリケーション</p>"
-            "<p>完全オフラインで動作する高性能ドキュメント検索ツール</p>"
-            "<p><b>技術スタック:</b></p>"
-            "<ul>"
-            "<li>Python 3.11+</li>"
-            "<li>PySide6 (Qt6)</li>"
-            "<li>Whoosh (全文検索)</li>"
-            "<li>sentence-transformers (セマンティック検索)</li>"
-            "</ul>"
-            "<p>© 2024 DocMind Project</p>"
-        )
+        self.dialog_manager.show_about_dialog()
 
     # ショートカットのスロット関数
 
@@ -758,301 +505,25 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def show_progress(self, message: str, value: int, current: int = 0, total: int = 0) -> None:
         """
-        改善された進捗バーを表示します（タスク10対応）
-
-        Args:
-            message: 進捗メッセージ
-            value: 進捗値（0-100、0で不定進捗）
-            current: 現在の処理数（オプション）
-            total: 総処理数（オプション）
+        進捗バーを表示（progress_managerに委譲）
         """
-        # アイコン付きメッセージの生成
-        icon_message = self._get_progress_icon_message(message, value)
-        self.status_label.setText(icon_message)
-        self.progress_bar.setVisible(True)
+        self.progress_manager.show_progress(message, value, current, total)
 
-        if value == 0:
-            # 不定進捗（スキャン中など）
-            self.progress_bar.setRange(0, 0)
-            self.progress_bar.setFormat("🔄 処理中...")
 
-            # 不定進捗用のアニメーション効果
-            self.progress_bar.setStyleSheet("""
-                QProgressBar {
-                    border: 2px solid #e0e0e0;
-                    border-radius: 6px;
-                    text-align: center;
-                    font-weight: bold;
-                    font-size: 11px;
-                    background-color: #f5f5f5;
-                }
-                QProgressBar::chunk {
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 #4CAF50, stop:0.5 #66BB6A, stop:1 #4CAF50);
-                    border-radius: 4px;
-                    margin: 1px;
-                }
-            """)
-        else:
-            # 定進捗
-            self.progress_bar.setRange(0, 100)
-            self.progress_bar.setValue(value)
 
-            # 進捗表示フォーマットを改善（アイコン付き）
-            if current > 0 and total > 0:
-                self.progress_bar.setFormat(f"📊 {value}% ({current:,}/{total:,})")
-            else:
-                self.progress_bar.setFormat(f"📊 {value}%")
 
-            # 進捗段階に応じた色とアイコンの設定
-            color_info = self._get_progress_color_info(value)
 
-            self.progress_bar.setStyleSheet(f"""
-                QProgressBar {{
-                    border: 2px solid #e0e0e0;
-                    border-radius: 6px;
-                    text-align: center;
-                    font-weight: bold;
-                    font-size: 11px;
-                    background-color: #f5f5f5;
-                    color: #333333;
-                }}
-                QProgressBar::chunk {{
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 {color_info['primary']},
-                        stop:0.5 {color_info['secondary']},
-                        stop:1 {color_info['primary']});
-                    border-radius: 4px;
-                    margin: 1px;
-                }}
-            """)
 
-        # 詳細ツールチップの設定
-        tooltip = self._create_progress_tooltip(message, value, current, total)
-        self.progress_bar.setToolTip(tooltip)
-
-        # アクセシビリティ用の説明を更新
-        self.progress_bar.setAccessibleDescription(f"進捗: {message}")
-
-        # ログに進捗情報を記録
-        if current > 0 and total > 0:
-            self.logger.debug(f"進捗表示更新: {message} ({current:,}/{total:,}, {value}%)")
-        else:
-            self.logger.debug(f"進捗表示更新: {message} ({value}%)")
-
-    def _get_progress_icon_message(self, message: str, value: int) -> str:
-        """
-        進捗メッセージにアイコンを追加
-
-        Args:
-            message: 元のメッセージ
-            value: 進捗値
-
-        Returns:
-            str: アイコン付きメッセージ
-        """
-        # メッセージの内容に応じてアイコンを選択
-        if "スキャン" in message or "検索" in message:
-            icon = "🔍"
-        elif "処理" in message or "変換" in message:
-            icon = "⚙️"
-        elif "インデックス" in message:
-            icon = "📚"
-        elif "完了" in message:
-            icon = "✅"
-        elif "エラー" in message:
-            icon = "❌"
-        elif "クリア" in message:
-            icon = "🗑️"
-        else:
-            # 進捗値に応じてアイコンを選択
-            if value == 0:
-                icon = "🔄"
-            elif value < 25:
-                icon = "🚀"
-            elif value < 50:
-                icon = "⚡"
-            elif value < 75:
-                icon = "🔥"
-            elif value < 100:
-                icon = "🎯"
-            else:
-                icon = "✨"
-
-        return f"{icon} {message}"
-
-    def _get_progress_color_info(self, value: int) -> dict:
-        """
-        進捗値に応じた色情報を取得
-
-        Args:
-            value: 進捗値（0-100）
-
-        Returns:
-            dict: 色情報（primary, secondary）
-        """
-        if value < 20:
-            return {
-                'primary': '#FF5722',    # 深いオレンジ（開始）
-                'secondary': '#FF7043'   # 明るいオレンジ
-            }
-        elif value < 40:
-            return {
-                'primary': '#FF9800',    # オレンジ（初期段階）
-                'secondary': '#FFB74D'   # 明るいオレンジ
-            }
-        elif value < 60:
-            return {
-                'primary': '#2196F3',    # 青（進行中）
-                'secondary': '#42A5F5'   # 明るい青
-            }
-        elif value < 80:
-            return {
-                'primary': '#00BCD4',    # シアン（後半）
-                'secondary': '#26C6DA'   # 明るいシアン
-            }
-        else:
-            return {
-                'primary': '#4CAF50',    # 緑（完了間近）
-                'secondary': '#66BB6A'   # 明るい緑
-            }
-
-    def _create_progress_tooltip(self, message: str, value: int, current: int, total: int) -> str:
-        """
-        詳細な進捗ツールチップを作成
-
-        Args:
-            message: 進捗メッセージ
-            value: 進捗値
-            current: 現在の処理数
-            total: 総処理数
-
-        Returns:
-            str: ツールチップテキスト
-        """
-        from datetime import datetime
-
-        tooltip_lines = [
-            f"📋 処理内容: {message}",
-            f"📊 進捗率: {value}%"
-        ]
-
-        if current > 0 and total > 0:
-            remaining = total - current
-            tooltip_lines.extend([
-                f"✅ 完了: {current:,} ファイル",
-                f"⏳ 残り: {remaining:,} ファイル",
-                f"📁 総数: {total:,} ファイル"
-            ])
-
-            # 推定残り時間（簡易計算）
-            if value > 5:  # 5%以上進捗している場合のみ
-                estimated_total_time = (100 / value) * (datetime.now().timestamp())
-                # 実際の実装では開始時刻を記録して正確に計算する必要がある
-
-        tooltip_lines.append(f"🕒 更新時刻: {datetime.now().strftime('%H:%M:%S')}")
-
-        return "\n".join(tooltip_lines)
 
     def hide_progress(self, completion_message: str = "") -> None:
         """
-        改善された進捗バー非表示処理（タスク10対応）
-
-        Args:
-            completion_message: 完了メッセージ
+        進捗バーを非表示（progress_managerに委譲）
         """
-        # 完了アニメーション効果
-        if completion_message and "完了" in completion_message:
-            # 完了時は一時的に100%表示してから非表示
-            self.progress_bar.setRange(0, 100)
-            self.progress_bar.setValue(100)
-            self.progress_bar.setFormat("✅ 完了!")
+        self.progress_manager.hide_progress(completion_message)
 
-            # 完了時の緑色スタイル
-            self.progress_bar.setStyleSheet("""
-                QProgressBar {
-                    border: 2px solid #4CAF50;
-                    border-radius: 6px;
-                    text-align: center;
-                    font-weight: bold;
-                    font-size: 11px;
-                    background-color: #E8F5E8;
-                    color: #2E7D32;
-                }
-                QProgressBar::chunk {
-                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                        stop:0 #4CAF50, stop:0.5 #66BB6A, stop:1 #81C784);
-                    border-radius: 4px;
-                    margin: 1px;
-                }
-            """)
 
-            # 1秒後に非表示
-            QTimer.singleShot(1000, self._actually_hide_progress)
-        else:
-            # エラーや中断の場合は即座に非表示
-            self._actually_hide_progress()
 
-        # ステータスメッセージの設定
-        if completion_message:
-            # アイコン付きの完了メッセージ
-            icon_message = self._get_completion_icon_message(completion_message)
-            self.show_status_message(icon_message, 8000)  # 完了メッセージは長めに表示
-        else:
-            self.status_label.setText("🏠 準備完了")
 
-        # ログに非表示化を記録
-        self.logger.debug(f"進捗バー非表示: {completion_message}")
-
-    def _actually_hide_progress(self) -> None:
-        """
-        実際に進捗バーを非表示にする内部メソッド
-        """
-        # 進捗バーを非表示にしてリセット
-        self.progress_bar.setVisible(False)
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        self.progress_bar.setFormat("")
-        self.progress_bar.setToolTip("")
-
-        # スタイルシートをデフォルトにリセット
-        self.progress_bar.setStyleSheet("""
-            QProgressBar {
-                border: 1px solid #d0d0d0;
-                border-radius: 3px;
-                text-align: center;
-            }
-            QProgressBar::chunk {
-                background-color: #4CAF50;
-                border-radius: 2px;
-            }
-        """)
-
-    def _get_completion_icon_message(self, message: str) -> str:
-        """
-        完了メッセージにアイコンを追加
-
-        Args:
-            message: 元のメッセージ
-
-        Returns:
-            str: アイコン付きメッセージ
-        """
-        if "完了" in message:
-            if "インデックス" in message:
-                return f"✅ {message}"
-            elif "クリア" in message:
-                return f"🗑️ {message}"
-            else:
-                return f"✨ {message}"
-        elif "エラー" in message or "失敗" in message:
-            return f"❌ {message}"
-        elif "中断" in message or "停止" in message:
-            return f"⏹️ {message}"
-        elif "キャンセル" in message:
-            return f"🚫 {message}"
-        else:
-            return f"ℹ️ {message}"
 
     def update_system_info(self, info: str) -> None:
         """
@@ -1065,190 +536,35 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def update_progress(self, current: int, total: int, message: str = "") -> None:
         """
-        進捗率を正確に計算して表示します
-
-        Args:
-            current: 現在の処理数
-            total: 総処理数
-            message: 進捗メッセージ（オプション）
+        進捗を更新（progress_managerに委譲）
         """
-        if total <= 0:
-            # 総数が0以下の場合は不定進捗として表示
-            self.show_progress(message or "処理中...", 0)
-            return
-
-        # 進捗率を計算（0-100の範囲）
-        percentage = min(100, max(0, int((current / total) * 100)))
-
-        # デフォルトメッセージを生成
-        if not message:
-            message = f"処理中: {current}/{total}"
-
-        # 進捗バーを更新
-        self.show_progress(message, percentage, current, total)
+        self.progress_manager.update_progress(current, total, message)
 
     def set_progress_indeterminate(self, message: str = "処理中...") -> None:
         """
-        不定進捗モードに設定します
-
-        Args:
-            message: 表示するメッセージ
+        不定進捗モードに設定（progress_managerに委譲）
         """
-        self.show_progress(message, 0)
+        self.progress_manager.set_progress_indeterminate(message)
 
     def is_progress_visible(self) -> bool:
         """
-        進捗バーが表示されているかどうかを確認します
-
-        Returns:
-            bool: 進捗バーが表示されている場合True
+        進捗バーが表示されているか確認（progress_managerに委譲）
         """
-        return self.progress_bar.isVisible()
+        return self.progress_manager.is_progress_visible()
 
     def get_progress_value(self) -> int:
         """
-        現在の進捗値を取得します
-
-        Returns:
-            int: 現在の進捗値（0-100）
+        現在の進捗値を取得（progress_managerに委譲）
         """
-        return self.progress_bar.value()
+        return self.progress_manager.get_progress_value()
 
     def set_progress_style(self, style: str) -> None:
         """
-        進捗バーのスタイルを設定します
-
-        Args:
-            style: 'success', 'warning', 'error', 'info' のいずれか
+        進捗バーのスタイルを設定（progress_managerに委譲）
         """
-        color_map = {
-            'success': '#4CAF50',  # 緑
-            'warning': '#FF9800',  # オレンジ
-            'error': '#F44336',    # 赤
-            'info': '#2196F3'      # 青
-        }
+        self.progress_manager.set_progress_style(style)
 
-        color = color_map.get(style, '#4CAF50')
 
-        self.progress_bar.setStyleSheet(f"""
-            QProgressBar {{
-                border: 1px solid #d0d0d0;
-                border-radius: 3px;
-                text-align: center;
-                font-weight: bold;
-            }}
-            QProgressBar::chunk {{
-                background-color: {color};
-                border-radius: 2px;
-            }}
-        """)
-
-    def _connect_all_signals(self) -> None:
-        """
-        すべてのシグナル接続を統合管理します
-
-        メインウィンドウ初期化時に呼び出され、すべてのコンポーネントの
-        シグナル接続を一元的に管理します。
-        """
-        try:
-            # フォルダツリーのシグナル接続
-            self._connect_folder_tree_signals()
-
-            # 検索結果ウィジェットのシグナル接続
-            self._connect_search_results_signals()
-
-            # インデックス再構築関連のシグナル接続
-            self._connect_rebuild_signals()
-
-            self.logger.info("すべてのシグナル接続が完了しました")
-
-        except Exception as e:
-            self.logger.error(f"シグナル接続中にエラーが発生しました: {e}")
-            # エラーが発生してもアプリケーションは継続
-            pass
-
-    def _connect_folder_tree_signals(self) -> None:
-        """フォルダツリーのシグナルを接続します"""
-        # フォルダツリーのシグナルはすでに_create_folder_paneで接続済み
-        # 将来的に追加のシグナル接続が必要な場合はここに実装
-        pass
-
-    def _connect_search_results_signals(self) -> None:
-        """検索結果ウィジェットのシグナルを接続します"""
-        # 検索結果ウィジェットのシグナルはすでに_create_search_paneで接続済み
-        # 将来的に追加のシグナル接続が必要な場合はここに実装
-        pass
-
-    def _connect_rebuild_signals(self) -> None:
-        """
-        インデックス再構築関連のすべてのシグナル接続を管理します
-
-        要件7.3, 4.2に対応し、スレッドマネージャーとタイムアウトマネージャーの
-        シグナルを適切に接続します。
-        """
-        try:
-            # スレッドマネージャーのシグナル接続
-            self._connect_thread_manager_signals()
-
-            # タイムアウトマネージャーのシグナル接続
-            self._connect_timeout_manager_signals()
-
-            self.logger.info("インデックス再構築関連のシグナル接続が完了しました")
-
-        except Exception as e:
-            self.logger.error(f"再構築シグナル接続中にエラーが発生しました: {e}")
-            # エラーが発生してもアプリケーションは継続
-            pass
-
-    def _connect_thread_manager_signals(self) -> None:
-        """
-        スレッドマネージャーのシグナルを接続します
-
-        IndexingThreadManagerの各種シグナルを適切なハンドラーメソッドに接続し、
-        インデックス再構築処理の状態変化を監視します。
-        """
-        if hasattr(self, 'thread_manager') and self.thread_manager:
-            try:
-                # スレッド開始シグナル
-                self.thread_manager.thread_started.connect(self._on_thread_started)
-
-                # スレッド完了シグナル
-                self.thread_manager.thread_finished.connect(self._on_thread_finished)
-
-                # スレッドエラーシグナル
-                self.thread_manager.thread_error.connect(self._on_thread_error)
-
-                # スレッド進捗シグナル（インデックス再構築専用）
-                self.thread_manager.thread_progress.connect(self._on_rebuild_progress)
-
-                # マネージャー状態変更シグナル
-                self.thread_manager.manager_status_changed.connect(self._on_manager_status_changed)
-
-                self.logger.debug("スレッドマネージャーのシグナル接続が完了しました")
-
-            except Exception as e:
-                self.logger.error(f"スレッドマネージャーシグナル接続エラー: {e}")
-        else:
-            self.logger.warning("スレッドマネージャーが利用できません")
-
-    def _connect_timeout_manager_signals(self) -> None:
-        """
-        タイムアウトマネージャーのシグナルを接続します
-
-        RebuildTimeoutManagerのタイムアウト発生シグナルを適切なハンドラーに接続し、
-        長時間実行される再構築処理の監視を行います。
-        """
-        if hasattr(self, 'timeout_manager') and self.timeout_manager:
-            try:
-                # タイムアウト発生シグナル
-                self.timeout_manager.timeout_occurred.connect(self._handle_rebuild_timeout)
-
-                self.logger.debug("タイムアウトマネージャーのシグナル接続が完了しました")
-
-            except Exception as e:
-                self.logger.error(f"タイムアウトマネージャーシグナル接続エラー: {e}")
-        else:
-            self.logger.warning("タイムアウトマネージャーが利用できません")
 
     # フォルダツリーのシグナルハンドラー
 
@@ -1277,58 +593,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.show_status_message(f"インデックスに追加: {os.path.basename(folder_path)}", 3000)
 
         # 実際のインデックス処理を開始
-        self._start_indexing_process(folder_path)
+        self.index_controller.start_indexing_process(folder_path)
 
-    def _start_indexing_process(self, folder_path: str) -> None:
-        """
-        実際のインデックス処理を開始
 
-        IndexingThreadManagerを使用してバックグラウンドスレッドで実行し、
-        複数の同時インデックス処理を制御します。
-
-        Args:
-            folder_path: インデックス化するフォルダのパス
-        """
-        try:
-            # 必要なコンポーネントが初期化されているかチェック
-            if not hasattr(self, 'document_processor') or not self.document_processor:
-                self.logger.error("DocumentProcessorが初期化されていません")
-                self.show_status_message("エラー: ドキュメントプロセッサーが利用できません", 5000)
-                return
-
-            if not hasattr(self, 'index_manager') or not self.index_manager:
-                self.logger.error("IndexManagerが初期化されていません")
-                self.show_status_message("エラー: インデックスマネージャーが利用できません", 5000)
-                return
-
-            if not hasattr(self, 'thread_manager') or not self.thread_manager:
-                self.logger.error("IndexingThreadManagerが初期化されていません")
-                self.show_status_message("エラー: スレッドマネージャーが利用できません", 5000)
-                return
-
-            # スレッドマネージャーを使用してインデックス処理を開始
-            thread_id = self.thread_manager.start_indexing_thread(
-                folder_path=folder_path,
-                document_processor=self.document_processor,
-                index_manager=self.index_manager
-            )
-
-            if thread_id:
-                self.logger.info(f"インデックス処理スレッドを開始しました: {thread_id} ({folder_path})")
-                self.show_status_message(f"インデックス処理を開始: {os.path.basename(folder_path)}", 3000)
-            else:
-                # 同時実行数制限などで開始できない場合
-                active_count = self.thread_manager.get_active_thread_count()
-                max_count = self.thread_manager.max_concurrent_threads
-                self.logger.warning(f"インデックス処理を開始できませんでした: {folder_path} (アクティブ: {active_count}/{max_count})")
-                self.show_status_message(
-                    f"インデックス処理を開始できません (同時実行数制限: {active_count}/{max_count})",
-                    5000
-                )
-
-        except Exception as e:
-            self.logger.error(f"インデックス処理の開始に失敗しました: {e}")
-            self.show_status_message(f"エラー: インデックス処理を開始できませんでした", 5000)
 
 
 
@@ -1454,7 +721,7 @@ class MainWindow(QMainWindow, LoggerMixin):
                 self.logger.info(f"全スレッド完了: 進捗バーを非表示")
 
                 # インデックス再構築完了時の追加処理
-                self._on_rebuild_completed(thread_id, statistics)
+                self.index_controller.handle_rebuild_completed(thread_id, statistics)
 
             # システム情報を更新
             indexed_count = len(self.folder_tree_container.get_indexed_folders())
@@ -1533,7 +800,7 @@ class MainWindow(QMainWindow, LoggerMixin):
             self.logger.error(f"全スレッド完了/エラー: 進捗バーを非表示")
 
             # インデックス再構築エラー時の追加処理
-            self._on_rebuild_error(thread_id, error_message)
+            self.index_controller.handle_rebuild_error(thread_id, error_message)
 
         # エラーログ
         self.logger.error(f"スレッドエラー: {thread_id} - {error_message}")
@@ -1966,277 +1233,16 @@ class MainWindow(QMainWindow, LoggerMixin):
 
     def closeEvent(self, event) -> None:
         """
-        ウィンドウクローズイベントをハンドルします
+        ウィンドウクローズイベントをハンドルします（cleanup_managerに委譲）
 
         Args:
             event: クローズイベント
         """
-        reply = QMessageBox.question(
-            self,
-            "終了確認",
-            "DocMindを終了しますか？",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
+        self.cleanup_manager.handle_close_event(event)
 
-        if reply == QMessageBox.Yes:
-            self.logger.info("アプリケーションを終了します")
 
-            # すべてのコンポーネントを適切にクリーンアップ
-            self._cleanup_all_components()
 
-            event.accept()
-        else:
-            event.ignore()
 
-    def _cleanup_all_components(self):
-        """
-        すべてのコンポーネントをクリーンアップします
-
-        アプリケーション終了時に呼び出され、すべてのリソースを適切に解放し、
-        実行中のスレッドやタイマーを安全に停止します。
-        """
-        try:
-            self.logger.info("アプリケーション終了時のクリーンアップを開始します")
-
-            # インデックス再構築関連のクリーンアップを最優先で実行
-            self._cleanup_rebuild_components()
-
-            # その他のUIコンポーネントのクリーンアップ
-            self._cleanup_ui_components()
-
-            # 検索関連コンポーネントのクリーンアップ
-            self._cleanup_search_components()
-
-            # シグナル接続の切断
-            self._disconnect_all_signals()
-
-            self.logger.info("すべてのコンポーネントクリーンアップが完了しました")
-
-        except Exception as e:
-            self.logger.error(f"コンポーネントクリーンアップ中にエラーが発生しました: {e}")
-
-    def _cleanup_rebuild_components(self):
-        """
-        インデックス再構築関連コンポーネントのクリーンアップ
-
-        要件7.3, 4.2に対応し、スレッドマネージャーとタイムアウトマネージャーを
-        適切にクリーンアップします。
-        """
-        try:
-            # タイムアウトマネージャーのクリーンアップ（最優先）
-            if hasattr(self, 'timeout_manager') and self.timeout_manager:
-                self.timeout_manager.cancel_all_timeouts()
-                self.logger.info("タイムアウトマネージャーをクリーンアップしました")
-
-            # スレッドマネージャーのクリーンアップ
-            if hasattr(self, 'thread_manager') and self.thread_manager:
-                # 実行中のスレッドを安全に停止
-                active_threads = self.thread_manager.get_active_thread_count()
-                if active_threads > 0:
-                    self.logger.info(f"実行中のスレッド {active_threads} 個を停止します")
-
-                # シャットダウン処理を実行
-                self.thread_manager.shutdown()
-                self.logger.info("スレッドマネージャーをクリーンアップしました")
-
-            # 古いインデックス処理スレッドのクリーンアップ（後方互換性）
-            if hasattr(self, 'indexing_worker') and self.indexing_worker:
-                try:
-                    self.indexing_worker.stop()
-                    if hasattr(self, 'indexing_thread') and self.indexing_thread:
-                        if self.indexing_thread.isRunning():
-                            self.indexing_thread.quit()
-                            self.indexing_thread.wait(3000)  # 3秒待機
-                        try:
-                            self.indexing_thread.deleteLater()
-                        except RuntimeError:
-                            pass
-                    try:
-                        self.indexing_worker.deleteLater()
-                    except RuntimeError:
-                        pass
-                    self.logger.info("レガシーインデックス処理スレッドをクリーンアップしました")
-                except Exception as cleanup_error:
-                    self.logger.debug(f"レガシーインデックス処理スレッドクリーンアップエラー: {cleanup_error}")
-
-        except Exception as e:
-            self.logger.error(f"再構築コンポーネントクリーンアップエラー: {e}")
-
-    def _cleanup_ui_components(self):
-        """UIコンポーネントのクリーンアップ"""
-        try:
-            # フォルダツリーのクリーンアップ
-            if hasattr(self, 'folder_tree_container') and self.folder_tree_container:
-                if hasattr(self.folder_tree_container, 'tree_widget') and hasattr(self.folder_tree_container.tree_widget, '_cleanup_worker'):
-                    self.folder_tree_container.tree_widget._cleanup_worker()
-                self.logger.info("フォルダツリーをクリーンアップしました")
-
-            # プレビューウィジェットのクリーンアップ
-            if hasattr(self, 'preview_widget') and self.preview_widget:
-                self.preview_widget.clear_preview()
-                self.logger.info("プレビューウィジェットをクリーンアップしました")
-
-        except Exception as e:
-            self.logger.error(f"UIコンポーネントクリーンアップエラー: {e}")
-
-    def _cleanup_search_components(self):
-        """検索関連コンポーネントのクリーンアップ"""
-        try:
-            # 検索インターフェースのクリーンアップ（ワーカースレッドがあれば）
-            if hasattr(self, 'search_interface') and self.search_interface:
-                # 実行中のタスクがあればキャンセル
-                try:
-                    if hasattr(self, 'search_worker') and self.search_worker.isRunning():
-                        self.search_worker.cancel()
-                        self.search_worker.wait()
-                except:
-                    pass
-                self.logger.info("検索インターフェースをクリーンアップしました")
-
-            # 検索マネージャーのクリーンアップ
-            if hasattr(self, 'search_manager'):
-                try:
-                    self.search_manager.clear_suggestion_cache()
-                except:
-                    pass
-                self.logger.info("検索マネージャーをクリーンアップしました")
-
-        except Exception as e:
-            self.logger.error(f"検索コンポーネントクリーンアップエラー: {e}")
-
-    def _disconnect_all_signals(self):
-        """
-        すべてのシグナル接続を切断します
-
-        メモリリークを防ぐため、アプリケーション終了時にすべてのシグナル接続を
-        明示的に切断します。
-        """
-        try:
-            # インデックス再構築関連のシグナル切断
-            self._disconnect_rebuild_signals()
-
-            # その他のシグナル切断
-            self._disconnect_ui_signals()
-
-            self.logger.info("すべてのシグナル接続を切断しました")
-
-        except Exception as e:
-            self.logger.error(f"シグナル切断中にエラーが発生しました: {e}")
-
-    def _disconnect_rebuild_signals(self):
-        """インデックス再構築関連のシグナル接続を切断"""
-        try:
-            # スレッドマネージャーのシグナル切断
-            if hasattr(self, 'thread_manager') and self.thread_manager:
-                signals_to_disconnect = [
-                    ('thread_started', self._on_thread_started),
-                    ('thread_finished', self._on_thread_finished),
-                    ('thread_error', self._on_thread_error),
-                    ('thread_progress', self._on_rebuild_progress),
-                    ('manager_status_changed', self._on_manager_status_changed)
-                ]
-
-                for signal_name, handler in signals_to_disconnect:
-                    try:
-                        signal = getattr(self.thread_manager, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        # シグナルが存在しないか、接続されていない場合は無視
-                        pass
-
-                self.logger.debug("スレッドマネージャーのシグナルを切断しました")
-
-            # タイムアウトマネージャーのシグナル切断
-            if hasattr(self, 'timeout_manager') and self.timeout_manager:
-                try:
-                    self.timeout_manager.timeout_occurred.disconnect(self._handle_rebuild_timeout)
-                    self.logger.debug("タイムアウトマネージャーのシグナルを切断しました")
-                except (AttributeError, TypeError):
-                    # シグナルが接続されていない場合は無視
-                    pass
-
-        except Exception as e:
-            self.logger.error(f"再構築シグナル切断エラー: {e}")
-
-    def _disconnect_ui_signals(self):
-        """UIコンポーネントのシグナル接続を切断"""
-        try:
-            # メインウィンドウのシグナル切断（接続されているハンドラーがある場合のみ）
-            # これらのシグナルは通常他のコンポーネントに接続されているため、
-            # 全切断ではなく特定のハンドラーのみ切断する場合は個別に実装
-
-            # フォルダツリーのシグナル切断
-            if hasattr(self, 'folder_tree_container') and self.folder_tree_container:
-                ui_signals_to_disconnect = [
-                    ('folder_selected', self._on_folder_selected),
-                    ('folder_indexed', self._on_folder_indexed),
-                    ('folder_excluded', self._on_folder_excluded),
-                    ('refresh_requested', self._on_folder_refresh)
-                ]
-
-                for signal_name, handler in ui_signals_to_disconnect:
-                    try:
-                        signal = getattr(self.folder_tree_container, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        pass
-
-            # 検索インターフェースのシグナル切断
-            if hasattr(self, 'search_interface') and self.search_interface:
-                search_signals_to_disconnect = [
-                    ('search_requested', self._on_search_requested),
-                    ('search_cancelled', self._on_search_cancelled)
-                ]
-
-                for signal_name, handler in search_signals_to_disconnect:
-                    try:
-                        signal = getattr(self.search_interface, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        pass
-
-                # 検索入力のテキスト変更シグナル
-                try:
-                    self.search_interface.search_input.textChanged.disconnect(self._on_search_text_changed)
-                except (AttributeError, TypeError):
-                    pass
-
-            # 検索結果ウィジェットのシグナル切断
-            if hasattr(self, 'search_results_widget') and self.search_results_widget:
-                result_signals_to_disconnect = [
-                    ('result_selected', self._on_search_result_selected),
-                    ('preview_requested', self._on_preview_requested),
-                    ('page_changed', self._on_page_changed),
-                    ('sort_changed', self._on_sort_changed),
-                    ('filter_changed', self._on_filter_changed)
-                ]
-
-                for signal_name, handler in result_signals_to_disconnect:
-                    try:
-                        signal = getattr(self.search_results_widget, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        pass
-
-            # プレビューウィジェットのシグナル切断
-            if hasattr(self, 'preview_widget') and self.preview_widget:
-                preview_signals_to_disconnect = [
-                    ('zoom_changed', self._on_preview_zoom_changed),
-                    ('format_changed', self._on_preview_format_changed)
-                ]
-
-                for signal_name, handler in preview_signals_to_disconnect:
-                    try:
-                        signal = getattr(self.preview_widget, signal_name)
-                        signal.disconnect(handler)
-                    except (AttributeError, TypeError):
-                        pass
-
-            self.logger.debug("UIコンポーネントのシグナルを切断しました")
-
-        except Exception as e:
-            self.logger.error(f"UIシグナル切断エラー: {e}")
 
     # 検索結果ウィジェットのシグナルハンドラー
 
@@ -2469,7 +1475,7 @@ class MainWindow(QMainWindow, LoggerMixin):
             self.logger.warning(f"インデックス再構築タイムアウト: {thread_id}")
 
             # 改善されたタイムアウトダイアログを表示（要件6.2対応）
-            reply = self._show_improved_timeout_dialog(thread_id)
+            reply = self.dialog_manager.show_improved_timeout_dialog(thread_id)
 
             if reply == QMessageBox.Yes:
                 # 強制停止処理（要件6.1, 6.3対応）
@@ -2487,52 +1493,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         except Exception as e:
             self.logger.error(f"タイムアウト処理でエラー: {e}")
 
-    def _show_timeout_dialog(self, thread_id: str) -> int:
-        """タイムアウトダイアログを表示（要件6.2対応）
 
-        Args:
-            thread_id: タイムアウトが発生したスレッドID
-
-        Returns:
-            int: ユーザーの選択結果（QMessageBox.Yes または QMessageBox.No）
-        """
-        # 現在の処理状況を取得
-        active_threads = self.thread_manager.get_active_thread_count()
-
-        # 詳細なタイムアウトメッセージを作成
-        timeout_message = (
-            f"インデックス再構築が30分以上応答していません。\n\n"
-            f"スレッドID: {thread_id}\n"
-            f"アクティブスレッド数: {active_threads}\n\n"
-            f"処理を中断しますか？\n\n"
-            f"【中断する場合】\n"
-            f"• 部分的に処理されたインデックスがクリアされます\n"
-            f"• システム状態がリセットされます\n"
-            f"• 再度インデックス再構築を実行できます\n\n"
-            f"【継続する場合】\n"
-            f"• さらに30分間処理を待機します\n"
-            f"• 処理が完了する可能性があります"
-        )
-
-        # カスタムボタンでダイアログを作成
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("インデックス再構築タイムアウト")
-        msg_box.setText(timeout_message)
-        msg_box.setIcon(QMessageBox.Warning)
-
-        # ボタンを設定
-        stop_button = msg_box.addButton("中断する", QMessageBox.YesRole)
-        continue_button = msg_box.addButton("継続する", QMessageBox.NoRole)
-        msg_box.setDefaultButton(stop_button)
-
-        # ダイアログを表示
-        msg_box.exec()
-
-        # 結果を判定
-        if msg_box.clickedButton() == stop_button:
-            return QMessageBox.Yes
-        else:
-            return QMessageBox.No
 
     def _force_stop_rebuild(self, thread_id: str) -> None:
         """インデックス再構築を強制停止
@@ -2756,7 +1717,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         except Exception as e:
             self.logger.error(f"インデックス再構築エラー処理でエラー: {e}")
             # 最後の手段として基本的なエラーダイアログを表示
-            self._show_fallback_error_dialog(error_message)
+            self.dialog_manager.show_fallback_error_dialog(error_message)
 
     def _analyze_error_type(self, error_message: str) -> str:
         """エラーメッセージを分析してエラータイプを特定
@@ -2838,7 +1799,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"権限エラー: {folder_path}")
 
         # 部分的なインデックスをクリア
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2868,7 +1829,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"リソースエラー: {folder_path}")
 
         # 部分的なインデックスをクリア
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2898,7 +1859,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"ディスク容量エラー: {folder_path}")
 
         # 部分的なインデックスをクリア
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2928,7 +1889,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"データ破損エラー: {folder_path}")
 
         # インデックス全体をクリア（破損の可能性があるため）
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2958,7 +1919,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         self.logger.error(f"システムエラー: {folder_path}")
 
         # 部分的なインデックスをクリア
-        self._cleanup_partial_index()
+        self.cleanup_manager.cleanup_partial_index()
 
         QMessageBox.critical(
             self,
@@ -2973,37 +1934,7 @@ class MainWindow(QMainWindow, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _cleanup_partial_index(self) -> None:
-        """部分的インデックスのクリーンアップ処理
 
-        要件3.3対応: 部分的に構築されたインデックスをクリアして
-        データの一貫性を保持します。
-        """
-        try:
-            if hasattr(self, 'index_manager') and self.index_manager:
-                self.logger.info("部分的インデックスのクリーンアップを開始")
-                self.index_manager.clear_index()
-
-                # 検索結果をクリア
-                if hasattr(self, 'search_results_widget'):
-                    self.search_results_widget.clear_results()
-
-                # プレビューをクリア
-                if hasattr(self, 'preview_widget'):
-                    self.preview_widget.clear_preview()
-
-                # 検索提案キャッシュをクリア
-                if hasattr(self, 'search_manager'):
-                    self.search_manager.clear_suggestion_cache()
-
-                # システム情報を更新
-                if hasattr(self, 'system_info_label'):
-                    self.system_info_label.setText("インデックス: エラーによりクリア済み")
-
-                self.logger.info("部分的インデックスのクリーンアップが完了")
-
-        except Exception as e:
-            self.logger.error(f"インデックスクリーンアップでエラー: {e}")
 
     def _perform_error_cleanup(self, thread_id: str, error_type: str, thread_info: Optional[object]) -> None:
         """エラー後の共通クリーンアップ処理
@@ -3039,567 +1970,5 @@ class MainWindow(QMainWindow, LoggerMixin):
         except Exception as e:
             self.logger.error(f"エラークリーンアップでエラー: {e}")
 
-    def _show_fallback_error_dialog(self, error_message: str) -> None:
-        """最後の手段としてのエラーダイアログ表示
 
-        Args:
-            error_message: エラーメッセージ
-        """
-        try:
-            QMessageBox.critical(
-                self,
-                "予期しないエラー",
-                f"インデックス再構築中に予期しないエラーが発生しました。\n\n"
-                f"エラー詳細: {error_message}\n\n"
-                "アプリケーションを再起動してから再試行してください。"
-            )
-        except Exception as e:
-            self.logger.error(f"フォールバックエラーダイアログの表示でエラー: {e}")
 
-    # ========================================
-    # 改善されたダイアログメソッド（タスク10対応）
-    # ========================================
-
-    def _show_rebuild_confirmation_dialog(self) -> bool:
-        """
-        改善されたインデックス再構築確認ダイアログを表示
-
-        Returns:
-            bool: ユーザーが再構築を承認した場合True
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("🔄 インデックス再構築")
-        msg_box.setIcon(QMessageBox.Question)
-
-        # 詳細で分かりやすいメッセージ
-        message = (
-            "検索インデックスを再構築しますか？\n\n"
-            "📋 実行される処理:\n"
-            "• 既存のインデックスデータを削除\n"
-            "• 選択フォルダ内の全ドキュメントを再スキャン\n"
-            "• 新しい検索インデックスを作成\n\n"
-            "⏱️ 処理時間: ファイル数により数分～数十分\n"
-            "💡 処理中も他の機能は使用可能です\n\n"
-            "続行しますか？"
-        )
-        msg_box.setText(message)
-
-        # カスタムボタンの設定
-        rebuild_button = msg_box.addButton("🚀 再構築開始", QMessageBox.AcceptRole)
-        cancel_button = msg_box.addButton("❌ キャンセル", QMessageBox.RejectRole)
-
-        # ボタンのスタイリング
-        rebuild_button.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
-
-        cancel_button.setStyleSheet("""
-            QPushButton {
-                background-color: #f44336;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #da190b;
-            }
-        """)
-
-        # デフォルトボタンをキャンセルに設定（安全性のため）
-        msg_box.setDefaultButton(cancel_button)
-
-        # ダイアログを実行
-        result = msg_box.exec()
-        return msg_box.clickedButton() == rebuild_button
-
-    def _show_folder_not_selected_dialog(self) -> None:
-        """
-        フォルダ未選択エラーダイアログを表示
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("📁 フォルダが選択されていません")
-        msg_box.setIcon(QMessageBox.Warning)
-
-        message = (
-            "インデックスを再構築するフォルダが選択されていません。\n\n"
-            "📋 操作手順:\n"
-            "1. 左ペインのフォルダツリーでフォルダを選択\n"
-            "2. または「ファイル」→「フォルダを開く」でフォルダを追加\n"
-            "3. 再度インデックス再構築を実行\n\n"
-            "💡 ヒント: 複数フォルダがある場合は、再構築したいフォルダをクリックして選択してください。"
-        )
-        msg_box.setText(message)
-
-        # OKボタンのみ
-        ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
-        ok_button.setStyleSheet("""
-            QPushButton {
-                background-color: #2196F3;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #1976D2;
-            }
-        """)
-
-        msg_box.exec()
-
-    def _show_thread_start_error_dialog(self, error_message: str) -> None:
-        """
-        スレッド開始エラーダイアログを表示
-
-        Args:
-            error_message: エラーメッセージ
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("⚠️ 処理開始エラー")
-        msg_box.setIcon(QMessageBox.Critical)
-
-        message = (
-            "インデックス再構築の開始に失敗しました。\n\n"
-            f"📋 エラー詳細:\n{error_message}\n\n"
-            "🔧 対処方法:\n"
-            "• 他の処理が完了するまで待機\n"
-            "• アプリケーションを再起動\n"
-            "• システムリソースの確認\n\n"
-            "💡 ヒント: 同時実行可能な処理数には制限があります。"
-        )
-        msg_box.setText(message)
-
-        # ボタンの設定
-        retry_button = msg_box.addButton("🔄 再試行", QMessageBox.AcceptRole)
-        close_button = msg_box.addButton("❌ 閉じる", QMessageBox.RejectRole)
-
-        # ボタンのスタイリング
-        retry_button.setStyleSheet("""
-            QPushButton {
-                background-color: #FF9800;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #F57C00;
-            }
-        """)
-
-        close_button.setStyleSheet("""
-            QPushButton {
-                background-color: #757575;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #616161;
-            }
-        """)
-
-        result = msg_box.exec()
-        if msg_box.clickedButton() == retry_button:
-            # 少し待ってから再試行
-            QTimer.singleShot(2000, self._rebuild_index)
-
-    def _show_system_error_dialog(self, title: str, error_message: str, suggestion: str = "") -> None:
-        """
-        システムエラーダイアログを表示
-
-        Args:
-            title: エラータイトル
-            error_message: エラーメッセージ
-            suggestion: 対処提案（オプション）
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle(f"🚨 {title}")
-        msg_box.setIcon(QMessageBox.Critical)
-
-        message = f"システムエラーが発生しました。\n\n📋 エラー詳細:\n{error_message}\n\n"
-
-        if suggestion:
-            message += f"🔧 推奨対処:\n{suggestion}\n\n"
-
-        message += (
-            "💡 追加の対処方法:\n"
-            "• アプリケーションの再起動\n"
-            "• システムの再起動\n"
-            "• ディスク容量の確認\n"
-            "• ウイルススキャンの実行"
-        )
-
-        msg_box.setText(message)
-
-        # ボタンの設定
-        ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
-        ok_button.setStyleSheet("""
-            QPushButton {
-                background-color: #f44336;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #da190b;
-            }
-        """)
-
-        msg_box.exec()
-
-    def _show_improved_timeout_dialog(self, thread_id: str) -> int:
-        """
-        改善されたタイムアウトダイアログを表示
-
-        Args:
-            thread_id: タイムアウトしたスレッドID
-
-        Returns:
-            int: ユーザーの選択（QMessageBox.Yes/No/Cancel相当）
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("⏰ 処理タイムアウト")
-        msg_box.setIcon(QMessageBox.Warning)
-
-        # 詳細なタイムアウト情報
-        message = (
-            "インデックス再構築が長時間応答していません。\n\n"
-            f"📋 処理情報:\n"
-            f"• スレッドID: {thread_id}\n"
-            f"• タイムアウト時間: 30分\n"
-            f"• 開始時刻: {self._get_thread_start_time(thread_id)}\n\n"
-            "🤔 考えられる原因:\n"
-            "• 大量のファイルによる処理時間の延長\n"
-            "• システムリソースの不足\n"
-            "• ファイルアクセス権限の問題\n"
-            "• ネットワークドライブの応答遅延\n\n"
-            "どのように対処しますか？"
-        )
-        msg_box.setText(message)
-
-        # カスタムボタンの設定
-        force_stop_button = msg_box.addButton("🛑 強制停止", QMessageBox.DestructiveRole)
-        continue_button = msg_box.addButton("⏳ 継続待機", QMessageBox.AcceptRole)
-        restart_button = msg_box.addButton("🔄 再開始", QMessageBox.ActionRole)
-
-        # ボタンのスタイリング
-        force_stop_button.setStyleSheet("""
-            QPushButton {
-                background-color: #f44336;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #da190b;
-            }
-        """)
-
-        continue_button.setStyleSheet("""
-            QPushButton {
-                background-color: #FF9800;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #F57C00;
-            }
-        """)
-
-        restart_button.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
-
-        # デフォルトボタンを継続待機に設定
-        msg_box.setDefaultButton(continue_button)
-
-        # ダイアログを実行
-        result = msg_box.exec()
-        clicked_button = msg_box.clickedButton()
-
-        if clicked_button == force_stop_button:
-            return QMessageBox.Yes  # 強制停止
-        elif clicked_button == continue_button:
-            return QMessageBox.No   # 継続待機
-        elif clicked_button == restart_button:
-            return QMessageBox.Retry  # 再開始
-        else:
-            return QMessageBox.No   # デフォルトは継続
-
-    def _get_thread_start_time(self, thread_id: str) -> str:
-        """
-        スレッドの開始時刻を取得
-
-        Args:
-            thread_id: スレッドID
-
-        Returns:
-            str: 開始時刻の文字列表現
-        """
-        try:
-            if hasattr(self, 'thread_manager') and self.thread_manager:
-                # スレッドマネージャーから開始時刻を取得
-                start_time = self.thread_manager.get_thread_start_time(thread_id)
-                if start_time:
-                    return start_time.strftime("%Y-%m-%d %H:%M:%S")
-            return "不明"
-        except Exception as e:
-            self.logger.error(f"スレッド開始時刻の取得でエラー: {e}")
-            return "取得エラー"
-
-    def _show_clear_index_confirmation_dialog(self) -> bool:
-        """
-        改善されたインデックスクリア確認ダイアログを表示
-
-        Returns:
-            bool: ユーザーがクリアを承認した場合True
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("🗑️ インデックスクリア")
-        msg_box.setIcon(QMessageBox.Warning)
-
-        # 詳細で分かりやすいメッセージ
-        message = (
-            "検索インデックスをクリアしますか？\n\n"
-            "⚠️ 実行される処理:\n"
-            "• すべての検索インデックスデータを削除\n"
-            "• 検索結果とプレビューをクリア\n"
-            "• 検索提案キャッシュをリセット\n\n"
-            "📋 影響:\n"
-            "• 検索機能が一時的に利用不可\n"
-            "• 再度インデックス作成が必要\n"
-            "• この操作は取り消しできません\n\n"
-            "本当にクリアしますか？"
-        )
-        msg_box.setText(message)
-
-        # カスタムボタンの設定
-        clear_button = msg_box.addButton("🗑️ クリア実行", QMessageBox.DestructiveRole)
-        cancel_button = msg_box.addButton("❌ キャンセル", QMessageBox.RejectRole)
-
-        # ボタンのスタイリング
-        clear_button.setStyleSheet("""
-            QPushButton {
-                background-color: #f44336;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #da190b;
-            }
-        """)
-
-        cancel_button.setStyleSheet("""
-            QPushButton {
-                background-color: #757575;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #616161;
-            }
-        """)
-
-        # デフォルトボタンをキャンセルに設定（安全性のため）
-        msg_box.setDefaultButton(cancel_button)
-
-        # ダイアログを実行
-        result = msg_box.exec()
-        return msg_box.clickedButton() == clear_button
-
-    def _show_component_unavailable_dialog(self, component_name: str) -> None:
-        """
-        コンポーネント利用不可ダイアログを表示
-
-        Args:
-            component_name: 利用不可なコンポーネント名
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle(f"⚠️ {component_name}が利用できません")
-        msg_box.setIcon(QMessageBox.Warning)
-
-        message = (
-            f"{component_name}が現在利用できません。\n\n"
-            "🔍 考えられる原因:\n"
-            "• 初期化処理が未完了\n"
-            "• システムリソースの不足\n"
-            "• 設定ファイルの問題\n"
-            "• 権限の問題\n\n"
-            "🔧 対処方法:\n"
-            "• アプリケーションの再起動\n"
-            "• システムリソースの確認\n"
-            "• 管理者権限での実行\n\n"
-            "💡 この機能は一時的に利用できませんが、他の機能は正常に動作します。"
-        )
-        msg_box.setText(message)
-
-        # OKボタンのみ
-        ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
-        ok_button.setStyleSheet("""
-            QPushButton {
-                background-color: #FF9800;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #F57C00;
-            }
-        """)
-
-        msg_box.exec()
-
-    def _show_operation_failed_dialog(self, operation_name: str, error_message: str, suggestion: str = "") -> None:
-        """
-        操作失敗ダイアログを表示
-
-        Args:
-            operation_name: 失敗した操作名
-            error_message: エラーメッセージ
-            suggestion: 対処提案（オプション）
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle(f"❌ {operation_name}に失敗")
-        msg_box.setIcon(QMessageBox.Critical)
-
-        message = f"{operation_name}の実行に失敗しました。\n\n📋 エラー詳細:\n{error_message}\n\n"
-
-        if suggestion:
-            message += f"🔧 推奨対処:\n{suggestion}\n\n"
-
-        message += (
-            "💡 一般的な対処方法:\n"
-            "• 操作を再試行\n"
-            "• アプリケーションの再起動\n"
-            "• システムリソースの確認\n"
-            "• ログファイルの確認"
-        )
-
-        msg_box.setText(message)
-
-        # ボタンの設定
-        retry_button = msg_box.addButton("🔄 再試行", QMessageBox.AcceptRole)
-        close_button = msg_box.addButton("❌ 閉じる", QMessageBox.RejectRole)
-
-        # ボタンのスタイリング
-        retry_button.setStyleSheet("""
-            QPushButton {
-                background-color: #4CAF50;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
-
-        close_button.setStyleSheet("""
-            QPushButton {
-                background-color: #757575;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #616161;
-            }
-        """)
-
-        result = msg_box.exec()
-        # 再試行が選択された場合の処理は呼び出し元で実装
-
-    def _show_partial_failure_dialog(self, operation_name: str, error_message: str, suggestion: str = "") -> None:
-        """
-        部分的失敗ダイアログを表示
-
-        Args:
-            operation_name: 部分的に失敗した操作名
-            error_message: エラーメッセージ
-            suggestion: 対処提案（オプション）
-        """
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle(f"⚠️ {operation_name}の一部が失敗")
-        msg_box.setIcon(QMessageBox.Warning)
-
-        message = (
-            f"{operation_name}は部分的に成功しましたが、一部で問題が発生しました。\n\n"
-            f"📋 問題詳細:\n{error_message}\n\n"
-        )
-
-        if suggestion:
-            message += f"🔧 推奨対処:\n{suggestion}\n\n"
-
-        message += (
-            "💡 対処オプション:\n"
-            "• 現在の状態で継続使用\n"
-            "• アプリケーションの再起動\n"
-            "• 設定のリセット\n\n"
-            "✅ 他の機能は正常に動作しています。"
-        )
-
-        msg_box.setText(message)
-
-        # OKボタンのみ
-        ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
-        ok_button.setStyleSheet("""
-            QPushButton {
-                background-color: #FF9800;
-                color: white;
-                font-weight: bold;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #F57C00;
-            }
-        """)
-
-        msg_box.exec()
