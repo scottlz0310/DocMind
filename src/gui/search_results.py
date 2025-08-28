@@ -10,19 +10,17 @@ QListWidgetを拡張した検索結果表示機能を実装します。
 
 import logging
 import math
-from typing import List, Optional, Dict, Any, Callable
+from typing import List, Optional, Dict, Any
 from enum import Enum
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QListWidget, QListWidgetItem,
-    QLabel, QFrame, QPushButton, QComboBox, QLineEdit, QSpinBox,
-    QProgressBar, QScrollArea, QSizePolicy, QButtonGroup, QRadioButton,
-    QCheckBox, QGroupBox, QSplitter, QTextEdit, QApplication
+    QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton, QComboBox, QSpinBox,
+    QScrollArea
 )
-from PySide6.QtCore import Qt, Signal, QTimer, QSize, QRect, QPropertyAnimation, QEasingCurve
-from PySide6.QtGui import QFont, QFontMetrics, QPalette, QColor, QPainter, QPixmap, QIcon
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QFont
 
-from src.data.models import SearchResult, SearchType, FileType, Document
+from src.data.models import SearchResult, SearchType, FileType
 
 
 class SortOrder(Enum):

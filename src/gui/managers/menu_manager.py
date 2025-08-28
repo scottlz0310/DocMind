@@ -7,7 +7,6 @@ DocMind メニュー管理マネージャー
 ファイル、検索、表示、ツール、ヘルプメニューの統合管理を提供します。
 """
 
-import logging
 from typing import Optional
 
 from PySide6.QtCore import QObject

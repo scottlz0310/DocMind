@@ -8,7 +8,6 @@ DocMind スレッド処理ハンドラーマネージャー
 """
 
 import os
-from typing import Optional
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QMainWindow
@@ -96,7 +95,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
             else:
                 # すべてのスレッドが完了した場合のみ進捗バーを非表示
                 self.main_window.hide_progress(completion_message)
-                self.logger.info(f"全スレッド完了: 進捗バーを非表示")
+                self.logger.info("全スレッド完了: 進捗バーを非表示")
 
                 # インデックス再構築完了時の追加処理
                 self.main_window.index_controller.handle_rebuild_completed(thread_id, statistics)
@@ -142,7 +141,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
             self.main_window.hide_progress("")
             error_msg = f"インデックス処理エラー ({folder_name}): {error_message}"
             self.main_window.show_status_message(error_msg, 10000)
-            self.logger.error(f"全スレッド完了/エラー: 進捗バーを非表示")
+            self.logger.error("全スレッド完了/エラー: 進捗バーを非表示")
 
             # インデックス再構築エラー時の追加処理
             self.main_window.index_controller.handle_rebuild_error(thread_id, error_message)

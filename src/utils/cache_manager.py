@@ -11,11 +11,10 @@ import time
 import threading
 import pickle
 import hashlib
-from typing import Any, Dict, Optional, List, Tuple, TypeVar, Generic
+from typing import Any, Dict, Optional, List, TypeVar, Generic
 from collections import OrderedDict
 from dataclasses import dataclass
 from pathlib import Path
-import logging
 
 from ..data.models import SearchResult, Document
 from ..utils.exceptions import CacheError

@@ -8,7 +8,6 @@ import os
 import logging
 import threading
 from typing import List, Optional, Callable, Dict, Any
-from pathlib import Path
 
 from .file_watcher import FileWatcher
 from .index_manager import IndexManager

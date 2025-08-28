@@ -8,7 +8,6 @@ DocMind インデックス再構築ハンドラーマネージャー
 """
 
 import os
-from typing import Optional
 
 from PySide6.QtCore import QObject, QTimer
 from PySide6.QtWidgets import QMainWindow, QMessageBox

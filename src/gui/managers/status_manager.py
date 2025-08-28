@@ -7,7 +7,6 @@ DocMind ステータス管理マネージャー
 ステータスメッセージ、システム情報、進捗状況の統合管理を提供します。
 """
 
-import logging
 from typing import Optional
 
 from PySide6.QtCore import QObject

@@ -9,7 +9,7 @@
 import logging
 from typing import Any, Dict
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QInputDialog, QMessageBox, QWidget
 
 from ....data.models import SearchType

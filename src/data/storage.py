@@ -13,7 +13,7 @@ from .database import DatabaseManager
 from .document_repository import DocumentRepository
 from .search_history_repository import SearchHistoryRepository
 from .models import Document, FileType, SearchType, IndexStats
-from ..utils.exceptions import DatabaseError, DocumentNotFoundError
+from ..utils.exceptions import DatabaseError
 
 
 class StorageManager:

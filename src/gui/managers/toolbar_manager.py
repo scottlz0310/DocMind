@@ -7,7 +7,6 @@ DocMind ツールバー管理マネージャー
 検索、インデックス、設定などの主要機能への素早いアクセスを提供します。
 """
 
-import logging
 from typing import Optional
 
 from PySide6.QtCore import QObject, QSize, Qt

@@ -8,7 +8,7 @@
 import logging
 import json
 from datetime import datetime, timedelta
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 
 from .database import DatabaseManager
 from .models import SearchType

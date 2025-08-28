@@ -7,7 +7,6 @@ Whoosh全文検索インデックス管理モジュール
 """
 
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -16,10 +15,9 @@ from whoosh import fields, index
 from whoosh.analysis import NgramAnalyzer, StandardAnalyzer
 from whoosh.highlight import ContextFragmenter, HtmlFormatter, highlight
 from whoosh.index import Index
-from whoosh.qparser import MultifieldParser, QueryParser
+from whoosh.qparser import MultifieldParser
 from whoosh.query import And, DateRange, Or, Query, Term
-from whoosh.searching import Hit, Results
-from whoosh.writing import IndexWriter
+from whoosh.searching import Hit
 
 from ..data.models import Document, FileType, SearchResult, SearchType
 from ..utils.exceptions import IndexingError, SearchError

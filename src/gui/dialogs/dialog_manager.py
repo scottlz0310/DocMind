@@ -7,12 +7,10 @@ main_window.pyから分離されたダイアログ表示・管理機能を提供
 各種確認ダイアログ、エラーダイアログ、設定ダイアログなどを統一的に管理します。
 """
 
-import logging
 from pathlib import Path
 from typing import Optional
 
-from PySide6.QtCore import QTimer
-from PySide6.QtWidgets import (QFileDialog, QMainWindow, QMessageBox, QWidget)
+from PySide6.QtWidgets import (QFileDialog, QMainWindow, QMessageBox)
 
 from ..settings_dialog import SettingsDialog
 from ...utils.config import Config

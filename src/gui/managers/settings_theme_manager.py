@@ -7,8 +7,7 @@ DocMind 設定・テーマ管理マネージャー
 main_window.pyから分離された設定関連の処理を統合管理します。
 """
 
-import logging
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QApplication, QMainWindow

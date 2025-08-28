@@ -11,23 +11,15 @@ PySide6を使用した3ペインレイアウトのメインアプリケーショ
 包括的エラーハンドリングと優雅な劣化機能を統合しています。
 """
 
-import logging
-import os
-from pathlib import Path
 from typing import Optional
 
-from PySide6.QtCore import Qt, QThread, QTimer, Signal
-from PySide6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QShortcut
-from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QHBoxLayout,
-                               QLabel, QMainWindow, QMenuBar, QMessageBox,
-                               QProgressBar, QSplitter, QStatusBar,
-                               QVBoxLayout, QWidget)
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import (QMainWindow, QWidget)
 
 from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
 from src.core.search_manager import SearchManager
 from src.core.document_processor import DocumentProcessor
-from src.core.indexing_worker import IndexingWorker
 from src.core.thread_manager import IndexingThreadManager
 from src.core.rebuild_timeout_manager import RebuildTimeoutManager
 from src.data.database import DatabaseManager
@@ -49,15 +41,8 @@ from src.gui.managers.error_rebuild_manager import ErrorRebuildManager
 from src.gui.managers.progress_system_manager import ProgressSystemManager
 from src.gui.managers.event_ui_manager import EventUIManager
 from src.gui.controllers.index_controller import IndexController
-from src.gui.folder_tree import FolderTreeContainer
-from src.gui.preview_widget import PreviewWidget
-from src.gui.resources import get_app_icon, get_search_icon, get_settings_icon
-from src.gui.search_interface import SearchInterface
-from src.gui.search.widgets.worker_thread import SearchWorkerThread
-from src.gui.search_results import SearchResultsWidget
 from src.utils.config import Config
-from src.utils.error_handler import get_global_error_handler, handle_exceptions
-from src.utils.exceptions import DocMindException
+from src.utils.error_handler import handle_exceptions
 from src.utils.graceful_degradation import get_global_degradation_manager
 from src.utils.logging_config import LoggerMixin
 

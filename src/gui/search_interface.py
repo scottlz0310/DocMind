@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget
 
-from ..data.models import SearchQuery, SearchType
+from ..data.models import SearchQuery
 from .search.controllers.search_controller import SearchController
 from .search.managers.search_ui_manager import SearchUIManager
 from .search.managers.search_event_manager import SearchEventManager

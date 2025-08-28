@@ -8,7 +8,7 @@ DocMindアプリケーション用のドキュメント処理システム
 import os
 import logging
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 import chardet
 
 # ドキュメント処理ライブラリ

@@ -7,8 +7,6 @@ DocMind ウィンドウ状態管理マネージャー
 ウィンドウ状態の永続化、表示設定、キーボードショートカット管理を提供します。
 """
 
-import logging
-from typing import Optional
 
 from PySide6.QtCore import QObject, QSettings, QSize, QPoint
 from PySide6.QtGui import QKeySequence, QShortcut

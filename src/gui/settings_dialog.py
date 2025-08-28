@@ -9,17 +9,15 @@
 import os
 import logging
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Dict, Any
 
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QTabWidget, QWidget,
     QLabel, QLineEdit, QPushButton, QSpinBox, QDoubleSpinBox,
-    QComboBox, QCheckBox, QListWidget, QListWidgetItem,
-    QFileDialog, QGroupBox, QFormLayout, QDialogButtonBox,
+    QComboBox, QCheckBox, QListWidget, QFileDialog, QGroupBox, QFormLayout, QDialogButtonBox,
     QMessageBox, QSlider, QTextEdit
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont
 
 from ..utils.config import Config
 

@@ -7,7 +7,6 @@ DocMind エラー処理・再構築管理マネージャー
 main_window.pyから分離されたエラー処理関連の処理を統合管理します。
 """
 
-import os
 from typing import Optional, Dict, Any
 
 from PySide6.QtCore import QObject, QTimer

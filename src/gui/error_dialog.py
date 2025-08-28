@@ -6,17 +6,16 @@
 システム状態の通知機能を提供します。
 """
 
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from PySide6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QTextEdit, QMessageBox, QWidget, QFrame, QScrollArea,
     QGroupBox, QProgressBar
 )
-from PySide6.QtCore import Qt, Signal, QTimer
-from PySide6.QtGui import QIcon, QPixmap, QFont
+from PySide6.QtCore import Qt, QTimer
 
 from ..utils.logging_config import LoggerMixin
-from ..utils.graceful_degradation import get_global_degradation_manager, ComponentStatus
+from ..utils.graceful_degradation import get_global_degradation_manager
 
 
 class ErrorDialog(QDialog, LoggerMixin):

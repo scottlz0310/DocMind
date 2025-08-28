@@ -9,12 +9,10 @@
 import time
 import threading
 import queue
-from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Optional
 from dataclasses import dataclass, field
 from enum import Enum
-import logging
-from concurrent.futures import ThreadPoolExecutor, Future, as_completed
+from concurrent.futures import ThreadPoolExecutor, Future
 
 from ..utils.exceptions import BackgroundProcessingError
 from ..utils.logging_config import LoggerMixin

@@ -8,7 +8,7 @@ main_window.pyから分離された進捗・システム情報関連の処理を
 """
 
 import os
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QMainWindow
