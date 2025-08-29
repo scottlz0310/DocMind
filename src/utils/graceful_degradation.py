@@ -6,14 +6,12 @@
 機能を段階的に縮退させる仕組みを提供します。
 """
 
-import logging
 from typing import Dict, Any, Optional, Callable, List
 from enum import Enum
 from dataclasses import dataclass, field
 from functools import wraps
 
 from .logging_config import get_logger
-from .exceptions import DocMindException
 
 
 class ComponentStatus(Enum):

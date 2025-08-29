@@ -7,7 +7,6 @@ QApplicationが存在しない環境でもタイマー機能をテストでき�
 """
 
 import threading
-import time
 from typing import Callable, Optional
 
 

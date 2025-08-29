@@ -10,23 +10,19 @@ QTextEditを拡張したプレビューウィジェットクラスを実装し�
 
 import logging
 import re
-from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 
 from PySide6.QtWidgets import (
     QTextEdit, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
-    QPushButton, QSlider, QComboBox, QFrame, QScrollArea,
-    QSplitter, QTextBrowser, QApplication
+    QSlider, QComboBox, QFrame, QSplitter, QTextBrowser
 )
-from PySide6.QtCore import Qt, Signal, QTimer, QThread, QObject
+from PySide6.QtCore import Qt, Signal, QObject
 from PySide6.QtGui import (
     QTextDocument, QTextCursor, QTextCharFormat, QColor, 
-    QFont, QSyntaxHighlighter, QTextBlockFormat, QPixmap,
-    QAction, QKeySequence
+    QFont, QSyntaxHighlighter
 )
 
 from src.data.models import Document, FileType
-from src.utils.exceptions import DocMindException
 
 
 class DocumentSyntaxHighlighter(QSyntaxHighlighter):

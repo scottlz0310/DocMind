@@ -8,8 +8,7 @@ DocMind クリーンアップ管理マネージャー
 メモリリークやリソースリークを防止します。
 """
 
-import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QMessageBox

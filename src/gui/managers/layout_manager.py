@@ -11,7 +11,7 @@ main_window.pyから分離されたUI構築・レイアウト管理機能を提�
 from typing import TYPE_CHECKING
 from PySide6.QtCore import QObject, Qt
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
-from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QProgressBar, 
+from PySide6.QtWidgets import (QApplication, QLabel, QProgressBar, 
                                QSplitter, QVBoxLayout, QWidget)
 
 from src.gui.folder_tree import FolderTreeContainer

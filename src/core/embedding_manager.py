@@ -10,13 +10,12 @@ import pickle
 import logging
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-from ..data.models import Document, SearchResult, SearchType
+from ..data.models import Document
 from ..utils.exceptions import EmbeddingError
 from ..utils.config import Config
 

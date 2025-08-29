@@ -230,7 +230,7 @@ class IndexController(QObject, LoggerMixin):
 
         except Exception as e:
             self.logger.error(f"インデックス処理の開始に失敗しました: {e}")
-            self.main_window.show_status_message(f"エラー: インデックス処理を開始できませんでした", 5000)
+            self.main_window.show_status_message("エラー: インデックス処理を開始できませんでした", 5000)
 
     def handle_rebuild_completed(self, thread_id: str, statistics: dict) -> None:
         """インデックス再構築完了時の処理

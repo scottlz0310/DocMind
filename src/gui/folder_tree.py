@@ -16,12 +16,11 @@ from enum import Enum
 from PySide6.QtWidgets import (
     QTreeWidget, QTreeWidgetItem, QWidget, QVBoxLayout, QHBoxLayout,
     QLineEdit, QPushButton, QMenu, QMessageBox, QFileDialog,
-    QLabel, QFrame, QSplitter, QCheckBox, QComboBox
+    QLabel
 )
 from PySide6.QtCore import Qt, Signal, QTimer, QThread, QObject
-from PySide6.QtGui import QIcon, QAction, QKeySequence, QShortcut
+from PySide6.QtGui import QAction, QKeySequence, QShortcut
 
-from src.utils.exceptions import DocMindException
 
 
 class FolderLoadWorker(QObject):

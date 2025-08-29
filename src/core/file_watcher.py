@@ -10,20 +10,19 @@ import time
 import hashlib
 import logging
 import threading
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Callable, Any
+from typing import Dict, Optional, Set, Any
 from dataclasses import dataclass
 from queue import Queue, Empty
 from datetime import datetime
 
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler, FileSystemEvent
+from watchdog.events import FileSystemEventHandler
 from watchdog.events import FileCreatedEvent, FileModifiedEvent, FileDeletedEvent, FileMovedEvent
 
 from .document_processor import DocumentProcessor
 from .index_manager import IndexManager
 from .embedding_manager import EmbeddingManager
-from ..data.models import Document, FileType
+from ..data.models import Document
 from ..utils.exceptions import FileSystemError, DocumentProcessingError
 from ..utils.config import Config
 

@@ -6,7 +6,6 @@
 診断情報収集を提供します。
 """
 
-import logging
 import traceback
 import sys
 import platform

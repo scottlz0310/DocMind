@@ -6,7 +6,6 @@ MainWindowから進捗表示・更新・制御機能を分離
 from typing import Optional
 from PySide6.QtWidgets import QProgressBar, QLabel, QMainWindow
 from PySide6.QtCore import QTimer
-from PySide6.QtGui import QPixmap
 
 
 class ProgressManager:

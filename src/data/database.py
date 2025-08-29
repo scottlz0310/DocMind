@@ -7,18 +7,14 @@ DocMindアプリケーション用のデータベース管理モジュール
 """
 
 import sqlite3
-import logging
-import json
 import threading
 import time
 from contextlib import contextmanager
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 from queue import Queue, Empty
 
-from .models import Document, FileType, SearchType, IndexStats
-from ..utils.exceptions import DatabaseError, DocumentNotFoundError
+from ..utils.exceptions import DatabaseError
 from ..utils.logging_config import LoggerMixin
 
 

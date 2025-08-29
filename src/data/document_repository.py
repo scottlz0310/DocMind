@@ -8,7 +8,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional
 
 from .database import DatabaseManager
 from .models import Document, FileType, IndexStats

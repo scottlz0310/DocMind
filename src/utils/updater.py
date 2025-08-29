@@ -19,14 +19,13 @@ import hashlib
 import tempfile
 import subprocess
 from pathlib import Path
-from typing import Dict, Optional, Tuple, Any
+from typing import Dict, Any
 from urllib.request import urlopen, urlretrieve
 from urllib.error import URLError, HTTPError
 import threading
-import time
 
-from PySide6.QtCore import QObject, Signal, QThread
-from PySide6.QtWidgets import QMessageBox, QProgressDialog, QApplication
+from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QMessageBox, QProgressDialog
 
 from .config import Config
 from .exceptions import UpdateError

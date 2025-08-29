@@ -8,8 +8,7 @@ DocMind シグナル管理マネージャー
 適切なライフサイクル管理を提供します。
 """
 
-import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 from src.utils.logging_config import LoggerMixin

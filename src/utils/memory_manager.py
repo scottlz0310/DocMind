@@ -16,7 +16,6 @@ from enum import Enum
 import logging
 
 from ..utils.logging_config import LoggerMixin
-from ..utils.exceptions import MemoryError
 
 
 class MemoryPressureLevel(Enum):

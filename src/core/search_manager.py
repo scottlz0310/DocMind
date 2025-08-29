@@ -6,9 +6,8 @@ SearchManager - ハイブリッド検索マネージャー
 検索結果のランキング、マージ、スニペット生成、検索提案機能を含みます。
 """
 
-import logging
 import re
-from typing import Dict, List, Optional, Set, Tuple, Any, Callable
+from typing import Dict, List, Optional, Set, Any, Callable
 from dataclasses import dataclass
 from collections import defaultdict
 
