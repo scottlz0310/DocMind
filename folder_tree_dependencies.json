@@ -1,0 +1,1135 @@
+{
+  "imports": [
+    {
+      "type": "import",
+      "module": "logging",
+      "alias": null,
+      "line": 10
+    },
+    {
+      "type": "import",
+      "module": "os",
+      "alias": null,
+      "line": 11
+    },
+    {
+      "type": "from_import",
+      "module": "pathlib",
+      "name": "Path",
+      "alias": null,
+      "line": 12
+    },
+    {
+      "type": "from_import",
+      "module": "typing",
+      "name": "Optional",
+      "alias": null,
+      "line": 13
+    },
+    {
+      "type": "from_import",
+      "module": "typing",
+      "name": "List",
+      "alias": null,
+      "line": 13
+    },
+    {
+      "type": "from_import",
+      "module": "typing",
+      "name": "Dict",
+      "alias": null,
+      "line": 13
+    },
+    {
+      "type": "from_import",
+      "module": "typing",
+      "name": "Set",
+      "alias": null,
+      "line": 13
+    },
+    {
+      "type": "from_import",
+      "module": "enum",
+      "name": "Enum",
+      "alias": null,
+      "line": 14
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QTreeWidget",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QTreeWidgetItem",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QWidget",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QVBoxLayout",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QHBoxLayout",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QLineEdit",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QPushButton",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QMenu",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QMessageBox",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QFileDialog",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QLabel",
+      "alias": null,
+      "line": 16
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtCore",
+      "name": "Qt",
+      "alias": null,
+      "line": 21
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtCore",
+      "name": "Signal",
+      "alias": null,
+      "line": 21
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtCore",
+      "name": "QTimer",
+      "alias": null,
+      "line": 21
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtCore",
+      "name": "QThread",
+      "alias": null,
+      "line": 21
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtCore",
+      "name": "QObject",
+      "alias": null,
+      "line": 21
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtGui",
+      "name": "QAction",
+      "alias": null,
+      "line": 22
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtGui",
+      "name": "QKeySequence",
+      "alias": null,
+      "line": 22
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtGui",
+      "name": "QShortcut",
+      "alias": null,
+      "line": 22
+    },
+    {
+      "type": "from_import",
+      "module": "PySide6.QtWidgets",
+      "name": "QApplication",
+      "alias": null,
+      "line": 194
+    },
+    {
+      "type": "from_import",
+      "module": "datetime",
+      "name": "datetime",
+      "alias": null,
+      "line": 894
+    },
+    {
+      "type": "import",
+      "module": "math",
+      "alias": null,
+      "line": 887
+    }
+  ],
+  "classes": [
+    {
+      "name": "FolderLoadWorker",
+      "bases": [
+        "QObject"
+      ],
+      "methods": [
+        "__init__",
+        "do_work",
+        "stop",
+        "_load_folder_recursive"
+      ],
+      "method_count": 4,
+      "line": 26,
+      "is_qt_widget": true
+    },
+    {
+      "name": "FolderItemType",
+      "bases": [
+        "Enum"
+      ],
+      "methods": [],
+      "method_count": 0,
+      "line": 141,
+      "is_qt_widget": false
+    },
+    {
+      "name": "FolderTreeItem",
+      "bases": [
+        "QTreeWidgetItem"
+      ],
+      "methods": [
+        "__init__",
+        "set_folder_data",
+        "_update_icon",
+        "update_statistics"
+      ],
+      "method_count": 4,
+      "line": 151,
+      "is_qt_widget": true
+    },
+    {
+      "name": "FolderTreeWidget",
+      "bases": [
+        "QTreeWidget"
+      ],
+      "methods": [
+        "__init__",
+        "_setup_tree_widget",
+        "_setup_context_menu",
+        "_setup_shortcuts",
+        "load_folder_structure",
+        "_load_subfolders_async",
+        "_on_folder_loaded",
+        "_on_load_error",
+        "_cleanup_worker",
+        "_on_load_finished",
+        "_update_statistics",
+        "_on_selection_changed",
+        "_on_item_expanded",
+        "_on_item_collapsed",
+        "_on_item_double_clicked",
+        "_show_context_menu",
+        "_add_folder",
+        "_remove_folder",
+        "_remove_from_maps",
+        "_index_folder",
+        "_exclude_folder",
+        "_refresh_folder",
+        "_refresh_specific_folder",
+        "_refresh_all_folders",
+        "_select_current_folder",
+        "_show_properties",
+        "filter_folders",
+        "_hide_all_items",
+        "_hide_item_recursive",
+        "_show_all_items",
+        "_show_item_recursive",
+        "_show_item_and_parents",
+        "get_selected_folder",
+        "get_indexed_folders",
+        "get_excluded_folders",
+        "set_indexed_folders",
+        "set_excluded_folders",
+        "_update_item_types",
+        "set_folder_indexing",
+        "set_folder_indexed",
+        "set_folder_error",
+        "clear_folder_state",
+        "get_indexing_folders",
+        "get_error_folders",
+        "expand_to_path",
+        "closeEvent",
+        "__del__"
+      ],
+      "method_count": 47,
+      "line": 246,
+      "is_qt_widget": true
+    },
+    {
+      "name": "FolderTreeContainer",
+      "bases": [
+        "QWidget"
+      ],
+      "methods": [
+        "__init__",
+        "_setup_ui",
+        "_connect_signals",
+        "_on_filter_changed",
+        "_clear_filter",
+        "_update_stats",
+        "load_folder_structure",
+        "get_selected_folder",
+        "get_indexed_folders",
+        "get_excluded_folders",
+        "set_indexed_folders",
+        "set_excluded_folders",
+        "set_folder_indexing",
+        "set_folder_indexed",
+        "set_folder_error",
+        "clear_folder_state",
+        "get_indexing_folders",
+        "get_error_folders",
+        "expand_to_path",
+        "closeEvent"
+      ],
+      "method_count": 20,
+      "line": 1208,
+      "is_qt_widget": true
+    }
+  ],
+  "methods": [
+    {
+      "name": "__init__",
+      "line": 36,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "do_work",
+      "line": 42,
+      "complexity": 3,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "stop",
+      "line": 52,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_load_folder_recursive",
+      "line": 56,
+      "complexity": 26,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": true
+    },
+    {
+      "name": "__init__",
+      "line": 158,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_folder_data",
+      "line": 168,
+      "complexity": 2,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_update_icon",
+      "line": 192,
+      "complexity": 7,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "update_statistics",
+      "line": 217,
+      "complexity": 5,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "__init__",
+      "line": 260,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_setup_tree_widget",
+      "line": 291,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_setup_context_menu",
+      "line": 342,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_setup_shortcuts",
+      "line": 372,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "load_folder_structure",
+      "line": 386,
+      "complexity": 7,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": true
+    },
+    {
+      "name": "_load_subfolders_async",
+      "line": 441,
+      "complexity": 2,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": true
+    },
+    {
+      "name": "_on_folder_loaded",
+      "line": 477,
+      "complexity": 8,
+      "is_private": true,
+      "is_slot": true,
+      "is_async_related": true
+    },
+    {
+      "name": "_on_load_error",
+      "line": 510,
+      "complexity": 2,
+      "is_private": true,
+      "is_slot": true,
+      "is_async_related": true
+    },
+    {
+      "name": "_cleanup_worker",
+      "line": 527,
+      "complexity": 8,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": true
+    },
+    {
+      "name": "_on_load_finished",
+      "line": 572,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": true,
+      "is_async_related": true
+    },
+    {
+      "name": "_update_statistics",
+      "line": 579,
+      "complexity": 4,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_on_selection_changed",
+      "line": 595,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": true,
+      "is_async_related": false
+    },
+    {
+      "name": "_on_item_expanded",
+      "line": 602,
+      "complexity": 4,
+      "is_private": true,
+      "is_slot": true,
+      "is_async_related": false
+    },
+    {
+      "name": "_on_item_collapsed",
+      "line": 612,
+      "complexity": 2,
+      "is_private": true,
+      "is_slot": true,
+      "is_async_related": false
+    },
+    {
+      "name": "_on_item_double_clicked",
+      "line": 617,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": true,
+      "is_async_related": false
+    },
+    {
+      "name": "_show_context_menu",
+      "line": 625,
+      "complexity": 5,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_add_folder",
+      "line": 669,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_remove_folder",
+      "line": 690,
+      "complexity": 5,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_remove_from_maps",
+      "line": 726,
+      "complexity": 2,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_index_folder",
+      "line": 739,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_exclude_folder",
+      "line": 764,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_refresh_folder",
+      "line": 793,
+      "complexity": 2,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_refresh_specific_folder",
+      "line": 807,
+      "complexity": 5,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_refresh_all_folders",
+      "line": 829,
+      "complexity": 2,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_select_current_folder",
+      "line": 849,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_show_properties",
+      "line": 855,
+      "complexity": 7,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "filter_folders",
+      "line": 927,
+      "complexity": 5,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_hide_all_items",
+      "line": 949,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_hide_item_recursive",
+      "line": 956,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_show_all_items",
+      "line": 964,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_show_item_recursive",
+      "line": 971,
+      "complexity": 3,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_show_item_and_parents",
+      "line": 979,
+      "complexity": 2,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_selected_folder",
+      "line": 988,
+      "complexity": 2,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_indexed_folders",
+      "line": 1000,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_excluded_folders",
+      "line": 1009,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_indexed_folders",
+      "line": 1018,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_excluded_folders",
+      "line": 1028,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_update_item_types",
+      "line": 1038,
+      "complexity": 6,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_folder_indexing",
+      "line": 1054,
+      "complexity": 3,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_folder_indexed",
+      "line": 1079,
+      "complexity": 2,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_folder_error",
+      "line": 1103,
+      "complexity": 4,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "clear_folder_state",
+      "line": 1133,
+      "complexity": 3,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_indexing_folders",
+      "line": 1159,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_error_folders",
+      "line": 1168,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "expand_to_path",
+      "line": 1177,
+      "complexity": 3,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "closeEvent",
+      "line": 1196,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "__del__",
+      "line": 1203,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "__init__",
+      "line": 1221,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_setup_ui",
+      "line": 1240,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_connect_signals",
+      "line": 1290,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_on_filter_changed",
+      "line": 1310,
+      "complexity": 2,
+      "is_private": true,
+      "is_slot": true,
+      "is_async_related": false
+    },
+    {
+      "name": "_clear_filter",
+      "line": 1321,
+      "complexity": 1,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "_update_stats",
+      "line": 1326,
+      "complexity": 4,
+      "is_private": true,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "load_folder_structure",
+      "line": 1346,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": true
+    },
+    {
+      "name": "get_selected_folder",
+      "line": 1351,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_indexed_folders",
+      "line": 1355,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_excluded_folders",
+      "line": 1359,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_indexed_folders",
+      "line": 1363,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_excluded_folders",
+      "line": 1368,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_folder_indexing",
+      "line": 1373,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_folder_indexed",
+      "line": 1378,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "set_folder_error",
+      "line": 1383,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "clear_folder_state",
+      "line": 1388,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_indexing_folders",
+      "line": 1393,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "get_error_folders",
+      "line": 1397,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "expand_to_path",
+      "line": 1401,
+      "complexity": 1,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "closeEvent",
+      "line": 1405,
+      "complexity": 3,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    },
+    {
+      "name": "format_size",
+      "line": 883,
+      "complexity": 2,
+      "is_private": false,
+      "is_slot": false,
+      "is_async_related": false
+    }
+  ],
+  "signals": {
+    "definitions": [
+      "folder_loaded",
+      "load_error",
+      "finished",
+      "folder_selected",
+      "folder_indexed",
+      "folder_excluded",
+      "refresh_requested",
+      "folder_selected",
+      "folder_indexed",
+      "folder_excluded",
+      "refresh_requested"
+    ],
+    "connections": [
+      "itemSelectionChanged",
+      "itemExpanded",
+      "itemCollapsed",
+      "itemDoubleClicked",
+      "customContextMenuRequested",
+      "triggered",
+      "triggered",
+      "triggered",
+      "triggered",
+      "triggered",
+      "triggered",
+      "triggered",
+      "triggered",
+      "activated",
+      "activated",
+      "activated",
+      "started",
+      "finished",
+      "finished",
+      "finished",
+      "folder_loaded",
+      "load_error",
+      "finished",
+      "clicked",
+      "clicked",
+      "textChanged",
+      "folder_selected",
+      "folder_indexed",
+      "folder_excluded",
+      "refresh_requested",
+      "folder_indexed",
+      "folder_excluded",
+      "refresh_requested",
+      "timeout"
+    ],
+    "emissions": [
+      "load_error",
+      "finished",
+      "load_error",
+      "load_error",
+      "load_error",
+      "load_error",
+      "folder_loaded",
+      "load_error",
+      "load_error",
+      "load_error",
+      "folder_selected",
+      "folder_selected",
+      "folder_indexed",
+      "folder_excluded",
+      "refresh_requested",
+      "folder_selected"
+    ],
+    "total_signal_usage": 61
+  },
+  "qt_dependencies": [
+    {
+      "category": "widgets",
+      "components": [
+        "QHBoxLayout",
+        "QVBoxLayout",
+        "QWidget",
+        "QtWidget",
+        "QTreeWidget"
+      ],
+      "count": 30
+    },
+    {
+      "category": "core",
+      "components": [
+        "QThread",
+        "QObject",
+        "QTimer"
+      ],
+      "count": 7
+    },
+    {
+      "category": "gui",
+      "components": [],
+      "count": 0
+    },
+    {
+      "category": "signals",
+      "components": [
+        "Signal",
+        "connect",
+        "emit"
+      ],
+      "count": 71
+    }
+  ],
+  "internal_dependencies": [],
+  "async_components": [
+    {
+      "category": "threads",
+      "components": [
+        "moveToThread",
+        "QThread",
+        "Worker"
+      ],
+      "count": 7
+    },
+    {
+      "category": "signals",
+      "components": [
+        "started",
+        "finished"
+      ],
+      "count": 10
+    },
+    {
+      "category": "methods",
+      "components": [
+        "terminate()",
+        "quit()",
+        "start()"
+      ],
+      "count": 3
+    }
+  ],
+  "ui_components": [
+    {
+      "category": "tree_operations",
+      "components": [
+        "takeTopLevelItem",
+        "currentItem",
+        "addTopLevelItem"
+      ],
+      "count": 10
+    },
+    {
+      "category": "item_operations",
+      "components": [
+        "setExpanded",
+        "setHidden"
+      ],
+      "count": 5
+    },
+    {
+      "category": "styling",
+      "components": [
+        "setStyleSheet",
+        "setToolTip",
+        "setIcon"
+      ],
+      "count": 11
+    }
+  ],
+  "risk_assessment": {
+    "complexity_risk": {
+      "level": "LOW",
+      "average_complexity": 2.789473684210526,
+      "max_complexity": 26
+    },
+    "async_risk": {
+      "level": "MEDIUM",
+      "component_count": 20
+    },
+    "qt_dependency_risk": {
+      "level": "HIGH",
+      "dependency_count": 108
+    },
+    "signal_risk": {
+      "level": "HIGH",
+      "signal_usage_count": 61
+    },
+    "overall_risk": "HIGH"
+  }
+}

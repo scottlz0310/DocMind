@@ -1,0 +1,1036 @@
+{
+  "timestamp": "2025-08-29T12:43:14.260355",
+  "phase": "Phase4準備 - Week 0 Day 3",
+  "target_file": "src/gui/folder_tree.py",
+  "current_analysis": {
+    "total_lines": 1409,
+    "classes": [
+      {
+        "name": "FolderLoadWorker",
+        "line_number": 26,
+        "method_count": 4,
+        "estimated_lines": 93
+      },
+      {
+        "name": "FolderItemType",
+        "line_number": 141,
+        "method_count": 0,
+        "estimated_lines": 7
+      },
+      {
+        "name": "FolderTreeItem",
+        "line_number": 151,
+        "method_count": 4,
+        "estimated_lines": 70
+      },
+      {
+        "name": "FolderTreeWidget",
+        "line_number": 246,
+        "method_count": 27,
+        "estimated_lines": 527
+      },
+      {
+        "name": "FolderTreeContainer",
+        "line_number": 1208,
+        "method_count": 20,
+        "estimated_lines": 156
+      }
+    ],
+    "methods": [
+      {
+        "name": "__init__",
+        "class": "FolderLoadWorker",
+        "line_number": 36,
+        "is_private": true,
+        "is_dunder": true
+      },
+      {
+        "name": "do_work",
+        "class": "FolderLoadWorker",
+        "line_number": 42,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "stop",
+        "class": "FolderLoadWorker",
+        "line_number": 52,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "_load_folder_recursive",
+        "class": "FolderLoadWorker",
+        "line_number": 56,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "__init__",
+        "class": "FolderTreeItem",
+        "line_number": 158,
+        "is_private": true,
+        "is_dunder": true
+      },
+      {
+        "name": "set_folder_data",
+        "class": "FolderTreeItem",
+        "line_number": 168,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "_update_icon",
+        "class": "FolderTreeItem",
+        "line_number": 192,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "update_statistics",
+        "class": "FolderTreeItem",
+        "line_number": 217,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "__init__",
+        "class": "FolderTreeWidget",
+        "line_number": 260,
+        "is_private": true,
+        "is_dunder": true
+      },
+      {
+        "name": "_setup_tree_widget",
+        "class": "FolderTreeWidget",
+        "line_number": 291,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_setup_context_menu",
+        "class": "FolderTreeWidget",
+        "line_number": 342,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_setup_shortcuts",
+        "class": "FolderTreeWidget",
+        "line_number": 372,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "load_folder_structure",
+        "class": "FolderTreeWidget",
+        "line_number": 386,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "_load_subfolders_async",
+        "class": "FolderTreeWidget",
+        "line_number": 441,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_on_folder_loaded",
+        "class": "FolderTreeWidget",
+        "line_number": 477,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_on_load_error",
+        "class": "FolderTreeWidget",
+        "line_number": 510,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_cleanup_worker",
+        "class": "FolderTreeWidget",
+        "line_number": 527,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_on_load_finished",
+        "class": "FolderTreeWidget",
+        "line_number": 572,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_update_statistics",
+        "class": "FolderTreeWidget",
+        "line_number": 579,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_on_selection_changed",
+        "class": "FolderTreeWidget",
+        "line_number": 595,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_on_item_expanded",
+        "class": "FolderTreeWidget",
+        "line_number": 602,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_on_item_collapsed",
+        "class": "FolderTreeWidget",
+        "line_number": 612,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_on_item_double_clicked",
+        "class": "FolderTreeWidget",
+        "line_number": 617,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_show_context_menu",
+        "class": "FolderTreeWidget",
+        "line_number": 625,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_add_folder",
+        "class": "FolderTreeWidget",
+        "line_number": 669,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_remove_folder",
+        "class": "FolderTreeWidget",
+        "line_number": 690,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_remove_from_maps",
+        "class": "FolderTreeWidget",
+        "line_number": 726,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_index_folder",
+        "class": "FolderTreeWidget",
+        "line_number": 739,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_exclude_folder",
+        "class": "FolderTreeWidget",
+        "line_number": 764,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_refresh_folder",
+        "class": "FolderTreeWidget",
+        "line_number": 793,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_refresh_specific_folder",
+        "class": "FolderTreeWidget",
+        "line_number": 807,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_refresh_all_folders",
+        "class": "FolderTreeWidget",
+        "line_number": 829,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_select_current_folder",
+        "class": "FolderTreeWidget",
+        "line_number": 849,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_show_properties",
+        "class": "FolderTreeWidget",
+        "line_number": 855,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "format_size",
+        "class": "FolderTreeWidget",
+        "line_number": 883,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "filter_folders",
+        "class": "FolderTreeWidget",
+        "line_number": 927,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "_hide_all_items",
+        "class": "FolderTreeWidget",
+        "line_number": 949,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_hide_item_recursive",
+        "class": "FolderTreeWidget",
+        "line_number": 956,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_show_all_items",
+        "class": "FolderTreeWidget",
+        "line_number": 964,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_show_item_recursive",
+        "class": "FolderTreeWidget",
+        "line_number": 971,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_show_item_and_parents",
+        "class": "FolderTreeWidget",
+        "line_number": 979,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "get_selected_folder",
+        "class": "FolderTreeWidget",
+        "line_number": 988,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_indexed_folders",
+        "class": "FolderTreeWidget",
+        "line_number": 1000,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_excluded_folders",
+        "class": "FolderTreeWidget",
+        "line_number": 1009,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_indexed_folders",
+        "class": "FolderTreeWidget",
+        "line_number": 1018,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_excluded_folders",
+        "class": "FolderTreeWidget",
+        "line_number": 1028,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "_update_item_types",
+        "class": "FolderTreeWidget",
+        "line_number": 1038,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "set_folder_indexing",
+        "class": "FolderTreeWidget",
+        "line_number": 1054,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_folder_indexed",
+        "class": "FolderTreeWidget",
+        "line_number": 1079,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_folder_error",
+        "class": "FolderTreeWidget",
+        "line_number": 1103,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "clear_folder_state",
+        "class": "FolderTreeWidget",
+        "line_number": 1133,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_indexing_folders",
+        "class": "FolderTreeWidget",
+        "line_number": 1159,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_error_folders",
+        "class": "FolderTreeWidget",
+        "line_number": 1168,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "expand_to_path",
+        "class": "FolderTreeWidget",
+        "line_number": 1177,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "closeEvent",
+        "class": "FolderTreeWidget",
+        "line_number": 1196,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "__del__",
+        "class": "FolderTreeWidget",
+        "line_number": 1203,
+        "is_private": true,
+        "is_dunder": true
+      },
+      {
+        "name": "__init__",
+        "class": "FolderTreeContainer",
+        "line_number": 1221,
+        "is_private": true,
+        "is_dunder": true
+      },
+      {
+        "name": "_setup_ui",
+        "class": "FolderTreeContainer",
+        "line_number": 1240,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_connect_signals",
+        "class": "FolderTreeContainer",
+        "line_number": 1290,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_on_filter_changed",
+        "class": "FolderTreeContainer",
+        "line_number": 1310,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_clear_filter",
+        "class": "FolderTreeContainer",
+        "line_number": 1321,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "_update_stats",
+        "class": "FolderTreeContainer",
+        "line_number": 1326,
+        "is_private": true,
+        "is_dunder": false
+      },
+      {
+        "name": "load_folder_structure",
+        "class": "FolderTreeContainer",
+        "line_number": 1346,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_selected_folder",
+        "class": "FolderTreeContainer",
+        "line_number": 1351,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_indexed_folders",
+        "class": "FolderTreeContainer",
+        "line_number": 1355,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_excluded_folders",
+        "class": "FolderTreeContainer",
+        "line_number": 1359,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_indexed_folders",
+        "class": "FolderTreeContainer",
+        "line_number": 1363,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_excluded_folders",
+        "class": "FolderTreeContainer",
+        "line_number": 1368,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_folder_indexing",
+        "class": "FolderTreeContainer",
+        "line_number": 1373,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_folder_indexed",
+        "class": "FolderTreeContainer",
+        "line_number": 1378,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "set_folder_error",
+        "class": "FolderTreeContainer",
+        "line_number": 1383,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "clear_folder_state",
+        "class": "FolderTreeContainer",
+        "line_number": 1388,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_indexing_folders",
+        "class": "FolderTreeContainer",
+        "line_number": 1393,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "get_error_folders",
+        "class": "FolderTreeContainer",
+        "line_number": 1397,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "expand_to_path",
+        "class": "FolderTreeContainer",
+        "line_number": 1401,
+        "is_private": false,
+        "is_dunder": false
+      },
+      {
+        "name": "closeEvent",
+        "class": "FolderTreeContainer",
+        "line_number": 1405,
+        "is_private": false,
+        "is_dunder": false
+      }
+    ],
+    "imports": [
+      "import logging",
+      "import os",
+      "from pathlib import Path",
+      "from typing import Optional, List, Dict, Set",
+      "from enum import Enum",
+      "from PySide6.QtWidgets import (",
+      "from PySide6.QtCore import Qt, Signal, QTimer, QThread, QObject",
+      "from PySide6.QtGui import QAction, QKeySequence, QShortcut",
+      "from PySide6.QtWidgets import QApplication",
+      "import math",
+      "from datetime import datetime"
+    ],
+    "signals": [
+      {
+        "name": "folder_loaded",
+        "line_number": 32,
+        "definition": "folder_loaded = Signal(str, list)  # path, subdirectories"
+      },
+      {
+        "name": "load_error",
+        "line_number": 33,
+        "definition": "load_error = Signal(str, str)      # path, error_message"
+      },
+      {
+        "name": "finished",
+        "line_number": 34,
+        "definition": "finished = Signal()"
+      },
+      {
+        "name": "folder_selected",
+        "line_number": 255,
+        "definition": "folder_selected = Signal(str)           # フォルダが選択された時"
+      },
+      {
+        "name": "folder_indexed",
+        "line_number": 256,
+        "definition": "folder_indexed = Signal(str)            # フォルダのインデックス要求"
+      },
+      {
+        "name": "folder_excluded",
+        "line_number": 257,
+        "definition": "folder_excluded = Signal(str)           # フォルダの除外要求"
+      },
+      {
+        "name": "refresh_requested",
+        "line_number": 258,
+        "definition": "refresh_requested = Signal()            # リフレッシュ要求"
+      },
+      {
+        "name": "folder_selected",
+        "line_number": 1216,
+        "definition": "folder_selected = Signal(str)"
+      },
+      {
+        "name": "folder_indexed",
+        "line_number": 1217,
+        "definition": "folder_indexed = Signal(str)"
+      },
+      {
+        "name": "folder_excluded",
+        "line_number": 1218,
+        "definition": "folder_excluded = Signal(str)"
+      },
+      {
+        "name": "refresh_requested",
+        "line_number": 1219,
+        "definition": "refresh_requested = Signal()"
+      }
+    ],
+    "complexity_indicators": {
+      "total_lines": 1409,
+      "code_lines": 1015,
+      "comment_lines": 109,
+      "docstring_lines": 162,
+      "if_statements": 100,
+      "for_loops": 18,
+      "while_loops": 2,
+      "try_blocks": 13,
+      "except_blocks": 15
+    }
+  },
+  "separation_domains": {
+    "async_processing": {
+      "name": "非同期処理領域",
+      "description": "フォルダ読み込みワーカーと非同期処理管理",
+      "target_directory": "src/gui/folder_tree/async/",
+      "components": [
+        {
+          "name": "FolderLoadWorker",
+          "file": "folder_load_worker.py",
+          "responsibility": "フォルダ構造の非同期読み込み",
+          "methods": [
+            "do_work",
+            "stop",
+            "_load_folder_recursive"
+          ],
+          "estimated_lines": 150
+        },
+        {
+          "name": "AsyncManager",
+          "file": "async_manager.py",
+          "responsibility": "非同期処理の統合管理",
+          "methods": [
+            "_load_subfolders_async",
+            "_cleanup_worker",
+            "_on_folder_loaded",
+            "_on_load_error",
+            "_on_load_finished"
+          ],
+          "estimated_lines": 120
+        },
+        {
+          "name": "ThreadCoordinator",
+          "file": "thread_coordinator.py",
+          "responsibility": "スレッド調整とライフサイクル管理",
+          "methods": [
+            "start_worker",
+            "stop_worker",
+            "cleanup_threads"
+          ],
+          "estimated_lines": 80
+        }
+      ],
+      "total_estimated_lines": 350,
+      "risk_level": "HIGH",
+      "migration_priority": 1
+    },
+    "state_management": {
+      "name": "状態管理領域",
+      "description": "フォルダ状態とパス管理",
+      "target_directory": "src/gui/folder_tree/state/",
+      "components": [
+        {
+          "name": "FolderStateManager",
+          "file": "folder_state_manager.py",
+          "responsibility": "フォルダ状態の統一管理",
+          "methods": [
+            "set_folder_indexing",
+            "set_folder_indexed",
+            "set_folder_error",
+            "clear_folder_state"
+          ],
+          "estimated_lines": 100
+        },
+        {
+          "name": "PathTracker",
+          "file": "path_tracker.py",
+          "responsibility": "パス集合の管理",
+          "methods": [
+            "add_path",
+            "remove_path",
+            "get_paths_by_type",
+            "update_path_status"
+          ],
+          "estimated_lines": 80
+        },
+        {
+          "name": "ItemMapper",
+          "file": "item_mapper.py",
+          "responsibility": "パス→アイテムマッピング管理",
+          "methods": [
+            "register_item",
+            "unregister_item",
+            "get_item",
+            "update_item_display"
+          ],
+          "estimated_lines": 70
+        }
+      ],
+      "total_estimated_lines": 250,
+      "risk_level": "MEDIUM",
+      "migration_priority": 2
+    },
+    "ui_management": {
+      "name": "UI管理領域",
+      "description": "ツリーウィジェットとUI表示管理",
+      "target_directory": "src/gui/folder_tree/ui/",
+      "components": [
+        {
+          "name": "TreeWidgetManager",
+          "file": "tree_widget_manager.py",
+          "responsibility": "QTreeWidgetの基本管理",
+          "methods": [
+            "_setup_tree_widget",
+            "_update_statistics",
+            "expand_to_path",
+            "filter_folders"
+          ],
+          "estimated_lines": 120
+        },
+        {
+          "name": "ItemFactory",
+          "file": "item_factory.py",
+          "responsibility": "FolderTreeItemの生成・管理",
+          "methods": [
+            "create_item",
+            "update_item_icon",
+            "update_item_text",
+            "set_item_properties"
+          ],
+          "estimated_lines": 90
+        },
+        {
+          "name": "DisplayCoordinator",
+          "file": "display_coordinator.py",
+          "responsibility": "表示状態の調整",
+          "methods": [
+            "_show_all_items",
+            "_hide_all_items",
+            "_show_item_and_parents",
+            "_update_item_types"
+          ],
+          "estimated_lines": 80
+        }
+      ],
+      "total_estimated_lines": 290,
+      "risk_level": "MEDIUM",
+      "migration_priority": 3
+    },
+    "event_handling": {
+      "name": "イベント処理領域",
+      "description": "ユーザーイベントとシグナル管理",
+      "target_directory": "src/gui/folder_tree/events/",
+      "components": [
+        {
+          "name": "TreeEventHandler",
+          "file": "tree_event_handler.py",
+          "responsibility": "ツリーイベントの処理",
+          "methods": [
+            "_on_selection_changed",
+            "_on_item_expanded",
+            "_on_item_collapsed",
+            "_on_item_double_clicked"
+          ],
+          "estimated_lines": 100
+        },
+        {
+          "name": "ContextMenuManager",
+          "file": "context_menu_manager.py",
+          "responsibility": "コンテキストメニュー管理",
+          "methods": [
+            "_show_context_menu",
+            "_add_folder",
+            "_remove_folder",
+            "_index_folder",
+            "_exclude_folder",
+            "_show_properties"
+          ],
+          "estimated_lines": 150
+        },
+        {
+          "name": "ShortcutManager",
+          "file": "shortcut_manager.py",
+          "responsibility": "キーボードショートカット管理",
+          "methods": [
+            "_setup_shortcuts",
+            "_refresh_folder",
+            "_select_current_folder"
+          ],
+          "estimated_lines": 60
+        },
+        {
+          "name": "SignalCoordinator",
+          "file": "signal_coordinator.py",
+          "responsibility": "シグナル接続の統合管理",
+          "methods": [
+            "connect_all_signals",
+            "disconnect_all_signals",
+            "emit_folder_selected",
+            "emit_folder_indexed"
+          ],
+          "estimated_lines": 80
+        }
+      ],
+      "total_estimated_lines": 390,
+      "risk_level": "LOW",
+      "migration_priority": 4
+    }
+  },
+  "interfaces": {
+    "core_interface": {
+      "name": "FolderTreeCoreInterface",
+      "file": "src/gui/folder_tree/interfaces/core_interface.py",
+      "description": "フォルダツリーの核となるインターフェース",
+      "methods": [
+        "load_folder_structure(path: str) -> None",
+        "get_selected_folder() -> Optional[str]",
+        "set_folder_state(path: str, state: FolderState) -> None",
+        "refresh_folder(path: str) -> None"
+      ]
+    },
+    "async_interface": {
+      "name": "AsyncProcessingInterface",
+      "file": "src/gui/folder_tree/interfaces/async_interface.py",
+      "description": "非同期処理のインターフェース",
+      "methods": [
+        "start_async_load(path: str) -> None",
+        "stop_async_load() -> None",
+        "is_loading() -> bool",
+        "get_load_progress() -> float"
+      ]
+    },
+    "state_interface": {
+      "name": "StateManagementInterface",
+      "file": "src/gui/folder_tree/interfaces/state_interface.py",
+      "description": "状態管理のインターフェース",
+      "methods": [
+        "get_indexed_folders() -> List[str]",
+        "get_excluded_folders() -> List[str]",
+        "update_folder_status(path: str, status: str) -> None",
+        "clear_all_states() -> None"
+      ]
+    },
+    "ui_interface": {
+      "name": "UIManagementInterface",
+      "file": "src/gui/folder_tree/interfaces/ui_interface.py",
+      "description": "UI管理のインターフェース",
+      "methods": [
+        "update_display() -> None",
+        "filter_items(filter_text: str) -> None",
+        "expand_to_path(path: str) -> None",
+        "refresh_ui() -> None"
+      ]
+    },
+    "event_interface": {
+      "name": "EventHandlingInterface",
+      "file": "src/gui/folder_tree/interfaces/event_interface.py",
+      "description": "イベント処理のインターフェース",
+      "methods": [
+        "handle_selection_change(path: str) -> None",
+        "handle_context_menu(position: QPoint) -> None",
+        "emit_folder_signal(signal_type: str, path: str) -> None"
+      ]
+    }
+  },
+  "migration_strategy": {
+    "overall_approach": {
+      "strategy": "段階的分離・即座検証",
+      "duration": "6週間",
+      "phases": [
+        {
+          "week": 1,
+          "focus": "非同期処理分離",
+          "risk": "HIGH",
+          "validation": "非同期処理専用テスト"
+        },
+        {
+          "week": 2,
+          "focus": "状態管理分離",
+          "risk": "MEDIUM",
+          "validation": "状態整合性テスト"
+        },
+        {
+          "week": 3,
+          "focus": "UI管理分離",
+          "risk": "MEDIUM",
+          "validation": "UI表示テスト"
+        },
+        {
+          "week": 4,
+          "focus": "イベント処理分離",
+          "risk": "LOW",
+          "validation": "イベント処理テスト"
+        },
+        {
+          "week": 5,
+          "focus": "統合・最適化",
+          "risk": "MEDIUM",
+          "validation": "統合テスト"
+        },
+        {
+          "week": 6,
+          "focus": "品質保証・完了",
+          "risk": "LOW",
+          "validation": "最終品質テスト"
+        }
+      ]
+    },
+    "daily_workflow": {
+      "day_1": "分析・設計",
+      "day_2_3": "新モジュール実装・単体テスト",
+      "day_4": "統合・結合テスト",
+      "day_5": "全機能確認・性能テスト"
+    },
+    "validation_gates": {
+      "syntax_check": "構文エラーなし",
+      "import_check": "インポート依存関係正常",
+      "function_test": "基本機能正常動作",
+      "performance_test": "性能劣化なし（±5%以内）",
+      "memory_test": "メモリリークなし"
+    },
+    "rollback_strategy": {
+      "level_1": "軽微な問題 → 即座修正・継続",
+      "level_2": "中程度の問題 → 当日作業停止・翌日修正",
+      "level_3": "重大な問題 → 週単位停止・前週状態復旧",
+      "level_4": "致命的な問題 → Phase4全体停止・Phase1-3状態復旧"
+    }
+  },
+  "risk_mitigation": {
+    "high_risk_areas": {
+      "async_processing": {
+        "risks": [
+          "QThread管理の複雑性",
+          "シグナル・スロット接続エラー",
+          "メモリリーク・リソースリーク"
+        ],
+        "mitigations": [
+          "非同期処理専用テストスイート作成",
+          "安全なワーカークリーンアップ実装",
+          "シグナル接続の自動検証"
+        ]
+      },
+      "state_management": {
+        "risks": [
+          "状態不整合",
+          "競合状態",
+          "データ破損"
+        ],
+        "mitigations": [
+          "原子的状態変更の実装",
+          "状態変更の検証機能",
+          "自動バックアップ・復旧機能"
+        ]
+      }
+    },
+    "safety_mechanisms": {
+      "backup_strategy": {
+        "frequency": "各段階開始前",
+        "method": "Gitタグ作成",
+        "retention": "全段階のバックアップ保持"
+      },
+      "validation_automation": {
+        "daily_checks": [
+          "構文チェック",
+          "インポートチェック",
+          "基本機能テスト",
+          "性能テスト"
+        ],
+        "weekly_checks": [
+          "統合テスト",
+          "メモリテスト",
+          "ストレステスト"
+        ]
+      },
+      "monitoring_system": {
+        "performance_tracking": "基準値との比較",
+        "error_tracking": "エラー発生率監視",
+        "quality_metrics": "コード品質指標追跡"
+      }
+    },
+    "emergency_procedures": {
+      "immediate_rollback": "git checkout [previous-tag]",
+      "partial_rollback": "git revert [specific-commit]",
+      "complete_reset": "git reset --hard [safe-point]",
+      "escalation_criteria": [
+        "基本機能停止",
+        "性能劣化20%以上",
+        "メモリリーク検出",
+        "データ破損検出"
+      ]
+    }
+  }
+}
