@@ -265,18 +265,8 @@ class ContextMenuManager:
     
     def _refresh_folder(self):
         """選択されたフォルダまたは全体を更新します"""
-        from ..state_management import FolderTreeItem
-        
-        current_item = self.tree_widget.currentItem()
-        
-        if isinstance(current_item, FolderTreeItem):
-            # 特定のフォルダを更新
-            folder_path = current_item.folder_path
-            self.tree_widget._refresh_specific_folder(folder_path)
-        else:
-            # 全体を更新
-            self.tree_widget._refresh_all_folders()
-        
+        # ActionManagerに委譲
+        self.tree_widget.action_manager.refresh_folder()
         self.tree_widget.refresh_requested.emit()
     
     def _show_properties(self):

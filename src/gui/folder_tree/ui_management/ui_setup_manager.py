@@ -89,46 +89,9 @@ class UISetupManager:
             }
         """)
     
-    def setup_shortcuts(self):
-        """キーボードショートカットを設定します"""
-        # F5キーでリフレッシュ
-        self.shortcuts['refresh'] = QShortcut(QKeySequence("F5"), self.tree_widget)
-        self.shortcuts['refresh'].activated.connect(self.tree_widget._refresh_folder)
-        
-        # Deleteキーでフォルダ削除
-        self.shortcuts['delete'] = QShortcut(QKeySequence.Delete, self.tree_widget)
-        self.shortcuts['delete'].activated.connect(self.tree_widget._remove_folder)
-        
-        # Enterキーでフォルダ選択
-        self.shortcuts['enter'] = QShortcut(QKeySequence.InsertParagraphSeparator, self.tree_widget)
-        self.shortcuts['enter'].activated.connect(self.tree_widget._select_current_folder)
-        
-        self.logger.debug("キーボードショートカットが設定されました")
-    
-    def setup_tree_signals(self):
-        """ツリーウィジェットのシグナルを接続します"""
-        # 基本的なツリーイベント
-        self.tree_widget.itemSelectionChanged.connect(self.tree_widget._on_selection_changed)
-        self.tree_widget.itemExpanded.connect(self.tree_widget._on_item_expanded)
-        self.tree_widget.itemCollapsed.connect(self.tree_widget._on_item_collapsed)
-        self.tree_widget.itemDoubleClicked.connect(self.tree_widget._on_item_double_clicked)
-        
-        self.logger.debug("ツリーウィジェットのシグナル接続が完了しました")
-    
-    def setup_async_signals(self):
-        """非同期処理のシグナルを接続します"""
-        self.tree_widget.async_manager.folder_loaded.connect(self.tree_widget._on_folder_loaded)
-        self.tree_widget.async_manager.load_error.connect(self.tree_widget._on_load_error)
-        self.tree_widget.async_manager.load_finished.connect(self.tree_widget._on_load_finished)
-        
-        self.logger.debug("非同期処理のシグナル接続が完了しました")
+    # シグナル関連メソッドはSignalManagerに移動済み
     
     def cleanup(self):
         """リソースをクリーンアップします"""
-        # ショートカットを削除
-        for shortcut in self.shortcuts.values():
-            if shortcut:
-                shortcut.deleteLater()
-        self.shortcuts.clear()
-        
+        # ショートカット関連はSignalManagerに移動済み
         self.logger.debug("UIセットアップマネージャーがクリーンアップされました")
