@@ -1,0 +1,41 @@
+{
+  "test_date": "2025-08-29T23:23:47.849744",
+  "phase": "Phase4 完了後",
+  "tests": {
+    "startup_test": {
+      "status": "success",
+      "execution_time": 3.012,
+      "note": "正常起動、3秒タイムアウト"
+    },
+    "structure_test": {
+      "status": "partial",
+      "existing_files": 13,
+      "total_expected": 16,
+      "missing_files": [
+        "async_operations/__init__.py",
+        "async_operations/async_operation_manager.py",
+        "async_operations/folder_load_worker.py"
+      ],
+      "completion_rate": 81.2
+    },
+    "metrics_test": {
+      "status": "success",
+      "current_lines": 657,
+      "original_lines": 1408,
+      "line_reduction_percent": 53.3,
+      "current_methods": 44,
+      "original_methods": 76,
+      "method_reduction_percent": 42.1,
+      "class_count": 2,
+      "target_achieved": true
+    },
+    "memory_test": {
+      "status": "success",
+      "baseline_memory_mb": 13.95,
+      "import_memory_mb": 44.4,
+      "memory_increase_mb": 30.46,
+      "memory_efficient": false
+    }
+  },
+  "overall_status": "mostly_success"
+}

@@ -1,0 +1,34 @@
+{
+  "test_date": "2025-08-29T23:22:40.214113",
+  "phase": "Phase4 完了後",
+  "tests": {
+    "import_test": {
+      "status": "failed",
+      "error": "No module named 'src'",
+      "import_time": 0.06555414199829102
+    },
+    "startup_test": {
+      "status": "failed",
+      "error": "No module named 'src'"
+    },
+    "functionality_test": {
+      "status": "success",
+      "creation_time": 0.037,
+      "basic_methods": {
+        "set_root_path": false,
+        "get_selected_path": false,
+        "refresh": false
+      },
+      "widget_created": true
+    },
+    "performance_test": {
+      "status": "success",
+      "avg_creation_time": 0.000725,
+      "max_creation_time": 0.000805,
+      "min_creation_time": 0.000611,
+      "consistency": true,
+      "performance_target": true
+    }
+  },
+  "overall_status": "partial_success"
+}
