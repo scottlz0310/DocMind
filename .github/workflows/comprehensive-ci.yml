@@ -21,12 +21,23 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     
-    - name: Setup virtual display
+    - name: Setup virtual display and Qt dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y xvfb libegl1-mesa libxkbcommon-x11-0
+        sudo apt-get install -y \
+          xvfb \
+          libegl1 \
+          libxkbcommon-x11-0 \
+          libxcb-xinerama0 \
+          libxcb-randr0 \
+          libxcb-render-util0 \
+          libxcb-shape0 \
+          libxcb-xfixes0 \
+          libfontconfig1 \
+          libfreetype6
         export DISPLAY=:99
         Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+        sleep 3  # Xvfbの起動を待機
     
     - name: Install dependencies
       run: |
@@ -36,17 +47,19 @@ jobs:
     
     - name: Run unit tests
       run: |
-        export QT_QPA_PLATFORM=offscreen
         pytest tests/unit/ -v --cov=src --cov-report=xml --maxfail=5 -n auto
       env:
         DISPLAY: :99
+        QT_QPA_PLATFORM: offscreen
+        QT_LOGGING_RULES: "*.debug=false"
     
     - name: Run integration tests
       run: |
-        export QT_QPA_PLATFORM=offscreen
         pytest tests/integration/ -v --maxfail=3
       env:
         DISPLAY: :99
+        QT_QPA_PLATFORM: offscreen
+        QT_LOGGING_RULES: "*.debug=false"
     
     - name: Run performance tests
       run: |

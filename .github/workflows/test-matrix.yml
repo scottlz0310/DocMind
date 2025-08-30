@@ -30,7 +30,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y xvfb libegl1-mesa libxkbcommon-x11-0
+        sudo apt-get install -y xvfb libegl1 libxkbcommon-x11-0
         export DISPLAY=:99
         Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
         sleep 3
