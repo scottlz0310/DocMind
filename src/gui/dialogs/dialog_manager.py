@@ -483,24 +483,6 @@ class DialogManager(LoggerMixin):
 
         msg_box.exec()
 
-    def show_fallback_error_dialog(self, error_message: str) -> None:
-        """
-        フォールバックエラーダイアログを表示
-
-        Args:
-            error_message: エラーメッセージ
-        """
-        try:
-            QMessageBox.critical(
-                self.parent,
-                "予期しないエラー",
-                f"インデックス再構築中に予期しないエラーが発生しました。\n\n"
-                f"エラー詳細: {error_message}\n\n"
-                "アプリケーションを再起動してから再試行してください。",
-            )
-        except Exception as e:
-            self.logger.error(f"フォールバックエラーダイアログの表示でエラー: {e}")
-
     def show_improved_timeout_dialog(self, thread_id: str) -> int:
         """
         改善されたタイムアウトダイアログを表示

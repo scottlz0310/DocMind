@@ -48,20 +48,26 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    # テストフレームワーク - Phase5最適化
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-qt>=4.2.0",
+    "pytest-mock>=3.11.0",
     "pytest-xvfb>=3.0.0",
     "pytest-benchmark>=4.0.0",
+    "pytest-parallel>=0.1.1",
+    # コード品質
     "black>=23.0.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
     "ruff>=0.0.280",
     "mypy>=1.5.0",
     "pre-commit>=3.3.0",
+    # セキュリティ
     "bandit>=1.7.0",
     "safety>=2.3.0",
     "semgrep>=1.45.0",
+    # パフォーマンス
     "memory-profiler>=0.61.0",
 ]
 build = [
@@ -93,38 +99,79 @@ where = ["src"]
 "*" = ["*.ico", "*.svg", "*.png"]
 
 [tool.pytest.ini_options]
+# Phase5テスト環境再構築設定
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+
+# 基本実行オプション
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "--verbose",
-    "--cov=src",
-    "--cov-report=html",
-    "--cov-report=xml",
-    "--cov-report=term-missing",
-]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "gui: marks tests as GUI tests",
-    "unit: marks tests as unit tests",
+    "--tb=short",
+    "--maxfail=5",
+    "--durations=10",
 ]
 
+# カバレッジ設定（必要時のみ）
+# --cov=src --cov-report=html --cov-report=term-missing
+
+# テストマーカー定義
+markers = [
+    # Phase5テストピラミッド構造
+    "unit: ユニットテスト（品質保証の主力）",
+    "integration: 統合テスト（接続確認のみ）",
+    
+    # 実行時間分類
+    "fast: 高速テスト（1秒以内）",
+    "slow: 低速テスト（1秒以上）",
+    
+    # 機能分類
+    "gui: GUIテスト",
+    "core: コア機能テスト",
+    "search: 検索機能テスト",
+    "index: インデックス機能テスト",
+    
+    # 環境依存
+    "requires_display: ディスプレイ必須テスト",
+    "requires_files: テストファイル必須テスト",
+]
+
+# テスト実行時間制限
+timeout = 300  # 5分でタイムアウト
+
+# 並列実行設定
+# -n auto で自動並列実行（pytest-parallel使用時）
+
 [tool.coverage.run]
+# Phase5カバレッジ設定
 source = ["src"]
+branch = true
+parallel = true
+
 omit = [
+    # テスト関連
     "*/tests/*",
     "*/test_*",
+    # ビルド・キャッシュ
     "*/__pycache__/*",
     "*/venv/*",
     "*/build/*",
     "*/dist/*",
+    # エントリポイント
+    "main.py",
+    "test_entry.py",
 ]
 
 [tool.coverage.report]
+# Phase5カバレッジ目標: ユニット85%、統合100%（接続部分）、全体80%
+show_missing = true
+skip_covered = false
+skip_empty = true
+precision = 1
+
+# カバレッジ除外行
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -136,7 +183,16 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
+    # Phase5追加除外
+    "def main\\(\\):",
+    "if TYPE_CHECKING:",
 ]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.xml]
+output = "coverage.xml"
 
 [tool.black]
 line-length = 88

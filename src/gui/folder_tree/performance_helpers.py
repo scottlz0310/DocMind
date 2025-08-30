@@ -16,12 +16,10 @@ class PathOptimizer:
         self._path_cache: dict[str, str] = {}
         self._basename_cache: dict[str, str] = {}
 
-    @lru_cache(maxsize=1000)
     def get_basename(self, path: str) -> str:
         """キャッシュ付きbasename取得"""
         return os.path.basename(path)
 
-    @lru_cache(maxsize=1000)
     def normalize_path(self, path: str) -> str:
         """キャッシュ付きパス正規化"""
         return os.path.normpath(path)

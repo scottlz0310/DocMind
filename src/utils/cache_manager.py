@@ -406,7 +406,7 @@ class PersistentCache(LoggerMixin):
                 pickle.dump(self._data, f, protocol=pickle.HIGHEST_PROTOCOL)
         except Exception as e:
             self.logger.error(f"永続化キャッシュの保存に失敗: {e}")
-            raise CacheError(f"キャッシュの保存に失敗しました: {e}")
+            raise CacheError(f"キャッシュの保存に失敗しました: {e}") from e
 
     def get(self, key: str) -> Any | None:
         """値を取得"""

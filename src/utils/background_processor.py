@@ -262,7 +262,7 @@ class BackgroundProcessor(LoggerMixin):
             return task.task_id
 
         except queue.Full:
-            raise BackgroundProcessingError("タスクキューが満杯です")
+            raise BackgroundProcessingError("タスクキューが満杯です") from None
 
     def create_and_submit_task(
         self,

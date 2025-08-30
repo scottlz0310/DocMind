@@ -223,7 +223,7 @@ class UpdateDownloader(QObject):
             if temp_file and os.path.exists(temp_file):
                 try:
                     os.remove(temp_file)
-                except:
+                except Exception:
                     pass
             self.download_failed.emit(str(e))
 
@@ -277,7 +277,7 @@ class UpdateInstaller:
 
         except Exception as e:
             logger.error(f"更新インストールエラー: {e}")
-            raise UpdateError(f"更新のインストールに失敗しました: {e}")
+            raise UpdateError(f"更新のインストールに失敗しました: {e}") from e
 
     def schedule_restart(self) -> None:
         """アプリケーションの再起動をスケジュール"""
@@ -370,7 +370,7 @@ class UpdateManager(QObject):
                 # 一時ファイルを削除
                 try:
                     os.remove(file_path)
-                except:
+                except Exception:
                     pass
 
                 self.update_installation_completed.emit(

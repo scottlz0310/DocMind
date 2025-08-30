@@ -380,7 +380,7 @@ class SearchManager(LoggerMixin):
 
         # 統合スコアを計算
         merged_results = []
-        for doc_id, scores in doc_scores.items():
+        for _doc_id, scores in doc_scores.items():
             combined_score = (
                 scores["full_text_score"] * weights.full_text
                 + scores["semantic_score"] * weights.semantic

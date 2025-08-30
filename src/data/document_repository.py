@@ -74,7 +74,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"ドキュメント追加エラー: {e}")
-            raise DatabaseError(f"ドキュメントの追加に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの追加に失敗しました: {e}") from e
 
     def get_document_by_id(self, document_id: str) -> Document | None:
         """IDでドキュメントを取得
@@ -104,7 +104,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"ドキュメント取得エラー (ID: {document_id}): {e}")
-            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}") from e
 
     def get_document_by_path(self, file_path: str) -> Document | None:
         """ファイルパスでドキュメントを取得
@@ -134,7 +134,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"ドキュメント取得エラー (パス: {file_path}): {e}")
-            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}") from e
 
     def update_document(self, document: Document) -> bool:
         """既存のドキュメントを更新
@@ -188,7 +188,7 @@ class DocumentRepository:
             raise
         except Exception as e:
             self.logger.error(f"ドキュメント更新エラー: {e}")
-            raise DatabaseError(f"ドキュメントの更新に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの更新に失敗しました: {e}") from e
 
     def delete_document(self, document_id: str) -> bool:
         """ドキュメントを削除

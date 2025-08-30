@@ -204,11 +204,11 @@ class IndexingWorker(QObject):
         try:
             # まず総ディレクトリ数を概算
             try:
-                for root, dirs, _ in os.walk(self.folder_path):
+                for _root, dirs, _ in os.walk(self.folder_path):
                     total_dirs += 1 + len(dirs)
                     if total_dirs > 1000:  # 大量のディレクトリがある場合は概算で止める
                         break
-            except:
+            except Exception:
                 total_dirs = 0
 
             # 実際のスキャン

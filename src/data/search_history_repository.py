@@ -66,7 +66,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"検索履歴記録エラー: {e}")
-            raise DatabaseError(f"検索履歴の記録に失敗しました: {e}")
+            raise DatabaseError(f"検索履歴の記録に失敗しました: {e}") from e
 
     def get_recent_searches(self, limit: int = 50) -> list[dict[str, Any]]:
         """最近の検索履歴を取得

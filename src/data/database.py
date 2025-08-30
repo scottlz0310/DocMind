@@ -85,7 +85,7 @@ class ConnectionPool:
         except sqlite3.Error as e:
             if conn:
                 conn.rollback()
-            raise DatabaseError(f"データベース操作に失敗しました: {e}")
+            raise DatabaseError(f"データベース操作に失敗しました: {e}") from e
         finally:
             if conn:
                 try:
@@ -94,7 +94,7 @@ class ConnectionPool:
                         self._pool.put_nowait(conn)
                     else:
                         conn.close()
-                except:
+                except Exception:
                     conn.close()
 
     def close_all(self):
@@ -194,7 +194,7 @@ class DatabaseManager(LoggerMixin):
 
         except Exception as e:
             self.logger.error(f"データベース初期化エラー: {e}")
-            raise DatabaseError(f"データベースの初期化に失敗しました: {e}")
+            raise DatabaseError(f"データベースの初期化に失敗しました: {e}") from e
 
     def _execute_cached_query(
         self,
@@ -255,7 +255,7 @@ class DatabaseManager(LoggerMixin):
 
         except Exception as e:
             self.logger.error(f"クエリ実行エラー: {e}")
-            raise DatabaseError(f"クエリの実行に失敗しました: {e}")
+            raise DatabaseError(f"クエリの実行に失敗しました: {e}") from e
 
     def _get_from_cache(self, cache_key: str) -> list[sqlite3.Row] | None:
         """キャッシュから結果を取得"""
@@ -535,7 +535,7 @@ class DatabaseManager(LoggerMixin):
 
         except Exception as e:
             self.logger.error(f"統計情報取得エラー: {e}")
-            raise DatabaseError(f"統計情報の取得に失敗しました: {e}")
+            raise DatabaseError(f"統計情報の取得に失敗しました: {e}") from e
 
     def vacuum_database(self):
         """データベースの最適化（VACUUM）を実行"""
@@ -546,7 +546,7 @@ class DatabaseManager(LoggerMixin):
 
         except Exception as e:
             self.logger.error(f"データベース最適化エラー: {e}")
-            raise DatabaseError(f"データベースの最適化に失敗しました: {e}")
+            raise DatabaseError(f"データベースの最適化に失敗しました: {e}") from e
 
     def close(self):
         """データベース接続を閉じる"""

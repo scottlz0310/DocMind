@@ -67,7 +67,7 @@ class StorageManager:
 
         except Exception as e:
             self.logger.error(f"ドキュメント保存エラー: {e}")
-            raise DatabaseError(f"ドキュメントの保存に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの保存に失敗しました: {e}") from e
 
     def load_document(self, document_id: str) -> Document | None:
         """ドキュメントを読み込み

@@ -107,7 +107,7 @@ class DocumentProcessor:
                 file_path=file_path,
                 file_type=file_type.value if "file_type" in locals() else "unknown",
                 details=str(e),
-            )
+            ) from e
 
     def _extract_text_by_type(self, file_path: str, file_type: FileType) -> str:
         """ファイルタイプに応じてテキストを抽出
@@ -203,7 +203,7 @@ class DocumentProcessor:
                 file_path=file_path,
                 file_type="pdf",
                 details=str(e),
-            )
+            ) from e
 
     def extract_word_text(self, file_path: str) -> str:
         """Wordドキュメントからテキストを抽出
@@ -267,7 +267,7 @@ class DocumentProcessor:
                 file_path=file_path,
                 file_type="word",
                 details=str(e),
-            )
+            ) from e
 
     def extract_excel_text(self, file_path: str) -> str:
         """Excelファイルからテキストを抽出
@@ -354,7 +354,7 @@ class DocumentProcessor:
                 file_path=file_path,
                 file_type="excel",
                 details=str(e),
-            )
+            ) from e
 
     def extract_markdown_text(self, file_path: str) -> str:
         """Markdownファイルからテキストを抽出
@@ -397,7 +397,7 @@ class DocumentProcessor:
                 file_path=file_path,
                 file_type="markdown",
                 details=str(e),
-            )
+            ) from e
 
     def extract_text_file(self, file_path: str) -> str:
         """テキストファイルからテキストを抽出
@@ -437,7 +437,7 @@ class DocumentProcessor:
                 file_path=file_path,
                 file_type="text",
                 details=str(e),
-            )
+            ) from e
 
     def _detect_encoding(self, file_path: str) -> str:
         """ファイルのエンコーディングを検出
