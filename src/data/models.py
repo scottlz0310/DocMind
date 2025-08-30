@@ -156,7 +156,7 @@ class Document:
         Returns:
             str: 生成されたID
         """
-        return hashlib.md5(str(Path(file_path).absolute()).encode("utf-8")).hexdigest()
+        return hashlib.sha256(str(Path(file_path).absolute()).encode("utf-8")).hexdigest()
 
     def is_modified_since_indexing(self) -> bool:
         """インデックス化以降にファイルが変更されたかチェック

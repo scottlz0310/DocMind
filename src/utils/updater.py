@@ -295,12 +295,13 @@ start "" "{current_exe}"
 del "%~f0"
 """
 
-            script_path = tempfile.mktemp(suffix=".bat")
+            fd, script_path = tempfile.mkstemp(suffix=".bat")
+            os.close(fd)  # ファイルディスクリプタを閉じる
             with open(script_path, "w", encoding="shift_jis") as f:
                 f.write(restart_script)
 
             # スクリプトを実行して終了
-            subprocess.Popen([script_path], shell=True)
+            subprocess.Popen(["cmd", "/c", script_path], shell=False)
 
             logger.info("再起動をスケジュールしました")
 

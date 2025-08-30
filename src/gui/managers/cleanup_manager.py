@@ -188,16 +188,16 @@ class CleanupManager(QObject, LoggerMixin):
                     ):
                         self.main_window.search_worker.cancel()
                         self.main_window.search_worker.wait()
-                except:
-                    pass
+                except Exception as e:
+                    self.logger.debug(f"検索ワーカー停止エラー: {e}")
                 self.logger.info("検索インターフェースをクリーンアップしました")
 
             # 検索マネージャーのクリーンアップ
             if hasattr(self.main_window, "search_manager"):
                 try:
                     self.main_window.search_manager.clear_suggestion_cache()
-                except:
-                    pass
+                except Exception as e:
+                    self.logger.debug(f"検索マネージャークリアエラー: {e}")
                 self.logger.info("検索マネージャーをクリーンアップしました")
 
         except Exception as e:

@@ -224,7 +224,7 @@ class SearchResultCache(LoggerMixin):
 
         # ハッシュ化してキーを生成
         key_string = "|".join(key_components)
-        return hashlib.md5(key_string.encode("utf-8")).hexdigest()
+        return hashlib.sha256(key_string.encode("utf-8")).hexdigest()
 
     def get_search_results(
         self, query_text: str, search_type: str, filters: dict[str, Any] | None = None

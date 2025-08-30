@@ -398,8 +398,8 @@ class IndexingWorker(QObject):
                     file_size = f" ({size_bytes/1024:.1f}KB)"
                 else:
                     file_size = f" ({size_bytes/(1024*1024):.1f}MB)"
-            except:
-                pass
+            except Exception as e:
+                self.logger.debug(f"ファイルサイズ取得エラー: {e}")
 
             self.logger.debug(
                 f"処理中: {file_name}{file_size} ({processed}/{total} - {percentage}%)"
