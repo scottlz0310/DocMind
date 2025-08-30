@@ -90,7 +90,7 @@ jobs:
         
     - name: コードスタイルチェック
       run: |
-        flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503,E501
+        flake8 src/ tests/
     
     - name: 型チェック
       run: |
