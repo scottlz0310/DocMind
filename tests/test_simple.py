@@ -34,10 +34,10 @@ def test_with_marker():
 def test_mock_usage():
     """モック使用テスト"""
     from unittest.mock import Mock
-    
+
     mock_obj = Mock()
     mock_obj.method.return_value = "test_result"
-    
+
     result = mock_obj.method()
     assert result == "test_result"
     mock_obj.method.assert_called_once()

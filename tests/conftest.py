@@ -1,11 +1,12 @@
 """
 テスト共通設定 - pytest設定とフィクスチャ
 """
-import pytest
 import os
 import sys
 from pathlib import Path
 from unittest.mock import Mock
+
+import pytest
 
 # プロジェクトルートをPythonパスに追加
 project_root = Path(__file__).parent.parent
@@ -20,7 +21,7 @@ def qapp():
     """セッション全体で共有するQApplication"""
     try:
         from PySide6.QtWidgets import QApplication
-        
+
         # 既存のアプリケーションインスタンスをチェック
         app = QApplication.instance()
         if app is None:
@@ -29,9 +30,9 @@ def qapp():
             created_new = True
         else:
             created_new = False
-        
+
         yield app
-        
+
         # 新しく作成した場合のみクリーンアップ
         if created_new and app:
             app.processEvents()

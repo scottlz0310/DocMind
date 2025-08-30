@@ -4,8 +4,9 @@
 Phase5テスト環境 - コンポーネント間の接続確認のみ
 """
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import Mock, patch
 from PySide6.QtWidgets import QApplication
 
 from src.gui.main_window import MainWindow
@@ -43,10 +44,10 @@ class TestMainWindowIntegration:
             assert hasattr(main_window, 'signal_manager')
             assert hasattr(main_window, 'index_controller')
             assert hasattr(main_window, 'dialog_manager')
-            
+
             # エラーが発生しないことを確認
             assert main_window is not None
-            
+
         except Exception as e:
             pytest.fail(f"Component initialization failed: {e}")
 
@@ -55,13 +56,13 @@ class TestMainWindowIntegration:
         try:
             # シグナルマネージャーが存在することを確認
             assert main_window.signal_manager is not None
-            
+
             # 基本的なシグナル接続をテスト
             # 詳細な結果検証はしない - 接続確認のみ
             main_window.signal_manager.connect_signal(
                 main_window, 'windowTitleChanged', lambda: None
             )
-            
+
         except Exception as e:
             pytest.fail(f"Signal connection failed: {e}")
 
@@ -70,10 +71,10 @@ class TestMainWindowIntegration:
         try:
             # レイアウトマネージャーが存在することを確認
             assert main_window.layout_manager is not None
-            
+
             # 中央ウィジェットが設定されていることを確認
             assert main_window.centralWidget() is not None
-            
+
         except Exception as e:
             pytest.fail(f"Layout setup failed: {e}")
 
@@ -82,10 +83,10 @@ class TestMainWindowIntegration:
         try:
             # メニューバーが存在することを確認
             assert main_window.menuBar() is not None
-            
+
             # ツールバーマネージャーが存在することを確認
             assert hasattr(main_window, 'toolbar_manager')
-            
+
         except Exception as e:
             pytest.fail(f"Menu and toolbar creation failed: {e}")
 
@@ -94,10 +95,10 @@ class TestMainWindowIntegration:
         try:
             # ステータスバーが存在することを確認
             assert main_window.statusBar() is not None
-            
+
             # ステータスマネージャーが存在することを確認
             assert hasattr(main_window, 'status_manager')
-            
+
         except Exception as e:
             pytest.fail(f"Status bar setup failed: {e}")
 
@@ -106,10 +107,10 @@ class TestMainWindowIntegration:
         try:
             # 進捗マネージャーが存在することを確認
             assert main_window.progress_manager is not None
-            
+
             # 進捗システムマネージャーが存在することを確認
             assert hasattr(main_window, 'progress_system_manager')
-            
+
         except Exception as e:
             pytest.fail(f"Progress system integration failed: {e}")
 
@@ -118,10 +119,10 @@ class TestMainWindowIntegration:
         try:
             # クリーンアップマネージャーが存在することを確認
             assert hasattr(main_window, 'cleanup_manager')
-            
+
             # クリーンアップを実行（エラーが発生しないことを確認）
             main_window.cleanup_manager.cleanup()
-            
+
         except Exception as e:
             pytest.fail(f"Cleanup flow failed: {e}")
 
@@ -130,11 +131,11 @@ class TestMainWindowIntegration:
         try:
             # ウィンドウ状態マネージャーが存在することを確認
             assert hasattr(main_window, 'window_state_manager')
-            
+
             # 基本的な状態操作をテスト
             main_window.window_state_manager.save_window_state()
             main_window.window_state_manager.restore_window_state()
-            
+
         except Exception as e:
             pytest.fail(f"Window state management failed: {e}")
 
@@ -143,10 +144,10 @@ class TestMainWindowIntegration:
         try:
             # エラー・リビルドマネージャーが存在することを確認
             assert hasattr(main_window, 'error_rebuild_manager')
-            
+
             # エラーハンドリングが機能することを確認
             # 詳細な検証はしない - 存在確認のみ
-            
+
         except Exception as e:
             pytest.fail(f"Error handling integration failed: {e}")
 
@@ -155,10 +156,10 @@ class TestMainWindowIntegration:
         try:
             # スレッドハンドラーマネージャーが存在することを確認
             assert hasattr(main_window, 'thread_handler_manager')
-            
+
             # スレッド管理が機能することを確認
             # 詳細な検証はしない - 存在確認のみ
-            
+
         except Exception as e:
             pytest.fail(f"Thread management integration failed: {e}")
 
@@ -167,10 +168,10 @@ class TestMainWindowIntegration:
         try:
             # 設定ハンドラーマネージャーが存在することを確認
             assert hasattr(main_window, 'settings_handler_manager')
-            
+
             # 設定管理が機能することを確認
             # 詳細な検証はしない - 存在確認のみ
-            
+
         except Exception as e:
             pytest.fail(f"Settings integration failed: {e}")
 
@@ -179,10 +180,10 @@ class TestMainWindowIntegration:
         try:
             # 検索ハンドラーマネージャーが存在することを確認
             assert hasattr(main_window, 'search_handler_manager')
-            
+
             # 検索ハンドラーが機能することを確認
             # 詳細な検証はしない - 存在確認のみ
-            
+
         except Exception as e:
             pytest.fail(f"Search handler integration failed: {e}")
 
@@ -193,7 +194,7 @@ class TestMainWindowIntegration:
             assert main_window.layout_manager.main_window == main_window
             assert main_window.progress_manager.main_window == main_window
             assert main_window.signal_manager.main_window == main_window
-            
+
         except Exception as e:
             pytest.fail(f"Component interaction failed: {e}")
 
@@ -202,10 +203,10 @@ class TestMainWindowIntegration:
         try:
             # メモリリークが発生していないことを基本的に確認
             # 詳細な検証はしない - 基本的な動作確認のみ
-            
+
             # ウィンドウを表示・非表示
             main_window.show()
             main_window.hide()
-            
+
         except Exception as e:
             pytest.fail(f"Memory management failed: {e}")

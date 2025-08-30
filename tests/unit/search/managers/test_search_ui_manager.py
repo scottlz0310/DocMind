@@ -3,11 +3,12 @@
 SearchUIManagerのユニットテスト
 """
 
-import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
-from src.gui.search.managers.search_ui_manager import SearchUIManager
+import pytest
+
 from src.data.models import SearchType
+from src.gui.search.managers.search_ui_manager import SearchUIManager
 
 
 class TestSearchUIManager:
@@ -76,23 +77,23 @@ class TestSearchUIManager:
     def test_update_search_button_state_searching(self, search_ui_manager, mock_search_button):
         """検索中の検索ボタン状態更新のテスト"""
         search_ui_manager.update_search_button_state(mock_search_button, True)
-        
+
         mock_search_button.setEnabled.assert_called_once_with(False)
         mock_search_button.setText.assert_called_once_with("検索中...")
 
     def test_update_search_button_state_not_searching(self, search_ui_manager, mock_search_button):
         """非検索中の検索ボタン状態更新のテスト"""
         search_ui_manager.update_search_button_state(mock_search_button, False)
-        
+
         mock_search_button.setEnabled.assert_called_once_with(True)
         mock_search_button.setText.assert_called_once_with("検索")
 
     def test_update_search_suggestions(self, search_ui_manager, mock_search_input):
         """検索提案更新のテスト"""
         suggestions = ["suggestion1", "suggestion2", "suggestion3"]
-        
+
         search_ui_manager.update_search_suggestions(mock_search_input, suggestions)
-        
+
         mock_search_input.update_suggestions.assert_called_once_with(suggestions)
 
     def test_update_search_history_with_all_params(self, search_ui_manager, mock_history_widget):
@@ -100,11 +101,11 @@ class TestSearchUIManager:
         recent_searches = [{"query": "recent1"}, {"query": "recent2"}]
         popular_searches = [{"query": "popular1"}, {"query": "popular2"}]
         saved_searches = [{"query": "saved1"}, {"query": "saved2"}]
-        
+
         search_ui_manager.update_search_history(
             mock_history_widget, recent_searches, popular_searches, saved_searches
         )
-        
+
         mock_history_widget.update_recent_searches.assert_called_once_with(recent_searches)
         mock_history_widget.update_popular_searches.assert_called_once_with(popular_searches)
         mock_history_widget.update_saved_searches.assert_called_once_with(saved_searches)
@@ -113,70 +114,70 @@ class TestSearchUIManager:
         """保存された検索なしの検索履歴更新のテスト"""
         recent_searches = [{"query": "recent1"}]
         popular_searches = [{"query": "popular1"}]
-        
+
         search_ui_manager.update_search_history(
             mock_history_widget, recent_searches, popular_searches
         )
-        
+
         mock_history_widget.update_recent_searches.assert_called_once_with(recent_searches)
         mock_history_widget.update_popular_searches.assert_called_once_with(popular_searches)
         mock_history_widget.update_saved_searches.assert_not_called()
 
-    def test_set_interface_enabled_true(self, search_ui_manager, mock_search_input, 
+    def test_set_interface_enabled_true(self, search_ui_manager, mock_search_input,
                                        mock_search_button, mock_advanced_options):
         """インターフェース有効化のテスト"""
         mock_search_type_selector = Mock()
         mock_search_type_selector.setEnabled = Mock()
-        
+
         search_ui_manager.set_interface_enabled(
-            mock_search_input, mock_search_button, mock_search_type_selector, 
+            mock_search_input, mock_search_button, mock_search_type_selector,
             mock_advanced_options, True
         )
-        
+
         mock_search_input.setEnabled.assert_called_once_with(True)
         mock_search_button.setEnabled.assert_called_once_with(True)
         mock_search_type_selector.setEnabled.assert_called_once_with(True)
         mock_advanced_options.setEnabled.assert_called_once_with(True)
 
-    def test_set_interface_enabled_false(self, search_ui_manager, mock_search_input, 
+    def test_set_interface_enabled_false(self, search_ui_manager, mock_search_input,
                                         mock_search_button, mock_advanced_options):
         """インターフェース無効化のテスト"""
         mock_search_type_selector = Mock()
         mock_search_type_selector.setEnabled = Mock()
-        
+
         search_ui_manager.set_interface_enabled(
-            mock_search_input, mock_search_button, mock_search_type_selector, 
+            mock_search_input, mock_search_button, mock_search_type_selector,
             mock_advanced_options, False
         )
-        
+
         mock_search_input.setEnabled.assert_called_once_with(False)
         mock_search_button.setEnabled.assert_called_once_with(False)
         mock_search_type_selector.setEnabled.assert_called_once_with(False)
         mock_advanced_options.setEnabled.assert_called_once_with(False)
 
-    def test_set_interface_enabled_searching(self, search_ui_manager, mock_search_input, 
+    def test_set_interface_enabled_searching(self, search_ui_manager, mock_search_input,
                                             mock_search_button, mock_advanced_options):
         """検索中のインターフェース状態のテスト"""
         mock_search_type_selector = Mock()
         mock_search_type_selector.setEnabled = Mock()
-        
+
         search_ui_manager.set_interface_enabled(
-            mock_search_input, mock_search_button, mock_search_type_selector, 
+            mock_search_input, mock_search_button, mock_search_type_selector,
             mock_advanced_options, True, is_searching=True
         )
-        
+
         mock_search_input.setEnabled.assert_called_once_with(True)
         mock_search_button.setEnabled.assert_called_once_with(False)  # 検索中は無効
         mock_search_type_selector.setEnabled.assert_called_once_with(True)
         mock_advanced_options.setEnabled.assert_called_once_with(True)
 
-    def test_clear_search_interface(self, search_ui_manager, mock_search_input, 
+    def test_clear_search_interface(self, search_ui_manager, mock_search_input,
                                    mock_advanced_options, mock_progress_widget):
         """検索インターフェースクリアのテスト"""
         search_ui_manager.clear_search_interface(
             mock_search_input, mock_advanced_options, mock_progress_widget
         )
-        
+
         mock_search_input.clear.assert_called_once()
         mock_search_input.setFocus.assert_called_once()
         mock_advanced_options.reset_to_defaults.assert_called_once()
@@ -187,9 +188,9 @@ class TestSearchUIManager:
         mock_weights_group = Mock()
         mock_weights_group.setEnabled = Mock()
         mock_advanced_options.findChild.return_value = mock_weights_group
-        
+
         search_ui_manager.handle_search_type_change(SearchType.HYBRID, mock_advanced_options)
-        
+
         mock_advanced_options.findChild.assert_called_once()
         mock_weights_group.setEnabled.assert_called_once_with(True)
 
@@ -198,9 +199,9 @@ class TestSearchUIManager:
         mock_weights_group = Mock()
         mock_weights_group.setEnabled = Mock()
         mock_advanced_options.findChild.return_value = mock_weights_group
-        
+
         search_ui_manager.handle_search_type_change(SearchType.FULL_TEXT, mock_advanced_options)
-        
+
         mock_advanced_options.findChild.assert_called_once()
         mock_weights_group.setEnabled.assert_called_once_with(False)
 
@@ -209,27 +210,27 @@ class TestSearchUIManager:
         mock_weights_group = Mock()
         mock_weights_group.setEnabled = Mock()
         mock_advanced_options.findChild.return_value = mock_weights_group
-        
+
         search_ui_manager.handle_search_type_change(SearchType.SEMANTIC, mock_advanced_options)
-        
+
         mock_advanced_options.findChild.assert_called_once()
         mock_weights_group.setEnabled.assert_called_once_with(False)
 
     def test_handle_search_type_change_no_weights_group(self, search_ui_manager, mock_advanced_options):
         """重み設定グループが存在しない場合のテスト"""
         mock_advanced_options.findChild.return_value = None
-        
+
         # エラーが発生しないことを確認
         search_ui_manager.handle_search_type_change(SearchType.HYBRID, mock_advanced_options)
-        
+
         mock_advanced_options.findChild.assert_called_once()
 
     def test_update_search_suggestions_empty_list(self, search_ui_manager, mock_search_input):
         """空の提案リストのテスト"""
         suggestions = []
-        
+
         search_ui_manager.update_search_suggestions(mock_search_input, suggestions)
-        
+
         mock_search_input.update_suggestions.assert_called_once_with(suggestions)
 
     def test_update_search_history_empty_lists(self, search_ui_manager, mock_history_widget):
@@ -237,11 +238,11 @@ class TestSearchUIManager:
         recent_searches = []
         popular_searches = []
         saved_searches = []
-        
+
         search_ui_manager.update_search_history(
             mock_history_widget, recent_searches, popular_searches, saved_searches
         )
-        
+
         mock_history_widget.update_recent_searches.assert_called_once_with(recent_searches)
         mock_history_widget.update_popular_searches.assert_called_once_with(popular_searches)
         mock_history_widget.update_saved_searches.assert_called_once_with(saved_searches)

@@ -3,16 +3,16 @@
 
 IndexManager・SearchManager・EmbeddingManager・ConfigManagerの連携テスト
 """
-import pytest
-import tempfile
 import shutil
+import tempfile
 from pathlib import Path
-from unittest.mock import Mock
 
+import pytest
+
+from src.core.config_manager import ConfigManager
+from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
 from src.core.search_manager import SearchManager
-from src.core.embedding_manager import EmbeddingManager
-from src.core.config_manager import ConfigManager
 
 
 class TestCoreIntegration:
@@ -28,11 +28,11 @@ class TestCoreIntegration:
             'cache': Path(temp_dir) / 'cache',
             'config': Path(temp_dir) / 'config.json'
         }
-        
+
         # ディレクトリ作成
         workspace['index'].mkdir()
         workspace['cache'].mkdir()
-        
+
         yield workspace
         shutil.rmtree(temp_dir)
 
@@ -43,7 +43,7 @@ class TestCoreIntegration:
         embedding_manager = EmbeddingManager(cache_dir=str(temp_workspace['cache']))
         index_manager = IndexManager(str(temp_workspace['index']))
         search_manager = SearchManager(index_manager, embedding_manager)
-        
+
         return {
             'config': config_manager,
             'embedding': embedding_manager,
@@ -54,11 +54,11 @@ class TestCoreIntegration:
     def test_end_to_end_document_workflow(self, integrated_system):
         """エンドツーエンドドキュメントワークフローテスト"""
         system = integrated_system
-        
+
         # 1. 設定初期化
         system['config'].set('search.max_results', 50)
         system['config'].set('indexing.batch_size', 10)
-        
+
         # 2. ドキュメント追加
         test_documents = [
             {
@@ -67,7 +67,7 @@ class TestCoreIntegration:
                 'metadata': {'topic': '機械学習', 'level': '初級'}
             },
             {
-                'path': '/test/data_analysis.txt', 
+                'path': '/test/data_analysis.txt',
                 'content': 'データ分析では統計的手法を用いてデータの傾向を把握します。',
                 'metadata': {'topic': 'データ分析', 'level': '中級'}
             },
@@ -77,7 +77,7 @@ class TestCoreIntegration:
                 'metadata': {'topic': 'プログラミング', 'level': '初級'}
             }
         ]
-        
+
         # インデックス作成
         for doc in test_documents:
             system['index'].add_document(
@@ -85,10 +85,10 @@ class TestCoreIntegration:
                 doc['content'],
                 doc['metadata']
             )
-        
+
         # 3. 検索実行
         search_result = system['search'].hybrid_search('機械学習', limit=10)
-        
+
         # 4. 結果検証
         assert len(search_result.documents) > 0
         assert search_result.documents[0].metadata['topic'] == '機械学習'
@@ -97,10 +97,10 @@ class TestCoreIntegration:
     def test_configuration_driven_behavior(self, integrated_system):
         """設定駆動動作テスト"""
         system = integrated_system
-        
+
         # 検索結果数制限設定
         system['config'].set('search.max_results', 5)
-        
+
         # ドキュメント追加
         for i in range(20):
             system['index'].add_document(
@@ -108,10 +108,10 @@ class TestCoreIntegration:
                 f'テストドキュメント{i}です。検索テスト用の内容を含みます。',
                 {'doc_id': i}
             )
-        
+
         # 検索実行
         result = system['search'].fulltext_search('テスト')
-        
+
         # 設定に従った結果数制限確認
         max_results = system['config'].get('search.max_results')
         assert len(result.documents) <= max_results
@@ -119,20 +119,20 @@ class TestCoreIntegration:
     def test_embedding_cache_integration(self, integrated_system):
         """埋め込みキャッシュ統合テスト"""
         system = integrated_system
-        
+
         # 同じ内容のドキュメントを複数追加
         duplicate_content = "機械学習とデータサイエンスの関係について"
-        
+
         for i in range(5):
             system['index'].add_document(
                 f'/test/duplicate_{i}.txt',
                 duplicate_content,
                 {'doc_id': i}
             )
-        
+
         # セマンティック検索実行
-        result = system['search'].semantic_search('機械学習')
-        
+        system['search'].semantic_search('機械学習')
+
         # キャッシュ効率確認
         cache_stats = system['embedding'].get_cache_statistics()
         assert cache_stats['hit_rate'] > 0.5  # 50%以上のキャッシュヒット率
@@ -140,17 +140,17 @@ class TestCoreIntegration:
     def test_error_propagation_handling(self, integrated_system):
         """エラー伝播ハンドリングテスト"""
         system = integrated_system
-        
+
         # 無効なドキュメント追加試行
         invalid_docs = [
             {'path': '', 'content': 'valid content', 'metadata': {}},  # 空パス
             {'path': '/valid/path.txt', 'content': '', 'metadata': {}},  # 空コンテンツ
             {'path': '/valid/path.txt', 'content': None, 'metadata': {}}  # Noneコンテンツ
         ]
-        
+
         success_count = 0
         error_count = 0
-        
+
         for doc in invalid_docs:
             try:
                 system['index'].add_document(
@@ -161,22 +161,21 @@ class TestCoreIntegration:
                 success_count += 1
             except Exception:
                 error_count += 1
-        
+
         # エラーハンドリング確認
         assert error_count > 0  # 一部エラーが発生
-        
+
         # システム全体の安定性確認
         result = system['search'].fulltext_search('test')
         assert isinstance(result.documents, list)
 
     def test_concurrent_operations_stability(self, integrated_system):
         """並行操作安定性テスト"""
-        import threading
         from concurrent.futures import ThreadPoolExecutor
-        
+
         system = integrated_system
         results = []
-        
+
         def index_operation(thread_id):
             try:
                 for i in range(10):
@@ -188,16 +187,16 @@ class TestCoreIntegration:
                 results.append(True)
             except Exception:
                 results.append(False)
-        
+
         def search_operation(thread_id):
             try:
-                for i in range(5):
+                for _i in range(5):
                     result = system['search'].fulltext_search(f'スレッド{thread_id}')
                     assert isinstance(result.documents, list)
                 results.append(True)
             except Exception:
                 results.append(False)
-        
+
         # 並行実行
         with ThreadPoolExecutor(max_workers=8) as executor:
             # インデックス操作
@@ -205,17 +204,17 @@ class TestCoreIntegration:
                 executor.submit(index_operation, i)
                 for i in range(4)
             ]
-            
+
             # 検索操作
             search_futures = [
                 executor.submit(search_operation, i)
                 for i in range(4)
             ]
-            
+
             # 完了待機
             for future in index_futures + search_futures:
                 future.result()
-        
+
         # 安定性確認
         success_rate = sum(results) / len(results)
         assert success_rate >= 0.9  # 90%以上の成功率
@@ -223,7 +222,7 @@ class TestCoreIntegration:
     def test_system_recovery_after_failure(self, integrated_system, temp_workspace):
         """システム障害後復旧テスト"""
         system = integrated_system
-        
+
         # 正常なデータ追加
         for i in range(10):
             system['index'].add_document(
@@ -231,10 +230,10 @@ class TestCoreIntegration:
                 f'復旧テスト用ドキュメント{i}',
                 {'doc_id': i}
             )
-        
+
         # 設定保存
         system['config'].save()
-        
+
         # システム再起動シミュレーション
         new_system = {
             'config': ConfigManager(str(temp_workspace['config'])),
@@ -242,14 +241,14 @@ class TestCoreIntegration:
             'index': IndexManager(str(temp_workspace['index'])),
         }
         new_system['search'] = SearchManager(
-            new_system['index'], 
+            new_system['index'],
             new_system['embedding']
         )
-        
+
         # 復旧後の動作確認
         result = new_system['search'].fulltext_search('復旧テスト')
         assert len(result.documents) > 0
-        
+
         # 設定復旧確認
         max_results = new_system['config'].get('search.max_results')
         assert max_results is not None
@@ -257,32 +256,32 @@ class TestCoreIntegration:
     def test_performance_under_load(self, integrated_system):
         """負荷下でのパフォーマンステスト"""
         import time
-        
+
         system = integrated_system
-        
+
         # 大量データ追加
         start_time = time.time()
-        
+
         for i in range(1000):
             system['index'].add_document(
                 f'/load_test/doc_{i}.txt',
                 f'負荷テスト用ドキュメント{i}です。' + 'コンテンツ ' * 50,
                 {'doc_id': i, 'category': f'cat_{i % 10}'}
             )
-        
+
         indexing_time = time.time() - start_time
-        
+
         # 検索パフォーマンス
         search_times = []
-        
+
         for i in range(20):
             start_time = time.time()
             result = system['search'].hybrid_search(f'ドキュメント{i * 10}', limit=20)
             search_time = time.time() - start_time
             search_times.append(search_time)
-            
+
             assert len(result.documents) > 0
-        
+
         # パフォーマンス検証
         assert indexing_time < 120.0  # 2分以内
         assert max(search_times) < 10.0  # 最大10秒以内

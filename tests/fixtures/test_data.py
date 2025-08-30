@@ -4,13 +4,14 @@ Phase5テスト環境 - テストデータフィクスチャ
 最小限のテストデータセットを提供
 """
 
-import pytest
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
+
+import pytest
 
 
 @pytest.fixture
-def sample_documents() -> List[Dict[str, Any]]:
+def sample_documents() -> list[dict[str, Any]]:
     """サンプルドキュメントデータ"""
     return [
         {
@@ -22,7 +23,7 @@ def sample_documents() -> List[Dict[str, Any]]:
             "modified": "2024-01-01T00:00:00"
         },
         {
-            "title": "テストドキュメント2", 
+            "title": "テストドキュメント2",
             "path": "/test/documents/doc2.pdf",
             "content": "PDFファイルのテスト内容です。",
             "file_type": "pdf",
@@ -31,7 +32,7 @@ def sample_documents() -> List[Dict[str, Any]]:
         },
         {
             "title": "テストドキュメント3",
-            "path": "/test/documents/doc3.docx", 
+            "path": "/test/documents/doc3.docx",
             "content": "Wordドキュメントのテスト内容です。",
             "file_type": "docx",
             "size": 4096,
@@ -41,7 +42,7 @@ def sample_documents() -> List[Dict[str, Any]]:
 
 
 @pytest.fixture
-def sample_search_queries() -> List[str]:
+def sample_search_queries() -> list[str]:
     """サンプル検索クエリ"""
     return [
         "テスト",
@@ -53,7 +54,7 @@ def sample_search_queries() -> List[str]:
 
 
 @pytest.fixture
-def sample_search_results() -> List[Dict[str, Any]]:
+def sample_search_results() -> list[dict[str, Any]]:
     """サンプル検索結果"""
     return [
         {
@@ -65,7 +66,7 @@ def sample_search_results() -> List[Dict[str, Any]]:
         },
         {
             "title": "検索結果2",
-            "path": "/test/results/result2.pdf", 
+            "path": "/test/results/result2.pdf",
             "score": 0.87,
             "snippet": "PDFファイルからの抜粋...",
             "file_type": "pdf"
@@ -74,7 +75,7 @@ def sample_search_results() -> List[Dict[str, Any]]:
 
 
 @pytest.fixture
-def sample_folder_structure() -> Dict[str, Any]:
+def sample_folder_structure() -> dict[str, Any]:
     """サンプルフォルダ構造"""
     return {
         "name": "test_root",
@@ -93,7 +94,7 @@ def sample_folder_structure() -> Dict[str, Any]:
                     },
                     {
                         "name": "file2.pdf",
-                        "path": "/test/root/documents/file2.pdf", 
+                        "path": "/test/root/documents/file2.pdf",
                         "type": "file"
                     }
                 ]
@@ -109,7 +110,7 @@ def sample_folder_structure() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def sample_index_data() -> Dict[str, Any]:
+def sample_index_data() -> dict[str, Any]:
     """サンプルインデックスデータ"""
     return {
         "total_files": 100,
@@ -122,7 +123,7 @@ def sample_index_data() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def sample_progress_data() -> Dict[str, Any]:
+def sample_progress_data() -> dict[str, Any]:
     """サンプル進捗データ"""
     return {
         "current": 50,
@@ -135,7 +136,7 @@ def sample_progress_data() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def sample_error_data() -> Dict[str, Any]:
+def sample_error_data() -> dict[str, Any]:
     """サンプルエラーデータ"""
     return {
         "error_type": "FileNotFoundError",
@@ -147,7 +148,7 @@ def sample_error_data() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def sample_settings_data() -> Dict[str, Any]:
+def sample_settings_data() -> dict[str, Any]:
     """サンプル設定データ"""
     return {
         "search_type": "hybrid",
@@ -161,7 +162,7 @@ def sample_settings_data() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def mock_file_paths() -> List[Path]:
+def mock_file_paths() -> list[Path]:
     """モックファイルパス"""
     return [
         Path("/test/file1.txt"),
@@ -173,7 +174,7 @@ def mock_file_paths() -> List[Path]:
 
 
 @pytest.fixture
-def empty_search_result() -> Dict[str, Any]:
+def empty_search_result() -> dict[str, Any]:
     """空の検索結果"""
     return {
         "success": True,
@@ -185,7 +186,7 @@ def empty_search_result() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def failed_search_result() -> Dict[str, Any]:
+def failed_search_result() -> dict[str, Any]:
     """失敗した検索結果"""
     return {
         "success": False,
@@ -198,7 +199,7 @@ def failed_search_result() -> Dict[str, Any]:
 
 
 @pytest.fixture
-def sample_ui_state() -> Dict[str, Any]:
+def sample_ui_state() -> dict[str, Any]:
     """サンプルUI状態"""
     return {
         "window_geometry": {"x": 100, "y": 100, "width": 800, "height": 600},

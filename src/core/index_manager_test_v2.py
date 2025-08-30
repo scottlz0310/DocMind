@@ -5,17 +5,19 @@
 """
 
 from whoosh.searching import Hit
-from .index_manager import IndexManager
-from ..data.models import SearchType, FileType
+
 from tests.fixtures.mock_models import MockDocument, MockSearchResult
+
+from ..data.models import FileType, SearchType
+from .index_manager import IndexManager
 
 
 class TestIndexManagerV2(IndexManager):
     """テスト用IndexManager v2
-    
+
     検索結果作成時にMockSearchResultを使用してすべての検証を回避
     """
-    
+
     def _create_search_result_from_hit(
         self, hit: Hit, query_text: str, rank: int
     ) -> MockSearchResult:
