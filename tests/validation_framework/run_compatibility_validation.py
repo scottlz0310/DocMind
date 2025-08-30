@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 互換性・移植性検証実行スクリプト
 
@@ -18,11 +17,10 @@ Windows 10/11環境での全機能動作、異なる画面解像度とファイ�
     --test-methods: 実行するテストメソッド（カンマ区切り）
 """
 
-import os
-import sys
 import argparse
-import logging
 import json
+import logging
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -31,8 +29,10 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from tests.validation_framework.compatibility_validator import CompatibilityValidator
     from tests.validation_framework.base_validator import ValidationConfig
+    from tests.validation_framework.compatibility_validator import (
+        CompatibilityValidator,
+    )
     from tests.validation_framework.validation_reporter import ValidationReporter
 except ImportError as e:
     print(f"インポートエラー: {e}")
@@ -72,22 +72,22 @@ def parse_arguments() -> argparse.Namespace:
 例:
   # 基本的な互換性検証
   python run_compatibility_validation.py
-  
+
   # 特定のテストのみ実行
   python run_compatibility_validation.py --test-methods test_windows_environment_compatibility
-  
+
   # 詳細ログで実行
   python run_compatibility_validation.py --log-level DEBUG
         """
     )
-    
+
     parser.add_argument(
         '--output-dir',
         type=str,
         default='validation_results/compatibility',
         help='結果出力ディレクトリ（デフォルト: validation_results/compatibility）'
     )
-    
+
     parser.add_argument(
         '--log-level',
         type=str,
@@ -95,39 +95,39 @@ def parse_arguments() -> argparse.Namespace:
         default='INFO',
         help='ログレベル（デフォルト: INFO）'
     )
-    
+
     parser.add_argument(
         '--enable-performance-monitoring',
         action='store_true',
         help='パフォーマンス監視を有効化'
     )
-    
+
     parser.add_argument(
         '--enable-memory-monitoring',
         action='store_true',
         help='メモリ監視を有効化'
     )
-    
+
     parser.add_argument(
         '--test-methods',
         type=str,
         help='実行するテストメソッド（カンマ区切り）'
     )
-    
+
     parser.add_argument(
         '--max-execution-time',
         type=float,
         default=600.0,
         help='最大実行時間（秒、デフォルト: 600）'
     )
-    
+
     parser.add_argument(
         '--max-memory-usage',
         type=float,
         default=4096.0,
         help='最大メモリ使用量（MB、デフォルト: 4096）'
     )
-    
+
     return parser.parse_args()
 
 
@@ -147,68 +147,68 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
     """互換性検証の実行"""
     logger = setup_logging(args.log_level)
     logger.info("DocMind互換性・移植性検証を開始します")
-    
+
     try:
         # 出力ディレクトリの作成
         output_dir = Path(args.output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
-        
+
         # 検証設定の作成
         config = create_validation_config(args)
-        
+
         # 互換性検証クラスの初期化
         validator = CompatibilityValidator(config)
-        
+
         # テスト環境のセットアップ
         logger.info("テスト環境をセットアップします")
         validator.setup_test_environment()
-        
+
         # 実行するテストメソッドの決定
         test_methods = None
         if args.test_methods:
             test_methods = [method.strip() for method in args.test_methods.split(',')]
             logger.info(f"指定されたテストメソッド: {test_methods}")
-        
+
         # 検証の実行
         logger.info("互換性検証を実行します")
         start_time = datetime.now()
-        
+
         validation_results = validator.run_validation(test_methods)
-        
+
         end_time = datetime.now()
         execution_time = (end_time - start_time).total_seconds()
-        
+
         # 結果の分析
         successful_tests = sum(1 for result in validation_results if result.success)
         total_tests = len(validation_results)
         success_rate = (successful_tests / total_tests) * 100 if total_tests > 0 else 0
-        
-        logger.info(f"互換性検証が完了しました")
+
+        logger.info("互換性検証が完了しました")
         logger.info(f"実行時間: {execution_time:.2f}秒")
         logger.info(f"テスト結果: {successful_tests}/{total_tests} ({success_rate:.1f}%)")
-        
+
         # 互換性メトリクスの取得
         compatibility_metrics = validator.compatibility_metrics
-        
+
         # 統計情報の取得
         statistics_raw = validator.get_statistics_summary()
-        
+
         # 統計情報をJSON serializable形式に変換
         statistics = {}
         for key, value in statistics_raw.items():
             if hasattr(value, 'to_dict'):
                 statistics[key] = value.to_dict()
-            elif isinstance(value, (list, tuple)):
+            elif isinstance(value, list | tuple):
                 statistics[key] = [
                     item.to_dict() if hasattr(item, 'to_dict') else item
                     for item in value
                 ]
             else:
                 statistics[key] = value
-        
+
         # 結果の保存
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
+
         # JSON形式での結果保存
         results_data = {
             'timestamp': timestamp,
@@ -256,13 +256,13 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
                 'max_memory_usage': config.max_memory_usage
             }
         }
-        
+
         results_file = output_dir / f"compatibility_validation_results_{timestamp}.json"
         with open(results_file, 'w', encoding='utf-8') as f:
             json.dump(results_data, f, ensure_ascii=False, indent=2)
-        
+
         logger.info(f"結果をJSONファイルに保存しました: {results_file}")
-        
+
         # HTMLレポートの生成
         try:
             reporter = ValidationReporter()
@@ -271,29 +271,29 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
                 compatibility_metrics,
                 statistics
             )
-            
+
             report_file = output_dir / f"compatibility_report_{timestamp}.html"
             with open(report_file, 'w', encoding='utf-8') as f:
                 f.write(html_report)
-            
+
             logger.info(f"HTMLレポートを生成しました: {report_file}")
-            
+
         except Exception as e:
             logger.warning(f"HTMLレポート生成に失敗しました: {e}")
-        
+
         # テスト環境のクリーンアップ
         logger.info("テスト環境をクリーンアップします")
         validator.teardown_test_environment()
         validator.cleanup()
-        
+
         # 結果の判定
         overall_success = success_rate >= 80.0  # 80%以上で成功とする
-        
+
         if overall_success:
             logger.info("✅ 互換性検証が成功しました")
         else:
             logger.error("❌ 互換性検証で問題が検出されました")
-        
+
         # 互換性レベルの表示
         compatibility_levels = [metric.compatibility_level for metric in compatibility_metrics]
         if compatibility_levels:
@@ -302,25 +302,25 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
                 'LIMITED': compatibility_levels.count('LIMITED'),
                 'INCOMPATIBLE': compatibility_levels.count('INCOMPATIBLE')
             }
-            
+
             logger.info("互換性レベル分布:")
             for level, count in level_counts.items():
                 if count > 0:
                     logger.info(f"  {level}: {count}件")
-        
+
         # 推奨事項の表示
         all_recommendations = []
         for metric in compatibility_metrics:
             all_recommendations.extend(metric.recommendations)
-        
+
         if all_recommendations:
             logger.info("推奨事項:")
             unique_recommendations = list(set(all_recommendations))[:5]
             for i, recommendation in enumerate(unique_recommendations, 1):
                 logger.info(f"  {i}. {recommendation}")
-        
+
         return overall_success
-        
+
     except Exception as e:
         logger.error(f"互換性検証中にエラーが発生しました: {e}")
         logger.exception("詳細なエラー情報:")
@@ -330,11 +330,11 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
 def main():
     """メイン関数"""
     args = parse_arguments()
-    
+
     try:
         success = run_compatibility_validation(args)
         sys.exit(0 if success else 1)
-        
+
     except KeyboardInterrupt:
         print("\n検証が中断されました")
         sys.exit(1)

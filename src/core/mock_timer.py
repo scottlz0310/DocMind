@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 テスト用モックタイマー
 
@@ -7,7 +6,7 @@ QApplicationが存在しない環境でもタイマー機能をテストでき�
 """
 
 import threading
-from typing import Callable, Optional
+from collections.abc import Callable
 
 
 class MockTimer:
@@ -19,8 +18,8 @@ class MockTimer:
 
     def __init__(self):
         """MockTimerを初期化"""
-        self._timer: Optional[threading.Timer] = None
-        self._callback: Optional[Callable] = None
+        self._timer: threading.Timer | None = None
+        self._callback: Callable | None = None
         self._interval: float = 0
         self._single_shot: bool = False
         self._running: bool = False
@@ -78,8 +77,8 @@ class MockTimer:
             if self._running and self._callback:
                 try:
                     self._callback()
-                except Exception as e:
-                    print(f"MockTimer callback error: {e}")
+                except Exception:
+                    pass
 
                 # 繰り返しタイマーの場合は再開
                 if not self._single_shot and self._running:
@@ -136,8 +135,8 @@ class MockSignal:
         for callback in self._callbacks:
             try:
                 callback(*args, **kwargs)
-            except Exception as e:
-                print(f"MockSignal callback error: {e}")
+            except Exception:
+                pass
 
 
 def create_mock_timer() -> MockTimer:

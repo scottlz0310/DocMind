@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 検索入力ウィジェット
 
@@ -7,12 +6,10 @@
 """
 
 import logging
-from typing import List, Optional
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QStringListModel, Qt, Signal
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import QCompleter, QLineEdit, QWidget
-from PySide6.QtCore import QStringListModel
 
 
 class SearchInputWidget(QLineEdit):
@@ -26,7 +23,7 @@ class SearchInputWidget(QLineEdit):
     search_requested = Signal(str)  # 検索が要求された時
     suggestion_selected = Signal(str)  # 提案が選択された時
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         """
         検索入力ウィジェットを初期化
 
@@ -36,8 +33,8 @@ class SearchInputWidget(QLineEdit):
         super().__init__(parent)
 
         self.logger = logging.getLogger(__name__)
-        self.suggestions: List[str] = []
-        self.completer: Optional[QCompleter] = None
+        self.suggestions: list[str] = []
+        self.completer: QCompleter | None = None
 
         self._setup_ui()
         self._setup_completer()
@@ -125,7 +122,7 @@ class SearchInputWidget(QLineEdit):
         # 入力変更時の処理
         self.textChanged.connect(self._on_text_changed)
 
-    def update_suggestions(self, suggestions: List[str]) -> None:
+    def update_suggestions(self, suggestions: list[str]) -> None:
         """
         検索提案を更新
 

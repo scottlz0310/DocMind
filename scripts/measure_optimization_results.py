@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Phase4 Week 2 Day 2: 最適化結果測定スクリプト
 
 統合・最適化の効果を測定し、レポートを生成します。
 """
 
-import os
-import sys
 import logging
+import sys
 import time
-import psutil
 from pathlib import Path
+
+import psutil
 
 # プロジェクトルートを追加
 project_root = Path(__file__).parent.parent
@@ -31,23 +30,23 @@ def setup_logging():
 
 def analyze_file_metrics():
     """ファイルメトリクスの分析"""
-    logger = logging.getLogger(__name__)
-    
+    logging.getLogger(__name__)
+
     folder_tree_path = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
     performance_helpers_path = project_root / "src" / "gui" / "folder_tree" / "performance_helpers.py"
-    
+
     metrics = {}
-    
+
     # folder_tree_widget.py の分析
     if folder_tree_path.exists():
-        with open(folder_tree_path, 'r', encoding='utf-8') as f:
+        with open(folder_tree_path, encoding='utf-8') as f:
             content = f.read()
-        
+
         lines = content.split('\n')
         methods = [line for line in lines if line.strip().startswith('def ')]
         classes = [line for line in lines if line.strip().startswith('class ')]
         imports = [line for line in lines if line.strip().startswith('import ') or line.strip().startswith('from ')]
-        
+
         metrics['folder_tree_widget'] = {
             'lines': len(lines),
             'methods': len(methods),
@@ -55,75 +54,82 @@ def analyze_file_metrics():
             'imports': len(imports),
             'file_size': folder_tree_path.stat().st_size
         }
-    
+
     # performance_helpers.py の分析
     if performance_helpers_path.exists():
-        with open(performance_helpers_path, 'r', encoding='utf-8') as f:
+        with open(performance_helpers_path, encoding='utf-8') as f:
             content = f.read()
-        
+
         lines = content.split('\n')
         methods = [line for line in lines if line.strip().startswith('def ')]
         classes = [line for line in lines if line.strip().startswith('class ')]
-        
+
         metrics['performance_helpers'] = {
             'lines': len(lines),
             'methods': len(methods),
             'classes': len(classes),
             'file_size': performance_helpers_path.stat().st_size
         }
-    
+
     return metrics
 
 def measure_import_performance():
     """インポートパフォーマンスの測定"""
     logger = logging.getLogger(__name__)
-    
+
     try:
         # メモリ使用量測定開始
         process = psutil.Process()
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
-        
+
         # インポート時間測定
         start_time = time.time()
-        
+
         sys.path.insert(0, str(project_root / "src"))
-        from gui.folder_tree.folder_tree_widget import FolderTreeWidget, FolderTreeContainer
-        from gui.folder_tree.performance_helpers import PathOptimizer, SetManager, BatchProcessor
-        
+        from gui.folder_tree.folder_tree_widget import (
+            FolderTreeContainer,
+            FolderTreeWidget,
+        )
+        from gui.folder_tree.performance_helpers import (
+            BatchProcessor,
+            PathOptimizer,
+            SetManager,
+        )
+
         import_time = time.time() - start_time
-        
+
         # インポート後のメモリ使用量
         after_import_memory = process.memory_info().rss / 1024 / 1024  # MB
-        
+
         # 初期化時間測定
         start_time = time.time()
         widget = FolderTreeWidget()
         container = FolderTreeContainer()
         init_time = time.time() - start_time
-        
+
         # 初期化後のメモリ使用量
         after_init_memory = process.memory_info().rss / 1024 / 1024  # MB
-        
+
         # パフォーマンスヘルパーのテスト
         start_time = time.time()
         path_optimizer = PathOptimizer()
         set_manager = SetManager()
         batch_processor = BatchProcessor()
-        
+
         # パフォーマンステスト
         for i in range(1000):
             path_optimizer.get_basename(f"/test/path/{i}")
             set_manager.add_to_set("test_set", f"value_{i}")
-        
+
         helper_time = time.time() - start_time
-        
+
         # クリーンアップ
         widget.deleteLater()
         container.deleteLater()
         path_optimizer.clear_cache()
         set_manager.cleanup()
         batch_processor.cleanup()
-        
+
         return {
             'import_time': import_time,
             'init_time': init_time,
@@ -133,17 +139,17 @@ def measure_import_performance():
             'after_init_memory': after_init_memory,
             'memory_increase': after_init_memory - initial_memory
         }
-        
+
     except Exception as e:
         logger.error(f"パフォーマンス測定エラー: {e}")
         return None
 
 def count_component_files():
     """コンポーネントファイル数の計算"""
-    logger = logging.getLogger(__name__)
-    
+    logging.getLogger(__name__)
+
     folder_tree_dir = project_root / "src" / "gui" / "folder_tree"
-    
+
     component_counts = {
         'async_operations': 0,
         'state_management': 0,
@@ -152,7 +158,7 @@ def count_component_files():
         'performance_helpers': 0,
         'total_files': 0
     }
-    
+
     if folder_tree_dir.exists():
         # 各サブディレクトリのファイル数を計算
         for subdir in ['async_operations', 'state_management', 'ui_management', 'event_handling']:
@@ -160,26 +166,26 @@ def count_component_files():
             if subdir_path.exists():
                 py_files = list(subdir_path.glob('*.py'))
                 component_counts[subdir] = len([f for f in py_files if f.name != '__init__.py'])
-        
+
         # performance_helpers.py
         if (folder_tree_dir / 'performance_helpers.py').exists():
             component_counts['performance_helpers'] = 1
-        
+
         # 総ファイル数
         all_py_files = list(folder_tree_dir.rglob('*.py'))
         component_counts['total_files'] = len([f for f in all_py_files if f.name != '__init__.py'])
-    
+
     return component_counts
 
 def generate_optimization_report():
     """最適化レポートの生成"""
-    logger = logging.getLogger(__name__)
-    
+    logging.getLogger(__name__)
+
     # メトリクス収集
     file_metrics = analyze_file_metrics()
     performance_metrics = measure_import_performance()
     component_counts = count_component_files()
-    
+
     # レポート生成
     report = f"""# Phase4 Week 2 Day 2: 統合・最適化結果レポート
 
@@ -201,7 +207,7 @@ def generate_optimization_report():
 ## ⚡ パフォーマンスメトリクス
 
 """
-    
+
     if performance_metrics:
         report += f"""### 実行時間
 - **インポート時間**: {performance_metrics['import_time']:.3f}秒
@@ -217,12 +223,12 @@ def generate_optimization_report():
 """
     else:
         report += "### パフォーマンス測定\n- **ステータス**: 測定失敗\n\n"
-    
+
     report += f"""## 🏗️ コンポーネント構成
 
 ### 分離済みコンポーネント
 - **非同期処理**: {component_counts['async_operations']}ファイル
-- **状態管理**: {component_counts['state_management']}ファイル  
+- **状態管理**: {component_counts['state_management']}ファイル
 - **UI管理**: {component_counts['ui_management']}ファイル
 - **イベント処理**: {component_counts['event_handling']}ファイル
 - **パフォーマンス最適化**: {component_counts['performance_helpers']}ファイル
@@ -262,47 +268,47 @@ def generate_optimization_report():
 **Phase4進捗**: Week 2 Day 2 完了 (64% - 4.5/7週間)
 **最適化ステータス**: ✅ 成功
 """
-    
+
     return report
 
 def main():
     """メイン実行関数"""
     logger = setup_logging()
-    
+
     logger.info("🚀 Phase4 Week 2 Day 2: 最適化結果測定開始")
-    
+
     try:
         # レポート生成
         report = generate_optimization_report()
-        
+
         # レポートファイルに保存
         report_path = project_root / "PHASE4_WEEK2_DAY2_OPTIMIZATION_REPORT.md"
         with open(report_path, 'w', encoding='utf-8') as f:
             f.write(report)
-        
+
         logger.info(f"📊 最適化結果レポート作成完了: {report_path}")
-        
+
         # コンソールに要約表示
         logger.info("🎉 Phase4 Week 2 Day 2: 統合・最適化完了")
         logger.info("📈 主要成果:")
-        
+
         file_metrics = analyze_file_metrics()
         if 'folder_tree_widget' in file_metrics:
             logger.info(f"  - folder_tree_widget.py: {file_metrics['folder_tree_widget']['lines']}行")
             logger.info(f"  - メソッド数: {file_metrics['folder_tree_widget']['methods']}個")
-        
+
         performance_metrics = measure_import_performance()
         if performance_metrics:
             logger.info(f"  - インポート時間: {performance_metrics['import_time']:.3f}秒")
             logger.info(f"  - 初期化時間: {performance_metrics['init_time']:.3f}秒")
             logger.info(f"  - メモリ使用量: {performance_metrics['memory_increase']:.1f}MB増加")
-        
+
         component_counts = count_component_files()
         logger.info(f"  - 総コンポーネント: {component_counts['total_files']}ファイル")
-        
+
         logger.info("✅ 全ての最適化が正常に完了しました")
         return True
-        
+
     except Exception as e:
         logger.error(f"最適化結果測定エラー: {e}")
         return False

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 検索進捗表示ウィジェット
 
@@ -8,11 +7,9 @@
 
 import logging
 from datetime import datetime
-from typing import Optional
 
 from PySide6.QtCore import QTimer, Signal
-from PySide6.QtWidgets import (QHBoxLayout, QLabel, QProgressBar, QPushButton, 
-                               QWidget)
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QProgressBar, QPushButton, QWidget
 
 
 class SearchProgressWidget(QWidget):
@@ -25,7 +22,7 @@ class SearchProgressWidget(QWidget):
     # シグナル定義
     cancel_requested = Signal()  # キャンセルが要求された時
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         """
         検索進捗ウィジェットを初期化
 
@@ -35,7 +32,7 @@ class SearchProgressWidget(QWidget):
         super().__init__(parent)
 
         self.logger = logging.getLogger(__name__)
-        self.start_time: Optional[datetime] = None
+        self.start_time: datetime | None = None
         self.timer = QTimer()
 
         self._setup_ui()
@@ -112,7 +109,7 @@ class SearchProgressWidget(QWidget):
 
         self.logger.debug(f"検索進捗表示開始: {status_message}")
 
-    def update_progress(self, message: str, progress: Optional[int] = None) -> None:
+    def update_progress(self, message: str, progress: int | None = None) -> None:
         """進捗更新"""
         self.status_label.setText(message)
 

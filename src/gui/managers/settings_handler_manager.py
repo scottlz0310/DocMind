@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind 設定変更ハンドラーマネージャー
 
@@ -17,7 +16,7 @@ from src.utils.logging_config import LoggerMixin
 class SettingsHandlerManager(QObject, LoggerMixin):
     """
     設定変更ハンドラーマネージャー
-    
+
     アプリケーション設定変更関連のイベント処理を専門的に管理し、
     設定適用、テーマ変更、フォント設定を統合処理します。
     """
@@ -25,18 +24,18 @@ class SettingsHandlerManager(QObject, LoggerMixin):
     def __init__(self, main_window: QMainWindow):
         """
         設定変更ハンドラーマネージャーの初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__(main_window)
         self.main_window = main_window
-        
+
         self.logger.debug("設定変更ハンドラーマネージャーが初期化されました")
 
     def handle_settings_changed(self, settings: dict) -> None:
         """設定変更時の処理
-        
+
         Args:
             settings: 変更された設定の辞書
         """
@@ -69,7 +68,7 @@ class SettingsHandlerManager(QObject, LoggerMixin):
 
     def _update_logging_config(self, settings: dict) -> None:
         """ログ設定を更新
-        
+
         Args:
             settings: 設定辞書
         """
@@ -81,13 +80,13 @@ class SettingsHandlerManager(QObject, LoggerMixin):
                 enable_file=settings.get("file_logging")
             )
             self.logger.info("ログ設定を更新しました")
-            
+
         except Exception as e:
             self.logger.error(f"ログ設定の更新に失敗: {e}")
 
     def _apply_theme(self, theme: str) -> None:
         """UIテーマを適用
-        
+
         Args:
             theme: テーマ名（'light', 'dark', 'system'）
         """
@@ -103,13 +102,13 @@ class SettingsHandlerManager(QObject, LoggerMixin):
                     self.logger.info("ライトテーマが適用されました")
                 elif theme == "system":
                     self.logger.info("システムテーマが適用されました")
-                    
+
         except Exception as e:
             self.logger.error(f"テーマ適用中にエラーが発生: {e}")
 
     def _apply_font_settings(self, settings: dict) -> None:
         """フォント設定を適用
-        
+
         Args:
             settings: 設定辞書
         """
@@ -127,7 +126,7 @@ class SettingsHandlerManager(QObject, LoggerMixin):
                     self.main_window.setFont(font)
                     QApplication.instance().setFont(font)
                     self.logger.info(f"フォント設定を適用しました: {font_family}, {font_size}pt")
-                    
+
         except Exception as e:
             self.logger.error(f"フォント設定適用中にエラーが発生: {e}")
 
@@ -210,6 +209,6 @@ class SettingsHandlerManager(QObject, LoggerMixin):
         """設定変更ハンドラーマネージャーのクリーンアップ"""
         try:
             self.logger.debug("設定変更ハンドラーマネージャーをクリーンアップしました")
-            
+
         except Exception as e:
             self.logger.error(f"設定変更ハンドラーマネージャーのクリーンアップ中にエラー: {e}")

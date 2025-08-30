@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 DocMind スレッド管理モジュール
 
@@ -10,9 +9,10 @@ DocMind スレッド管理モジュール
 import logging
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 from PySide6.QtCore import QObject, QThread, QTimer, Signal
 from PySide6.QtWidgets import QApplication
@@ -41,9 +41,9 @@ class ThreadInfo:
     worker: IndexingWorker           # IndexingWorkerインスタンス
     state: ThreadState               # 現在の状態
     start_time: float                # 開始時刻
-    end_time: Optional[float]        # 終了時刻
-    error_message: Optional[str]     # エラーメッセージ
-    cleanup_callbacks: List[Callable] # クリーンアップコールバック
+    end_time: float | None        # 終了時刻
+    error_message: str | None     # エラーメッセージ
+    cleanup_callbacks: list[Callable] # クリーンアップコールバック
 
     def get_duration(self) -> float:
         """実行時間を取得（秒）"""
@@ -94,7 +94,7 @@ class IndexingThreadManager(QObject):
         self.test_mode = test_mode
 
         # スレッド管理
-        self.active_threads: Dict[str, ThreadInfo] = {}
+        self.active_threads: dict[str, ThreadInfo] = {}
         self.thread_counter = 0
         self.lock = threading.Lock()
 
@@ -206,7 +206,7 @@ class IndexingThreadManager(QObject):
         with self.lock:
             return sum(1 for info in self.active_threads.values() if info.is_active())
 
-    def get_thread_info(self, thread_id: str) -> Optional[ThreadInfo]:
+    def get_thread_info(self, thread_id: str) -> ThreadInfo | None:
         """スレッド情報を取得
 
         Args:
@@ -218,7 +218,7 @@ class IndexingThreadManager(QObject):
         with self.lock:
             return self.active_threads.get(thread_id)
 
-    def get_all_thread_info(self) -> List[ThreadInfo]:
+    def get_all_thread_info(self) -> list[ThreadInfo]:
         """すべてのスレッド情報を取得
 
         Returns:
@@ -227,7 +227,7 @@ class IndexingThreadManager(QObject):
         with self.lock:
             return list(self.active_threads.values())
 
-    def start_indexing_thread(self, folder_path: str, document_processor, index_manager) -> Optional[str]:
+    def start_indexing_thread(self, folder_path: str, document_processor, index_manager) -> str | None:
         """インデックス処理スレッドを開始
 
         Args:
@@ -402,7 +402,7 @@ class IndexingThreadManager(QObject):
 
         return cleanup_count
 
-    def get_status_summary(self) -> Dict[str, Any]:
+    def get_status_summary(self) -> dict[str, Any]:
         """スレッドマネージャーの状態サマリーを取得
 
         Returns:
@@ -411,11 +411,11 @@ class IndexingThreadManager(QObject):
         with self.lock:
             state_counts = {}
             active_count = 0
-            
+
             for info in self.active_threads.values():
                 state = info.state.value
                 state_counts[state] = state_counts.get(state, 0) + 1
-                
+
                 # アクティブスレッド数を直接計算（デッドロック回避）
                 if info.is_active():
                     active_count += 1

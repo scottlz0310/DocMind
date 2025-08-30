@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind メニュー管理マネージャー
 
@@ -7,7 +6,6 @@ DocMind メニュー管理マネージャー
 ファイル、検索、表示、ツール、ヘルプメニューの統合管理を提供します。
 """
 
-from typing import Optional
 
 from PySide6.QtCore import QObject
 from PySide6.QtGui import QAction, QKeySequence
@@ -20,7 +18,7 @@ from src.utils.logging_config import LoggerMixin
 class MenuManager(QObject, LoggerMixin):
     """
     メニューバー管理マネージャー
-    
+
     メインウィンドウのメニューバー作成、アクション設定、
     ショートカット管理を統合的に処理します。
     """
@@ -28,33 +26,33 @@ class MenuManager(QObject, LoggerMixin):
     def __init__(self, main_window: QMainWindow):
         """
         メニュー管理マネージャーの初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__(main_window)
         self.main_window = main_window
-        self.menubar: Optional[QMenuBar] = None
-        
+        self.menubar: QMenuBar | None = None
+
         # アクション参照を保持
         self.actions = {}
-        
+
         self.logger.debug("メニュー管理マネージャーが初期化されました")
 
     def setup_menu_bar(self) -> None:
         """メニューバーを設定"""
         try:
             self.menubar = self.main_window.menuBar()
-            
+
             # 各メニューを作成
             self._create_file_menu()
             self._create_search_menu()
             self._create_view_menu()
             self._create_tools_menu()
             self._create_help_menu()
-            
+
             self.logger.info("メニューバーの設定が完了しました")
-            
+
         except Exception as e:
             self.logger.error(f"メニューバー設定中にエラーが発生: {e}")
             raise
@@ -151,13 +149,13 @@ class MenuManager(QObject, LoggerMixin):
         if self.main_window.dialog_manager.show_settings_dialog():
             self.main_window.show_status_message("設定が保存されました", 3000)
 
-    def get_action(self, action_name: str) -> Optional[QAction]:
+    def get_action(self, action_name: str) -> QAction | None:
         """
         指定されたアクションを取得
-        
+
         Args:
             action_name: アクション名
-            
+
         Returns:
             QAction: 対応するアクション、存在しない場合はNone
         """
@@ -166,7 +164,7 @@ class MenuManager(QObject, LoggerMixin):
     def enable_action(self, action_name: str, enabled: bool = True) -> None:
         """
         指定されたアクションの有効/無効を設定
-        
+
         Args:
             action_name: アクション名
             enabled: 有効にするかどうか
@@ -182,8 +180,8 @@ class MenuManager(QObject, LoggerMixin):
             # アクション参照をクリア
             self.actions.clear()
             self.menubar = None
-            
+
             self.logger.debug("メニュー管理マネージャーをクリーンアップしました")
-            
+
         except Exception as e:
             self.logger.error(f"メニュー管理マネージャーのクリーンアップ中にエラー: {e}")

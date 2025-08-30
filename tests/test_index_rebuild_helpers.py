@@ -6,21 +6,19 @@
 """
 
 import os
+import shutil
 import sys
 import tempfile
-import shutil
-import time
 import threading
-from pathlib import Path
-from typing import List, Dict, Any, Optional, Callable
-from unittest.mock import Mock, patch, MagicMock
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Any
+from unittest.mock import Mock
 
 import pytest
-from PySide6.QtCore import QTimer, QThread, Signal, QObject, QApplication
-from PySide6.QtWidgets import QMessageBox
-from PySide6.QtTest import QTest
+from PySide6.QtCore import QApplication, QTimer
 
 # プロジェクトルートをパスに追加
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -29,11 +27,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 @dataclass
 class TestMetrics:
     """テスト実行時のメトリクス情報"""
-    start_time: Optional[datetime] = None
-    end_time: Optional[datetime] = None
-    progress_updates: List[Dict[str, Any]] = field(default_factory=list)
-    error_messages: List[Dict[str, Any]] = field(default_factory=list)
-    memory_usage: List[Dict[str, Any]] = field(default_factory=list)
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    progress_updates: list[dict[str, Any]] = field(default_factory=list)
+    error_messages: list[dict[str, Any]] = field(default_factory=list)
+    memory_usage: list[dict[str, Any]] = field(default_factory=list)
 
     @property
     def duration(self) -> float:
@@ -55,7 +53,7 @@ class TestFileGenerator:
     """テスト用ファイル生成ユーティリティ"""
 
     @staticmethod
-    def create_small_test_files(base_dir: str, count: int = 5) -> List[str]:
+    def create_small_test_files(base_dir: str, count: int = 5) -> list[str]:
         """小規模テスト用ファイルを生成"""
         files = []
         for i in range(count):
@@ -83,7 +81,7 @@ class TestFileGenerator:
         return files
 
     @staticmethod
-    def create_large_test_files(base_dir: str, count: int = 100) -> List[str]:
+    def create_large_test_files(base_dir: str, count: int = 100) -> list[str]:
         """大規模テスト用ファイルを生成"""
         files = []
         for i in range(count):
@@ -127,7 +125,7 @@ class TestFileGenerator:
         return files
 
     @staticmethod
-    def create_error_test_files(base_dir: str) -> Dict[str, List[str]]:
+    def create_error_test_files(base_dir: str) -> dict[str, list[str]]:
         """エラーテスト用ファイルを生成"""
         files = {
             'normal': [],
@@ -261,7 +259,7 @@ class TestEnvironmentManager:
             if os.path.exists(temp_dir):
                 try:
                     # 読み取り専用ファイルの権限を変更
-                    for root, dirs, files in os.walk(temp_dir):
+                    for root, _dirs, files in os.walk(temp_dir):
                         for file in files:
                             file_path = os.path.join(root, file)
                             try:
@@ -428,7 +426,7 @@ def create_mock_main_window_with_tracking(temp_folder: str,
     return mock_window
 
 
-def assert_progress_flow_is_valid(progress_updates: List[Dict[str, Any]]):
+def assert_progress_flow_is_valid(progress_updates: list[dict[str, Any]]):
     """進捗フローが正しいことを検証"""
     if not progress_updates:
         pytest.fail("進捗更新が記録されていません")
@@ -436,7 +434,7 @@ def assert_progress_flow_is_valid(progress_updates: List[Dict[str, Any]]):
     # show -> update -> hide の順序を確認
     show_count = sum(1 for update in progress_updates if update.get('type') == 'show_progress')
     hide_count = sum(1 for update in progress_updates if update.get('type') == 'hide_progress')
-    update_count = sum(1 for update in progress_updates if update.get('type') == 'update_progress')
+    sum(1 for update in progress_updates if update.get('type') == 'update_progress')
 
     assert show_count > 0, "show_progressが呼ばれていません"
     assert hide_count > 0, "hide_progressが呼ばれていません"
@@ -467,7 +465,7 @@ def assert_performance_is_acceptable(metrics: TestMetrics,
     assert files_per_second >= min_files_per_second, \
         f"処理速度が遅すぎます: {files_per_second:.2f} files/sec (最小: {min_files_per_second} files/sec)"
 
-    print(f"パフォーマンステスト結果:")
+    print("パフォーマンステスト結果:")
     print(f"  - 処理時間: {metrics.duration:.2f}秒")
     print(f"  - 処理速度: {files_per_second:.2f} files/sec")
     print(f"  - 進捗更新回数: {len(metrics.progress_updates)}")

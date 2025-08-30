@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 インデックス制御コントローラー
 
@@ -8,7 +7,8 @@ main_window.pyから分離されたインデックス制御機能を提供しま
 """
 
 import os
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QObject, QTimer
 from PySide6.QtWidgets import QMessageBox
 
@@ -21,21 +21,21 @@ if TYPE_CHECKING:
 class IndexController(QObject, LoggerMixin):
     """
     インデックス制御コントローラー
-    
+
     インデックス再構築、クリア、エラーハンドリングなどの
     インデックス関連の制御ロジックを管理します。
     """
-    
+
     def __init__(self, main_window: 'MainWindow'):
         """
         インデックスコントローラーの初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__(main_window)
         self.main_window = main_window
-        
+
     def rebuild_index(self) -> None:
         """
         インデックス再構築を実行します
@@ -257,8 +257,8 @@ class IndexController(QObject, LoggerMixin):
 
             # 完了メッセージを表示
             files_processed = statistics.get('files_processed', 0)
-            documents_added = statistics.get('documents_added', 0)
-            processing_time = statistics.get('processing_time', 0)
+            statistics.get('documents_added', 0)
+            statistics.get('processing_time', 0)
 
             # 完了通知（ステータスメッセージとして表示）
             self.main_window.show_status_message(f"インデックス再構築完了 ({files_processed}ファイル処理)", 5000)
@@ -553,7 +553,7 @@ class IndexController(QObject, LoggerMixin):
         else:
             return "system"
 
-    def _handle_file_access_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_file_access_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """ファイルアクセスエラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -574,7 +574,7 @@ class IndexController(QObject, LoggerMixin):
             "処理可能なファイルのみでインデックスを作成しました。"
         )
 
-    def _handle_permission_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_permission_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """権限エラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -598,7 +598,7 @@ class IndexController(QObject, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _handle_resource_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_resource_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """リソースエラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -622,7 +622,7 @@ class IndexController(QObject, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _handle_disk_space_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_disk_space_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """ディスク容量エラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -646,7 +646,7 @@ class IndexController(QObject, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _handle_corruption_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_corruption_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """データ破損エラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -670,7 +670,7 @@ class IndexController(QObject, LoggerMixin):
             "既存のインデックスはクリアされました。"
         )
 
-    def _handle_system_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_system_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """システムエラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -726,7 +726,7 @@ class IndexController(QObject, LoggerMixin):
         except Exception as e:
             self.logger.error(f"インデックスクリーンアップでエラー: {e}")
 
-    def _perform_error_cleanup(self, thread_id: str, error_type: str, thread_info: Optional[object]) -> None:
+    def _perform_error_cleanup(self, thread_id: str, error_type: str, thread_info: object | None) -> None:
         """エラー後の共通クリーンアップ処理
 
         Args:

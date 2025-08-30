@@ -6,17 +6,15 @@
 """
 
 import os
+import shutil
 import sys
 import tempfile
-import shutil
 import time
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 import pytest
-from PySide6.QtCore import QTimer, QThread, Signal, QObject
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtTest import QTest
 
 # プロジェクトルートをパスに追加
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -73,7 +71,7 @@ class TestIndexRebuildBasic:
     def test_file_content_reading(self, temp_folder):
         """ファイル内容が正しく読み取れることをテスト"""
         test1_path = os.path.join(temp_folder, "test1.txt")
-        with open(test1_path, 'r', encoding='utf-8') as f:
+        with open(test1_path, encoding='utf-8') as f:
             content = f.read()
 
         assert content == "テストファイル1の内容"
@@ -158,7 +156,7 @@ class TestIndexRebuildBasic:
         os.chmod(test_file, 0o444)
 
         # ファイルが読み取り可能であることを確認
-        with open(test_file, 'r', encoding='utf-8') as f:
+        with open(test_file, encoding='utf-8') as f:
             content = f.read()
         assert content == "権限テスト"
 
@@ -241,7 +239,7 @@ class TestIndexRebuildErrorSimulation:
         non_existent_file = tmp_path / "non_existent.txt"
 
         with pytest.raises(FileNotFoundError):
-            with open(non_existent_file, 'r'):
+            with open(non_existent_file):
                 pass
 
     def test_permission_error_simulation(self, tmp_path):

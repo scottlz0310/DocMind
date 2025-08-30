@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind シグナル管理マネージャー
 
@@ -11,6 +10,7 @@ DocMind シグナル管理マネージャー
 from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject
+
 from src.utils.logging_config import LoggerMixin
 
 if TYPE_CHECKING:
@@ -20,22 +20,22 @@ if TYPE_CHECKING:
 class SignalManager(QObject, LoggerMixin):
     """
     シグナル管理マネージャー
-    
+
     メインウィンドウのすべてのシグナル接続・切断を管理し、
     コンポーネント間の通信を適切に制御します。
     """
-    
+
     def __init__(self, main_window: 'MainWindow'):
         """
         シグナル管理マネージャーを初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__()
         self.main_window = main_window
         self.logger.info("シグナル管理マネージャーが初期化されました")
-    
+
     def connect_all_signals(self) -> None:
         """
         すべてのシグナル接続を統合管理します

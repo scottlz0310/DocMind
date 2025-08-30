@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind メインウィンドウ
 
@@ -11,36 +10,35 @@ PySide6を使用した3ペインレイアウトのメインアプリケーショ
 包括的エラーハンドリングと優雅な劣化機能を統合しています。
 """
 
-from typing import Optional
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import (QMainWindow, QWidget)
+from PySide6.QtWidgets import QMainWindow, QWidget
 
+from src.core.document_processor import DocumentProcessor
 from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
-from src.core.search_manager import SearchManager
-from src.core.document_processor import DocumentProcessor
-from src.core.thread_manager import IndexingThreadManager
 from src.core.rebuild_timeout_manager import RebuildTimeoutManager
+from src.core.search_manager import SearchManager
+from src.core.thread_manager import IndexingThreadManager
 from src.data.database import DatabaseManager
+from src.gui.controllers.index_controller import IndexController
 from src.gui.dialogs.dialog_manager import DialogManager
-from src.gui.managers.progress_manager import ProgressManager
-from src.gui.managers.layout_manager import LayoutManager
-from src.gui.managers.signal_manager import SignalManager
 from src.gui.managers.cleanup_manager import CleanupManager
+from src.gui.managers.error_rebuild_manager import ErrorRebuildManager
+from src.gui.managers.event_ui_manager import EventUIManager
+from src.gui.managers.layout_manager import LayoutManager
 from src.gui.managers.menu_manager import MenuManager
-from src.gui.managers.toolbar_manager import ToolbarManager
-from src.gui.managers.status_manager import StatusManager
-from src.gui.managers.window_state_manager import WindowStateManager
-from src.gui.managers.thread_handler_manager import ThreadHandlerManager
-from src.gui.managers.search_handler_manager import SearchHandlerManager
+from src.gui.managers.progress_manager import ProgressManager
+from src.gui.managers.progress_system_manager import ProgressSystemManager
 from src.gui.managers.rebuild_handler_manager import RebuildHandlerManager
+from src.gui.managers.search_handler_manager import SearchHandlerManager
 from src.gui.managers.settings_handler_manager import SettingsHandlerManager
 from src.gui.managers.settings_theme_manager import SettingsThemeManager
-from src.gui.managers.error_rebuild_manager import ErrorRebuildManager
-from src.gui.managers.progress_system_manager import ProgressSystemManager
-from src.gui.managers.event_ui_manager import EventUIManager
-from src.gui.controllers.index_controller import IndexController
+from src.gui.managers.signal_manager import SignalManager
+from src.gui.managers.status_manager import StatusManager
+from src.gui.managers.thread_handler_manager import ThreadHandlerManager
+from src.gui.managers.toolbar_manager import ToolbarManager
+from src.gui.managers.window_state_manager import WindowStateManager
 from src.utils.config import Config
 from src.utils.error_handler import handle_exceptions
 from src.utils.graceful_degradation import get_global_degradation_manager
@@ -71,7 +69,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         attempt_recovery=True,
         reraise=True
     )
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         """
         メインウィンドウの初期化
 

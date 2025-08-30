@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 """DocMind リソース管理"""
 
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
+
 
 def get_app_icon():
     """アプリケーションアイコンを取得"""

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind ステータス管理マネージャー
 
@@ -7,7 +6,6 @@ DocMind ステータス管理マネージャー
 ステータスメッセージ、システム情報、進捗状況の統合管理を提供します。
 """
 
-from typing import Optional
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QLabel, QMainWindow, QProgressBar, QStatusBar
@@ -18,7 +16,7 @@ from src.utils.logging_config import LoggerMixin
 class StatusManager(QObject, LoggerMixin):
     """
     ステータス管理マネージャー
-    
+
     メインウィンドウのステータスバー作成、メッセージ表示、
     システム情報管理を統合的に処理します。
     """
@@ -26,19 +24,19 @@ class StatusManager(QObject, LoggerMixin):
     def __init__(self, main_window: QMainWindow):
         """
         ステータス管理マネージャーの初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__(main_window)
         self.main_window = main_window
-        
+
         # ステータスバーコンポーネント
-        self.status_bar: Optional[QStatusBar] = None
-        self.status_label: Optional[QLabel] = None
-        self.progress_bar: Optional[QProgressBar] = None
-        self.system_info_label: Optional[QLabel] = None
-        
+        self.status_bar: QStatusBar | None = None
+        self.status_label: QLabel | None = None
+        self.progress_bar: QProgressBar | None = None
+        self.system_info_label: QLabel | None = None
+
         self.logger.debug("ステータス管理マネージャーが初期化されました")
 
     def setup_status_bar(self) -> None:
@@ -65,9 +63,9 @@ class StatusManager(QObject, LoggerMixin):
 
             # 初期メッセージを表示
             self.show_status_message("DocMindが起動しました", 3000)
-            
+
             self.logger.info("ステータスバーの設定が完了しました")
-            
+
         except Exception as e:
             self.logger.error(f"ステータスバー設定中にエラーが発生: {e}")
             raise
@@ -84,7 +82,7 @@ class StatusManager(QObject, LoggerMixin):
     def show_status_message(self, message: str, timeout: int = 0) -> None:
         """
         ステータスバーにメッセージを表示
-        
+
         Args:
             message: 表示するメッセージ
             timeout: 表示時間（ミリ秒、0で永続表示）
@@ -96,7 +94,7 @@ class StatusManager(QObject, LoggerMixin):
     def update_system_info(self, info: str) -> None:
         """
         システム情報を更新
-        
+
         Args:
             info: システム情報文字列
         """
@@ -107,7 +105,7 @@ class StatusManager(QObject, LoggerMixin):
     def set_system_info_tooltip(self, tooltip: str) -> None:
         """
         システム情報ラベルのツールチップを設定
-        
+
         Args:
             tooltip: ツールチップテキスト
         """
@@ -117,7 +115,7 @@ class StatusManager(QObject, LoggerMixin):
     def show_progress_bar(self, visible: bool = True) -> None:
         """
         進捗バーの表示/非表示を設定
-        
+
         Args:
             visible: 表示するかどうか
         """
@@ -127,7 +125,7 @@ class StatusManager(QObject, LoggerMixin):
     def set_progress_value(self, value: int) -> None:
         """
         進捗バーの値を設定
-        
+
         Args:
             value: 進捗値（0-100）
         """
@@ -137,7 +135,7 @@ class StatusManager(QObject, LoggerMixin):
     def set_progress_range(self, minimum: int, maximum: int) -> None:
         """
         進捗バーの範囲を設定
-        
+
         Args:
             minimum: 最小値
             maximum: 最大値
@@ -148,7 +146,7 @@ class StatusManager(QObject, LoggerMixin):
     def get_progress_value(self) -> int:
         """
         現在の進捗値を取得
-        
+
         Returns:
             int: 現在の進捗値
         """
@@ -159,7 +157,7 @@ class StatusManager(QObject, LoggerMixin):
     def is_progress_visible(self) -> bool:
         """
         進捗バーが表示されているか確認
-        
+
         Returns:
             bool: 表示されている場合True
         """
@@ -170,13 +168,13 @@ class StatusManager(QObject, LoggerMixin):
     def set_progress_style(self, style: str) -> None:
         """
         進捗バーのスタイルを設定
-        
+
         Args:
             style: スタイル名（'info', 'success', 'warning', 'error'）
         """
         if not self.progress_bar:
             return
-            
+
         style_sheets = {
             'info': """
                 QProgressBar {
@@ -223,7 +221,7 @@ class StatusManager(QObject, LoggerMixin):
                 }
             """
         }
-        
+
         stylesheet = style_sheets.get(style, style_sheets['info'])
         self.progress_bar.setStyleSheet(stylesheet)
 
@@ -240,7 +238,7 @@ class StatusManager(QObject, LoggerMixin):
     def get_status_components(self) -> dict:
         """
         ステータスバーコンポーネントを取得
-        
+
         Returns:
             dict: ステータスバーコンポーネントの辞書
         """
@@ -259,8 +257,8 @@ class StatusManager(QObject, LoggerMixin):
             self.status_label = None
             self.progress_bar = None
             self.system_info_label = None
-            
+
             self.logger.debug("ステータス管理マネージャーをクリーンアップしました")
-            
+
         except Exception as e:
             self.logger.error(f"ステータス管理マネージャーのクリーンアップ中にエラー: {e}")

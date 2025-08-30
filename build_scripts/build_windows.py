@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind - Windows向けビルドスクリプト
 PyInstallerを使用してWindows実行可能ファイルを生成
@@ -11,13 +10,11 @@ PyInstallerを使用してWindows実行可能ファイルを生成
 4. インストーラーの準備
 """
 
-import os
-import sys
+import logging
 import shutil
 import subprocess
-import logging
+import sys
 from pathlib import Path
-from typing import List, Optional
 
 # プロジェクトルートの設定
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -40,17 +37,14 @@ logger = logging.getLogger(__name__)
 def check_requirements() -> bool:
     """
     ビルドに必要な要件をチェック
-    
+
     Returns:
         bool: すべての要件が満たされている場合True
     """
     logger.info("ビルド要件をチェック中...")
-    
+
     # Python バージョンチェック
-    if sys.version_info < (3, 11):
-        logger.error(f"Python 3.11以上が必要です。現在のバージョン: {sys.version}")
-        return False
-    
+
     # 必要なパッケージのチェック
     required_packages = [
         'PyInstaller',
@@ -64,31 +58,31 @@ def check_requirements() -> bool:
         'chardet',
         'psutil'
     ]
-    
+
     missing_packages = []
     for package in required_packages:
         try:
             __import__(package.lower().replace('-', '_'))
         except ImportError:
             missing_packages.append(package)
-    
+
     if missing_packages:
         logger.error(f"不足しているパッケージ: {', '.join(missing_packages)}")
         logger.error("pip install -r requirements.txt を実行してください")
         return False
-    
+
     # プロジェクトファイルの存在チェック
     required_files = [
         PROJECT_ROOT / "main.py",
         PROJECT_ROOT / "requirements.txt",
         PROJECT_ROOT / "build_scripts" / "pyinstaller_spec.py"
     ]
-    
+
     missing_files = [f for f in required_files if not f.exists()]
     if missing_files:
         logger.error(f"必要なファイルが見つかりません: {missing_files}")
         return False
-    
+
     logger.info("すべての要件が満たされています")
     return True
 
@@ -98,9 +92,9 @@ def clean_build_directories() -> None:
     ビルドディレクトリをクリーンアップ
     """
     logger.info("ビルドディレクトリをクリーンアップ中...")
-    
+
     directories_to_clean = [BUILD_DIR, DIST_DIR, INSTALLER_DIR]
-    
+
     for directory in directories_to_clean:
         if directory.exists():
             try:
@@ -108,7 +102,7 @@ def clean_build_directories() -> None:
                 logger.info(f"削除完了: {directory}")
             except Exception as e:
                 logger.warning(f"削除に失敗: {directory} - {e}")
-    
+
     # 必要なディレクトリを再作成
     for directory in directories_to_clean:
         directory.mkdir(parents=True, exist_ok=True)
@@ -119,10 +113,10 @@ def create_assets() -> None:
     アセットファイルを作成
     """
     logger.info("アセットファイルを作成中...")
-    
+
     assets_dir = PROJECT_ROOT / "assets"
     assets_dir.mkdir(exist_ok=True)
-    
+
     # アイコンファイルが存在しない場合はダミーを作成
     icon_path = assets_dir / "docmind.ico"
     if not icon_path.exists():
@@ -141,10 +135,10 @@ def create_default_config() -> None:
     デフォルト設定ファイルを作成
     """
     logger.info("デフォルト設定ファイルを作成中...")
-    
+
     config_dir = PROJECT_ROOT / "config"
     config_dir.mkdir(exist_ok=True)
-    
+
     default_config = {
         "data_directory": "./docmind_data",
         "log_level": "INFO",
@@ -155,33 +149,33 @@ def create_default_config() -> None:
         "auto_index": True,
         "watch_directories": []
     }
-    
+
     import json
     config_path = config_dir / "default_config.json"
     with open(config_path, 'w', encoding='utf-8') as f:
         json.dump(default_config, f, indent=2, ensure_ascii=False)
-    
+
     logger.info(f"デフォルト設定ファイルを作成: {config_path}")
 
 
 def run_pyinstaller() -> bool:
     """
     PyInstallerを実行してアプリケーションをビルド
-    
+
     Returns:
         bool: ビルドが成功した場合True
     """
     logger.info("PyInstallerでアプリケーションをビルド中...")
-    
+
     spec_file = PROJECT_ROOT / "build_scripts" / "pyinstaller_spec.py"
-    
+
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--clean",
         "--noconfirm",
         str(spec_file)
     ]
-    
+
     try:
         result = subprocess.run(
             cmd,
@@ -190,16 +184,16 @@ def run_pyinstaller() -> bool:
             text=True,
             encoding='utf-8'
         )
-        
+
         if result.returncode == 0:
             logger.info("PyInstallerビルドが成功しました")
             return True
         else:
-            logger.error(f"PyInstallerビルドが失敗しました:")
+            logger.error("PyInstallerビルドが失敗しました:")
             logger.error(f"stdout: {result.stdout}")
             logger.error(f"stderr: {result.stderr}")
             return False
-            
+
     except Exception as e:
         logger.error(f"PyInstallerの実行中にエラーが発生: {e}")
         return False
@@ -210,36 +204,36 @@ def prepare_distribution() -> None:
     配布用ファイルを準備
     """
     logger.info("配布用ファイルを準備中...")
-    
+
     # 実行可能ファイルの場所
     exe_path = DIST_DIR / "DocMind.exe"
-    
+
     if not exe_path.exists():
         logger.error(f"実行可能ファイルが見つかりません: {exe_path}")
         return
-    
+
     # 配布ディレクトリの作成
     distribution_dir = INSTALLER_DIR / "DocMind"
     distribution_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # 実行可能ファイルをコピー
     shutil.copy2(exe_path, distribution_dir / "DocMind.exe")
     logger.info("実行可能ファイルをコピーしました")
-    
+
     # 追加ファイルをコピー
     additional_files = [
         (PROJECT_ROOT / "LICENSE", "LICENSE.txt"),
         (PROJECT_ROOT / "README.md", "README.txt"),
     ]
-    
+
     for src, dst in additional_files:
         if src.exists():
             shutil.copy2(src, distribution_dir / dst)
             logger.info(f"ファイルをコピー: {src} -> {dst}")
-    
+
     # スタートアップスクリプトを作成
     create_startup_script(distribution_dir)
-    
+
     # アンインストールスクリプトを作成
     create_uninstall_script(distribution_dir)
 
@@ -247,7 +241,7 @@ def prepare_distribution() -> None:
 def create_startup_script(distribution_dir: Path) -> None:
     """
     スタートアップスクリプトを作成
-    
+
     Args:
         distribution_dir: 配布ディレクトリのパス
     """
@@ -269,18 +263,18 @@ start "" "%~dp0DocMind.exe"
 echo DocMindが起動しました
 pause
 """
-    
+
     script_path = distribution_dir / "start_docmind.bat"
     with open(script_path, 'w', encoding='shift_jis') as f:
         f.write(startup_script)
-    
+
     logger.info(f"スタートアップスクリプトを作成: {script_path}")
 
 
 def create_uninstall_script(distribution_dir: Path) -> None:
     """
     アンインストールスクリプトを作成
-    
+
     Args:
         distribution_dir: 配布ディレクトリのパス
     """
@@ -317,11 +311,11 @@ if exist "%USERPROFILE%\\Desktop\\DocMind.lnk" (
 echo アンインストールが完了しました
 pause
 """
-    
+
     script_path = distribution_dir / "uninstall.bat"
     with open(script_path, 'w', encoding='shift_jis') as f:
         f.write(uninstall_script)
-    
+
     logger.info(f"アンインストールスクリプトを作成: {script_path}")
 
 
@@ -330,7 +324,7 @@ def create_installer_script() -> None:
     インストーラースクリプトを作成
     """
     logger.info("インストーラースクリプトを作成中...")
-    
+
     installer_script = """@echo off
 REM DocMind インストーラー
 REM このスクリプトはDocMindアプリケーションをインストールします
@@ -396,11 +390,11 @@ echo DocMindはスタートメニューまたはデスクトップから起動�
 echo.
 pause
 """
-    
+
     installer_path = INSTALLER_DIR / "install.bat"
     with open(installer_path, 'w', encoding='shift_jis') as f:
         f.write(installer_script)
-    
+
     logger.info(f"インストーラースクリプトを作成: {installer_path}")
 
 
@@ -409,10 +403,10 @@ def create_documentation() -> None:
     ユーザードキュメントを作成
     """
     logger.info("ユーザードキュメントを作成中...")
-    
+
     docs_dir = INSTALLER_DIR / "docs"
     docs_dir.mkdir(exist_ok=True)
-    
+
     # インストールガイド
     install_guide = """# DocMind インストールガイド
 
@@ -485,10 +479,10 @@ def create_documentation() -> None:
 - エラーメッセージ
 - ログファイル（%USERPROFILE%\\DocMind\\logs\\docmind.log）
 """
-    
+
     with open(docs_dir / "install_guide.md", 'w', encoding='utf-8') as f:
         f.write(install_guide)
-    
+
     # ユーザーマニュアル
     user_manual = """# DocMind ユーザーマニュアル
 
@@ -635,10 +629,10 @@ A: 以下を試してください：
 - 外部サーバーへのデータ送信なし
 - プライバシー完全保護
 """
-    
+
     with open(docs_dir / "user_manual.md", 'w', encoding='utf-8') as f:
         f.write(user_manual)
-    
+
     logger.info("ユーザードキュメントを作成しました")
 
 
@@ -647,41 +641,41 @@ def main():
     メインビルド処理
     """
     logger.info("DocMind Windowsビルドプロセスを開始します")
-    
+
     try:
         # 1. 要件チェック
         if not check_requirements():
             logger.error("要件チェックに失敗しました")
             return 1
-        
+
         # 2. ビルドディレクトリのクリーンアップ
         clean_build_directories()
-        
+
         # 3. アセットファイルの作成
         create_assets()
-        
+
         # 4. デフォルト設定ファイルの作成
         create_default_config()
-        
+
         # 5. PyInstallerでビルド
         if not run_pyinstaller():
             logger.error("PyInstallerビルドに失敗しました")
             return 1
-        
+
         # 6. 配布用ファイルの準備
         prepare_distribution()
-        
+
         # 7. インストーラースクリプトの作成
         create_installer_script()
-        
+
         # 8. ドキュメントの作成
         create_documentation()
-        
+
         logger.info("ビルドプロセスが正常に完了しました")
         logger.info(f"配布ファイル: {INSTALLER_DIR}")
-        
+
         return 0
-        
+
     except Exception as e:
         logger.error(f"ビルドプロセス中にエラーが発生しました: {e}")
         return 1

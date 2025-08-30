@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind エラー処理・再構築管理マネージャー
 
@@ -7,7 +6,7 @@ DocMind エラー処理・再構築管理マネージャー
 main_window.pyから分離されたエラー処理関連の処理を統合管理します。
 """
 
-from typing import Optional, Dict, Any
+from typing import Any
 
 from PySide6.QtCore import QObject, QTimer
 from PySide6.QtWidgets import QMainWindow, QMessageBox
@@ -18,7 +17,7 @@ from src.utils.logging_config import LoggerMixin
 class ErrorRebuildManager(QObject, LoggerMixin):
     """
     エラー処理・再構築管理マネージャー
-    
+
     インデックス再構築時のエラー処理、タイムアウト処理、強制停止処理を管理します。
     メインウィンドウからエラー処理関連の責務を分離し、独立した管理を提供します。
     """
@@ -34,7 +33,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
         self.main_window = main_window
         self.logger.info("エラー処理・再構築管理マネージャーが初期化されました")
 
-    def handle_rebuild_completed(self, thread_id: str, statistics: Dict[str, Any]) -> None:
+    def handle_rebuild_completed(self, thread_id: str, statistics: dict[str, Any]) -> None:
         """
         インデックス再構築完了時の処理
 
@@ -60,8 +59,8 @@ class ErrorRebuildManager(QObject, LoggerMixin):
 
             # 完了メッセージを表示
             files_processed = statistics.get('files_processed', 0)
-            documents_added = statistics.get('documents_added', 0)
-            processing_time = statistics.get('processing_time', 0)
+            statistics.get('documents_added', 0)
+            statistics.get('processing_time', 0)
 
             # 完了通知（ステータスメッセージとして表示）
             if hasattr(self.main_window, 'show_status_message'):
@@ -196,7 +195,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
         except Exception as e:
             self.logger.error(f"状態リセット処理でエラー: {e}")
 
-    def _update_system_info_after_rebuild(self, statistics: Dict[str, Any]) -> None:
+    def _update_system_info_after_rebuild(self, statistics: dict[str, Any]) -> None:
         """
         インデックス再構築後のシステム情報更新（要件5.1, 5.2）
 
@@ -244,7 +243,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
         except Exception as e:
             self.logger.error(f"システム情報更新でエラー: {e}")
 
-    def _update_folder_tree_after_rebuild(self, thread_id: str, statistics: Dict[str, Any]) -> None:
+    def _update_folder_tree_after_rebuild(self, thread_id: str, statistics: dict[str, Any]) -> None:
         """
         インデックス再構築後のフォルダツリー状態更新
 
@@ -257,7 +256,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
             thread_info = None
             if hasattr(self.main_window, 'thread_manager'):
                 thread_info = self.main_window.thread_manager.get_thread_info(thread_id)
-                
+
             if not thread_info:
                 self.logger.warning(f"スレッド情報が見つかりません: {thread_id}")
                 return
@@ -372,7 +371,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
         else:
             return "system"
 
-    def _handle_file_access_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_file_access_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """ファイルアクセスエラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -393,7 +392,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
             "処理可能なファイルのみでインデックスを作成しました。"
         )
 
-    def _handle_permission_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_permission_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """権限エラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -418,7 +417,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _handle_resource_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_resource_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """リソースエラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -443,7 +442,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _handle_disk_space_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_disk_space_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """ディスク容量エラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -468,7 +467,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _handle_corruption_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_corruption_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """データ破損エラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -493,7 +492,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
             "既存のインデックスはクリアされました。"
         )
 
-    def _handle_system_error(self, thread_id: str, error_message: str, thread_info: Optional[object]) -> None:
+    def _handle_system_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
         """システムエラーの処理"""
         folder_path = "不明なフォルダ"
         if thread_info and hasattr(thread_info, 'folder_path'):
@@ -518,7 +517,7 @@ class ErrorRebuildManager(QObject, LoggerMixin):
             "部分的に処理されたインデックスはクリアされました。"
         )
 
-    def _perform_error_cleanup(self, thread_id: str, error_type: str, thread_info: Optional[object]) -> None:
+    def _perform_error_cleanup(self, thread_id: str, error_type: str, thread_info: object | None) -> None:
         """
         エラー後の共通クリーンアップ処理
 

@@ -6,17 +6,14 @@
 """
 
 import os
+import shutil
 import sys
 import tempfile
-import shutil
 import time
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch
 
 import pytest
-from PySide6.QtCore import QTimer, QThread, Signal, QObject
 from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtTest import QTest
 
 # プロジェクトルートをパスに追加
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -72,7 +69,7 @@ class TestIndexRebuildFunctional:
 
                 # _rebuild_indexメソッドが存在することを確認
                 assert hasattr(window, '_rebuild_index'), "_rebuild_indexメソッドが存在しません"
-                assert callable(getattr(window, '_rebuild_index')), "_rebuild_indexが呼び出し可能ではありません"
+                assert callable(window._rebuild_index), "_rebuild_indexが呼び出し可能ではありません"
 
                 window.close()
 
@@ -100,9 +97,9 @@ class TestIndexRebuildFunctional:
                 assert hasattr(window, 'hide_progress'), "hide_progressメソッドが存在しません"
 
                 # メソッドが呼び出し可能であることを確認
-                assert callable(getattr(window, 'show_progress')), "show_progressが呼び出し可能ではありません"
-                assert callable(getattr(window, 'update_progress')), "update_progressが呼び出し可能ではありません"
-                assert callable(getattr(window, 'hide_progress')), "hide_progressが呼び出し可能ではありません"
+                assert callable(window.show_progress), "show_progressが呼び出し可能ではありません"
+                assert callable(window.update_progress), "update_progressが呼び出し可能ではありません"
+                assert callable(window.hide_progress), "hide_progressが呼び出し可能ではありません"
 
                 window.close()
 
@@ -262,7 +259,6 @@ class TestIndexRebuildFunctional:
 
                 # IndexManagerのclear_indexメソッドでエラーを発生させる
                 if hasattr(window, 'index_manager'):
-                    original_clear_index = window.index_manager.clear_index
 
                     def mock_clear_index():
                         raise DocMindException("テスト用エラー")
@@ -381,7 +377,7 @@ class TestIndexRebuildPerformance:
                     # ファイル数あたりの処理時間を計算
                     files_per_second = 20 / duration if duration > 0 else 0
 
-                    print(f"パフォーマンステスト結果:")
+                    print("パフォーマンステスト結果:")
                     print(f"  - 処理時間: {duration:.2f}秒")
                     print(f"  - 処理速度: {files_per_second:.2f} files/sec")
 

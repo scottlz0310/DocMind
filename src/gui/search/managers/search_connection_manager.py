@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 検索接続管理
 
@@ -7,7 +6,6 @@
 """
 
 import logging
-from typing import Optional
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QWidget
@@ -16,28 +14,28 @@ from PySide6.QtWidgets import QWidget
 class SearchConnectionManager(QObject):
     """
     検索接続管理クラス
-    
+
     検索インターフェースのシグナル接続を担当します。
     """
-    
-    def __init__(self, parent: Optional[QWidget] = None):
+
+    def __init__(self, parent: QWidget | None = None):
         """
         検索接続管理を初期化
-        
+
         Args:
             parent: 親ウィジェット
         """
         super().__init__(parent)
-        
+
         self.logger = logging.getLogger(__name__)
-        
+
     def setup_basic_connections(self, search_input, search_button, clear_button,
                               execute_callback, clear_callback) -> None:
         """基本的な接続を設定"""
         search_input.search_requested.connect(execute_callback)
         search_button.clicked.connect(execute_callback)
         clear_button.clicked.connect(clear_callback)
-        
+
     def setup_widget_connections(self, search_input, search_type_selector, advanced_options,
                                progress_widget, history_widget, event_manager,
                                ui_manager, execute_callback, cancel_callback,
@@ -77,7 +75,7 @@ class SearchConnectionManager(QObject):
             )
         )
         history_widget.saved_search_deleted.connect(event_manager.handle_saved_search_deleted)
-        
+
     def setup_controller_connections(self, search_controller, search_requested_signal,
                                    search_cancelled_signal, state_changed_callback) -> None:
         """コントローラーとの接続を設定"""

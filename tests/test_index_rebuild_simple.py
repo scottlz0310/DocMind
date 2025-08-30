@@ -6,17 +6,15 @@
 """
 
 import os
+import shutil
 import sys
 import tempfile
-import shutil
 import time
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 import pytest
-from PySide6.QtCore import QTimer, QThread, Signal, QObject
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtTest import QTest
 
 # プロジェクトルートをパスに追加
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -79,9 +77,9 @@ class TestIndexRebuildSimple:
             from src.gui.main_window import MainWindow
 
             # 必要なコンポーネントをモック
-            with patch('src.core.index_manager.IndexManager') as mock_index_manager:
-                with patch('src.core.search_manager.SearchManager') as mock_search_manager:
-                    with patch('src.core.thread_manager.IndexingThreadManager') as mock_thread_manager:
+            with patch('src.core.index_manager.IndexManager'):
+                with patch('src.core.search_manager.SearchManager'):
+                    with patch('src.core.thread_manager.IndexingThreadManager'):
                         with patch('src.utils.config.Config.get_data_directory') as mock_data_dir:
                             mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_mock_test_")
 
@@ -107,9 +105,9 @@ class TestIndexRebuildSimple:
         try:
             from src.gui.main_window import MainWindow
 
-            with patch('src.core.index_manager.IndexManager') as mock_index_manager:
-                with patch('src.core.search_manager.SearchManager') as mock_search_manager:
-                    with patch('src.core.thread_manager.IndexingThreadManager') as mock_thread_manager:
+            with patch('src.core.index_manager.IndexManager'):
+                with patch('src.core.search_manager.SearchManager'):
+                    with patch('src.core.thread_manager.IndexingThreadManager'):
                         with patch('src.utils.config.Config.get_data_directory') as mock_data_dir:
                             mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_mock_test_")
 
@@ -250,7 +248,7 @@ class TestIndexRebuildErrorHandling:
         non_existent_file = "/non/existent/file.txt"
 
         with pytest.raises(FileNotFoundError):
-            with open(non_existent_file, 'r'):
+            with open(non_existent_file):
                 pass
 
     def test_permission_error_simulation(self, tmp_path):

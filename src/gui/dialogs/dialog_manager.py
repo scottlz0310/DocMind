@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 ダイアログマネージャー
 
@@ -8,39 +7,38 @@ main_window.pyから分離されたダイアログ表示・管理機能を提供
 """
 
 from pathlib import Path
-from typing import Optional
 
-from PySide6.QtWidgets import (QFileDialog, QMainWindow, QMessageBox)
+from PySide6.QtWidgets import QFileDialog, QMainWindow, QMessageBox
 
-from ..settings_dialog import SettingsDialog
 from ...utils.config import Config
 from ...utils.logging_config import LoggerMixin
+from ..settings_dialog import SettingsDialog
 
 
 class DialogManager(LoggerMixin):
     """
     ダイアログ管理クラス
-    
+
     メインウィンドウから分離されたダイアログ表示機能を提供します。
     各種確認ダイアログ、エラーダイアログ、情報ダイアログを統一的に管理します。
     """
-    
+
     def __init__(self, parent: QMainWindow):
         """
         ダイアログマネージャーを初期化
-        
+
         Args:
             parent: 親ウィンドウ（MainWindow）
         """
         self.parent = parent
         self.config = Config()
-        
+
         self.logger.info("ダイアログマネージャーを初期化しました")
-    
-    def open_folder_dialog(self) -> Optional[str]:
+
+    def open_folder_dialog(self) -> str | None:
         """
         フォルダ選択ダイアログを表示
-        
+
         Returns:
             選択されたフォルダパス、キャンセル時はNone
         """
@@ -50,38 +48,38 @@ class DialogManager(LoggerMixin):
             str(Path.home()),
             QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
         )
-        
+
         if folder_path:
             self.logger.info(f"フォルダが選択されました: {folder_path}")
             return folder_path
-        
+
         return None
-    
+
     def show_search_dialog(self) -> None:
         """検索ダイアログを表示（検索インターフェースにフォーカス）"""
         if hasattr(self.parent, 'search_interface'):
             self.parent.search_interface.search_input.setFocus()
             self.parent.search_interface.search_input.selectAll()
-    
+
     def show_settings_dialog(self) -> bool:
         """
         設定ダイアログを表示
-        
+
         Returns:
             設定が変更された場合True
         """
         try:
             dialog = SettingsDialog(self.config, self.parent)
-            
+
             if hasattr(self.parent, '_on_settings_changed'):
                 dialog.settings_changed.connect(self.parent._on_settings_changed)
-            
+
             if dialog.exec() == SettingsDialog.Accepted:
                 self.logger.info("設定が更新されました")
                 return True
-            
+
             return False
-            
+
         except Exception as e:
             self.logger.error(f"設定ダイアログの表示に失敗しました: {e}")
             self.show_operation_failed_dialog(
@@ -90,7 +88,7 @@ class DialogManager(LoggerMixin):
                 "アプリケーションを再起動してから再試行してください。"
             )
             return False
-    
+
     def show_about_dialog(self) -> None:
         """バージョン情報ダイアログを表示"""
         QMessageBox.about(
@@ -108,18 +106,18 @@ class DialogManager(LoggerMixin):
             "</ul>"
             "<p>© 2024 DocMind Project</p>"
         )
-    
+
     def show_rebuild_confirmation_dialog(self) -> bool:
         """
         インデックス再構築確認ダイアログを表示
-        
+
         Returns:
             ユーザーが再構築を承認した場合True
         """
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle("🔄 インデックス再構築")
         msg_box.setIcon(QMessageBox.Question)
-        
+
         message = (
             "検索インデックスを再構築しますか?\n\n"
             "📋 実行される処理:\n"
@@ -131,10 +129,10 @@ class DialogManager(LoggerMixin):
             "続行しますか？"
         )
         msg_box.setText(message)
-        
+
         rebuild_button = msg_box.addButton("🚀 再構築開始", QMessageBox.AcceptRole)
         cancel_button = msg_box.addButton("❌ キャンセル", QMessageBox.RejectRole)
-        
+
         rebuild_button.setStyleSheet("""
             QPushButton {
                 background-color: #4CAF50;
@@ -148,7 +146,7 @@ class DialogManager(LoggerMixin):
                 background-color: #45a049;
             }
         """)
-        
+
         cancel_button.setStyleSheet("""
             QPushButton {
                 background-color: #f44336;
@@ -162,22 +160,22 @@ class DialogManager(LoggerMixin):
                 background-color: #da190b;
             }
         """)
-        
+
         msg_box.setDefaultButton(cancel_button)
-        result = msg_box.exec()
+        msg_box.exec()
         return msg_box.clickedButton() == rebuild_button
-    
+
     def show_clear_index_confirmation_dialog(self) -> bool:
         """
         インデックスクリア確認ダイアログを表示
-        
+
         Returns:
             ユーザーがクリアを承認した場合True
         """
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle("🗑️ インデックスクリア")
         msg_box.setIcon(QMessageBox.Warning)
-        
+
         message = (
             "検索インデックスをクリアしますか?\n\n"
             "⚠️ 実行される処理:\n"
@@ -191,10 +189,10 @@ class DialogManager(LoggerMixin):
             "本当にクリアしますか？"
         )
         msg_box.setText(message)
-        
+
         clear_button = msg_box.addButton("🗑️ クリア実行", QMessageBox.DestructiveRole)
         cancel_button = msg_box.addButton("❌ キャンセル", QMessageBox.RejectRole)
-        
+
         clear_button.setStyleSheet("""
             QPushButton {
                 background-color: #f44336;
@@ -208,7 +206,7 @@ class DialogManager(LoggerMixin):
                 background-color: #da190b;
             }
         """)
-        
+
         cancel_button.setStyleSheet("""
             QPushButton {
                 background-color: #757575;
@@ -222,17 +220,17 @@ class DialogManager(LoggerMixin):
                 background-color: #616161;
             }
         """)
-        
+
         msg_box.setDefaultButton(cancel_button)
-        result = msg_box.exec()
+        msg_box.exec()
         return msg_box.clickedButton() == clear_button
-    
+
     def show_folder_not_selected_dialog(self) -> None:
         """フォルダ未選択エラーダイアログを表示"""
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle("📁 フォルダが選択されていません")
         msg_box.setIcon(QMessageBox.Warning)
-        
+
         message = (
             "インデックスを再構築するフォルダが選択されていません。\n\n"
             "📋 操作手順:\n"
@@ -242,7 +240,7 @@ class DialogManager(LoggerMixin):
             "💡 ヒント: 複数フォルダがある場合は、再構築したいフォルダをクリックして選択してください。"
         )
         msg_box.setText(message)
-        
+
         ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
         ok_button.setStyleSheet("""
             QPushButton {
@@ -257,13 +255,13 @@ class DialogManager(LoggerMixin):
                 background-color: #1976D2;
             }
         """)
-        
+
         msg_box.exec()
-    
+
     def show_system_error_dialog(self, title: str, error_message: str, suggestion: str = "") -> None:
         """
         システムエラーダイアログを表示
-        
+
         Args:
             title: エラータイトル
             error_message: エラーメッセージ
@@ -272,12 +270,12 @@ class DialogManager(LoggerMixin):
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle(f"🚨 {title}")
         msg_box.setIcon(QMessageBox.Critical)
-        
+
         message = f"システムエラーが発生しました。\n\n📋 エラー詳細:\n{error_message}\n\n"
-        
+
         if suggestion:
             message += f"🔧 推奨対処:\n{suggestion}\n\n"
-        
+
         message += (
             "💡 追加の対処方法:\n"
             "• アプリケーションの再起動\n"
@@ -285,9 +283,9 @@ class DialogManager(LoggerMixin):
             "• ディスク容量の確認\n"
             "• ウイルススキャンの実行"
         )
-        
+
         msg_box.setText(message)
-        
+
         ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
         ok_button.setStyleSheet("""
             QPushButton {
@@ -302,13 +300,13 @@ class DialogManager(LoggerMixin):
                 background-color: #da190b;
             }
         """)
-        
+
         msg_box.exec()
-    
+
     def show_operation_failed_dialog(self, operation_name: str, error_message: str, suggestion: str = "") -> None:
         """
         操作失敗ダイアログを表示
-        
+
         Args:
             operation_name: 失敗した操作名
             error_message: エラーメッセージ
@@ -317,12 +315,12 @@ class DialogManager(LoggerMixin):
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle(f"❌ {operation_name}に失敗")
         msg_box.setIcon(QMessageBox.Critical)
-        
+
         message = f"{operation_name}の実行に失敗しました。\n\n📋 エラー詳細:\n{error_message}\n\n"
-        
+
         if suggestion:
             message += f"🔧 推奨対処:\n{suggestion}\n\n"
-        
+
         message += (
             "💡 一般的な対処方法:\n"
             "• 操作を再試行\n"
@@ -330,12 +328,12 @@ class DialogManager(LoggerMixin):
             "• システムリソースの確認\n"
             "• ログファイルの確認"
         )
-        
+
         msg_box.setText(message)
-        
+
         retry_button = msg_box.addButton("🔄 再試行", QMessageBox.AcceptRole)
         close_button = msg_box.addButton("❌ 閉じる", QMessageBox.RejectRole)
-        
+
         retry_button.setStyleSheet("""
             QPushButton {
                 background-color: #4CAF50;
@@ -349,7 +347,7 @@ class DialogManager(LoggerMixin):
                 background-color: #45a049;
             }
         """)
-        
+
         close_button.setStyleSheet("""
             QPushButton {
                 background-color: #757575;
@@ -363,20 +361,20 @@ class DialogManager(LoggerMixin):
                 background-color: #616161;
             }
         """)
-        
+
         msg_box.exec()
-    
+
     def show_component_unavailable_dialog(self, component_name: str) -> None:
         """
         コンポーネント利用不可ダイアログを表示
-        
+
         Args:
             component_name: 利用不可なコンポーネント名
         """
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle(f"⚠️ {component_name}が利用できません")
         msg_box.setIcon(QMessageBox.Warning)
-        
+
         message = (
             f"{component_name}が現在利用できません。\n\n"
             "🔍 考えられる原因:\n"
@@ -391,7 +389,7 @@ class DialogManager(LoggerMixin):
             "💡 この機能は一時的に利用できませんが、他の機能は正常に動作します。"
         )
         msg_box.setText(message)
-        
+
         ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
         ok_button.setStyleSheet("""
             QPushButton {
@@ -406,13 +404,13 @@ class DialogManager(LoggerMixin):
                 background-color: #F57C00;
             }
         """)
-        
+
         msg_box.exec()
-    
+
     def show_partial_failure_dialog(self, operation_name: str, error_message: str, suggestion: str = "") -> None:
         """
         部分的失敗ダイアログを表示
-        
+
         Args:
             operation_name: 部分的に失敗した操作名
             error_message: エラーメッセージ
@@ -421,15 +419,15 @@ class DialogManager(LoggerMixin):
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle(f"⚠️ {operation_name}の一部が失敗")
         msg_box.setIcon(QMessageBox.Warning)
-        
+
         message = (
             f"{operation_name}は部分的に成功しましたが、一部で問題が発生しました。\n\n"
             f"📋 問題詳細:\n{error_message}\n\n"
         )
-        
+
         if suggestion:
             message += f"🔧 推奨対処:\n{suggestion}\n\n"
-        
+
         message += (
             "💡 対処オプション:\n"
             "• 現在の状態で継続使用\n"
@@ -437,9 +435,9 @@ class DialogManager(LoggerMixin):
             "• 設定のリセット\n\n"
             "✅ 他の機能は正常に動作しています。"
         )
-        
+
         msg_box.setText(message)
-        
+
         ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
         ok_button.setStyleSheet("""
             QPushButton {
@@ -454,13 +452,13 @@ class DialogManager(LoggerMixin):
                 background-color: #F57C00;
             }
         """)
-        
+
         msg_box.exec()
-    
+
     def show_fallback_error_dialog(self, error_message: str) -> None:
         """
         フォールバックエラーダイアログを表示
-        
+
         Args:
             error_message: エラーメッセージ
         """
@@ -555,7 +553,7 @@ class DialogManager(LoggerMixin):
         msg_box.setDefaultButton(continue_button)
 
         # ダイアログを実行
-        result = msg_box.exec()
+        msg_box.exec()
         clicked_button = msg_box.clickedButton()
 
         if clicked_button == force_stop_button:

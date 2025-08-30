@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind クリーンアップ管理マネージャー
 
@@ -12,6 +11,7 @@ from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QMessageBox
+
 from src.utils.logging_config import LoggerMixin
 
 if TYPE_CHECKING:
@@ -21,22 +21,22 @@ if TYPE_CHECKING:
 class CleanupManager(QObject, LoggerMixin):
     """
     クリーンアップ管理マネージャー
-    
+
     アプリケーション終了時のすべてのリソース管理とクリーンアップを統合管理し、
     適切な終了処理を提供します。
     """
-    
+
     def __init__(self, main_window: 'MainWindow'):
         """
         クリーンアップ管理マネージャーを初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__()
         self.main_window = main_window
         self.logger.info("クリーンアップ管理マネージャーが初期化されました")
-    
+
     def handle_close_event(self, event) -> None:
         """
         ウィンドウクローズイベントをハンドルします
@@ -85,7 +85,7 @@ class CleanupManager(QObject, LoggerMixin):
             if hasattr(self.main_window, 'progress_manager') and self.main_window.progress_manager:
                 self.main_window.progress_manager.cleanup()
                 self.logger.info("進捗管理マネージャーをクリーンアップしました")
-            
+
             # シグナル管理マネージャーのクリーンアップ
             if hasattr(self.main_window, 'signal_manager') and self.main_window.signal_manager:
                 self.main_window.signal_manager.cleanup()

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind 検索・プレビューハンドラーマネージャー
 
@@ -7,7 +6,6 @@ DocMind 検索・プレビューハンドラーマネージャー
 検索ワーカースレッド管理、結果表示、プレビュー制御を統合処理します。
 """
 
-from typing import Optional
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QMainWindow
@@ -19,7 +17,7 @@ from src.utils.logging_config import LoggerMixin
 class SearchHandlerManager(QObject, LoggerMixin):
     """
     検索・プレビューハンドラーマネージャー
-    
+
     検索関連のイベント処理を専門的に管理し、
     検索実行、結果表示、プレビュー制御を統合処理します。
     """
@@ -27,14 +25,14 @@ class SearchHandlerManager(QObject, LoggerMixin):
     def __init__(self, main_window: QMainWindow):
         """
         検索・プレビューハンドラーマネージャーの初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__(main_window)
         self.main_window = main_window
-        self.search_worker: Optional[SearchWorkerThread] = None
-        
+        self.search_worker: SearchWorkerThread | None = None
+
         self.logger.debug("検索・プレビューハンドラーマネージャーが初期化されました")
 
     def handle_search_requested(self, search_query) -> None:
@@ -204,8 +202,8 @@ class SearchHandlerManager(QObject, LoggerMixin):
                 self.search_worker.cancel()
                 self.search_worker.wait()
                 self.search_worker = None
-            
+
             self.logger.debug("検索・プレビューハンドラーマネージャーをクリーンアップしました")
-            
+
         except Exception as e:
             self.logger.error(f"検索・プレビューハンドラーマネージャーのクリーンアップ中にエラー: {e}")

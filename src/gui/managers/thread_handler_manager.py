@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind スレッド処理ハンドラーマネージャー
 
@@ -18,7 +17,7 @@ from src.utils.logging_config import LoggerMixin
 class ThreadHandlerManager(QObject, LoggerMixin):
     """
     スレッド処理ハンドラーマネージャー
-    
+
     インデックス処理スレッドのイベント処理を専門的に管理し、
     進捗表示、状態更新、エラーハンドリングを統合処理します。
     """
@@ -26,13 +25,13 @@ class ThreadHandlerManager(QObject, LoggerMixin):
     def __init__(self, main_window: QMainWindow):
         """
         スレッド処理ハンドラーマネージャーの初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__(main_window)
         self.main_window = main_window
-        
+
         self.logger.debug("スレッド処理ハンドラーマネージャーが初期化されました")
 
     def handle_thread_started(self, thread_id: str) -> None:
@@ -212,7 +211,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
         try:
             files_processed = statistics.get('files_processed', 0)
             files_failed = statistics.get('files_failed', 0)
-            documents_added = statistics.get('documents_added', 0)
+            statistics.get('documents_added', 0)
             processing_time = statistics.get('processing_time', 0.0)
 
             if files_processed == 0 and files_failed == 0:
@@ -317,6 +316,6 @@ class ThreadHandlerManager(QObject, LoggerMixin):
         """スレッド処理ハンドラーマネージャーのクリーンアップ"""
         try:
             self.logger.debug("スレッド処理ハンドラーマネージャーをクリーンアップしました")
-            
+
         except Exception as e:
             self.logger.error(f"スレッド処理ハンドラーマネージャーのクリーンアップ中にエラー: {e}")

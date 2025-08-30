@@ -12,17 +12,16 @@
 """
 
 import os
+import shutil
 import sys
 import tempfile
-import shutil
 import time
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch
 
 import pytest
-from PySide6.QtCore import QTimer, QThread, Signal, QObject
-from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtTest import QTest
+from PySide6.QtCore import QTimer
+from PySide6.QtWidgets import QApplication
 
 # プロジェクトルートをパスに追加
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -147,7 +146,7 @@ class TestIndexRebuildSummary:
             processed_files = 0
             for filename in files:
                 file_path = os.path.join(temp_dir, filename)
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, encoding='utf-8') as f:
                     content = f.read()
                     if content:  # 内容があることを確認
                         processed_files += 1
@@ -162,7 +161,7 @@ class TestIndexRebuildSummary:
             files_per_second = file_count / duration if duration > 0 else 0
             assert files_per_second > 5.0, f"処理速度が遅すぎます: {files_per_second:.2f} files/sec"
 
-            print(f"✓ 大規模フォルダでのパフォーマンステスト: 成功")
+            print("✓ 大規模フォルダでのパフォーマンステスト: 成功")
             print(f"  - ファイル数: {file_count}")
             print(f"  - 処理時間: {duration:.2f}秒")
             print(f"  - 処理速度: {files_per_second:.2f} files/sec")
@@ -210,8 +209,8 @@ class TestIndexRebuildSummary:
             for filename in files:
                 file_path = os.path.join(temp_dir, filename)
                 try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        content = f.read()
+                    with open(file_path, encoding='utf-8') as f:
+                        f.read()
                         processed_count += 1
                 except Exception as e:
                     error_count += 1
@@ -237,7 +236,7 @@ class TestIndexRebuildSummary:
         finally:
             # クリーンアップ（権限を戻してから削除）
             if os.path.exists(temp_dir):
-                for root, dirs, files in os.walk(temp_dir):
+                for root, _dirs, files in os.walk(temp_dir):
                     for file in files:
                         file_path = os.path.join(root, file)
                         try:
@@ -344,9 +343,9 @@ class TestIndexRebuildSummary:
         for test_file in test_files:
             print(f"  ✓ {test_file}")
 
-        print(f"\n要件対応状況:")
-        print(f"  ✓ 要件4.4: パフォーマンスと応答性")
-        print(f"  ✓ 要件6.5: タイムアウト処理と復旧機能")
+        print("\n要件対応状況:")
+        print("  ✓ 要件4.4: パフォーマンスと応答性")
+        print("  ✓ 要件6.5: タイムアウト処理と復旧機能")
 
 
 if __name__ == "__main__":

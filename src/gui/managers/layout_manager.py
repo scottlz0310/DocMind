@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 レイアウト管理マネージャー
 
@@ -9,10 +8,17 @@ main_window.pyから分離されたUI構築・レイアウト管理機能を提�
 """
 
 from typing import TYPE_CHECKING
+
 from PySide6.QtCore import QObject, Qt
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
-from PySide6.QtWidgets import (QApplication, QLabel, QProgressBar, 
-                               QSplitter, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QApplication,
+    QLabel,
+    QProgressBar,
+    QSplitter,
+    QVBoxLayout,
+    QWidget,
+)
 
 from src.gui.folder_tree import FolderTreeContainer
 from src.gui.preview_widget import PreviewWidget
@@ -28,21 +34,21 @@ if TYPE_CHECKING:
 class LayoutManager(QObject, LoggerMixin):
     """
     レイアウト管理マネージャー
-    
+
     UI構築、レイアウト設定、メニューバー、ステータスバー、
     ショートカット、アクセシビリティ、スタイリングを管理します。
     """
-    
+
     def __init__(self, main_window: 'MainWindow'):
         """
         レイアウトマネージャーの初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__(main_window)
         self.main_window = main_window
-        
+
     def setup_window(self) -> None:
         """ウィンドウの基本設定を行います"""
         self.main_window.setWindowTitle("DocMind - ローカルドキュメント検索")
@@ -239,7 +245,7 @@ class LayoutManager(QObject, LoggerMixin):
         self.main_window.progress_bar.setVisible(False)
         self.main_window.progress_bar.setMaximumWidth(200)
         self.main_window.status_bar.addPermanentWidget(self.main_window.progress_bar)
-        
+
         # 進捗ラベル（progress_manager用）
         self.main_window.progress_label = self.main_window.status_label
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 ログ設定モジュール
 
@@ -10,12 +9,11 @@ import logging
 import logging.handlers
 import os
 from pathlib import Path
-from typing import Optional
 
 
 def setup_logging(
     level: str = "INFO",
-    log_file: Optional[str] = None,
+    log_file: str | None = None,
     max_bytes: int = 10 * 1024 * 1024,  # 10MB
     backup_count: int = 5,
     enable_console: bool = True,
@@ -130,9 +128,9 @@ def setup_logging_from_config(config) -> None:
 
 
 def reconfigure_logging(
-    level: Optional[str] = None,
-    enable_console: Optional[bool] = None,
-    enable_file: Optional[bool] = None
+    level: str | None = None,
+    enable_console: bool | None = None,
+    enable_file: bool | None = None
 ) -> None:
     """
     実行時にログ設定を再構成

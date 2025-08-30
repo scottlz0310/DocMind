@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Whoosh全文検索インデックス管理モジュール
 
@@ -9,7 +8,7 @@ Whoosh全文検索インデックス管理モジュール
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from whoosh import fields, index
 from whoosh.analysis import NgramAnalyzer, StandardAnalyzer
@@ -40,7 +39,7 @@ class IndexManager:
         """
         self.index_path = Path(index_path)
         self.logger = logging.getLogger(__name__)
-        self._index: Optional[Index] = None
+        self._index: Index | None = None
 
         # 日本語対応のアナライザーを設定
         self.analyzer = StandardAnalyzer(minsize=1, maxsize=40, stoplist=None)
@@ -306,9 +305,9 @@ class IndexManager:
             raise IndexingError(error_msg) from e
 
     def search_text(self, query_text: str, limit: int = 100,
-                   file_types: Optional[List[FileType]] = None,
-                   date_from: Optional[datetime] = None,
-                   date_to: Optional[datetime] = None) -> List[SearchResult]:
+                   file_types: list[FileType] | None = None,
+                   date_from: datetime | None = None,
+                   date_to: datetime | None = None) -> list[SearchResult]:
         """
         全文検索を実行
 
@@ -353,9 +352,9 @@ class IndexManager:
             raise SearchError(error_msg) from e
 
     def _build_search_query(self, query_text: str,
-                           file_types: Optional[List[FileType]] = None,
-                           date_from: Optional[datetime] = None,
-                           date_to: Optional[datetime] = None) -> Query:
+                           file_types: list[FileType] | None = None,
+                           date_from: datetime | None = None,
+                           date_to: datetime | None = None) -> Query:
         """
         検索クエリを構築
 
@@ -465,7 +464,7 @@ class IndexManager:
                 # クエリパーサーを使用してハイライト
                 from whoosh.qparser import QueryParser
                 parser = QueryParser("content", self._index.schema)
-                query = parser.parse(query_text)
+                parser.parse(query_text)
 
                 highlighted = highlight(
                     content,
@@ -489,7 +488,7 @@ class IndexManager:
             content = hit.get("content", "")
             return content[:max_chars] + "..." if len(content) > max_chars else content
 
-    def _extract_highlighted_terms(self, query_text: str) -> List[str]:
+    def _extract_highlighted_terms(self, query_text: str) -> list[str]:
         """
         クエリからハイライト対象の用語を抽出
 
@@ -509,7 +508,7 @@ class IndexManager:
 
         return terms
 
-    def rebuild_index(self, documents: List[Document]) -> None:
+    def rebuild_index(self, documents: list[Document]) -> None:
         """
         インデックスを完全に再構築
 
@@ -539,7 +538,7 @@ class IndexManager:
             self.logger.error(error_msg)
             raise IndexingError(error_msg) from e
 
-    def _add_documents_batch(self, documents: List[Document]) -> None:
+    def _add_documents_batch(self, documents: list[Document]) -> None:
         """
         ドキュメントをバッチで追加
 
@@ -629,7 +628,7 @@ class IndexManager:
             self.logger.error(f"ドキュメント存在チェックに失敗しました: {e}")
             return False
 
-    def get_index_stats(self) -> Dict[str, Any]:
+    def get_index_stats(self) -> dict[str, Any]:
         """
         インデックスの統計情報を取得
 
@@ -670,7 +669,7 @@ class IndexManager:
 
         return total_size
 
-    def _get_index_last_modified(self) -> Optional[datetime]:
+    def _get_index_last_modified(self) -> datetime | None:
         """
         インデックスの最終更新日時を取得
 

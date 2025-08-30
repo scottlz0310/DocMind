@@ -5,11 +5,9 @@ Phase4 Week 3 Day 3: 最終検証・完了スクリプト
 総合品質保証、成果報告書作成、Phase4完了準備を実施
 """
 
-import os
+import json
 import sys
 import time
-import json
-import subprocess
 from datetime import datetime
 from pathlib import Path
 
@@ -19,39 +17,39 @@ sys.path.insert(0, str(project_root / "src"))
 
 def log_message(message, level="INFO"):
     """ログメッセージを出力"""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{timestamp}] [{level}] {message}")
+    datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def run_comprehensive_quality_assurance():
     """総合品質保証を実施"""
     log_message("=== 総合品質保証開始 ===")
-    
+
     results = {
         "timestamp": datetime.now().isoformat(),
         "comprehensive_tests": {},
         "final_metrics": {},
         "quality_gates": {}
     }
-    
+
     try:
         # 1. 全コンポーネント統合テスト
         log_message("1. 全コンポーネント統合テスト実施中...")
         start_time = time.time()
-        
+
         # folder_tree_widget.pyのインポートテスト
         try:
-            from gui.folder_tree.folder_tree_widget import FolderTreeWidget
             from PySide6.QtWidgets import QApplication, QWidget
-            
+
+            from gui.folder_tree.folder_tree_widget import FolderTreeWidget
+
             # QApplicationが存在しない場合は作成
             app = QApplication.instance()
             if app is None:
                 app = QApplication([])
-            
+
             # ウィジェット作成テスト
             parent = QWidget()
-            widget = FolderTreeWidget(parent)
-            
+            FolderTreeWidget(parent)
+
             import_time = time.time() - start_time
             results["comprehensive_tests"]["component_integration"] = {
                 "status": "pass",
@@ -59,63 +57,63 @@ def run_comprehensive_quality_assurance():
                 "components_loaded": 12
             }
             log_message(f"   ✅ 統合テスト成功 (時間: {import_time:.6f}秒)")
-            
+
         except Exception as e:
             results["comprehensive_tests"]["component_integration"] = {
                 "status": "fail",
                 "error": str(e)
             }
             log_message(f"   ❌ 統合テスト失敗: {e}")
-        
+
         # 2. パフォーマンス総合評価
         log_message("2. パフォーマンス総合評価実施中...")
-        
+
         # メモリ使用量測定
         import psutil
         process = psutil.Process()
         memory_before = process.memory_info().rss / 1024 / 1024  # MB
-        
+
         # 複数回のウィジェット作成・削除テスト
         creation_times = []
-        for i in range(5):
+        for _i in range(5):
             start = time.time()
             test_widget = FolderTreeWidget(parent)
             creation_times.append(time.time() - start)
             test_widget.deleteLater()
-        
+
         memory_after = process.memory_info().rss / 1024 / 1024  # MB
         avg_creation_time = sum(creation_times) / len(creation_times)
-        
+
         results["comprehensive_tests"]["performance_evaluation"] = {
             "status": "pass",
             "avg_creation_time": round(avg_creation_time, 6),
             "memory_usage_mb": round(memory_after - memory_before, 2),
             "creation_consistency": len([t for t in creation_times if t < 0.1]) == 5
         }
-        
+
         log_message(f"   ✅ パフォーマンス評価完了 (平均作成時間: {avg_creation_time:.6f}秒)")
         log_message(f"   ✅ メモリ使用量: {memory_after - memory_before:.2f}MB")
-        
+
         # 3. 最終メトリクス計算
         log_message("3. 最終メトリクス計算中...")
-        
+
         # folder_tree_widget.pyの行数・メソッド数確認
         widget_file = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
         if widget_file.exists():
-            with open(widget_file, 'r', encoding='utf-8') as f:
+            with open(widget_file, encoding='utf-8') as f:
                 lines = f.readlines()
                 total_lines = len(lines)
-                code_lines = len([line for line in lines if line.strip() and not line.strip().startswith('#')])
+                len([line for line in lines if line.strip() and not line.strip().startswith('#')])
                 method_count = len([line for line in lines if 'def ' in line])
-        
+
         # 元の行数・メソッド数
         original_lines = 1408
         original_methods = 76
-        
+
         # 削減率計算
         line_reduction = ((original_lines - total_lines) / original_lines) * 100
         method_reduction = ((original_methods - method_count) / original_methods) * 100
-        
+
         results["final_metrics"] = {
             "original_lines": original_lines,
             "current_lines": total_lines,
@@ -126,13 +124,13 @@ def run_comprehensive_quality_assurance():
             "components_created": 12,
             "target_achievement": line_reduction >= 50.0
         }
-        
+
         log_message(f"   ✅ 行数削減: {line_reduction:.1f}% ({original_lines}行 → {total_lines}行)")
         log_message(f"   ✅ メソッド削減: {method_reduction:.1f}% ({original_methods}個 → {method_count}個)")
-        
+
         # 4. 品質ゲート評価
         log_message("4. 品質ゲート評価中...")
-        
+
         quality_gates = {
             "line_reduction_target": line_reduction >= 50.0,  # 50%以上削減
             "method_reduction_target": method_reduction >= 40.0,  # 40%以上削減
@@ -140,10 +138,10 @@ def run_comprehensive_quality_assurance():
             "memory_efficiency": (memory_after - memory_before) < 5.0,  # 5MB以内
             "component_integration": results["comprehensive_tests"]["component_integration"]["status"] == "pass"
         }
-        
+
         passed_gates = sum(quality_gates.values())
         total_gates = len(quality_gates)
-        
+
         results["quality_gates"] = {
             "gates": quality_gates,
             "passed": passed_gates,
@@ -151,15 +149,15 @@ def run_comprehensive_quality_assurance():
             "success_rate": round((passed_gates / total_gates) * 100, 1),
             "overall_pass": passed_gates == total_gates
         }
-        
+
         log_message(f"   ✅ 品質ゲート: {passed_gates}/{total_gates} 合格 ({results['quality_gates']['success_rate']}%)")
-        
+
         # アプリケーションクリーンアップ
         if app:
             app.quit()
-        
+
         return results
-        
+
     except Exception as e:
         log_message(f"総合品質保証でエラー発生: {e}", "ERROR")
         results["comprehensive_tests"]["error"] = str(e)
@@ -168,7 +166,7 @@ def run_comprehensive_quality_assurance():
 def create_final_report(qa_results):
     """成果報告書を作成"""
     log_message("=== 成果報告書作成開始 ===")
-    
+
     try:
         report_content = f"""# Phase4 最終成果報告書
 
@@ -298,10 +296,10 @@ src/gui/folder_tree/
         report_file = project_root / "PHASE4_FINAL_REPORT.md"
         with open(report_file, 'w', encoding='utf-8') as f:
             f.write(report_content)
-        
+
         log_message(f"✅ 成果報告書作成完了: {report_file}")
         return str(report_file)
-        
+
     except Exception as e:
         log_message(f"成果報告書作成でエラー発生: {e}", "ERROR")
         return None
@@ -309,33 +307,33 @@ src/gui/folder_tree/
 def prepare_phase4_completion():
     """Phase4完了準備を実施"""
     log_message("=== Phase4完了準備開始 ===")
-    
+
     try:
         # 1. 進捗追跡ファイル更新
         log_message("1. 進捗追跡ファイル更新中...")
-        
+
         tracker_file = project_root / "PHASE4_PROGRESS_TRACKER.md"
         if tracker_file.exists():
-            with open(tracker_file, 'r', encoding='utf-8') as f:
+            with open(tracker_file, encoding='utf-8') as f:
                 content = f.read()
-            
+
             # Week 3 Day 3完了マークを追加
             updated_content = content.replace(
                 "- [ ] **Day 3**: 最終検証・完了 (予定)",
                 "- [x] **Day 3**: 最終検証・完了 (6/6時間) ✅ **完了**"
             )
-            
+
             # 全体進捗を100%に更新
             updated_content = updated_content.replace(
                 "**Week 3 進捗**: 67% (12/18時間) ✅ **Day 2完了**",
                 "**Week 3 進捗**: 100% (18/18時間) ✅ **完了**"
             )
-            
+
             updated_content = updated_content.replace(
                 "- **完了率**: 78% (5.5/7週間)",
                 "- **完了率**: 100% (7/7週間)"
             )
-            
+
             # Phase4完了セクションを追加
             completion_section = f"""
 
@@ -353,24 +351,24 @@ def prepare_phase4_completion():
 
 ### **Phase4 総合評価**: 🏆 **完全成功**
 """
-            
+
             updated_content += completion_section
-            
+
             with open(tracker_file, 'w', encoding='utf-8') as f:
                 f.write(updated_content)
-            
+
             log_message("✅ 進捗追跡ファイル更新完了")
-        
+
         # 2. リファクタリングステータス更新
         log_message("2. リファクタリングステータス更新中...")
-        
+
         status_file = project_root / "REFACTORING_STATUS.md"
         if status_file.exists():
-            with open(status_file, 'r', encoding='utf-8') as f:
+            with open(status_file, encoding='utf-8') as f:
                 content = f.read()
-            
+
             # Phase4完了セクションを追加
-            phase4_section = f"""
+            phase4_section = """
 ## ✅ Phase 4: folder_tree.py 完全リファクタリング (完了)
 
 **開始日**: 2025-08-28
@@ -400,22 +398,22 @@ def prepare_phase4_completion():
 - ✅ `SetManager` - セット操作管理
 - ✅ `BatchProcessor` - バッチ処理管理
 """
-            
+
             # Phase4セクションを現在の状況の前に挿入
             insertion_point = content.find("## 📊 現在の状況")
             if insertion_point != -1:
                 updated_content = content[:insertion_point] + phase4_section + "\n" + content[insertion_point:]
             else:
                 updated_content = content + phase4_section
-            
+
             with open(status_file, 'w', encoding='utf-8') as f:
                 f.write(updated_content)
-            
+
             log_message("✅ リファクタリングステータス更新完了")
-        
+
         # 3. 完了ログ作成
         log_message("3. 完了ログ作成中...")
-        
+
         completion_log = {
             "phase": "Phase4",
             "completion_date": datetime.now().isoformat(),
@@ -428,15 +426,15 @@ def prepare_phase4_completion():
             },
             "next_phase": "Phase5 planning"
         }
-        
+
         log_file = project_root / "phase4_completion.log"
         with open(log_file, 'w', encoding='utf-8') as f:
             json.dump(completion_log, f, indent=2, ensure_ascii=False)
-        
+
         log_message(f"✅ 完了ログ作成完了: {log_file}")
-        
+
         return True
-        
+
     except Exception as e:
         log_message(f"Phase4完了準備でエラー発生: {e}", "ERROR")
         return False
@@ -445,40 +443,40 @@ def main():
     """メイン実行関数"""
     log_message("🎯 Phase4 Week 3 Day 3: 最終検証・完了開始")
     log_message(f"実行時刻: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    
+
     try:
         # 1. 総合品質保証
         log_message("\n" + "="*50)
         qa_results = run_comprehensive_quality_assurance()
-        
+
         # 2. 成果報告書作成
         log_message("\n" + "="*50)
         report_file = create_final_report(qa_results)
-        
+
         # 3. Phase4完了準備
         log_message("\n" + "="*50)
         completion_success = prepare_phase4_completion()
-        
+
         # 最終結果サマリー
         log_message("\n" + "="*50)
         log_message("🎉 Phase4 Week 3 Day 3 完了サマリー")
         log_message("="*50)
-        
+
         if qa_results.get('quality_gates', {}).get('overall_pass', False):
             log_message("✅ 総合品質保証: 完全成功")
         else:
             log_message("⚠️ 総合品質保証: 一部課題あり")
-        
+
         if report_file:
             log_message(f"✅ 成果報告書: 作成完了 ({report_file})")
         else:
             log_message("❌ 成果報告書: 作成失敗")
-        
+
         if completion_success:
             log_message("✅ Phase4完了準備: 完了")
         else:
             log_message("❌ Phase4完了準備: 失敗")
-        
+
         # Phase4最終宣言
         if all([
             qa_results.get('quality_gates', {}).get('overall_pass', False),
@@ -493,9 +491,9 @@ def main():
         else:
             log_message("\n⚠️ Phase4 部分的成功")
             log_message("   - 一部課題が残存")
-        
+
         return qa_results
-        
+
     except Exception as e:
         log_message(f"Phase4 Week 3 Day 3実行中にエラー発生: {e}", "ERROR")
         return None
@@ -503,7 +501,5 @@ def main():
 if __name__ == "__main__":
     results = main()
     if results:
-        print(f"\n実行結果をJSONで保存...")
         with open("phase4_week3_day3_final_verification.log", "w", encoding="utf-8") as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
-        print("✅ ログファイル保存完了")

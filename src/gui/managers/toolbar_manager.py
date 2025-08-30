@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind ツールバー管理マネージャー
 
@@ -7,7 +6,6 @@ DocMind ツールバー管理マネージャー
 検索、インデックス、設定などの主要機能への素早いアクセスを提供します。
 """
 
-from typing import Optional
 
 from PySide6.QtCore import QObject, QSize, Qt
 from PySide6.QtGui import QAction, QIcon
@@ -20,7 +18,7 @@ from src.utils.logging_config import LoggerMixin
 class ToolbarManager(QObject, LoggerMixin):
     """
     ツールバー管理マネージャー
-    
+
     メインウィンドウのツールバー作成、アクション設定、
     アイコン管理を統合的に処理します。
     """
@@ -28,17 +26,17 @@ class ToolbarManager(QObject, LoggerMixin):
     def __init__(self, main_window: QMainWindow):
         """
         ツールバー管理マネージャーの初期化
-        
+
         Args:
             main_window: メインウィンドウインスタンス
         """
         super().__init__(main_window)
         self.main_window = main_window
-        self.toolbar: Optional[QToolBar] = None
-        
+        self.toolbar: QToolBar | None = None
+
         # ツールバーアクション参照を保持
         self.toolbar_actions = {}
-        
+
         self.logger.debug("ツールバー管理マネージャーが初期化されました")
 
     def setup_toolbar(self) -> None:
@@ -49,7 +47,7 @@ class ToolbarManager(QObject, LoggerMixin):
             self.toolbar.setObjectName("MainToolBar")
             self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
             self.toolbar.setIconSize(QSize(24, 24))
-            
+
             # ツールバーアクションを追加
             self._add_folder_actions()
             self.toolbar.addSeparator()
@@ -58,9 +56,9 @@ class ToolbarManager(QObject, LoggerMixin):
             self._add_index_actions()
             self.toolbar.addSeparator()
             self._add_settings_actions()
-            
+
             self.logger.info("ツールバーの設定が完了しました")
-            
+
         except Exception as e:
             self.logger.error(f"ツールバー設定中にエラーが発生: {e}")
             raise
@@ -126,13 +124,13 @@ class ToolbarManager(QObject, LoggerMixin):
         if self.main_window.dialog_manager.show_settings_dialog():
             self.main_window.show_status_message("設定が保存されました", 3000)
 
-    def get_toolbar_action(self, action_name: str) -> Optional[QAction]:
+    def get_toolbar_action(self, action_name: str) -> QAction | None:
         """
         指定されたツールバーアクションを取得
-        
+
         Args:
             action_name: アクション名
-            
+
         Returns:
             QAction: 対応するアクション、存在しない場合はNone
         """
@@ -141,7 +139,7 @@ class ToolbarManager(QObject, LoggerMixin):
     def enable_toolbar_action(self, action_name: str, enabled: bool = True) -> None:
         """
         指定されたツールバーアクションの有効/無効を設定
-        
+
         Args:
             action_name: アクション名
             enabled: 有効にするかどうか
@@ -154,7 +152,7 @@ class ToolbarManager(QObject, LoggerMixin):
     def set_toolbar_visible(self, visible: bool = True) -> None:
         """
         ツールバーの表示/非表示を設定
-        
+
         Args:
             visible: 表示するかどうか
         """
@@ -167,13 +165,13 @@ class ToolbarManager(QObject, LoggerMixin):
         try:
             # ツールバーアクション参照をクリア
             self.toolbar_actions.clear()
-            
+
             # ツールバーを削除
             if self.toolbar:
                 self.main_window.removeToolBar(self.toolbar)
                 self.toolbar = None
-            
+
             self.logger.debug("ツールバー管理マネージャーをクリーンアップしました")
-            
+
         except Exception as e:
             self.logger.error(f"ツールバー管理マネージャーのクリーンアップ中にエラー: {e}")

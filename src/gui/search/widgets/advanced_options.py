@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 高度な検索オプションウィジェット
 
@@ -9,11 +8,20 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from PySide6.QtCore import QDate, Qt, Signal
-from PySide6.QtWidgets import (QCheckBox, QDateEdit, QGroupBox, QHBoxLayout, 
-                               QLabel, QSlider, QSpinBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QDateEdit,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QSlider,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
+)
 
 from ....data.models import FileType
 
@@ -29,7 +37,7 @@ class AdvancedSearchOptions(QGroupBox):
     # シグナル定義
     options_changed = Signal(dict)  # オプションが変更された時
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         """
         高度な検索オプションウィジェットを初期化
 
@@ -221,7 +229,7 @@ class AdvancedSearchOptions(QGroupBox):
         options = self.get_search_options()
         self.options_changed.emit(options)
 
-    def get_search_options(self) -> Dict[str, Any]:
+    def get_search_options(self) -> dict[str, Any]:
         """現在の検索オプションを取得"""
         # 選択されたファイルタイプ
         selected_file_types = [
@@ -255,13 +263,13 @@ class AdvancedSearchOptions(QGroupBox):
         # ファイルタイプを全て選択
         for checkbox in self.file_type_checkboxes.values():
             checkbox.setChecked(True)
-        
+
         # 日付フィルターを無効化
         self.date_filter_enabled.setChecked(False)
-        
+
         # 結果数制限をデフォルトに
         self.result_limit.setValue(100)
-        
+
         # 重みをデフォルトに
         self.full_text_weight.setValue(60)
         self.semantic_weight.setValue(40)

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 検索スタイル管理
 
@@ -7,7 +6,6 @@
 """
 
 import logging
-from typing import Optional
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QWidget
@@ -16,21 +14,21 @@ from PySide6.QtWidgets import QWidget
 class SearchStyleManager(QObject):
     """
     検索スタイル管理クラス
-    
+
     検索インターフェースのスタイル設定を担当します。
     """
-    
-    def __init__(self, parent: Optional[QWidget] = None):
+
+    def __init__(self, parent: QWidget | None = None):
         """
         検索スタイル管理を初期化
-        
+
         Args:
             parent: 親ウィジェット
         """
         super().__init__(parent)
-        
+
         self.logger = logging.getLogger(__name__)
-        
+
     def get_search_button_style(self) -> str:
         """検索ボタンのスタイルを取得"""
         return """
@@ -53,7 +51,7 @@ class SearchStyleManager(QObject):
                 color: #666666;
             }
         """
-        
+
     def get_clear_button_style(self) -> str:
         """クリアボタンのスタイルを取得"""
         return """
@@ -76,7 +74,7 @@ class SearchStyleManager(QObject):
                 color: #666666;
             }
         """
-        
+
     def get_frame_style(self) -> str:
         """フレームのスタイルを取得"""
         return """
@@ -86,12 +84,12 @@ class SearchStyleManager(QObject):
                 border-radius: 8px;
             }
         """
-        
+
     def apply_button_styles(self, search_button, clear_button) -> None:
         """ボタンにスタイルを適用"""
         search_button.setStyleSheet(self.get_search_button_style())
         clear_button.setStyleSheet(self.get_clear_button_style())
-        
+
     def apply_interface_style(self, interface_widget) -> None:
         """インターフェース全体にスタイルを適用"""
         interface_widget.setStyleSheet(self.get_frame_style())

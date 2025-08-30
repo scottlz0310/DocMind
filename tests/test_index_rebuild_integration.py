@@ -11,27 +11,19 @@
 """
 
 import os
+import shutil
 import sys
 import tempfile
-import shutil
 import time
-import threading
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-from typing import List, Dict, Any
+from unittest.mock import patch
 
 import pytest
-from PySide6.QtCore import QTimer, QThread, Signal, QObject
 from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtTest import QTest
 
 # プロジェクトルートをパスに追加
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from src.gui.main_window import MainWindow
-from src.core.index_manager import IndexManager
-from src.core.search_manager import SearchManager
-from src.utils.config import Config
 from src.utils.exceptions import DocMindException
 
 
@@ -335,15 +327,16 @@ class TestIndexRebuildLargeScale:
             files_per_second = 100 / total_time
             assert files_per_second > 1, f"処理速度が遅すぎます: {files_per_second:.2f} files/sec"
 
-            print(f"大規模テスト結果:")
+            print("大規模テスト結果:")
             print(f"  - 処理時間: {total_time:.2f}秒")
             print(f"  - 処理速度: {files_per_second:.2f} files/sec")
             print(f"  - 進捗更新回数: {len(performance_metrics['progress_updates'])}")
 
     def test_large_scale_memory_usage(self, main_window_large, large_temp_folder):
         """大規模処理時のメモリ使用量テスト"""
-        import psutil
         import os
+
+        import psutil
 
         process = psutil.Process(os.getpid())
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
@@ -373,7 +366,7 @@ class TestIndexRebuildLargeScale:
             # 要件: メモリリークを防ぐ
             assert memory_increase < 500, f"メモリ使用量が過大です: {memory_increase:.2f}MB増加"
 
-            print(f"メモリ使用量テスト結果:")
+            print("メモリ使用量テスト結果:")
             print(f"  - 初期メモリ: {initial_memory:.2f}MB")
             print(f"  - 最大メモリ: {max_memory:.2f}MB")
             print(f"  - 最終メモリ: {final_memory:.2f}MB")
@@ -420,7 +413,7 @@ class TestIndexRebuildErrorConditions:
 
         # クリーンアップ（権限を戻してから削除）
         if os.path.exists(temp_dir):
-            for root, dirs, files in os.walk(temp_dir):
+            for root, _dirs, files in os.walk(temp_dir):
                 for file in files:
                     file_path = os.path.join(root, file)
                     try:
@@ -488,7 +481,7 @@ class TestIndexRebuildErrorConditions:
 
             # エラーが適切に処理されたことを確認
             # （エラーメッセージが記録されているか、または正常に完了している）
-            print(f"エラーハンドリングテスト結果:")
+            print("エラーハンドリングテスト結果:")
             print(f"  - 処理されたドキュメント数: {doc_count}")
             print(f"  - 記録されたエラー数: {len(error_messages)}")
 
@@ -497,7 +490,6 @@ class TestIndexRebuildErrorConditions:
         error_occurred = False
 
         # IndexManagerのclear_indexメソッドでエラーを発生させる
-        original_clear_index = main_window_error.index_manager.clear_index
 
         def mock_clear_index():
             nonlocal error_occurred
@@ -520,7 +512,6 @@ class TestIndexRebuildErrorConditions:
     def test_thread_manager_error_simulation(self, main_window_error):
         """ThreadManagerのエラーをシミュレートしてテスト"""
         # ThreadManagerのstart_indexing_threadメソッドでエラーを発生させる
-        original_start_thread = main_window_error.thread_manager.start_indexing_thread
 
         def mock_start_thread(*args, **kwargs):
             raise RuntimeError("スレッド開始エラーのシミュレーション")

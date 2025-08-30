@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 インデックス処理ワーカーモジュール
 
@@ -10,7 +9,6 @@ import os
 import time
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import List, Optional
 
 from PySide6.QtCore import QObject, Signal
 
@@ -30,7 +28,7 @@ class IndexingStatistics:
     files_failed: int
     documents_added: int
     processing_time: float
-    errors: List[str]
+    errors: list[str]
 
     def to_dict(self) -> dict[str, object]:
         """辞書形式に変換"""
@@ -104,7 +102,7 @@ class IndexingWorker(QObject):
     error_occurred = Signal(str, str)           # context, error_message
 
     def __init__(self, folder_path: str, document_processor: DocumentProcessor,
-                 index_manager: IndexManager, file_watcher: Optional[FileWatcher] = None):
+                 index_manager: IndexManager, file_watcher: FileWatcher | None = None):
         super().__init__()
         self.folder_path = folder_path
         self.document_processor = document_processor
@@ -176,11 +174,11 @@ class IndexingWorker(QObject):
             self.logger.error(error_msg)
             self.error_occurred.emit("folder_processing", error_msg)
 
-    def _scan_files(self) -> List[str]:
+    def _scan_files(self) -> list[str]:
         """サポートされているファイルをスキャン"""
         self.logger.debug(f"ファイルスキャンを開始: {self.folder_path}")
 
-        files: List[str] = []
+        files: list[str] = []
         scanned_dirs = 0
         total_dirs = 0
 
@@ -229,12 +227,12 @@ class IndexingWorker(QObject):
         ext = Path(file_path).suffix.lower()
         return ext in self.supported_extensions
 
-    def _process_files(self, files: List[str]) -> None:
+    def _process_files(self, files: list[str]) -> None:
         """ファイルの処理"""
         self.logger.debug(f"ファイル処理を開始: {len(files)}個のファイル")
 
         batch_size = 50  # バッチサイズ
-        current_batch: List[Document] = []
+        current_batch: list[Document] = []
 
         for i, file_path in enumerate(files):
             if self.should_stop:
@@ -283,7 +281,7 @@ class IndexingWorker(QObject):
         if current_batch and not self.should_stop:
             self._process_batch(current_batch)
 
-    def _process_single_file(self, file_path: str) -> Optional[Document]:
+    def _process_single_file(self, file_path: str) -> Document | None:
         """単一ファイルの処理"""
         try:
             self.logger.debug(f"ファイルを処理中: {file_path}")
@@ -308,7 +306,7 @@ class IndexingWorker(QObject):
             self.logger.error(f"予期しないエラー: {file_path} - {e}")
             raise
 
-    def _process_batch(self, documents: List[Document]) -> None:
+    def _process_batch(self, documents: list[Document]) -> None:
         """ドキュメントのバッチ処理"""
         if not documents:
             return

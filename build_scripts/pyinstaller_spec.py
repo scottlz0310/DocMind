@@ -1,4 +1,3 @@
-# -*- mode: python ; coding: utf-8 -*-
 """
 DocMind - PyInstaller設定ファイル
 Windows向けアプリケーションパッケージ化設定
@@ -7,7 +6,6 @@ Windows向けアプリケーションパッケージ化設定
 単一の実行可能ファイルにパッケージ化するための設定を定義します。
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -31,10 +29,10 @@ added_files = [
 hidden_imports = [
     # PySide6関連
     'PySide6.QtCore',
-    'PySide6.QtWidgets', 
+    'PySide6.QtWidgets',
     'PySide6.QtGui',
     'PySide6.QtSvg',
-    
+
     # sentence-transformers関連
     'sentence_transformers',
     'transformers',
@@ -42,18 +40,18 @@ hidden_imports = [
     'numpy',
     'sklearn',
     'sklearn.metrics.pairwise',
-    
+
     # ドキュメント処理関連
     'fitz',  # PyMuPDF
     'docx',  # python-docx
     'openpyxl',
-    
+
     # その他の依存関係
     'whoosh',
     'watchdog',
     'chardet',
     'psutil',
-    
+
     # 標準ライブラリの一部（明示的に含める）
     'sqlite3',
     'pickle',

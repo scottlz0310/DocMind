@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind 進捗・システム情報管理マネージャー
 
@@ -8,7 +7,7 @@ main_window.pyから分離された進捗・システム情報関連の処理を
 """
 
 import os
-from typing import Dict, Any
+from typing import Any
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QMainWindow
@@ -19,7 +18,7 @@ from src.utils.logging_config import LoggerMixin
 class ProgressSystemManager(QObject, LoggerMixin):
     """
     進捗・システム情報管理マネージャー
-    
+
     進捗メッセージのフォーマット、システム情報の更新、再構築進捗の管理を行います。
     メインウィンドウから進捗・システム情報関連の責務を分離し、独立した管理を提供します。
     """
@@ -35,7 +34,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
         self.main_window = main_window
         self.logger.info("進捗・システム情報管理マネージャーが初期化されました")
 
-    def format_completion_message(self, statistics: Dict[str, Any]) -> str:
+    def format_completion_message(self, statistics: dict[str, Any]) -> str:
         """
         完了メッセージをフォーマット
 
@@ -48,7 +47,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
         try:
             files_processed = statistics.get('files_processed', 0)
             files_failed = statistics.get('files_failed', 0)
-            documents_added = statistics.get('documents_added', 0)
+            statistics.get('documents_added', 0)
             processing_time = statistics.get('processing_time', 0.0)
 
             if files_processed == 0 and files_failed == 0:
@@ -65,7 +64,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             self.logger.warning(f"完了メッセージのフォーマットに失敗: {e}")
             return "インデックス処理完了"
 
-    def format_detailed_completion_message(self, folder_name: str, statistics: Dict[str, Any]) -> str:
+    def format_detailed_completion_message(self, folder_name: str, statistics: dict[str, Any]) -> str:
         """
         詳細な完了メッセージをフォーマット
 
@@ -79,7 +78,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
         try:
             files_processed = statistics.get('files_processed', 0)
             files_failed = statistics.get('files_failed', 0)
-            documents_added = statistics.get('documents_added', 0)
+            statistics.get('documents_added', 0)
             processing_time = statistics.get('processing_time', 0.0)
 
             if files_processed == 0 and files_failed == 0:
@@ -214,7 +213,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             indexed_count = 0
             if hasattr(self.main_window, 'folder_tree_container'):
                 indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
-                
+
             active_threads = 0
             if hasattr(self.main_window, 'thread_manager') and self.main_window.thread_manager:
                 active_threads = self.main_window.thread_manager.get_active_thread_count()

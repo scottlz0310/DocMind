@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 検索タイプ選択ウィジェット
 
@@ -7,12 +6,10 @@
 """
 
 import logging
-from typing import Optional
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import (QButtonGroup, QHBoxLayout, QLabel, QRadioButton, 
-                               QWidget)
+from PySide6.QtWidgets import QButtonGroup, QHBoxLayout, QLabel, QRadioButton, QWidget
 
 from ....data.models import SearchType
 
@@ -27,7 +24,7 @@ class SearchTypeSelector(QWidget):
     # シグナル定義
     search_type_changed = Signal(SearchType)  # 検索タイプが変更された時
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         """
         検索タイプ選択ウィジェットを初期化
 

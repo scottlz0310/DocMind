@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 実環境シミュレーション実行スクリプト
 
@@ -7,21 +6,20 @@ DocMindアプリケーションの実環境シミュレーション機能を実�
 典型的な使用パターン、エッジケース、ユーザーシナリオを検証します。
 """
 
-import sys
-import os
-import logging
 import argparse
-from pathlib import Path
-from datetime import datetime
 import json
+import logging
+import sys
+from datetime import datetime
+from pathlib import Path
 
 # プロジェクトルートをパスに追加
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 try:
-    from tests.validation_framework.real_world_simulator import RealWorldSimulator
     from tests.validation_framework.base_validator import ValidationConfig
+    from tests.validation_framework.real_world_simulator import RealWorldSimulator
     from tests.validation_framework.validation_reporter import ValidationReporter
 except ImportError as e:
     print(f"モジュールのインポートに失敗しました: {e}")
@@ -31,12 +29,12 @@ except ImportError as e:
 def setup_logging(log_level: str = "INFO", log_file: str = None) -> None:
     """ログ設定のセットアップ"""
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    
+
     # ログレベルの設定
     numeric_level = getattr(logging, log_level.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError(f'無効なログレベル: {log_level}')
-    
+
     # ログ設定
     logging.basicConfig(
         level=numeric_level,
@@ -45,7 +43,7 @@ def setup_logging(log_level: str = "INFO", log_file: str = None) -> None:
             logging.StreamHandler(sys.stdout)
         ]
     )
-    
+
     # ファイル出力の追加
     if log_file:
         file_handler = logging.FileHandler(log_file, encoding='utf-8')
@@ -69,7 +67,7 @@ def create_validation_config(args) -> ValidationConfig:
 def run_usage_pattern_tests(simulator: RealWorldSimulator, patterns: list) -> dict:
     """使用パターンテストの実行"""
     results = {}
-    
+
     if not patterns or 'daily' in patterns:
         print("\n=== 日次使用パターンテスト ===")
         try:
@@ -78,7 +76,7 @@ def run_usage_pattern_tests(simulator: RealWorldSimulator, patterns: list) -> di
         except Exception as e:
             results['daily'] = {'status': 'failed', 'message': str(e)}
             print(f"日次使用パターンテスト失敗: {e}")
-    
+
     if not patterns or 'weekly' in patterns:
         print("\n=== 週次使用パターンテスト ===")
         try:
@@ -87,7 +85,7 @@ def run_usage_pattern_tests(simulator: RealWorldSimulator, patterns: list) -> di
         except Exception as e:
             results['weekly'] = {'status': 'failed', 'message': str(e)}
             print(f"週次使用パターンテスト失敗: {e}")
-    
+
     if not patterns or 'monthly' in patterns:
         print("\n=== 月次使用パターンテスト ===")
         try:
@@ -96,14 +94,14 @@ def run_usage_pattern_tests(simulator: RealWorldSimulator, patterns: list) -> di
         except Exception as e:
             results['monthly'] = {'status': 'failed', 'message': str(e)}
             print(f"月次使用パターンテスト失敗: {e}")
-    
+
     return results
 
 
 def run_edge_case_tests(simulator: RealWorldSimulator, edge_cases: list) -> dict:
     """エッジケーステストの実行"""
     results = {}
-    
+
     if not edge_cases or 'large_files' in edge_cases:
         print("\n=== 大容量ファイルエッジケーステスト ===")
         try:
@@ -112,7 +110,7 @@ def run_edge_case_tests(simulator: RealWorldSimulator, edge_cases: list) -> dict
         except Exception as e:
             results['large_files'] = {'status': 'failed', 'message': str(e)}
             print(f"大容量ファイルテスト失敗: {e}")
-    
+
     if not edge_cases or 'many_files' in edge_cases:
         print("\n=== 多数ファイルエッジケーステスト ===")
         try:
@@ -121,7 +119,7 @@ def run_edge_case_tests(simulator: RealWorldSimulator, edge_cases: list) -> dict
         except Exception as e:
             results['many_files'] = {'status': 'failed', 'message': str(e)}
             print(f"多数ファイルテスト失敗: {e}")
-    
+
     if not edge_cases or 'special_chars' in edge_cases:
         print("\n=== 特殊文字エッジケーステスト ===")
         try:
@@ -130,14 +128,14 @@ def run_edge_case_tests(simulator: RealWorldSimulator, edge_cases: list) -> dict
         except Exception as e:
             results['special_chars'] = {'status': 'failed', 'message': str(e)}
             print(f"特殊文字テスト失敗: {e}")
-    
+
     return results
 
 
 def run_user_scenario_tests(simulator: RealWorldSimulator, scenarios: list) -> dict:
     """ユーザーシナリオテストの実行"""
     results = {}
-    
+
     if not scenarios or 'new_user' in scenarios:
         print("\n=== 新規ユーザーシナリオテスト ===")
         try:
@@ -146,7 +144,7 @@ def run_user_scenario_tests(simulator: RealWorldSimulator, scenarios: list) -> d
         except Exception as e:
             results['new_user'] = {'status': 'failed', 'message': str(e)}
             print(f"新規ユーザーシナリオテスト失敗: {e}")
-    
+
     if not scenarios or 'existing_user' in scenarios:
         print("\n=== 既存ユーザーシナリオテスト ===")
         try:
@@ -155,7 +153,7 @@ def run_user_scenario_tests(simulator: RealWorldSimulator, scenarios: list) -> d
         except Exception as e:
             results['existing_user'] = {'status': 'failed', 'message': str(e)}
             print(f"既存ユーザーシナリオテスト失敗: {e}")
-    
+
     if not scenarios or 'bulk_processing' in scenarios:
         print("\n=== 大量データ処理シナリオテスト ===")
         try:
@@ -164,7 +162,7 @@ def run_user_scenario_tests(simulator: RealWorldSimulator, scenarios: list) -> d
         except Exception as e:
             results['bulk_processing'] = {'status': 'failed', 'message': str(e)}
             print(f"大量データ処理シナリオテスト失敗: {e}")
-    
+
     return results
 
 
@@ -174,13 +172,13 @@ def save_results(results: dict, output_file: str) -> None:
         # 出力ディレクトリの作成
         output_path = Path(output_file)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # 結果の保存
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, ensure_ascii=False, indent=2, default=str)
-        
+
         print(f"\n検証結果を保存しました: {output_file}")
-        
+
     except Exception as e:
         print(f"結果保存エラー: {e}")
 
@@ -190,28 +188,28 @@ def print_summary(results: dict) -> None:
     print("\n" + "="*60)
     print("実環境シミュレーション検証結果サマリー")
     print("="*60)
-    
+
     total_tests = 0
     passed_tests = 0
-    
+
     for category, tests in results.items():
         if category == 'summary':
             continue
-            
+
         print(f"\n【{category.upper()}】")
         for test_name, test_result in tests.items():
             status_symbol = "✓" if test_result['status'] == 'success' else "✗"
             print(f"  {status_symbol} {test_name}: {test_result['message']}")
-            
+
             total_tests += 1
             if test_result['status'] == 'success':
                 passed_tests += 1
-    
+
     # 全体サマリー
     success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
-    print(f"\n【全体結果】")
+    print("\n【全体結果】")
     print(f"  合格: {passed_tests}/{total_tests} ({success_rate:.1f}%)")
-    
+
     if success_rate >= 90:
         print("  🎉 優秀な結果です！")
     elif success_rate >= 75:
@@ -231,21 +229,21 @@ def main():
 使用例:
   # 全テスト実行
   python run_real_world_simulation.py
-  
+
   # 特定の使用パターンのみ実行
   python run_real_world_simulation.py --patterns daily weekly
-  
+
   # エッジケースのみ実行
   python run_real_world_simulation.py --edge-cases large_files many_files
-  
+
   # ユーザーシナリオのみ実行
   python run_real_world_simulation.py --scenarios new_user existing_user
-  
+
   # 詳細ログ出力
   python run_real_world_simulation.py --log-level DEBUG --log-file simulation.log
         """
     )
-    
+
     # 実行対象の選択
     parser.add_argument(
         '--patterns',
@@ -253,21 +251,21 @@ def main():
         choices=['daily', 'weekly', 'monthly'],
         help='実行する使用パターン（指定なしで全実行）'
     )
-    
+
     parser.add_argument(
         '--edge-cases',
         nargs='*',
         choices=['large_files', 'many_files', 'special_chars'],
         help='実行するエッジケース（指定なしで全実行）'
     )
-    
+
     parser.add_argument(
         '--scenarios',
         nargs='*',
         choices=['new_user', 'existing_user', 'bulk_processing'],
         help='実行するユーザーシナリオ（指定なしで全実行）'
     )
-    
+
     # 検証設定
     parser.add_argument(
         '--enable-performance',
@@ -275,34 +273,34 @@ def main():
         default=True,
         help='パフォーマンス監視を有効化'
     )
-    
+
     parser.add_argument(
         '--enable-memory',
         action='store_true',
         default=True,
         help='メモリ監視を有効化'
     )
-    
+
     parser.add_argument(
         '--enable-error-injection',
         action='store_true',
         help='エラー注入を有効化'
     )
-    
+
     parser.add_argument(
         '--max-execution-time',
         type=float,
         default=600.0,
         help='最大実行時間（秒）'
     )
-    
+
     parser.add_argument(
         '--max-memory-usage',
         type=float,
         default=3072.0,
         help='最大メモリ使用量（MB）'
     )
-    
+
     # ログ設定
     parser.add_argument(
         '--log-level',
@@ -310,44 +308,44 @@ def main():
         default='INFO',
         help='ログレベル'
     )
-    
+
     parser.add_argument(
         '--log-file',
         help='ログファイルパス'
     )
-    
+
     # 出力設定
     parser.add_argument(
         '--output-dir',
         default='validation_results/real_world_simulation',
         help='結果出力ディレクトリ'
     )
-    
+
     parser.add_argument(
         '--output-file',
         help='結果出力ファイル（JSONフォーマット）'
     )
-    
+
     args = parser.parse_args()
-    
+
     # ログ設定
     setup_logging(args.log_level, args.log_file)
-    
+
     # 出力ファイル名の生成
     if not args.output_file:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         args.output_file = f"{args.output_dir}/real_world_simulation_results_{timestamp}.json"
-    
+
     print("DocMind実環境シミュレーション検証を開始します")
     print(f"出力ディレクトリ: {args.output_dir}")
     print(f"ログレベル: {args.log_level}")
-    
+
     # 検証設定の作成
     config = create_validation_config(args)
-    
+
     # シミュレーターの初期化
     simulator = RealWorldSimulator(config)
-    
+
     # 結果格納用辞書
     all_results = {
         'timestamp': datetime.now().isoformat(),
@@ -362,48 +360,48 @@ def main():
         'edge_cases': {},
         'user_scenarios': {}
     }
-    
+
     try:
         # テスト環境のセットアップ
         simulator.setup_test_environment()
-        
+
         # 使用パターンテストの実行
         print("\n" + "="*60)
         print("使用パターンテスト実行中...")
         print("="*60)
         all_results['usage_patterns'] = run_usage_pattern_tests(simulator, args.patterns)
-        
+
         # エッジケーステストの実行
         print("\n" + "="*60)
         print("エッジケーステスト実行中...")
         print("="*60)
         all_results['edge_cases'] = run_edge_case_tests(simulator, args.edge_cases)
-        
+
         # ユーザーシナリオテストの実行
         print("\n" + "="*60)
         print("ユーザーシナリオテスト実行中...")
         print("="*60)
         all_results['user_scenarios'] = run_user_scenario_tests(simulator, args.scenarios)
-        
+
         # 統計情報の取得
         stats = simulator.get_statistics_summary()
         all_results['statistics'] = stats
-        
+
         # 結果の保存
         save_results(all_results, args.output_file)
-        
+
         # サマリーの表示
         print_summary(all_results)
-        
+
     except KeyboardInterrupt:
         print("\n検証が中断されました")
         return 1
-        
+
     except Exception as e:
         print(f"\n検証中にエラーが発生しました: {e}")
         logging.exception("検証エラー")
         return 1
-        
+
     finally:
         # クリーンアップ
         try:
@@ -411,7 +409,7 @@ def main():
             simulator.cleanup()
         except Exception as e:
             print(f"クリーンアップエラー: {e}")
-    
+
     print("\n実環境シミュレーション検証が完了しました")
     return 0
 

@@ -7,11 +7,11 @@ DocMindアプリケーション用データアクセス層
 
 from .models import (
     Document,
-    SearchResult,
-    SearchQuery,
-    SearchType,
     FileType,
-    IndexStats
+    IndexStats,
+    SearchQuery,
+    SearchResult,
+    SearchType,
 )
 
 __all__ = [

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 検索履歴表示ウィジェット
 
@@ -7,13 +6,21 @@
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from PySide6.QtCore import QPoint, Qt, Signal
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import (QHBoxLayout, QListWidget, QListWidgetItem, QMenu, 
-                               QMessageBox, QPushButton, QTabWidget, QVBoxLayout, 
-                               QWidget)
+from PySide6.QtWidgets import (
+    QHBoxLayout,
+    QListWidget,
+    QListWidgetItem,
+    QMenu,
+    QMessageBox,
+    QPushButton,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class SearchHistoryWidget(QWidget):
@@ -30,7 +37,7 @@ class SearchHistoryWidget(QWidget):
     saved_search_selected = Signal(dict)  # 保存された検索が選択された時
     saved_search_deleted = Signal(int)    # 保存された検索が削除された時
 
-    def __init__(self, parent: Optional[QWidget] = None):
+    def __init__(self, parent: QWidget | None = None):
         """
         検索履歴ウィジェットを初期化
 
@@ -40,9 +47,9 @@ class SearchHistoryWidget(QWidget):
         super().__init__(parent)
 
         self.logger = logging.getLogger(__name__)
-        self.recent_searches: List[Dict[str, Any]] = []
-        self.popular_searches: List[Dict[str, Any]] = []
-        self.saved_searches: List[Dict[str, Any]] = []
+        self.recent_searches: list[dict[str, Any]] = []
+        self.popular_searches: list[dict[str, Any]] = []
+        self.saved_searches: list[dict[str, Any]] = []
 
         self._setup_ui()
         self._setup_connections()
@@ -152,7 +159,7 @@ class SearchHistoryWidget(QWidget):
         self.saved_list.setContextMenuPolicy(Qt.CustomContextMenu)
         self.saved_list.customContextMenuRequested.connect(self._show_saved_context_menu)
 
-    def update_recent_searches(self, searches: List[Dict[str, Any]]) -> None:
+    def update_recent_searches(self, searches: list[dict[str, Any]]) -> None:
         """最近の検索を更新"""
         self.recent_searches = searches
         self.recent_list.clear()
@@ -171,7 +178,7 @@ class SearchHistoryWidget(QWidget):
 
         self.logger.debug(f"最近の検索を更新: {len(searches)}件")
 
-    def update_popular_searches(self, searches: List[Dict[str, Any]]) -> None:
+    def update_popular_searches(self, searches: list[dict[str, Any]]) -> None:
         """人気の検索を更新"""
         self.popular_searches = searches
         self.popular_list.clear()
@@ -190,7 +197,7 @@ class SearchHistoryWidget(QWidget):
 
         self.logger.debug(f"人気の検索を更新: {len(searches)}件")
 
-    def update_saved_searches(self, searches: List[Dict[str, Any]]) -> None:
+    def update_saved_searches(self, searches: list[dict[str, Any]]) -> None:
         """保存された検索を更新"""
         self.saved_searches = searches
         self.saved_list.clear()
@@ -317,7 +324,7 @@ class SearchHistoryWidget(QWidget):
                 self.recent_list.takeItem(self.recent_list.row(item))
                 self.logger.info(f"検索履歴を削除: {query}")
 
-    def _rename_saved_search(self, search_data: Dict[str, Any]) -> None:
+    def _rename_saved_search(self, search_data: dict[str, Any]) -> None:
         """保存された検索の名前変更"""
         from PySide6.QtWidgets import QInputDialog
 
@@ -333,7 +340,7 @@ class SearchHistoryWidget(QWidget):
             # TODO: 実際の名前変更処理を実装
             self.logger.info(f"保存された検索の名前変更: {current_name} -> {new_name}")
 
-    def _delete_saved_search(self, search_data: Dict[str, Any]) -> None:
+    def _delete_saved_search(self, search_data: dict[str, Any]) -> None:
         """保存された検索を削除"""
         reply = QMessageBox.question(
             self,

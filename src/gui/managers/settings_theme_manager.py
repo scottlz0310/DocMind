@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DocMind 設定・テーマ管理マネージャー
 
@@ -7,11 +6,11 @@ DocMind 設定・テーマ管理マネージャー
 main_window.pyから分離された設定関連の処理を統合管理します。
 """
 
-from typing import Dict, Any
+from typing import Any
 
 from PySide6.QtCore import QObject
-from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QApplication, QMainWindow
 
 from src.utils.logging_config import LoggerMixin
 
@@ -19,7 +18,7 @@ from src.utils.logging_config import LoggerMixin
 class SettingsThemeManager(QObject, LoggerMixin):
     """
     設定・テーマ管理マネージャー
-    
+
     アプリケーションの設定変更、UIテーマ適用、フォント設定を管理します。
     メインウィンドウから設定関連の責務を分離し、独立した管理を提供します。
     """
@@ -35,10 +34,10 @@ class SettingsThemeManager(QObject, LoggerMixin):
         self.main_window = main_window
         self.logger.info("設定・テーマ管理マネージャーが初期化されました")
 
-    def handle_settings_changed(self, settings: Dict[str, Any]) -> None:
+    def handle_settings_changed(self, settings: dict[str, Any]) -> None:
         """
         設定変更時の処理
-        
+
         Args:
             settings: 変更された設定の辞書
         """
@@ -66,10 +65,10 @@ class SettingsThemeManager(QObject, LoggerMixin):
                     "アプリケーションを再起動すると設定が正しく適用される可能性があります。"
                 )
 
-    def _update_logging_settings(self, settings: Dict[str, Any]) -> None:
+    def _update_logging_settings(self, settings: dict[str, Any]) -> None:
         """
         ログ設定の更新
-        
+
         Args:
             settings: 設定辞書
         """
@@ -77,7 +76,7 @@ class SettingsThemeManager(QObject, LoggerMixin):
             log_level = settings.get("log_level")
             console_logging = settings.get("console_logging")
             file_logging = settings.get("file_logging")
-            
+
             if any([log_level, console_logging is not None, file_logging is not None]):
                 from src.utils.logging_config import reconfigure_logging
                 reconfigure_logging(
@@ -86,32 +85,32 @@ class SettingsThemeManager(QObject, LoggerMixin):
                     enable_file=file_logging
                 )
                 self.logger.debug("ログ設定を更新しました")
-                
+
         except Exception as e:
             self.logger.warning(f"ログ設定の更新に失敗: {e}")
 
-    def _update_window_size(self, settings: Dict[str, Any]) -> None:
+    def _update_window_size(self, settings: dict[str, Any]) -> None:
         """
         ウィンドウサイズの更新
-        
+
         Args:
             settings: 設定辞書
         """
         try:
             window_width = settings.get("window_width")
             window_height = settings.get("window_height")
-            
+
             if window_width and window_height:
                 self.main_window.resize(window_width, window_height)
                 self.logger.debug(f"ウィンドウサイズを更新: {window_width}x{window_height}")
-                
+
         except Exception as e:
             self.logger.warning(f"ウィンドウサイズの更新に失敗: {e}")
 
-    def _update_ui_theme(self, settings: Dict[str, Any]) -> None:
+    def _update_ui_theme(self, settings: dict[str, Any]) -> None:
         """
         UIテーマの更新
-        
+
         Args:
             settings: 設定辞書
         """
@@ -120,32 +119,32 @@ class SettingsThemeManager(QObject, LoggerMixin):
             if ui_theme:
                 self.apply_theme(ui_theme)
                 self.logger.debug(f"UIテーマを更新: {ui_theme}")
-                
+
         except Exception as e:
             self.logger.warning(f"UIテーマの更新に失敗: {e}")
 
-    def _update_font_settings(self, settings: Dict[str, Any]) -> None:
+    def _update_font_settings(self, settings: dict[str, Any]) -> None:
         """
         フォント設定の更新
-        
+
         Args:
             settings: 設定辞書
         """
         try:
             font_family = settings.get("font_family")
             font_size = settings.get("font_size")
-            
+
             if font_family or font_size:
                 self.apply_font_settings(settings)
                 self.logger.debug(f"フォント設定を更新: {font_family}, {font_size}")
-                
+
         except Exception as e:
             self.logger.warning(f"フォント設定の更新に失敗: {e}")
 
     def apply_theme(self, theme: str) -> None:
         """
         UIテーマを適用
-        
+
         Args:
             theme: テーマ名 ("dark", "light", "system")
         """
@@ -162,9 +161,9 @@ class SettingsThemeManager(QObject, LoggerMixin):
             else:
                 # デフォルトテーマは現在のスタイルを維持
                 self.logger.debug(f"未知のテーマ: {theme}、デフォルトテーマを維持")
-                
+
             self.logger.info(f"テーマを適用しました: {theme}")
-            
+
         except Exception as e:
             self.logger.error(f"テーマの適用に失敗: {e}")
 
@@ -183,10 +182,10 @@ class SettingsThemeManager(QObject, LoggerMixin):
         # システムのテーマ設定に従う
         self.logger.debug("システムテーマ適用（未実装）")
 
-    def apply_font_settings(self, settings: Dict[str, Any]) -> None:
+    def apply_font_settings(self, settings: dict[str, Any]) -> None:
         """
         フォント設定を適用
-        
+
         Args:
             settings: フォント設定を含む設定辞書
         """
@@ -197,23 +196,23 @@ class SettingsThemeManager(QObject, LoggerMixin):
             if font_family != "システムデフォルト":
                 font = QFont(font_family, font_size)
                 self.main_window.setFont(font)
-                
+
                 # アプリケーション全体にフォントを適用
                 app = QApplication.instance()
                 if app:
                     app.setFont(font)
-                    
+
                 self.logger.info(f"フォント設定を適用: {font_family}, {font_size}pt")
             else:
                 self.logger.debug("システムデフォルトフォントを使用")
-                
+
         except Exception as e:
             self.logger.error(f"フォント設定の適用に失敗: {e}")
 
     def get_current_theme(self) -> str:
         """
         現在のテーマを取得
-        
+
         Returns:
             str: 現在のテーマ名
         """
@@ -223,7 +222,7 @@ class SettingsThemeManager(QObject, LoggerMixin):
     def get_available_themes(self) -> list:
         """
         利用可能なテーマ一覧を取得
-        
+
         Returns:
             list: 利用可能なテーマ名のリスト
         """
@@ -237,9 +236,9 @@ class SettingsThemeManager(QObject, LoggerMixin):
                 "font_family": "システムデフォルト",
                 "font_size": 10
             }
-            
+
             self.handle_settings_changed(default_settings)
             self.logger.info("設定をデフォルトに戻しました")
-            
+
         except Exception as e:
             self.logger.error(f"デフォルト設定の適用に失敗: {e}")
