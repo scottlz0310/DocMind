@@ -36,8 +36,8 @@ jobs:
     
     - name: Run tests
       run: |
-        pytest tests/ -v --cov=src --cov-report=xml --maxfail=5 -n auto --timeout=300 --tb=short
-      timeout-minutes: 10
+        pytest tests/ -v --cov=src --cov-report=xml --maxfail=3 --timeout=120 --tb=short -x
+      timeout-minutes: 5
       env:
         DISPLAY: :99
         QT_QPA_PLATFORM: offscreen
