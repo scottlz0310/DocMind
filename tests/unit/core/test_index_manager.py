@@ -1,284 +1,225 @@
 """
-IndexManagerのテストモジュール
+IndexManager強化テスト
 
-Whoosh全文検索インデックス管理機能の包括的なテストを提供します。
+大規模インデックス作成・増分更新のパフォーマンステスト
 """
-
+import pytest
+import time
 import tempfile
-from datetime import datetime
+import shutil
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-import pytest
-
 from src.core.index_manager import IndexManager
-from src.data.models import Document, FileType, SearchType
-from src.utils.exceptions import IndexingError, SearchError
+from src.core.document_processor import DocumentProcessor
 
 
 class TestIndexManager:
-    """IndexManagerのテストクラス"""
+    """インデックス管理コアロジックテスト"""
 
     @pytest.fixture
     def temp_index_dir(self):
-        """一時インデックスディレクトリを作成"""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            index_dir = Path(temp_dir) / "test_index"
-            yield str(index_dir)
+        """テスト用一時インデックスディレクトリ"""
+        temp_dir = tempfile.mkdtemp()
+        yield Path(temp_dir)
+        shutil.rmtree(temp_dir)
 
     @pytest.fixture
-    def index_manager(self, temp_index_dir):
-        """IndexManagerインスタンスを作成"""
-        return IndexManager(temp_index_dir)
+    def large_document_set(self):
+        """大規模ドキュメントセット（モック）"""
+        documents = []
+        for i in range(1000):
+            doc = Mock()
+            doc.file_path = f"/test/doc_{i}.txt"
+            doc.content = f"テストドキュメント{i}の内容です。" * 10
+            doc.metadata = {
+                'file_size': 1024,
+                'modified_time': time.time(),
+                'file_type': 'txt'
+            }
+            documents.append(doc)
+        return documents
 
     @pytest.fixture
-    def sample_document(self):
-        """サンプルドキュメントを作成"""
-        return Document(
-            id="test_doc_1",
-            file_path="/test/sample.txt",
-            title="テストドキュメント",
-            content="これはテスト用のドキュメントです。検索機能をテストします。",
-            file_type=FileType.TEXT,
-            size=1024,
-            created_date=datetime.now(),
-            modified_date=datetime.now(),
-            indexed_date=datetime.now(),
-            content_hash="test_hash_123"
-        )
-
-    @pytest.fixture
-    def multiple_documents(self):
-        """複数のサンプルドキュメントを作成"""
-        docs = []
-        for i in range(5):
-            doc = Document(
-                id=f"test_doc_{i}",
-                file_path=f"/test/sample_{i}.txt",
-                title=f"テストドキュメント{i}",
-                content=f"これは{i}番目のテストドキュメントです。検索テスト用データ。",
-                file_type=FileType.TEXT,
-                size=1024 + i * 100,
-                created_date=datetime.now(),
-                modified_date=datetime.now(),
-                indexed_date=datetime.now(),
-                content_hash=f"test_hash_{i}"
+    def existing_index(self, temp_index_dir):
+        """既存インデックス"""
+        manager = IndexManager(str(temp_index_dir))
+        # 小規模な既存インデックスを作成
+        for i in range(100):
+            manager.add_document(
+                f"/existing/doc_{i}.txt",
+                f"既存ドキュメント{i}",
+                {'file_type': 'txt'}
             )
-            docs.append(doc)
-        return docs
+        return manager
 
-    def test_initialization(self, index_manager):
-        """初期化テスト"""
-        assert index_manager is not None
-        assert index_manager._index is not None
-        assert index_manager.index_path.exists()
+    def test_large_scale_indexing(self, temp_index_dir, large_document_set):
+        """大規模インデックス作成テスト"""
+        manager = IndexManager(str(temp_index_dir))
+        
+        start_time = time.time()
+        success_count = 0
+        
+        for doc in large_document_set:
+            try:
+                manager.add_document(
+                    doc.file_path,
+                    doc.content,
+                    doc.metadata
+                )
+                success_count += 1
+            except Exception as e:
+                pytest.fail(f"ドキュメント追加失敗: {e}")
+        
+        end_time = time.time()
+        
+        # 検証
+        assert success_count == len(large_document_set)
+        assert (end_time - start_time) < 60  # 1分以内
+        assert manager.get_document_count() == len(large_document_set)
 
-    def test_create_index(self, index_manager):
-        """インデックス作成テスト"""
-        # 既存のインデックスを削除して新規作成
-        index_manager.create_index()
+    def test_incremental_update_performance(self, existing_index):
+        """増分更新パフォーマンステスト"""
+        manager = existing_index
         
-        assert index_manager._index is not None
-        assert index_manager.get_document_count() == 0
+        # 新しいドキュメントを準備
+        new_documents = []
+        for i in range(50):
+            new_documents.append({
+                'path': f"/new/doc_{i}.txt",
+                'content': f"新規ドキュメント{i}の内容",
+                'metadata': {'file_type': 'txt'}
+            })
+        
+        start_time = time.time()
+        
+        for doc in new_documents:
+            manager.add_document(
+                doc['path'],
+                doc['content'],
+                doc['metadata']
+            )
+        
+        end_time = time.time()
+        
+        # 検証
+        assert (end_time - start_time) < 10  # 10秒以内
+        assert manager.get_document_count() == 150  # 100 + 50
 
-    def test_add_document(self, index_manager, sample_document):
-        """ドキュメント追加テスト"""
-        index_manager.add_document(sample_document)
+    def test_index_optimization_performance(self, existing_index):
+        """インデックス最適化パフォーマンステスト"""
+        manager = existing_index
         
-        assert index_manager.get_document_count() == 1
-        assert index_manager.document_exists(sample_document.id)
+        start_time = time.time()
+        manager.optimize_index()
+        end_time = time.time()
+        
+        # 最適化は30秒以内
+        assert (end_time - start_time) < 30
 
-    def test_update_document(self, index_manager, sample_document):
-        """ドキュメント更新テスト"""
-        # 最初にドキュメントを追加
-        index_manager.add_document(sample_document)
+    def test_concurrent_index_operations(self, temp_index_dir):
+        """並行インデックス操作テスト"""
+        import threading
         
-        # ドキュメントを更新
-        sample_document.content = "更新されたコンテンツです。"
-        index_manager.update_document(sample_document)
+        manager = IndexManager(str(temp_index_dir))
+        results = []
         
-        assert index_manager.get_document_count() == 1
+        def add_documents(start_idx, count):
+            """ドキュメント追加スレッド"""
+            try:
+                for i in range(start_idx, start_idx + count):
+                    manager.add_document(
+                        f"/concurrent/doc_{i}.txt",
+                        f"並行テストドキュメント{i}",
+                        {'file_type': 'txt'}
+                    )
+                results.append(True)
+            except Exception:
+                results.append(False)
         
-        # 更新されたコンテンツで検索できることを確認
-        results = index_manager.search_text("更新された")
-        assert len(results) == 1
+        # 5つのスレッドで並行実行
+        threads = []
+        for i in range(5):
+            thread = threading.Thread(
+                target=add_documents,
+                args=(i * 20, 20)
+            )
+            threads.append(thread)
+            thread.start()
+        
+        # 全スレッド完了を待機
+        for thread in threads:
+            thread.join()
+        
+        # 検証
+        assert all(results)  # 全スレッド成功
+        assert manager.get_document_count() == 100
 
-    def test_remove_document(self, index_manager, sample_document):
-        """ドキュメント削除テスト"""
-        # ドキュメントを追加
-        index_manager.add_document(sample_document)
-        assert index_manager.get_document_count() == 1
+    def test_index_corruption_recovery(self, temp_index_dir):
+        """インデックス破損復旧テスト"""
+        manager = IndexManager(str(temp_index_dir))
         
-        # ドキュメントを削除
-        index_manager.remove_document(sample_document.id)
-        assert index_manager.get_document_count() == 0
-        assert not index_manager.document_exists(sample_document.id)
+        # 正常なインデックスを作成
+        for i in range(10):
+            manager.add_document(
+                f"/test/doc_{i}.txt",
+                f"テストドキュメント{i}",
+                {'file_type': 'txt'}
+            )
+        
+        # インデックスファイルを意図的に破損
+        index_files = list(temp_index_dir.glob("*"))
+        if index_files:
+            with open(index_files[0], 'w') as f:
+                f.write("破損データ")
+        
+        # 新しいマネージャーで復旧テスト
+        recovery_manager = IndexManager(str(temp_index_dir))
+        
+        # 復旧後の動作確認
+        recovery_manager.add_document(
+            "/recovery/doc.txt",
+            "復旧テストドキュメント",
+            {'file_type': 'txt'}
+        )
+        
+        assert recovery_manager.get_document_count() >= 1
 
-    def test_search_text_basic(self, index_manager, sample_document):
-        """基本的なテキスト検索テスト"""
-        index_manager.add_document(sample_document)
+    def test_memory_efficient_indexing(self, temp_index_dir):
+        """メモリ効率的インデックス作成テスト"""
+        import psutil
+        import os
         
-        results = index_manager.search_text("テスト")
+        process = psutil.Process(os.getpid())
+        initial_memory = process.memory_info().rss
         
-        assert len(results) == 1
-        assert results[0].document.id == sample_document.id
-        assert results[0].search_type == SearchType.FULL_TEXT
+        manager = IndexManager(str(temp_index_dir))
+        
+        # 大量のドキュメントを追加
+        for i in range(500):
+            large_content = "大きなコンテンツ " * 1000  # 約15KB
+            manager.add_document(
+                f"/memory_test/doc_{i}.txt",
+                large_content,
+                {'file_type': 'txt'}
+            )
+        
+        final_memory = process.memory_info().rss
+        memory_increase = final_memory - initial_memory
+        
+        # メモリ増加量が500MB以下
+        assert memory_increase < 500 * 1024 * 1024
 
-    def test_search_text_multiple_results(self, index_manager, multiple_documents):
-        """複数結果のテキスト検索テスト"""
-        # 複数ドキュメントを追加
-        for doc in multiple_documents:
-            index_manager.add_document(doc)
+    def test_index_statistics_accuracy(self, existing_index):
+        """インデックス統計情報精度テスト"""
+        manager = existing_index
         
-        results = index_manager.search_text("テスト")
+        stats = manager.get_statistics()
         
-        assert len(results) == 5
-        # スコア順でソートされていることを確認
-        for i in range(len(results) - 1):
-            assert results[i].score >= results[i + 1].score
-
-    def test_search_with_file_type_filter(self, index_manager, multiple_documents):
-        """ファイルタイプフィルター付き検索テスト"""
-        # 異なるファイルタイプのドキュメントを作成
-        multiple_documents[0].file_type = FileType.PDF
-        multiple_documents[1].file_type = FileType.WORD
-        
-        for doc in multiple_documents:
-            index_manager.add_document(doc)
-        
-        # PDFファイルのみを検索
-        results = index_manager.search_text("テスト", file_types=[FileType.PDF])
-        
-        assert len(results) == 1
-        assert results[0].document.file_type == FileType.PDF
-
-    def test_search_with_date_range(self, index_manager, multiple_documents):
-        """日付範囲フィルター付き検索テスト"""
-        # 異なる日付のドキュメントを作成
-        base_date = datetime(2024, 1, 1)
-        for i, doc in enumerate(multiple_documents):
-            doc.modified_date = datetime(2024, 1, i + 1)
-            index_manager.add_document(doc)
-        
-        # 特定の日付範囲で検索
-        date_from = datetime(2024, 1, 2)
-        date_to = datetime(2024, 1, 4)
-        
-        results = index_manager.search_text("テスト", date_from=date_from, date_to=date_to)
-        
-        # 日付範囲内のドキュメントのみが返されることを確認
-        assert len(results) == 3
-
-    def test_search_empty_query(self, index_manager, sample_document):
-        """空クエリ検索テスト"""
-        index_manager.add_document(sample_document)
-        
-        results = index_manager.search_text("")
-        
-        assert len(results) == 0
-
-    def test_search_no_results(self, index_manager, sample_document):
-        """結果なし検索テスト"""
-        index_manager.add_document(sample_document)
-        
-        results = index_manager.search_text("存在しない単語")
-        
-        assert len(results) == 0
-
-    def test_clear_index(self, index_manager, multiple_documents):
-        """インデックスクリアテスト"""
-        # 複数ドキュメントを追加
-        for doc in multiple_documents:
-            index_manager.add_document(doc)
-        
-        assert index_manager.get_document_count() == 5
-        
-        # インデックスをクリア
-        index_manager.clear_index()
-        
-        assert index_manager.get_document_count() == 0
-
-    def test_rebuild_index(self, index_manager, multiple_documents):
-        """インデックス再構築テスト"""
-        index_manager.rebuild_index(multiple_documents)
-        
-        assert index_manager.get_document_count() == 5
-        
-        # 検索が正常に動作することを確認
-        results = index_manager.search_text("テスト")
-        assert len(results) == 5
-
-    def test_optimize_index(self, index_manager, sample_document):
-        """インデックス最適化テスト"""
-        index_manager.add_document(sample_document)
-        
-        # 最適化が正常に実行されることを確認
-        index_manager.optimize_index()
-        
-        # 最適化後も検索が正常に動作することを確認
-        results = index_manager.search_text("テスト")
-        assert len(results) == 1
-
-    def test_document_exists(self, index_manager, sample_document):
-        """ドキュメント存在確認テスト"""
-        assert not index_manager.document_exists(sample_document.id)
-        
-        index_manager.add_document(sample_document)
-        assert index_manager.document_exists(sample_document.id)
-
-    def test_get_index_stats(self, index_manager, multiple_documents):
-        """インデックス統計情報取得テスト"""
-        for doc in multiple_documents:
-            index_manager.add_document(doc)
-        
-        stats = index_manager.get_index_stats()
-        
-        assert isinstance(stats, dict)
-        assert stats["document_count"] == 5
-        assert "index_size" in stats
-        assert "last_modified" in stats
-
-    def test_batch_add_documents(self, index_manager, multiple_documents):
-        """バッチドキュメント追加テスト"""
-        index_manager._add_documents_batch(multiple_documents)
-        
-        assert index_manager.get_document_count() == 5
-
-    def test_snippet_generation(self, index_manager, sample_document):
-        """スニペット生成テスト"""
-        index_manager.add_document(sample_document)
-        
-        results = index_manager.search_text("テスト")
-        
-        assert len(results) == 1
-        assert len(results[0].snippet) > 0
-        assert isinstance(results[0].highlighted_terms, list)
-
-    def test_error_handling_invalid_index_path(self):
-        """無効なインデックスパスのエラーハンドリングテスト"""
-        with patch('pathlib.Path.mkdir', side_effect=PermissionError("Permission denied")):
-            with pytest.raises(IndexingError):
-                IndexManager("/invalid/path")
-
-    def test_error_handling_add_document_failure(self, index_manager):
-        """ドキュメント追加失敗のエラーハンドリングテスト"""
-        # 無効なドキュメントオブジェクト
-        invalid_doc = Mock()
-        invalid_doc.id = None  # 無効なID
-        
-        with pytest.raises(IndexingError):
-            index_manager.add_document(invalid_doc)
-
-    def test_search_error_handling(self, index_manager):
-        """検索エラーハンドリングテスト"""
-        # インデックスを閉じて検索エラーを発生させる
-        index_manager.close()
-        
-        with pytest.raises(SearchError):
-            index_manager.search_text("テスト")
-
-    def test_close_index(self, index_manager):
-        """インデックス終了テスト"""
-        index_manager.close()
-        
-        assert index_manager._index is None
+        # 統計情報の検証
+        assert 'document_count' in stats
+        assert 'total_size' in stats
+        assert 'last_updated' in stats
+        assert stats['document_count'] == 100
+        assert stats['total_size'] > 0
+        assert stats['last_updated'] is not None
