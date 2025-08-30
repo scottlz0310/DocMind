@@ -26,12 +26,16 @@ class TestCoreSimplified:
         shutil.rmtree(temp_dir)
 
     @pytest.fixture
-    def sample_document(self):
+    def sample_document(self, temp_dir):
         """テスト用ドキュメント"""
         from datetime import datetime
+        # 実際のファイルを作成
+        test_file = temp_dir / "sample.txt"
+        test_file.write_text("これはテスト用のドキュメントです。機械学習について説明します。")
+        
         return Document(
             id="test_doc_1",
-            file_path="/test/sample.txt",
+            file_path=str(test_file),
             title="テストドキュメント",
             content="これはテスト用のドキュメントです。機械学習について説明します。",
             file_type=FileType.TEXT,
@@ -70,9 +74,13 @@ class TestCoreSimplified:
         documents = []
         for i in range(10):
             from datetime import datetime
+            # 実際のファイルを作成
+            test_file = temp_dir / f"doc_{i}.txt"
+            test_file.write_text(f"これはドキュメント{i}の内容です。")
+            
             doc = Document(
                 id=f"doc_{i}",
-                file_path=f"/test/doc_{i}.txt",
+                file_path=str(test_file),
                 title=f"ドキュメント{i}",
                 content=f"これはドキュメント{i}の内容です。",
                 file_type=FileType.TEXT,
@@ -99,32 +107,25 @@ class TestCoreSimplified:
 
     def test_embedding_manager_basic_operations(self, temp_dir):
         """EmbeddingManagerの基本操作テスト"""
-        # モデル読み込みをモック化
-        with patch('sentence_transformers.SentenceTransformer') as mock_model:
-            # モックの設定
-            mock_instance = Mock()
-            mock_instance.encode.return_value = [0.1, 0.2, 0.3, 0.4, 0.5]
-            mock_instance.get_sentence_embedding_dimension.return_value = 5
-            mock_model.return_value = mock_instance
+        # モデル読み込みをモック化しないで実際のモデルを使用
+        embedding_manager = EmbeddingManager(
+            embeddings_path=str(temp_dir / 'embeddings.pkl')
+        )
 
-            embedding_manager = EmbeddingManager(
-                embeddings_path=str(temp_dir / 'embeddings.pkl')
-            )
+        # 埋め込み生成テスト
+        text = "テスト用のテキストです"
+        embedding = embedding_manager.generate_embedding(text)
+        assert embedding is not None
+        assert len(embedding) == 384  # all-MiniLM-L6-v2の実際の次元数
 
-            # 埋め込み生成テスト
-            text = "テスト用のテキストです"
-            embedding = embedding_manager.generate_embedding(text)
-            assert embedding is not None
-            assert len(embedding) == 5
+        # ドキュメント埋め込み追加
+        embedding_manager.add_document_embedding("doc_1", text)
 
-            # ドキュメント埋め込み追加
-            embedding_manager.add_document_embedding("doc_1", text)
-
-            # 類似度検索テスト
-            results = embedding_manager.search_similar("テスト", limit=5)
-            assert len(results) > 0
-            assert results[0][0] == "doc_1"  # ドキュメントID
-            assert isinstance(results[0][1], float)  # 類似度スコア
+        # 類似度検索テスト
+        results = embedding_manager.search_similar("テスト", limit=5)
+        assert len(results) > 0
+        assert results[0][0] == "doc_1"  # ドキュメントID
+        assert isinstance(results[0][1], float)  # 類似度スコア
 
     def test_embedding_manager_cache_operations(self, temp_dir):
         """EmbeddingManagerのキャッシュ操作テスト"""
@@ -182,11 +183,16 @@ class TestCoreSimplified:
 
         for i in range(100):
             from datetime import datetime
+            # 実際のファイルを作成
+            test_file = temp_dir / f"perf_doc_{i}.txt"
+            content = f"これはパフォーマンステスト用のドキュメント{i}です。" * 5
+            test_file.write_text(content)
+            
             doc = Document(
                 id=f"perf_doc_{i}",
-                file_path=f"/perf/doc_{i}.txt",
+                file_path=str(test_file),
                 title=f"パフォーマンステスト{i}",
-                content=f"これはパフォーマンステスト用のドキュメント{i}です。" * 5,
+                content=content,
                 file_type=FileType.TEXT,
                 size=200,
                 created_date=datetime.now(),
@@ -224,11 +230,16 @@ class TestCoreSimplified:
         # 500ドキュメント追加
         for i in range(500):
             from datetime import datetime
+            # 実際のファイルを作成
+            test_file = temp_dir / f"mem_doc_{i}.txt"
+            content = f"メモリテスト用コンテンツ{i}です。" * 20
+            test_file.write_text(content)
+            
             doc = Document(
                 id=f"mem_doc_{i}",
-                file_path=f"/mem/doc_{i}.txt",
+                file_path=str(test_file),
                 title=f"メモリテスト{i}",
-                content=f"メモリテスト用コンテンツ{i}です。" * 20,
+                content=content,
                 file_type=FileType.TEXT,
                 size=400,
                 created_date=datetime.now(),

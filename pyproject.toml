@@ -53,6 +53,7 @@ dev = [
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
     "pytest-benchmark>=4.0.0",
+    "pytest-timeout>=2.1.0",
     # GUI関連テスト（ヘッドレス環境整備後に有効化）
     # "pytest-qt>=4.2.0",
     # "pytest-xvfb>=3.0.0",
