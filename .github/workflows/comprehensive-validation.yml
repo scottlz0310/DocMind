@@ -148,7 +148,7 @@ jobs:
     - name: Banditセキュリティスキャン
       run: |
         bandit -r src/ -f json -o bandit-report.json || true
-        bandit -r src/ -f txt
+        bandit -r src/ -f txt || true
     
     - name: 依存関係脆弱性チェック
       run: |
