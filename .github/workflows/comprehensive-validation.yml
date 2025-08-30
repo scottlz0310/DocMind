@@ -97,7 +97,7 @@ jobs:
           --junit-xml=test-results.xml
     
     - name: テスト結果のアップロード
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results-basic
@@ -150,7 +150,7 @@ jobs:
         semgrep --config=auto src/ --json --output=semgrep-report.json || true
     
     - name: セキュリティレポートのアップロード
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-reports
@@ -192,7 +192,7 @@ jobs:
         python -m memory_profiler tests/validation_framework/run_performance_validation.py > memory-profile.txt || true
     
     - name: パフォーマンス結果のアップロード
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: performance-results
@@ -247,21 +247,21 @@ jobs:
         pip install bandit safety semgrep
     
     - name: 前回の結果ダウンロード
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       continue-on-error: true
       with:
         name: test-results-basic
         path: ./previous-results/
     
     - name: セキュリティレポートダウンロード
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       continue-on-error: true
       with:
         name: security-reports
         path: ./security-reports/
     
     - name: パフォーマンス結果ダウンロード
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       continue-on-error: true
       with:
         name: performance-results
@@ -292,7 +292,7 @@ jobs:
           --output-dir quality_gate_results
     
     - name: 検証結果のアップロード
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: comprehensive-validation-results-${{ matrix.validation-level }}
@@ -309,7 +309,7 @@ jobs:
           --format html
     
     - name: レポートのアップロード
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: validation-report-${{ matrix.validation-level }}
