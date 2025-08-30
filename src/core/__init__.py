@@ -7,4 +7,10 @@ from .file_watcher import FileWatcher
 from .index_manager import IndexManager
 from .indexing_worker import IndexingWorker
 
-__all__ = ['IndexManager', 'EmbeddingManager', 'FileWatcher', 'IndexingWorker', 'DocumentProcessor']
+__all__ = [
+    "IndexManager",
+    "EmbeddingManager",
+    "FileWatcher",
+    "IndexingWorker",
+    "DocumentProcessor",
+]

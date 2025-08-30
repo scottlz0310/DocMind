@@ -19,13 +19,15 @@ class SearchType(Enum):
 
     アプリケーションでサポートされる検索方法を定義します。
     """
-    FULL_TEXT = "full_text"      # 全文検索（Whooshベース）
-    SEMANTIC = "semantic"        # セマンティック検索（埋め込みベース）
-    HYBRID = "hybrid"           # ハイブリッド検索（全文+セマンティック）
+
+    FULL_TEXT = "full_text"  # 全文検索（Whooshベース）
+    SEMANTIC = "semantic"  # セマンティック検索（埋め込みベース）
+    HYBRID = "hybrid"  # ハイブリッド検索（全文+セマンティック）
 
 
 class FileType(Enum):
     """サポートされるファイルタイプを定義する列挙型"""
+
     PDF = "pdf"
     WORD = "word"
     EXCEL = "excel"
@@ -34,7 +36,7 @@ class FileType(Enum):
     UNKNOWN = "unknown"
 
     @classmethod
-    def from_extension(cls, file_path: str) -> 'FileType':
+    def from_extension(cls, file_path: str) -> "FileType":
         """ファイル拡張子からFileTypeを判定
 
         Args:
@@ -45,15 +47,15 @@ class FileType(Enum):
         """
         ext = Path(file_path).suffix.lower()
 
-        if ext == '.pdf':
+        if ext == ".pdf":
             return cls.PDF
-        elif ext in ['.doc', '.docx']:
+        elif ext in [".doc", ".docx"]:
             return cls.WORD
-        elif ext in ['.xls', '.xlsx']:
+        elif ext in [".xls", ".xlsx"]:
             return cls.EXCEL
-        elif ext in ['.md', '.markdown']:
+        elif ext in [".md", ".markdown"]:
             return cls.MARKDOWN
-        elif ext in ['.txt', '.text']:
+        elif ext in [".txt", ".text"]:
             return cls.TEXT
         else:
             return cls.UNKNOWN
@@ -68,18 +70,18 @@ class Document:
     """
 
     # 必須フィールド
-    id: str                                    # ドキュメントの一意識別子
-    file_path: str                            # ファイルの絶対パス
-    title: str                                # ドキュメントのタイトル
-    content: str                              # 抽出されたテキストコンテンツ
-    file_type: FileType                       # ファイルタイプ
-    size: int                                 # ファイルサイズ（バイト）
-    created_date: datetime                    # ファイル作成日時
-    modified_date: datetime                   # ファイル最終更新日時
-    indexed_date: datetime                    # インデックス化日時
+    id: str  # ドキュメントの一意識別子
+    file_path: str  # ファイルの絶対パス
+    title: str  # ドキュメントのタイトル
+    content: str  # 抽出されたテキストコンテンツ
+    file_type: FileType  # ファイルタイプ
+    size: int  # ファイルサイズ（バイト）
+    created_date: datetime  # ファイル作成日時
+    modified_date: datetime  # ファイル最終更新日時
+    indexed_date: datetime  # インデックス化日時
 
     # オプションフィールド
-    content_hash: str = field(default="")     # コンテンツのハッシュ値
+    content_hash: str = field(default="")  # コンテンツのハッシュ値
     metadata: dict[str, Any] = field(default_factory=dict)  # 追加メタデータ
 
     def __post_init__(self):
@@ -108,9 +110,7 @@ class Document:
     def _generate_content_hash(self):
         """コンテンツのハッシュ値を生成"""
         if not self.content_hash and self.content:
-            self.content_hash = hashlib.sha256(
-                self.content.encode('utf-8')
-            ).hexdigest()
+            self.content_hash = hashlib.sha256(self.content.encode("utf-8")).hexdigest()
 
     def _set_default_title(self):
         """デフォルトタイトルを設定"""
@@ -118,7 +118,7 @@ class Document:
             self.title = Path(self.file_path).stem
 
     @classmethod
-    def create_from_file(cls, file_path: str, content: str = "") -> 'Document':
+    def create_from_file(cls, file_path: str, content: str = "") -> "Document":
         """ファイルパスからDocumentインスタンスを作成
 
         Args:
@@ -143,7 +143,7 @@ class Document:
             size=file_stat.st_size,
             created_date=datetime.fromtimestamp(file_stat.st_ctime),
             modified_date=datetime.fromtimestamp(file_stat.st_mtime),
-            indexed_date=datetime.now()
+            indexed_date=datetime.now(),
         )
 
     @staticmethod
@@ -156,7 +156,7 @@ class Document:
         Returns:
             str: 生成されたID
         """
-        return hashlib.md5(str(Path(file_path).absolute()).encode('utf-8')).hexdigest()
+        return hashlib.md5(str(Path(file_path).absolute()).encode("utf-8")).hexdigest()
 
     def is_modified_since_indexing(self) -> bool:
         """インデックス化以降にファイルが変更されたかチェック
@@ -185,14 +185,14 @@ class Document:
         # 文の境界で切り取る
         summary = self.content[:max_length]
         last_sentence_end = max(
-            summary.rfind('。'),
-            summary.rfind('.'),
-            summary.rfind('!'),
-            summary.rfind('?')
+            summary.rfind("。"),
+            summary.rfind("."),
+            summary.rfind("!"),
+            summary.rfind("?"),
         )
 
         if last_sentence_end > max_length // 2:
-            return summary[:last_sentence_end + 1]
+            return summary[: last_sentence_end + 1]
         else:
             return summary + "..."
 
@@ -205,15 +205,15 @@ class SearchResult:
     """
 
     # 必須フィールド
-    document: Document                        # 検索にヒットしたドキュメント
-    score: float                             # 関連度スコア（0.0-1.0）
-    search_type: SearchType                  # 使用された検索タイプ
+    document: Document  # 検索にヒットしたドキュメント
+    score: float  # 関連度スコア（0.0-1.0）
+    search_type: SearchType  # 使用された検索タイプ
 
     # オプションフィールド
-    snippet: str = ""                        # ハイライトされたスニペット
+    snippet: str = ""  # ハイライトされたスニペット
     highlighted_terms: list[str] = field(default_factory=list)  # ハイライト対象の用語
-    relevance_explanation: str = ""          # 関連度の説明
-    rank: int = 0                           # 検索結果内での順位
+    relevance_explanation: str = ""  # 関連度の説明
+    rank: int = 0  # 検索結果内での順位
 
     def __post_init__(self):
         """初期化後の検証"""
@@ -256,7 +256,7 @@ class SearchResult:
         type_names = {
             SearchType.FULL_TEXT: "全文検索",
             SearchType.SEMANTIC: "セマンティック検索",
-            SearchType.HYBRID: "ハイブリッド検索"
+            SearchType.HYBRID: "ハイブリッド検索",
         }
         return type_names.get(self.search_type, "不明")
 
@@ -269,14 +269,16 @@ class SearchQuery:
     """
 
     # 必須フィールド
-    query_text: str                          # 検索クエリテキスト
-    search_type: SearchType                  # 検索タイプ
+    query_text: str  # 検索クエリテキスト
+    search_type: SearchType  # 検索タイプ
 
     # オプションフィールド
-    limit: int = 100                         # 最大結果数
-    file_types: list[FileType] = field(default_factory=list)  # フィルター対象のファイルタイプ
-    date_from: datetime | None = None     # 日付範囲の開始
-    date_to: datetime | None = None       # 日付範囲の終了
+    limit: int = 100  # 最大結果数
+    file_types: list[FileType] = field(
+        default_factory=list
+    )  # フィルター対象のファイルタイプ
+    date_from: datetime | None = None  # 日付範囲の開始
+    date_to: datetime | None = None  # 日付範囲の終了
     folder_paths: list[str] = field(default_factory=list)  # 検索対象フォルダ
     weights: dict[str, float] = field(default_factory=dict)  # ハイブリッド検索の重み
 
@@ -302,20 +304,19 @@ class SearchQuery:
     def _set_default_weights(self):
         """ハイブリッド検索のデフォルト重みを設定"""
         if self.search_type == SearchType.HYBRID and not self.weights:
-            self.weights = {
-                "full_text": 0.6,
-                "semantic": 0.4
-            }
+            self.weights = {"full_text": 0.6, "semantic": 0.4}
 
 
 @dataclass
 class IndexStats:
     """インデックス統計情報を表すデータクラス"""
 
-    total_documents: int = 0                 # 総ドキュメント数
-    total_size: int = 0                     # 総ファイルサイズ
+    total_documents: int = 0  # 総ドキュメント数
+    total_size: int = 0  # 総ファイルサイズ
     last_updated: datetime | None = None  # 最終更新日時
-    file_type_counts: dict[FileType, int] = field(default_factory=dict)  # ファイルタイプ別カウント
+    file_type_counts: dict[FileType, int] = field(
+        default_factory=dict
+    )  # ファイルタイプ別カウント
 
     def get_formatted_size(self) -> str:
         """フォーマットされたサイズを取得
@@ -341,11 +342,11 @@ class RebuildState:
     要件2.1, 6.5に対応。
     """
 
-    thread_id: str | None = None          # 実行中のスレッドID
-    start_time: datetime | None = None    # 処理開始時刻
-    folder_path: str | None = None        # 処理対象フォルダパス
-    is_active: bool = False                  # 処理が実行中かどうか
-    timeout_timer: Any | None = None      # タイムアウト監視用タイマー（QTimer）
+    thread_id: str | None = None  # 実行中のスレッドID
+    start_time: datetime | None = None  # 処理開始時刻
+    folder_path: str | None = None  # 処理対象フォルダパス
+    is_active: bool = False  # 処理が実行中かどうか
+    timeout_timer: Any | None = None  # タイムアウト監視用タイマー（QTimer）
 
     def __post_init__(self):
         """初期化後の検証"""
@@ -444,12 +445,14 @@ class RebuildProgress:
     要件2.2に対応。
     """
 
-    stage: str = "idle"                      # 処理段階: "idle", "scanning", "processing", "indexing", "completed", "error"
-    current_file: str = ""                   # 現在処理中のファイル名
-    files_processed: int = 0                 # 処理済みファイル数
-    total_files: int = 0                     # 総ファイル数
-    percentage: int = 0                      # 進捗率（0-100）
-    message: str = ""                        # カスタムメッセージ
+    stage: str = (
+        "idle"  # 処理段階: "idle", "scanning", "processing", "indexing", "completed", "error"
+    )
+    current_file: str = ""  # 現在処理中のファイル名
+    files_processed: int = 0  # 処理済みファイル数
+    total_files: int = 0  # 総ファイル数
+    percentage: int = 0  # 進捗率（0-100）
+    message: str = ""  # カスタムメッセージ
 
     def __post_init__(self):
         """初期化後の検証と計算"""
@@ -458,7 +461,14 @@ class RebuildProgress:
 
     def _validate_fields(self):
         """フィールドの検証を実行"""
-        valid_stages = ["idle", "scanning", "processing", "indexing", "completed", "error"]
+        valid_stages = [
+            "idle",
+            "scanning",
+            "processing",
+            "indexing",
+            "completed",
+            "error",
+        ]
         if self.stage not in valid_stages:
             raise ValueError(f"無効な段階です: {self.stage}. 有効な値: {valid_stages}")
 
@@ -475,7 +485,9 @@ class RebuildProgress:
     def _calculate_percentage(self):
         """進捗率を自動計算"""
         if self.total_files > 0:
-            self.percentage = min(100, int((self.files_processed / self.total_files) * 100))
+            self.percentage = min(
+                100, int((self.files_processed / self.total_files) * 100)
+            )
         elif self.stage == "completed":
             self.percentage = 100
         else:
@@ -507,7 +519,9 @@ class RebuildProgress:
                 return "ドキュメントを処理中..."
         elif self.stage == "indexing":
             if self.files_processed > 0:
-                return f"インデックスを作成中... ({self.files_processed}ファイル処理済み)"
+                return (
+                    f"インデックスを作成中... ({self.files_processed}ファイル処理済み)"
+                )
             else:
                 return "インデックスを作成中..."
         elif self.stage == "completed":
@@ -534,7 +548,7 @@ class RebuildProgress:
             "percentage": self.percentage,
             "message": self.get_display_message(),
             "has_files": self.total_files > 0,
-            "is_active": self.stage in ["scanning", "processing", "indexing"]
+            "is_active": self.stage in ["scanning", "processing", "indexing"],
         }
 
     def update_scanning(self, files_found: int = 0) -> None:

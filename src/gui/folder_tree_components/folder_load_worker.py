@@ -22,7 +22,7 @@ class FolderLoadWorker(QObject):
 
     # シグナル定義
     folder_loaded = Signal(str, list)  # path, subdirectories
-    load_error = Signal(str, str)      # path, error_message
+    load_error = Signal(str, str)  # path, error_message
     finished = Signal()
 
     def __init__(self, root_path: str, max_depth: int = 3):
@@ -101,7 +101,9 @@ class FolderLoadWorker(QObject):
                 self.load_error.emit(path, f"OSエラー: {e}")
         except Exception as e:
             if not self.should_stop:
-                self.load_error.emit(path, f"予期しないエラー: {type(e).__name__}: {str(e)}")
+                self.load_error.emit(
+                    path, f"予期しないエラー: {type(e).__name__}: {str(e)}"
+                )
 
     def _check_memory_limits(self, path: str, depth: int) -> bool:
         """
@@ -159,7 +161,7 @@ class FolderLoadWorker(QObject):
                     if os.path.islink(item_path):
                         if self._is_safe_symlink(item_path, item):
                             subdirs.append(item_path)
-                    elif os.path.isdir(item_path) and not item.startswith('.'):
+                    elif os.path.isdir(item_path) and not item.startswith("."):
                         subdirs.append(item_path)
 
                 except (OSError, PermissionError):
@@ -185,7 +187,7 @@ class FolderLoadWorker(QObject):
         """
         try:
             real_path = os.path.realpath(item_path)
-            return os.path.isdir(real_path) and not item.startswith('.')
+            return os.path.isdir(real_path) and not item.startswith(".")
         except (OSError, RuntimeError):
             # シンボリックリンクの解決に失敗した場合は安全でないと判断
             return False

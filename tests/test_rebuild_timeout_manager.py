@@ -31,7 +31,9 @@ class TestRebuildTimeoutManager:
     def setup_method(self, qapp):
         """各テストメソッドの前に実行される初期化処理"""
         self.app = qapp
-        self.timeout_manager = RebuildTimeoutManager(timeout_minutes=1)  # テスト用に1分に設定
+        self.timeout_manager = RebuildTimeoutManager(
+            timeout_minutes=1
+        )  # テスト用に1分に設定
         self.mock_timeout_handler = Mock()
         self.timeout_manager.timeout_occurred.connect(self.mock_timeout_handler)
         yield
@@ -149,7 +151,7 @@ class TestRebuildTimeoutManager:
         assert len(self.timeout_manager.active_timers) == 0
         assert len(self.timeout_manager.get_active_timeouts()) == 0
 
-    @patch('src.core.rebuild_timeout_manager.logger')
+    @patch("src.core.rebuild_timeout_manager.logger")
     def test_logging(self, mock_logger):
         """ログ出力のテスト"""
         thread_id = "test_thread_logging"

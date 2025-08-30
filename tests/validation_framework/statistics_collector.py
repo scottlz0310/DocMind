@@ -21,6 +21,7 @@ from scipy import stats
 @dataclass
 class StatisticalSummary:
     """統計サマリーを格納するデータクラス"""
+
     count: int
     mean: float
     median: float
@@ -35,22 +36,23 @@ class StatisticalSummary:
     def to_dict(self) -> dict[str, float]:
         """辞書形式に変換（JSON serialization対応）"""
         return {
-            'count': self.count,
-            'mean': self.mean,
-            'median': self.median,
-            'std_dev': self.std_dev,
-            'min_value': self.min_value,
-            'max_value': self.max_value,
-            'percentile_25': self.percentile_25,
-            'percentile_75': self.percentile_75,
-            'percentile_95': self.percentile_95,
-            'percentile_99': self.percentile_99
+            "count": self.count,
+            "mean": self.mean,
+            "median": self.median,
+            "std_dev": self.std_dev,
+            "min_value": self.min_value,
+            "max_value": self.max_value,
+            "percentile_25": self.percentile_25,
+            "percentile_75": self.percentile_75,
+            "percentile_95": self.percentile_95,
+            "percentile_99": self.percentile_99,
         }
 
 
 @dataclass
 class TrendAnalysis:
     """トレンド分析結果を格納するデータクラス"""
+
     slope: float
     intercept: float
     r_value: float
@@ -62,13 +64,13 @@ class TrendAnalysis:
     def to_dict(self) -> dict[str, Any]:
         """辞書形式に変換（JSON serialization対応）"""
         return {
-            'slope': self.slope,
-            'intercept': self.intercept,
-            'r_value': self.r_value,
-            'p_value': self.p_value,
-            'std_err': self.std_err,
-            'trend_direction': self.trend_direction,
-            'confidence_level': self.confidence_level
+            "slope": self.slope,
+            "intercept": self.intercept,
+            "r_value": self.r_value,
+            "p_value": self.p_value,
+            "std_err": self.std_err,
+            "trend_direction": self.trend_direction,
+            "confidence_level": self.confidence_level,
         }
 
 
@@ -90,7 +92,9 @@ class StatisticsCollector:
         self.memory_metrics: list[dict[str, float]] = []
 
         # 時系列データ
-        self.time_series_data: dict[str, list[tuple[datetime, float]]] = defaultdict(list)
+        self.time_series_data: dict[str, list[tuple[datetime, float]]] = defaultdict(
+            list
+        )
 
         # 統計キャッシュ
         self._statistics_cache: dict[str, Any] = {}
@@ -109,10 +113,16 @@ class StatisticsCollector:
         self.validation_results.append(validation_result)
 
         # 時系列データの更新
-        timestamp = getattr(validation_result, 'timestamp', datetime.now())
-        self.time_series_data['execution_time'].append((timestamp, validation_result.execution_time))
-        self.time_series_data['memory_usage'].append((timestamp, validation_result.memory_usage))
-        self.time_series_data['success_rate'].append((timestamp, 1.0 if validation_result.success else 0.0))
+        timestamp = getattr(validation_result, "timestamp", datetime.now())
+        self.time_series_data["execution_time"].append(
+            (timestamp, validation_result.execution_time)
+        )
+        self.time_series_data["memory_usage"].append(
+            (timestamp, validation_result.memory_usage)
+        )
+        self.time_series_data["success_rate"].append(
+            (timestamp, 1.0 if validation_result.success else 0.0)
+        )
 
         # キャッシュの無効化
         self._invalidate_cache()
@@ -127,14 +137,14 @@ class StatisticsCollector:
             metrics: パフォーマンス指標の辞書
         """
         metrics_with_timestamp = metrics.copy()
-        metrics_with_timestamp['timestamp'] = time.time()
+        metrics_with_timestamp["timestamp"] = time.time()
         self.performance_metrics.append(metrics_with_timestamp)
 
         # 時系列データの更新
         timestamp = datetime.now()
         for key, value in metrics.items():
             if isinstance(value, int | float):
-                self.time_series_data[f'performance_{key}'].append((timestamp, value))
+                self.time_series_data[f"performance_{key}"].append((timestamp, value))
 
         self._invalidate_cache()
         self.logger.debug("パフォーマンス指標を追加しました")
@@ -147,14 +157,14 @@ class StatisticsCollector:
             metrics: メモリ指標の辞書
         """
         metrics_with_timestamp = metrics.copy()
-        metrics_with_timestamp['timestamp'] = time.time()
+        metrics_with_timestamp["timestamp"] = time.time()
         self.memory_metrics.append(metrics_with_timestamp)
 
         # 時系列データの更新
         timestamp = datetime.now()
         for key, value in metrics.items():
             if isinstance(value, int | float):
-                self.time_series_data[f'memory_{key}'].append((timestamp, value))
+                self.time_series_data[f"memory_{key}"].append((timestamp, value))
 
         self._invalidate_cache()
         self.logger.debug("メモリ指標を追加しました")
@@ -170,13 +180,13 @@ class StatisticsCollector:
             return self._statistics_cache
 
         summary = {
-            'basic_statistics': self._calculate_basic_statistics(),
-            'performance_analysis': self._analyze_performance_trends(),
-            'quality_metrics': self._calculate_quality_metrics(),
-            'trend_analysis': self._perform_trend_analysis(),
-            'anomaly_detection': self._detect_anomalies(),
-            'correlation_analysis': self._analyze_correlations(),
-            'distribution_analysis': self._analyze_distributions()
+            "basic_statistics": self._calculate_basic_statistics(),
+            "performance_analysis": self._analyze_performance_trends(),
+            "quality_metrics": self._calculate_quality_metrics(),
+            "trend_analysis": self._perform_trend_analysis(),
+            "anomaly_detection": self._detect_anomalies(),
+            "correlation_analysis": self._analyze_correlations(),
+            "distribution_analysis": self._analyze_distributions(),
         }
 
         # キャッシュの更新
@@ -200,20 +210,22 @@ class StatisticsCollector:
 
         # 成功率の計算
         total_tests = len(self.validation_results)
-        successful_tests = sum(1 for result in self.validation_results if result.success)
+        successful_tests = sum(
+            1 for result in self.validation_results if result.success
+        )
         success_rate = (successful_tests / total_tests) * 100 if total_tests > 0 else 0
 
         # テストカテゴリ別統計
         category_stats = self._calculate_category_statistics()
 
         return {
-            'total_tests': total_tests,
-            'successful_tests': successful_tests,
-            'failed_tests': total_tests - successful_tests,
-            'overall_success_rate': success_rate,
-            'execution_time_stats': execution_stats,
-            'memory_usage_stats': memory_stats,
-            'category_statistics': category_stats
+            "total_tests": total_tests,
+            "successful_tests": successful_tests,
+            "failed_tests": total_tests - successful_tests,
+            "overall_success_rate": success_rate,
+            "execution_time_stats": execution_stats,
+            "memory_usage_stats": memory_stats,
+            "category_statistics": category_stats,
         }
 
     def _calculate_statistical_summary(self, values: list[float]) -> StatisticalSummary:
@@ -233,7 +245,7 @@ class StatisticsCollector:
             percentile_25=float(np.percentile(np_values, 25)),
             percentile_75=float(np.percentile(np_values, 75)),
             percentile_95=float(np.percentile(np_values, 95)),
-            percentile_99=float(np.percentile(np_values, 99))
+            percentile_99=float(np.percentile(np_values, 99)),
         )
 
     def _calculate_category_statistics(self) -> dict[str, dict[str, Any]]:
@@ -254,33 +266,37 @@ class StatisticsCollector:
             memory_usages = [r.memory_usage for r in results]
 
             category_stats[category] = {
-                'total_tests': total,
-                'successful_tests': successful,
-                'success_rate': (successful / total) * 100 if total > 0 else 0,
-                'avg_execution_time': statistics.mean(execution_times) if execution_times else 0,
-                'avg_memory_usage': statistics.mean(memory_usages) if memory_usages else 0
+                "total_tests": total,
+                "successful_tests": successful,
+                "success_rate": (successful / total) * 100 if total > 0 else 0,
+                "avg_execution_time": (
+                    statistics.mean(execution_times) if execution_times else 0
+                ),
+                "avg_memory_usage": (
+                    statistics.mean(memory_usages) if memory_usages else 0
+                ),
             }
 
         return category_stats
 
     def _extract_category(self, test_name: str) -> str:
         """テスト名からカテゴリを抽出"""
-        if 'startup' in test_name.lower():
-            return 'startup'
-        elif 'document' in test_name.lower():
-            return 'document_processing'
-        elif 'search' in test_name.lower():
-            return 'search'
-        elif 'gui' in test_name.lower():
-            return 'gui'
-        elif 'performance' in test_name.lower():
-            return 'performance'
-        elif 'memory' in test_name.lower():
-            return 'memory'
-        elif 'error' in test_name.lower():
-            return 'error_handling'
+        if "startup" in test_name.lower():
+            return "startup"
+        elif "document" in test_name.lower():
+            return "document_processing"
+        elif "search" in test_name.lower():
+            return "search"
+        elif "gui" in test_name.lower():
+            return "gui"
+        elif "performance" in test_name.lower():
+            return "performance"
+        elif "memory" in test_name.lower():
+            return "memory"
+        elif "error" in test_name.lower():
+            return "error_handling"
         else:
-            return 'other'
+            return "other"
 
     def _analyze_performance_trends(self) -> dict[str, Any]:
         """パフォーマンストレンドの分析"""
@@ -290,21 +306,21 @@ class StatisticsCollector:
         trends = {}
 
         # CPU使用率のトレンド
-        cpu_values = [m.get('cpu_percent', 0) for m in self.performance_metrics]
+        cpu_values = [m.get("cpu_percent", 0) for m in self.performance_metrics]
         if cpu_values:
-            trends['cpu_usage'] = self._calculate_trend(cpu_values)
+            trends["cpu_usage"] = self._calculate_trend(cpu_values)
 
         # メモリ使用率のトレンド
-        memory_values = [m.get('memory_percent', 0) for m in self.performance_metrics]
+        memory_values = [m.get("memory_percent", 0) for m in self.performance_metrics]
         if memory_values:
-            trends['memory_usage'] = self._calculate_trend(memory_values)
+            trends["memory_usage"] = self._calculate_trend(memory_values)
 
         return trends
 
     def _calculate_trend(self, values: list[float]) -> TrendAnalysis:
         """トレンドの計算"""
         if len(values) < 2:
-            return TrendAnalysis(0, 0, 0, 1, 0, 'stable', 0)
+            return TrendAnalysis(0, 0, 0, 1, 0, "stable", 0)
 
         x = np.arange(len(values))
         y = np.array(values)
@@ -314,14 +330,14 @@ class StatisticsCollector:
 
         # トレンド方向の判定
         if abs(slope) < 0.01:  # 閾値は調整可能
-            trend_direction = 'stable'
+            trend_direction = "stable"
         elif slope > 0:
-            trend_direction = 'increasing'
+            trend_direction = "increasing"
         else:
-            trend_direction = 'decreasing'
+            trend_direction = "decreasing"
 
         # 信頼度の計算（R²値）
-        confidence_level = r_value ** 2
+        confidence_level = r_value**2
 
         return TrendAnalysis(
             slope=slope,
@@ -330,7 +346,7 @@ class StatisticsCollector:
             p_value=p_value,
             std_err=std_err,
             trend_direction=trend_direction,
-            confidence_level=confidence_level
+            confidence_level=confidence_level,
         )
 
     def _calculate_quality_metrics(self) -> dict[str, float]:
@@ -340,29 +356,41 @@ class StatisticsCollector:
 
         # 基本品質指標
         total_tests = len(self.validation_results)
-        successful_tests = sum(1 for result in self.validation_results if result.success)
+        successful_tests = sum(
+            1 for result in self.validation_results if result.success
+        )
 
         # 実行時間の安定性（変動係数）
         execution_times = [result.execution_time for result in self.validation_results]
-        execution_cv = (statistics.stdev(execution_times) / statistics.mean(execution_times)) if len(execution_times) > 1 and statistics.mean(execution_times) > 0 else 0
+        execution_cv = (
+            (statistics.stdev(execution_times) / statistics.mean(execution_times))
+            if len(execution_times) > 1 and statistics.mean(execution_times) > 0
+            else 0
+        )
 
         # メモリ使用量の安定性
         memory_usages = [result.memory_usage for result in self.validation_results]
-        memory_cv = (statistics.stdev(memory_usages) / statistics.mean(memory_usages)) if len(memory_usages) > 1 and statistics.mean(memory_usages) > 0 else 0
+        memory_cv = (
+            (statistics.stdev(memory_usages) / statistics.mean(memory_usages))
+            if len(memory_usages) > 1 and statistics.mean(memory_usages) > 0
+            else 0
+        )
 
         # 品質スコアの計算（0-100）
         success_score = (successful_tests / total_tests) * 100
-        stability_score = max(0, 100 - (execution_cv * 100))  # 変動係数が小さいほど高スコア
+        stability_score = max(
+            0, 100 - (execution_cv * 100)
+        )  # 変動係数が小さいほど高スコア
 
-        overall_quality_score = (success_score * 0.7 + stability_score * 0.3)
+        overall_quality_score = success_score * 0.7 + stability_score * 0.3
 
         return {
-            'success_rate': success_score,
-            'execution_time_stability': 100 - (execution_cv * 100),
-            'memory_usage_stability': 100 - (memory_cv * 100),
-            'overall_quality_score': overall_quality_score,
-            'execution_time_cv': execution_cv,
-            'memory_usage_cv': memory_cv
+            "success_rate": success_score,
+            "execution_time_stability": 100 - (execution_cv * 100),
+            "memory_usage_stability": 100 - (memory_cv * 100),
+            "overall_quality_score": overall_quality_score,
+            "execution_time_cv": execution_cv,
+            "memory_usage_cv": memory_cv,
         }
 
     def _perform_trend_analysis(self) -> dict[str, Any]:
@@ -374,10 +402,10 @@ class StatisticsCollector:
                 values = [value for _, value in time_series]
                 trend = self._calculate_trend(values)
                 trends[metric_name] = {
-                    'direction': trend.trend_direction,
-                    'slope': trend.slope,
-                    'confidence': trend.confidence_level,
-                    'p_value': trend.p_value
+                    "direction": trend.trend_direction,
+                    "slope": trend.slope,
+                    "confidence": trend.confidence_level,
+                    "p_value": trend.p_value,
                 }
 
         return trends
@@ -389,20 +417,24 @@ class StatisticsCollector:
         # 実行時間の異常値検出
         execution_times = [result.execution_time for result in self.validation_results]
         if execution_times:
-            execution_anomalies = self._detect_outliers(execution_times, 'execution_time')
+            execution_anomalies = self._detect_outliers(
+                execution_times, "execution_time"
+            )
             if execution_anomalies:
-                anomalies['execution_time'] = execution_anomalies
+                anomalies["execution_time"] = execution_anomalies
 
         # メモリ使用量の異常値検出
         memory_usages = [result.memory_usage for result in self.validation_results]
         if memory_usages:
-            memory_anomalies = self._detect_outliers(memory_usages, 'memory_usage')
+            memory_anomalies = self._detect_outliers(memory_usages, "memory_usage")
             if memory_anomalies:
-                anomalies['memory_usage'] = memory_anomalies
+                anomalies["memory_usage"] = memory_anomalies
 
         return anomalies
 
-    def _detect_outliers(self, values: list[float], metric_name: str) -> list[dict[str, Any]]:
+    def _detect_outliers(
+        self, values: list[float], metric_name: str
+    ) -> list[dict[str, Any]]:
         """外れ値の検出（IQR法）"""
         if len(values) < 4:
             return []
@@ -418,16 +450,18 @@ class StatisticsCollector:
         outliers = []
         for i, value in enumerate(values):
             if value < lower_bound or value > upper_bound:
-                outliers.append({
-                    'index': i,
-                    'value': value,
-                    'lower_bound': lower_bound,
-                    'upper_bound': upper_bound,
-                    'deviation_factor': max(
-                        (lower_bound - value) / iqr if value < lower_bound else 0,
-                        (value - upper_bound) / iqr if value > upper_bound else 0
-                    )
-                })
+                outliers.append(
+                    {
+                        "index": i,
+                        "value": value,
+                        "lower_bound": lower_bound,
+                        "upper_bound": upper_bound,
+                        "deviation_factor": max(
+                            (lower_bound - value) / iqr if value < lower_bound else 0,
+                            (value - upper_bound) / iqr if value > upper_bound else 0,
+                        ),
+                    }
+                )
 
         return outliers
 
@@ -444,10 +478,10 @@ class StatisticsCollector:
 
         if execution_times and memory_usages:
             correlation, p_value = stats.pearsonr(execution_times, memory_usages)
-            correlations['execution_time_vs_memory'] = {
-                'correlation': correlation,
-                'p_value': p_value,
-                'significance': 'significant' if p_value < 0.05 else 'not_significant'
+            correlations["execution_time_vs_memory"] = {
+                "correlation": correlation,
+                "p_value": p_value,
+                "significance": "significant" if p_value < 0.05 else "not_significant",
             }
 
         return correlations
@@ -459,12 +493,16 @@ class StatisticsCollector:
         # 実行時間の分布分析
         execution_times = [result.execution_time for result in self.validation_results]
         if execution_times:
-            distributions['execution_time'] = self._analyze_single_distribution(execution_times)
+            distributions["execution_time"] = self._analyze_single_distribution(
+                execution_times
+            )
 
         # メモリ使用量の分布分析
         memory_usages = [result.memory_usage for result in self.validation_results]
         if memory_usages:
-            distributions['memory_usage'] = self._analyze_single_distribution(memory_usages)
+            distributions["memory_usage"] = self._analyze_single_distribution(
+                memory_usages
+            )
 
         return distributions
 
@@ -485,26 +523,30 @@ class StatisticsCollector:
         kurtosis = float(stats.kurtosis(np_values))
 
         return {
-            'is_normal_distribution': is_normal,
-            'shapiro_statistic': shapiro_stat,
-            'shapiro_p_value': shapiro_p,
-            'skewness': skewness,
-            'kurtosis': kurtosis,
-            'distribution_type': self._classify_distribution(skewness, kurtosis, is_normal)
+            "is_normal_distribution": is_normal,
+            "shapiro_statistic": shapiro_stat,
+            "shapiro_p_value": shapiro_p,
+            "skewness": skewness,
+            "kurtosis": kurtosis,
+            "distribution_type": self._classify_distribution(
+                skewness, kurtosis, is_normal
+            ),
         }
 
-    def _classify_distribution(self, skewness: float, kurtosis: float, is_normal: bool) -> str:
+    def _classify_distribution(
+        self, skewness: float, kurtosis: float, is_normal: bool
+    ) -> str:
         """分布の分類"""
         if is_normal:
-            return 'normal'
+            return "normal"
         elif abs(skewness) > 1:
-            return 'highly_skewed'
+            return "highly_skewed"
         elif abs(skewness) > 0.5:
-            return 'moderately_skewed'
+            return "moderately_skewed"
         elif abs(kurtosis) > 1:
-            return 'heavy_tailed' if kurtosis > 0 else 'light_tailed'
+            return "heavy_tailed" if kurtosis > 0 else "light_tailed"
         else:
-            return 'approximately_normal'
+            return "approximately_normal"
 
     def _is_cache_valid(self) -> bool:
         """キャッシュの有効性チェック"""
@@ -519,7 +561,7 @@ class StatisticsCollector:
         self._statistics_cache.clear()
         self._cache_timestamp = None
 
-    def export_statistics(self, file_path: str, format: str = 'json') -> None:
+    def export_statistics(self, file_path: str, format: str = "json") -> None:
         """
         統計情報のエクスポート
 
@@ -529,15 +571,15 @@ class StatisticsCollector:
         """
         summary = self.get_summary()
 
-        if format.lower() == 'json':
-            with open(file_path, 'w', encoding='utf-8') as f:
+        if format.lower() == "json":
+            with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(summary, f, ensure_ascii=False, indent=2, default=str)
-        elif format.lower() == 'csv':
+        elif format.lower() == "csv":
             # 基本統計のみCSV出力
-            basic_stats = summary.get('basic_statistics', {})
-            with open(file_path, 'w', newline='', encoding='utf-8') as f:
+            basic_stats = summary.get("basic_statistics", {})
+            with open(file_path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
-                writer.writerow(['指標', '値'])
+                writer.writerow(["指標", "値"])
                 for key, value in basic_stats.items():
                     if isinstance(value, int | float | str):
                         writer.writerow([key, value])
@@ -558,9 +600,17 @@ class StatisticsCollector:
         memory_usages = [result.memory_usage for result in self.validation_results]
 
         return {
-            'baseline_execution_time_p95': float(np.percentile(execution_times, 95)) if execution_times else 0,
-            'baseline_memory_usage_p95': float(np.percentile(memory_usages, 95)) if memory_usages else 0,
-            'baseline_success_rate': (sum(1 for r in self.validation_results if r.success) / len(self.validation_results)) * 100
+            "baseline_execution_time_p95": (
+                float(np.percentile(execution_times, 95)) if execution_times else 0
+            ),
+            "baseline_memory_usage_p95": (
+                float(np.percentile(memory_usages, 95)) if memory_usages else 0
+            ),
+            "baseline_success_rate": (
+                sum(1 for r in self.validation_results if r.success)
+                / len(self.validation_results)
+            )
+            * 100,
         }
 
     def cleanup(self) -> None:

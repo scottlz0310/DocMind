@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 
 # GUI環境の設定
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 # プロジェクトルートをPythonパスに追加
 project_root = Path(__file__).parent.parent.parent
@@ -24,6 +24,7 @@ from .base_validator import BaseValidator, ValidationConfig
 
 class TimeoutError(Exception):
     """タイムアウトエラー"""
+
     pass
 
 
@@ -65,7 +66,9 @@ class GUIFunctionalityValidator(BaseValidator):
         if timeout_seconds is None:
             timeout_seconds = self.timeout_seconds
 
-        self.logger.info(f"タイムアウト {timeout_seconds}秒で関数 {func.__name__} を実行します")
+        self.logger.info(
+            f"タイムアウト {timeout_seconds}秒で関数 {func.__name__} を実行します"
+        )
 
         # Windowsではsignalが制限されているため、簡単なタイムアウト実装
         start_time = time.time()
@@ -78,10 +81,16 @@ class GUIFunctionalityValidator(BaseValidator):
         except Exception as e:
             elapsed = time.time() - start_time
             if elapsed > timeout_seconds:
-                self.logger.error(f"関数 {func.__name__} が {elapsed:.3f}秒でタイムアウトしました")
-                raise TimeoutError(f"関数 {func.__name__} がタイムアウトしました ({elapsed:.3f}秒)")
+                self.logger.error(
+                    f"関数 {func.__name__} が {elapsed:.3f}秒でタイムアウトしました"
+                )
+                raise TimeoutError(
+                    f"関数 {func.__name__} がタイムアウトしました ({elapsed:.3f}秒)"
+                )
             else:
-                self.logger.error(f"関数 {func.__name__} でエラーが発生しました: {str(e)}")
+                self.logger.error(
+                    f"関数 {func.__name__} でエラーが発生しました: {str(e)}"
+                )
                 raise
 
     def setup_test_environment(self) -> None:
@@ -99,7 +108,9 @@ class GUIFunctionalityValidator(BaseValidator):
             self.logger.info("GUI機能検証のテスト環境セットアップが完了しました")
 
         except TimeoutError as e:
-            self.logger.error(f"テスト環境のセットアップがタイムアウトしました: {str(e)}")
+            self.logger.error(
+                f"テスト環境のセットアップがタイムアウトしました: {str(e)}"
+            )
             raise DocMindException(f"GUI検証環境セットアップタイムアウト: {str(e)}")
         except Exception as e:
             self.logger.error(f"テスト環境のセットアップに失敗しました: {str(e)}")
@@ -128,6 +139,7 @@ class GUIFunctionalityValidator(BaseValidator):
             self.logger.info("PySide6のインポートを試行します")
             from PySide6.QtCore import Qt
             from PySide6.QtWidgets import QApplication
+
             self.logger.info("PySide6のインポートが成功しました")
 
             # QApplicationの基本動作確認
@@ -162,11 +174,11 @@ class GUIFunctionalityValidator(BaseValidator):
 
         # 重要なGUIモジュールのインポートテスト
         gui_modules = [
-            ('src.gui.main_window', 'MainWindow'),
-            ('src.gui.folder_tree', 'FolderTreeContainer'),
-            ('src.gui.search_interface', 'SearchInterface'),
-            ('src.gui.search_results', 'SearchResultsWidget'),
-            ('src.gui.preview_widget', 'PreviewWidget'),
+            ("src.gui.main_window", "MainWindow"),
+            ("src.gui.folder_tree", "FolderTreeContainer"),
+            ("src.gui.search_interface", "SearchInterface"),
+            ("src.gui.search_results", "SearchResultsWidget"),
+            ("src.gui.preview_widget", "PreviewWidget"),
         ]
 
         import_failures = []
@@ -178,21 +190,27 @@ class GUIFunctionalityValidator(BaseValidator):
 
                 self.assert_condition(
                     gui_class is not None,
-                    f"{module_name}.{class_name}が正常にインポートできること"
+                    f"{module_name}.{class_name}が正常にインポートできること",
                 )
 
                 self.logger.debug(f"✓ {module_name}.{class_name} インポート成功")
 
             except ImportError as e:
                 import_failures.append(f"{module_name}.{class_name}: {str(e)}")
-                self.logger.error(f"✗ {module_name}.{class_name} インポート失敗: {str(e)}")
+                self.logger.error(
+                    f"✗ {module_name}.{class_name} インポート失敗: {str(e)}"
+                )
             except AttributeError:
-                import_failures.append(f"{module_name}.{class_name}: クラスが見つかりません")
-                self.logger.error(f"✗ {module_name}.{class_name} クラスが見つかりません")
+                import_failures.append(
+                    f"{module_name}.{class_name}: クラスが見つかりません"
+                )
+                self.logger.error(
+                    f"✗ {module_name}.{class_name} クラスが見つかりません"
+                )
 
         self.assert_condition(
             len(import_failures) == 0,
-            f"すべてのGUIモジュールが正常にインポートできること。失敗: {import_failures}"
+            f"すべてのGUIモジュールが正常にインポートできること。失敗: {import_failures}",
         )
 
         self.logger.info("GUI関連モジュールのインポート検証が完了しました")
@@ -228,15 +246,15 @@ class GUIFunctionalityValidator(BaseValidator):
 
             # 基本ウィジェットの作成テスト
             widgets_to_test = [
-                ('QMainWindow', QMainWindow),
-                ('QWidget', QWidget),
-                ('QLabel', QLabel),
-                ('QPushButton', QPushButton),
-                ('QLineEdit', QLineEdit),
-                ('QTextEdit', QTextEdit),
-                ('QTreeWidget', QTreeWidget),
-                ('QListWidget', QListWidget),
-                ('QSplitter', QSplitter),
+                ("QMainWindow", QMainWindow),
+                ("QWidget", QWidget),
+                ("QLabel", QLabel),
+                ("QPushButton", QPushButton),
+                ("QLineEdit", QLineEdit),
+                ("QTextEdit", QTextEdit),
+                ("QTreeWidget", QTreeWidget),
+                ("QListWidget", QListWidget),
+                ("QSplitter", QSplitter),
             ]
 
             created_widgets = []
@@ -247,8 +265,7 @@ class GUIFunctionalityValidator(BaseValidator):
                     created_widgets.append(widget)
 
                     self.assert_condition(
-                        widget is not None,
-                        f"{widget_name}が正常に作成できること"
+                        widget is not None, f"{widget_name}が正常に作成できること"
                     )
 
                     self.logger.debug(f"✓ {widget_name} 作成成功")
@@ -259,8 +276,8 @@ class GUIFunctionalityValidator(BaseValidator):
 
             # レイアウトの作成テスト
             layout_classes = [
-                ('QVBoxLayout', QVBoxLayout),
-                ('QHBoxLayout', QHBoxLayout),
+                ("QVBoxLayout", QVBoxLayout),
+                ("QHBoxLayout", QHBoxLayout),
             ]
 
             for layout_name, layout_class in layout_classes:
@@ -268,8 +285,7 @@ class GUIFunctionalityValidator(BaseValidator):
                     layout = layout_class()
 
                     self.assert_condition(
-                        layout is not None,
-                        f"{layout_name}が正常に作成できること"
+                        layout is not None, f"{layout_name}が正常に作成できること"
                     )
 
                     self.logger.debug(f"✓ {layout_name} 作成成功")
@@ -288,7 +304,9 @@ class GUIFunctionalityValidator(BaseValidator):
             app.processEvents()
 
         except Exception as e:
-            self.logger.error(f"Qtウィジェット作成検証中にエラーが発生しました: {str(e)}")
+            self.logger.error(
+                f"Qtウィジェット作成検証中にエラーが発生しました: {str(e)}"
+            )
             raise
 
         self.logger.info("基本的なQtウィジェット作成検証が完了しました")
@@ -316,13 +334,12 @@ class GUIFunctionalityValidator(BaseValidator):
 
                 self.assert_condition(
                     MainWindow is not None,
-                    "MainWindowクラスが正常にインポートできること"
+                    "MainWindowクラスが正常にインポートできること",
                 )
 
                 # クラスが呼び出し可能であることを確認
                 self.assert_condition(
-                    callable(MainWindow),
-                    "MainWindowクラスが呼び出し可能であること"
+                    callable(MainWindow), "MainWindowクラスが呼び出し可能であること"
                 )
 
                 self.logger.info("MainWindowクラスのインポートと基本検証が成功しました")
@@ -335,7 +352,9 @@ class GUIFunctionalityValidator(BaseValidator):
                 raise
 
         except Exception as e:
-            self.logger.error(f"メインウィンドウのインスタンス化検証中にエラーが発生しました: {str(e)}")
+            self.logger.error(
+                f"メインウィンドウのインスタンス化検証中にエラーが発生しました: {str(e)}"
+            )
             raise
 
         self.logger.info("メインウィンドウのインスタンス化検証が完了しました")
@@ -359,47 +378,49 @@ class GUIFunctionalityValidator(BaseValidator):
             # 各コンポーネントのインターフェース検証
             component_tests = [
                 {
-                    'name': 'SearchInterface',
-                    'module': 'src.gui.search_interface',
-                    'class': 'SearchInterface',
-                    'expected_methods': ['search_input', 'search_button'],
-                    'expected_signals': []
+                    "name": "SearchInterface",
+                    "module": "src.gui.search_interface",
+                    "class": "SearchInterface",
+                    "expected_methods": ["search_input", "search_button"],
+                    "expected_signals": [],
                 },
                 {
-                    'name': 'FolderTreeContainer',
-                    'module': 'src.gui.folder_tree',
-                    'class': 'FolderTreeContainer',
-                    'expected_methods': ['tree_widget', 'set_root_path'],
-                    'expected_signals': []
+                    "name": "FolderTreeContainer",
+                    "module": "src.gui.folder_tree",
+                    "class": "FolderTreeContainer",
+                    "expected_methods": ["tree_widget", "set_root_path"],
+                    "expected_signals": [],
                 },
                 {
-                    'name': 'SearchResultsWidget',
-                    'module': 'src.gui.search_results',
-                    'class': 'SearchResultsWidget',
-                    'expected_methods': ['display_results'],
-                    'expected_signals': []
+                    "name": "SearchResultsWidget",
+                    "module": "src.gui.search_results",
+                    "class": "SearchResultsWidget",
+                    "expected_methods": ["display_results"],
+                    "expected_signals": [],
                 },
                 {
-                    'name': 'PreviewWidget',
-                    'module': 'src.gui.preview_widget',
-                    'class': 'PreviewWidget',
-                    'expected_methods': ['display_document'],
-                    'expected_signals': []
-                }
+                    "name": "PreviewWidget",
+                    "module": "src.gui.preview_widget",
+                    "class": "PreviewWidget",
+                    "expected_methods": ["display_document"],
+                    "expected_signals": [],
+                },
             ]
 
             for component_test in component_tests:
                 try:
                     # モジュールのインポート
-                    module = __import__(component_test['module'], fromlist=[component_test['class']])
-                    component_class = getattr(module, component_test['class'])
+                    module = __import__(
+                        component_test["module"], fromlist=[component_test["class"]]
+                    )
+                    component_class = getattr(module, component_test["class"])
 
                     # インスタンスの作成（可能な場合）
                     try:
                         instance = component_class()
 
                         # 期待されるメソッド/属性の確認
-                        for expected_method in component_test['expected_methods']:
+                        for expected_method in component_test["expected_methods"]:
                             has_method = hasattr(instance, expected_method)
                             self.logger.debug(
                                 f"{component_test['name']}.{expected_method}: {'✓' if has_method else '✗'}"
@@ -416,20 +437,28 @@ class GUIFunctionalityValidator(BaseValidator):
 
                     self.assert_condition(
                         component_class is not None,
-                        f"{component_test['name']}クラスが存在すること"
+                        f"{component_test['name']}クラスが存在すること",
                     )
 
-                    self.logger.debug(f"✓ {component_test['name']} インターフェース確認完了")
+                    self.logger.debug(
+                        f"✓ {component_test['name']} インターフェース確認完了"
+                    )
 
                 except Exception as e:
-                    self.logger.error(f"✗ {component_test['name']} インターフェース確認失敗: {str(e)}")
+                    self.logger.error(
+                        f"✗ {component_test['name']} インターフェース確認失敗: {str(e)}"
+                    )
                     # 個別コンポーネントの失敗は警告レベルに留める
-                    self.logger.warning(f"コンポーネント {component_test['name']} の検証をスキップします")
+                    self.logger.warning(
+                        f"コンポーネント {component_test['name']} の検証をスキップします"
+                    )
 
             app.processEvents()
 
         except Exception as e:
-            self.logger.error(f"GUIコンポーネントのインターフェース検証中にエラーが発生しました: {str(e)}")
+            self.logger.error(
+                f"GUIコンポーネントのインターフェース検証中にエラーが発生しました: {str(e)}"
+            )
             raise
 
         self.logger.info("GUIコンポーネントのインターフェース検証が完了しました")
@@ -458,14 +487,13 @@ class GUIFunctionalityValidator(BaseValidator):
                 error_dialog.setIcon(QMessageBox.Critical)
 
                 self.assert_condition(
-                    error_dialog is not None,
-                    "エラーダイアログが正常に作成できること"
+                    error_dialog is not None, "エラーダイアログが正常に作成できること"
                 )
 
                 # ダイアログのプロパティ確認
                 self.assert_condition(
                     error_dialog.windowTitle() == "テストエラー",
-                    "エラーダイアログのタイトルが正しく設定されること"
+                    "エラーダイアログのタイトルが正しく設定されること",
                 )
 
                 # クリーンアップ
@@ -488,13 +516,10 @@ class GUIFunctionalityValidator(BaseValidator):
                     error_occurred = True
                     self.assert_condition(
                         "テスト用エラー" in str(e),
-                        "例外メッセージが正しく取得できること"
+                        "例外メッセージが正しく取得できること",
                     )
 
-                self.assert_condition(
-                    error_occurred,
-                    "例外が正しくキャッチされること"
-                )
+                self.assert_condition(error_occurred, "例外が正しくキャッチされること")
 
             except Exception as e:
                 self.logger.error(f"例外処理テストに失敗しました: {str(e)}")
@@ -503,7 +528,9 @@ class GUIFunctionalityValidator(BaseValidator):
             app.processEvents()
 
         except Exception as e:
-            self.logger.error(f"GUI関連のエラーハンドリング検証中にエラーが発生しました: {str(e)}")
+            self.logger.error(
+                f"GUI関連のエラーハンドリング検証中にエラーが発生しました: {str(e)}"
+            )
             raise
 
         self.logger.info("GUI関連のエラーハンドリング検証が完了しました")
@@ -549,12 +576,12 @@ class GUIFunctionalityValidator(BaseValidator):
 
             self.assert_condition(
                 avg_creation_time < 0.1,  # 平均0.1秒以内
-                f"ウィジェット作成の平均時間が0.1秒以内であること (実際: {avg_creation_time:.4f}秒)"
+                f"ウィジェット作成の平均時間が0.1秒以内であること (実際: {avg_creation_time:.4f}秒)",
             )
 
             self.assert_condition(
                 max_creation_time < 0.5,  # 最大0.5秒以内
-                f"ウィジェット作成の最大時間が0.5秒以内であること (実際: {max_creation_time:.4f}秒)"
+                f"ウィジェット作成の最大時間が0.5秒以内であること (実際: {max_creation_time:.4f}秒)",
             )
 
             # イベント処理のパフォーマンステスト
@@ -566,18 +593,22 @@ class GUIFunctionalityValidator(BaseValidator):
                 processing_time = time.time() - start_time
                 event_processing_times.append(processing_time)
 
-            avg_processing_time = sum(event_processing_times) / len(event_processing_times)
+            avg_processing_time = sum(event_processing_times) / len(
+                event_processing_times
+            )
 
             self.assert_condition(
                 avg_processing_time < 0.05,  # 平均0.05秒以内
-                f"イベント処理の平均時間が0.05秒以内であること (実際: {avg_processing_time:.4f}秒)"
+                f"イベント処理の平均時間が0.05秒以内であること (実際: {avg_processing_time:.4f}秒)",
             )
 
             self.logger.info(f"ウィジェット作成平均時間: {avg_creation_time:.4f}秒")
             self.logger.info(f"イベント処理平均時間: {avg_processing_time:.4f}秒")
 
         except Exception as e:
-            self.logger.error(f"GUI基本パフォーマンス検証中にエラーが発生しました: {str(e)}")
+            self.logger.error(
+                f"GUI基本パフォーマンス検証中にエラーが発生しました: {str(e)}"
+            )
             raise
 
         self.logger.info("GUI基本パフォーマンス検証が完了しました")

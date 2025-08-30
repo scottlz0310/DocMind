@@ -17,12 +17,12 @@ from .exceptions import (
 )
 
 __all__ = [
-    'DocMindException',
-    'DocumentProcessingError',
-    'IndexingError',
-    'SearchError',
-    'EmbeddingError',
-    'DatabaseError',
-    'ConfigurationError',
-    'FileSystemError'
+    "DocMindException",
+    "DocumentProcessingError",
+    "IndexingError",
+    "SearchError",
+    "EmbeddingError",
+    "DatabaseError",
+    "ConfigurationError",
+    "FileSystemError",
 ]

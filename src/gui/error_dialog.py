@@ -35,8 +35,14 @@ class ErrorDialog(QDialog, LoggerMixin):
     分けて表示し、適切なアクションを提案します。
     """
 
-    def __init__(self, title: str, message: str, details: str = None,
-                 recovery_suggestions: list = None, parent: QWidget = None):
+    def __init__(
+        self,
+        title: str,
+        message: str,
+        details: str = None,
+        recovery_suggestions: list = None,
+        parent: QWidget = None,
+    ):
         """
         エラーダイアログを初期化
 
@@ -64,9 +70,9 @@ class ErrorDialog(QDialog, LoggerMixin):
 
         # エラーアイコン
         icon_label = QLabel()
-        icon_label.setPixmap(self.style().standardIcon(
-            self.style().SP_MessageBoxCritical
-        ).pixmap(48, 48))
+        icon_label.setPixmap(
+            self.style().standardIcon(self.style().SP_MessageBoxCritical).pixmap(48, 48)
+        )
         icon_label.setAlignment(Qt.AlignTop)
         message_layout.addWidget(icon_label)
 
@@ -160,7 +166,9 @@ class SystemStatusDialog(QDialog, LoggerMixin):
 
         # 全体的な健全性表示
         self.overall_health_label = QLabel()
-        self.overall_health_label.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px;")
+        self.overall_health_label.setStyleSheet(
+            "font-size: 14px; font-weight: bold; margin: 10px;"
+        )
         layout.addWidget(self.overall_health_label)
 
         # プログレスバー
@@ -198,32 +206,50 @@ class SystemStatusDialog(QDialog, LoggerMixin):
             health = degradation_manager.get_system_health()
 
             # 全体的な健全性を更新
-            overall_health = health.get('overall_health', 'unknown')
-            total_components = health.get('total_components', 0)
-            healthy_count = health.get('healthy', 0)
+            overall_health = health.get("overall_health", "unknown")
+            total_components = health.get("total_components", 0)
+            healthy_count = health.get("healthy", 0)
 
-            if overall_health == 'healthy':
+            if overall_health == "healthy":
                 self.overall_health_label.setText("✅ システムは正常に動作しています")
-                self.overall_health_label.setStyleSheet("color: green; font-size: 14px; font-weight: bold; margin: 10px;")
+                self.overall_health_label.setStyleSheet(
+                    "color: green; font-size: 14px; font-weight: bold; margin: 10px;"
+                )
                 health_percentage = 100
-            elif overall_health == 'degraded':
-                self.overall_health_label.setText("⚠️ システムは制限付きで動作しています")
-                self.overall_health_label.setStyleSheet("color: orange; font-size: 14px; font-weight: bold; margin: 10px;")
-                health_percentage = int((healthy_count / total_components) * 100) if total_components > 0 else 0
+            elif overall_health == "degraded":
+                self.overall_health_label.setText(
+                    "⚠️ システムは制限付きで動作しています"
+                )
+                self.overall_health_label.setStyleSheet(
+                    "color: orange; font-size: 14px; font-weight: bold; margin: 10px;"
+                )
+                health_percentage = (
+                    int((healthy_count / total_components) * 100)
+                    if total_components > 0
+                    else 0
+                )
             else:
                 self.overall_health_label.setText("❌ システムに重大な問題があります")
-                self.overall_health_label.setStyleSheet("color: red; font-size: 14px; font-weight: bold; margin: 10px;")
-                health_percentage = int((healthy_count / total_components) * 100) if total_components > 0 else 0
+                self.overall_health_label.setStyleSheet(
+                    "color: red; font-size: 14px; font-weight: bold; margin: 10px;"
+                )
+                health_percentage = (
+                    int((healthy_count / total_components) * 100)
+                    if total_components > 0
+                    else 0
+                )
 
             self.health_progress.setValue(health_percentage)
 
             # コンポーネント状態を更新
-            self._update_components_display(health.get('components', {}))
+            self._update_components_display(health.get("components", {}))
 
         except Exception as e:
             self.logger.error(f"システム状態の更新に失敗: {e}")
             self.overall_health_label.setText("❓ システム状態を取得できません")
-            self.overall_health_label.setStyleSheet("color: gray; font-size: 14px; font-weight: bold; margin: 10px;")
+            self.overall_health_label.setStyleSheet(
+                "color: gray; font-size: 14px; font-weight: bold; margin: 10px;"
+            )
 
     def _update_components_display(self, components: dict[str, Any]):
         """コンポーネント表示を更新"""
@@ -235,7 +261,9 @@ class SystemStatusDialog(QDialog, LoggerMixin):
 
         # 各コンポーネントの状態を表示
         for component_name, component_info in components.items():
-            component_widget = self._create_component_widget(component_name, component_info)
+            component_widget = self._create_component_widget(
+                component_name, component_info
+            )
             self.components_layout.addWidget(component_widget)
 
         self.components_layout.addStretch()
@@ -252,14 +280,14 @@ class SystemStatusDialog(QDialog, LoggerMixin):
         header_layout = QHBoxLayout()
 
         # 状態アイコン
-        status = info.get('status', 'unknown')
-        if status == 'healthy':
+        status = info.get("status", "unknown")
+        if status == "healthy":
             status_icon = "✅"
             status_color = "green"
-        elif status == 'degraded':
+        elif status == "degraded":
             status_icon = "⚠️"
             status_color = "orange"
-        elif status == 'failed':
+        elif status == "failed":
             status_icon = "❌"
             status_color = "red"
         else:
@@ -273,7 +301,7 @@ class SystemStatusDialog(QDialog, LoggerMixin):
         header_layout.addStretch()
 
         # フォールバック状態
-        if info.get('fallback_active', False):
+        if info.get("fallback_active", False):
             fallback_label = QLabel("(フォールバック動作中)")
             fallback_label.setStyleSheet("color: blue; font-style: italic;")
             header_layout.addWidget(fallback_label)
@@ -281,7 +309,7 @@ class SystemStatusDialog(QDialog, LoggerMixin):
         layout.addLayout(header_layout)
 
         # エラーメッセージ
-        error_message = info.get('error_message')
+        error_message = info.get("error_message")
         if error_message:
             error_label = QLabel(f"エラー: {error_message}")
             error_label.setStyleSheet("color: red; font-size: 10px; margin-left: 20px;")
@@ -289,7 +317,7 @@ class SystemStatusDialog(QDialog, LoggerMixin):
             layout.addWidget(error_label)
 
         # 機能状態
-        capabilities = info.get('capabilities', {})
+        capabilities = info.get("capabilities", {})
         if capabilities:
             caps_layout = QHBoxLayout()
             caps_label = QLabel("機能:")
@@ -309,7 +337,7 @@ class SystemStatusDialog(QDialog, LoggerMixin):
 
     def closeEvent(self, event):
         """ダイアログが閉じられる時の処理"""
-        if hasattr(self, 'update_timer'):
+        if hasattr(self, "update_timer"):
             self.update_timer.stop()
         super().closeEvent(event)
 
@@ -331,8 +359,13 @@ class UserNotificationManager(LoggerMixin):
         """
         self.parent_widget = parent_widget
 
-    def show_error(self, title: str, message: str, details: str = None,
-                   recovery_suggestions: list = None):
+    def show_error(
+        self,
+        title: str,
+        message: str,
+        details: str = None,
+        recovery_suggestions: list = None,
+    ):
         """
         エラーダイアログを表示
 
@@ -343,7 +376,9 @@ class UserNotificationManager(LoggerMixin):
             recovery_suggestions: 回復のための提案リスト
         """
         try:
-            dialog = ErrorDialog(title, message, details, recovery_suggestions, self.parent_widget)
+            dialog = ErrorDialog(
+                title, message, details, recovery_suggestions, self.parent_widget
+            )
             dialog.exec()
         except Exception as e:
             self.logger.error(f"エラーダイアログの表示に失敗: {e}")
@@ -382,7 +417,7 @@ class UserNotificationManager(LoggerMixin):
             degradation_manager = get_global_degradation_manager()
             health = degradation_manager.get_system_health()
 
-            if health['overall_health'] == 'degraded':
+            if health["overall_health"] == "degraded":
                 message = (
                     "システムの一部機能に問題が発生しています。\n"
                     "一部の機能が制限される可能性があります。\n\n"
@@ -394,12 +429,16 @@ class UserNotificationManager(LoggerMixin):
                 recovery_suggestions = [
                     "アプリケーションを再起動してください",
                     "システム状態を確認して詳細情報を確認してください",
-                    "問題が継続する場合は、ログファイルを確認してください"
+                    "問題が継続する場合は、ログファイルを確認してください",
                 ]
 
-                self.show_error("システム劣化警告", message, recovery_suggestions=recovery_suggestions)
+                self.show_error(
+                    "システム劣化警告",
+                    message,
+                    recovery_suggestions=recovery_suggestions,
+                )
 
-            elif health['overall_health'] == 'critical':
+            elif health["overall_health"] == "critical":
                 message = (
                     "システムに重大な問題が発生しています。\n"
                     "多くの機能が利用できない可能性があります。\n\n"
@@ -412,15 +451,21 @@ class UserNotificationManager(LoggerMixin):
                     "アプリケーションを再起動してください",
                     "データディレクトリの権限を確認してください",
                     "ディスク容量を確認してください",
-                    "システム管理者にお問い合わせください"
+                    "システム管理者にお問い合わせください",
                 ]
 
-                self.show_error("システム重大エラー", message, recovery_suggestions=recovery_suggestions)
+                self.show_error(
+                    "システム重大エラー",
+                    message,
+                    recovery_suggestions=recovery_suggestions,
+                )
 
         except Exception as e:
             self.logger.error(f"システム劣化警告の表示に失敗: {e}")
 
-    def show_component_failure_notification(self, component_name: str, error_message: str):
+    def show_component_failure_notification(
+        self, component_name: str, error_message: str
+    ):
         """
         コンポーネント障害の通知を表示
 
@@ -435,7 +480,7 @@ class UserNotificationManager(LoggerMixin):
             recovery_suggestions = [
                 "機能を再試行してください",
                 "アプリケーションを再起動してください",
-                "システム状態を確認してください"
+                "システム状態を確認してください",
             ]
 
             self.show_error(title, message, recovery_suggestions=recovery_suggestions)

@@ -26,7 +26,7 @@ class IndexController(QObject, LoggerMixin):
     インデックス関連の制御ロジックを管理します。
     """
 
-    def __init__(self, main_window: 'MainWindow'):
+    def __init__(self, main_window: "MainWindow"):
         """
         インデックスコントローラーの初期化
 
@@ -61,7 +61,9 @@ class IndexController(QObject, LoggerMixin):
                 return
 
             # 現在選択されているフォルダパスを取得
-            current_folder = self.main_window.folder_tree_container.get_selected_folder()
+            current_folder = (
+                self.main_window.folder_tree_container.get_selected_folder()
+            )
             if not current_folder:
                 self.main_window.dialog_manager.show_folder_not_selected_dialog()
                 return
@@ -78,20 +80,26 @@ class IndexController(QObject, LoggerMixin):
                 thread_id = self.main_window.thread_manager.start_indexing_thread(
                     folder_path=current_folder,
                     document_processor=self.main_window.document_processor,
-                    index_manager=self.main_window.index_manager
+                    index_manager=self.main_window.index_manager,
                 )
 
                 if thread_id:
                     # タイムアウト監視を開始
                     self.main_window.timeout_manager.start_timeout(thread_id)
                     self.logger.info(f"インデックス再構築スレッド開始: {thread_id}")
-                    self.main_window.show_status_message(f"インデックス再構築を開始しました (ID: {thread_id})", 3000)
+                    self.main_window.show_status_message(
+                        f"インデックス再構築を開始しました (ID: {thread_id})", 3000
+                    )
                 else:
                     # スレッド開始に失敗した場合の処理
-                    self.main_window.hide_progress("インデックス再構築の開始に失敗しました")
+                    self.main_window.hide_progress(
+                        "インデックス再構築の開始に失敗しました"
+                    )
 
                     # 詳細なエラー情報を提供
-                    active_count = self.main_window.thread_manager.get_active_thread_count()
+                    active_count = (
+                        self.main_window.thread_manager.get_active_thread_count()
+                    )
                     max_threads = self.main_window.thread_manager.max_concurrent_threads
 
                     if active_count >= max_threads:
@@ -99,7 +107,9 @@ class IndexController(QObject, LoggerMixin):
                             f"最大同時実行数に達しています ({active_count}/{max_threads})。\n"
                             "他の処理が完了してから再試行してください。"
                         )
-                    elif self.main_window.thread_manager._is_folder_being_processed(current_folder):
+                    elif self.main_window.thread_manager._is_folder_being_processed(
+                        current_folder
+                    ):
                         error_msg = (
                             "このフォルダは既に処理中です。\n"
                             "処理が完了してから再試行してください。"
@@ -113,18 +123,20 @@ class IndexController(QObject, LoggerMixin):
                     self.main_window.dialog_manager.show_operation_failed_dialog(
                         "スレッド開始エラー",
                         error_msg,
-                        "しばらく待ってから再試行してください。"
+                        "しばらく待ってから再試行してください。",
                     )
 
             except Exception as thread_error:
                 # スレッド開始時の例外処理
-                self.main_window.hide_progress("インデックス再構築の開始でエラーが発生しました")
+                self.main_window.hide_progress(
+                    "インデックス再構築の開始でエラーが発生しました"
+                )
                 self.logger.error(f"スレッド開始エラー: {thread_error}")
 
                 self.main_window.dialog_manager.show_system_error_dialog(
                     "スレッド開始エラー",
                     f"インデックス再構築スレッドの開始でエラーが発生しました:\n{str(thread_error)}",
-                    "システムリソースが不足している可能性があります。"
+                    "システムリソースが不足している可能性があります。",
                 )
                 return
 
@@ -134,7 +146,7 @@ class IndexController(QObject, LoggerMixin):
             self.main_window.dialog_manager.show_system_error_dialog(
                 "インデックス再構築エラー",
                 f"インデックス再構築でエラーが発生しました:\n{str(e)}",
-                "しばらく待ってから再試行してください。"
+                "しばらく待ってから再試行してください。",
             )
 
     def clear_index(self) -> None:
@@ -146,31 +158,40 @@ class IndexController(QObject, LoggerMixin):
                 self.main_window.show_progress("インデックスをクリア中...", 0)
 
                 # インデックスマネージャーからクリアを実行
-                if hasattr(self.main_window, 'index_manager') and self.main_window.index_manager:
+                if (
+                    hasattr(self.main_window, "index_manager")
+                    and self.main_window.index_manager
+                ):
                     self.main_window.index_manager.clear_index()
 
                     # 検索結果をクリア
-                    if hasattr(self.main_window, 'search_results_widget'):
+                    if hasattr(self.main_window, "search_results_widget"):
                         self.main_window.search_results_widget.clear_results()
 
                     # プレビューをクリア
-                    if hasattr(self.main_window, 'preview_widget'):
+                    if hasattr(self.main_window, "preview_widget"):
                         self.main_window.preview_widget.clear_preview()
 
                     # 検索提案キャッシュをクリア
-                    if hasattr(self.main_window, 'search_manager'):
+                    if hasattr(self.main_window, "search_manager"):
                         self.main_window.search_manager.clear_suggestion_cache()
 
                     self.main_window.hide_progress("インデックスクリアが完了しました")
-                    self.main_window.show_status_message("インデックスをクリアしました", 3000)
+                    self.main_window.show_status_message(
+                        "インデックスをクリアしました", 3000
+                    )
 
                     # システム情報を更新
-                    if hasattr(self.main_window, 'system_info_label'):
-                        self.main_window.system_info_label.setText("インデックス: クリア済み")
+                    if hasattr(self.main_window, "system_info_label"):
+                        self.main_window.system_info_label.setText(
+                            "インデックス: クリア済み"
+                        )
 
                 else:
                     self.main_window.hide_progress("")
-                    self.main_window.dialog_manager.show_component_unavailable_dialog("インデックスマネージャー")
+                    self.main_window.dialog_manager.show_component_unavailable_dialog(
+                        "インデックスマネージャー"
+                    )
 
             except Exception as e:
                 self.main_window.hide_progress("")
@@ -178,7 +199,7 @@ class IndexController(QObject, LoggerMixin):
                 self.main_window.dialog_manager.show_operation_failed_dialog(
                     "インデックスクリア",
                     f"インデックスクリアに失敗しました:\n{e}",
-                    "システムリソースを確認してから再試行してください。"
+                    "システムリソースを確認してから再試行してください。",
                 )
 
     def start_indexing_process(self, folder_path: str) -> None:
@@ -193,44 +214,67 @@ class IndexController(QObject, LoggerMixin):
         """
         try:
             # 必要なコンポーネントが初期化されているかチェック
-            if not hasattr(self.main_window, 'document_processor') or not self.main_window.document_processor:
+            if (
+                not hasattr(self.main_window, "document_processor")
+                or not self.main_window.document_processor
+            ):
                 self.logger.error("DocumentProcessorが初期化されていません")
-                self.main_window.show_status_message("エラー: ドキュメントプロセッサーが利用できません", 5000)
+                self.main_window.show_status_message(
+                    "エラー: ドキュメントプロセッサーが利用できません", 5000
+                )
                 return
 
-            if not hasattr(self.main_window, 'index_manager') or not self.main_window.index_manager:
+            if (
+                not hasattr(self.main_window, "index_manager")
+                or not self.main_window.index_manager
+            ):
                 self.logger.error("IndexManagerが初期化されていません")
-                self.main_window.show_status_message("エラー: インデックスマネージャーが利用できません", 5000)
+                self.main_window.show_status_message(
+                    "エラー: インデックスマネージャーが利用できません", 5000
+                )
                 return
 
-            if not hasattr(self.main_window, 'thread_manager') or not self.main_window.thread_manager:
+            if (
+                not hasattr(self.main_window, "thread_manager")
+                or not self.main_window.thread_manager
+            ):
                 self.logger.error("IndexingThreadManagerが初期化されていません")
-                self.main_window.show_status_message("エラー: スレッドマネージャーが利用できません", 5000)
+                self.main_window.show_status_message(
+                    "エラー: スレッドマネージャーが利用できません", 5000
+                )
                 return
 
             # スレッドマネージャーを使用してインデックス処理を開始
             thread_id = self.main_window.thread_manager.start_indexing_thread(
                 folder_path=folder_path,
                 document_processor=self.main_window.document_processor,
-                index_manager=self.main_window.index_manager
+                index_manager=self.main_window.index_manager,
             )
 
             if thread_id:
-                self.logger.info(f"インデックス処理スレッドを開始しました: {thread_id} ({folder_path})")
-                self.main_window.show_status_message(f"インデックス処理を開始: {os.path.basename(folder_path)}", 3000)
+                self.logger.info(
+                    f"インデックス処理スレッドを開始しました: {thread_id} ({folder_path})"
+                )
+                self.main_window.show_status_message(
+                    f"インデックス処理を開始: {os.path.basename(folder_path)}", 3000
+                )
             else:
                 # 同時実行数制限などで開始できない場合
                 active_count = self.main_window.thread_manager.get_active_thread_count()
                 max_count = self.main_window.thread_manager.max_concurrent_threads
-                self.logger.warning(f"インデックス処理を開始できませんでした: {folder_path} (アクティブ: {active_count}/{max_count})")
+                self.logger.warning(
+                    f"インデックス処理を開始できませんでした: {folder_path} (アクティブ: {active_count}/{max_count})"
+                )
                 self.main_window.show_status_message(
                     f"インデックス処理を開始できません (同時実行数制限: {active_count}/{max_count})",
-                    5000
+                    5000,
                 )
 
         except Exception as e:
             self.logger.error(f"インデックス処理の開始に失敗しました: {e}")
-            self.main_window.show_status_message("エラー: インデックス処理を開始できませんでした", 5000)
+            self.main_window.show_status_message(
+                "エラー: インデックス処理を開始できませんでした", 5000
+            )
 
     def handle_rebuild_completed(self, thread_id: str, statistics: dict) -> None:
         """インデックス再構築完了時の処理
@@ -241,11 +285,17 @@ class IndexController(QObject, LoggerMixin):
         """
         try:
             # タイムアウト監視をキャンセル
-            if hasattr(self.main_window, 'timeout_manager') and self.main_window.timeout_manager:
+            if (
+                hasattr(self.main_window, "timeout_manager")
+                and self.main_window.timeout_manager
+            ):
                 self.main_window.timeout_manager.cancel_timeout(thread_id)
 
             # SearchManagerのキャッシュをクリア（要件5.3）
-            if hasattr(self.main_window, 'search_manager') and self.main_window.search_manager:
+            if (
+                hasattr(self.main_window, "search_manager")
+                and self.main_window.search_manager
+            ):
                 self.main_window.search_manager.clear_suggestion_cache()
                 self.logger.info("検索提案キャッシュをクリアしました")
 
@@ -256,12 +306,14 @@ class IndexController(QObject, LoggerMixin):
             self.update_folder_tree_after_rebuild(thread_id, statistics)
 
             # 完了メッセージを表示
-            files_processed = statistics.get('files_processed', 0)
-            statistics.get('documents_added', 0)
-            statistics.get('processing_time', 0)
+            files_processed = statistics.get("files_processed", 0)
+            statistics.get("documents_added", 0)
+            statistics.get("processing_time", 0)
 
             # 完了通知（ステータスメッセージとして表示）
-            self.main_window.show_status_message(f"インデックス再構築完了 ({files_processed}ファイル処理)", 5000)
+            self.main_window.show_status_message(
+                f"インデックス再構築完了 ({files_processed}ファイル処理)", 5000
+            )
 
             self.logger.info(f"インデックス再構築完了: {thread_id}")
             self.logger.info(f"統計情報: {statistics}")
@@ -279,7 +331,9 @@ class IndexController(QObject, LoggerMixin):
             self.logger.warning(f"インデックス再構築タイムアウト: {thread_id}")
 
             # 改善されたタイムアウトダイアログを表示（要件6.2対応）
-            reply = self.main_window.dialog_manager.show_improved_timeout_dialog(thread_id)
+            reply = self.main_window.dialog_manager.show_improved_timeout_dialog(
+                thread_id
+            )
 
             if reply == QMessageBox.Yes:
                 # 強制停止処理（要件6.1, 6.3対応）
@@ -310,14 +364,20 @@ class IndexController(QObject, LoggerMixin):
             self.main_window.thread_manager.stop_thread(thread_id)
 
             # タイムアウト監視をキャンセル
-            if hasattr(self.main_window, 'timeout_manager') and self.main_window.timeout_manager:
+            if (
+                hasattr(self.main_window, "timeout_manager")
+                and self.main_window.timeout_manager
+            ):
                 self.main_window.timeout_manager.cancel_timeout(thread_id)
 
             # 部分的なインデックスをクリア（要件6.3対応）
             self.main_window.index_manager.clear_index()
 
             # 検索キャッシュもクリア
-            if hasattr(self.main_window, 'search_manager') and self.main_window.search_manager:
+            if (
+                hasattr(self.main_window, "search_manager")
+                and self.main_window.search_manager
+            ):
                 self.main_window.search_manager.clear_suggestion_cache()
 
             # 進捗表示を非表示
@@ -332,7 +392,7 @@ class IndexController(QObject, LoggerMixin):
                 "処理中断",
                 "インデックス再構築が中断されました。\n\n"
                 "部分的に処理されたインデックスはクリアされました。\n"
-                "システム状態がリセットされ、再度インデックス再構築を実行できます。"
+                "システム状態がリセットされ、再度インデックス再構築を実行できます。",
             )
 
             self.logger.info(f"インデックス再構築強制停止完了: {thread_id}")
@@ -342,7 +402,7 @@ class IndexController(QObject, LoggerMixin):
             QMessageBox.critical(
                 self.main_window,
                 "エラー",
-                f"インデックス再構築の停止処理でエラーが発生しました:\n{str(e)}"
+                f"インデックス再構築の停止処理でエラーが発生しました:\n{str(e)}",
             )
 
     def reset_rebuild_state(self) -> None:
@@ -353,23 +413,23 @@ class IndexController(QObject, LoggerMixin):
         """
         try:
             # システム情報ラベルを更新
-            if hasattr(self.main_window, 'system_info_label'):
+            if hasattr(self.main_window, "system_info_label"):
                 self.main_window.system_info_label.setText("インデックス: 未作成")
 
             # 検索結果をクリア
-            if hasattr(self.main_window, 'search_results_widget'):
+            if hasattr(self.main_window, "search_results_widget"):
                 self.main_window.search_results_widget.clear_results()
 
             # プレビューをクリア
-            if hasattr(self.main_window, 'preview_widget'):
+            if hasattr(self.main_window, "preview_widget"):
                 self.main_window.preview_widget.clear_preview()
 
             # フォルダツリーの状態を更新
-            if hasattr(self.main_window, 'folder_tree_container'):
+            if hasattr(self.main_window, "folder_tree_container"):
                 # フォルダツリーの表示を更新（利用可能なメソッドを使用）
-                if hasattr(self.main_window.folder_tree_container, 'refresh_tree'):
+                if hasattr(self.main_window.folder_tree_container, "refresh_tree"):
                     self.main_window.folder_tree_container.refresh_tree()
-                elif hasattr(self.main_window.folder_tree_container, 'update'):
+                elif hasattr(self.main_window.folder_tree_container, "update"):
                     self.main_window.folder_tree_container.update()
 
             # ステータスメッセージをリセット
@@ -388,15 +448,18 @@ class IndexController(QObject, LoggerMixin):
         """
         try:
             # インデックス統計を取得
-            if hasattr(self.main_window, 'index_manager') and self.main_window.index_manager:
+            if (
+                hasattr(self.main_window, "index_manager")
+                and self.main_window.index_manager
+            ):
                 index_stats = self.main_window.index_manager.get_index_stats()
-                document_count = index_stats.get('document_count', 0)
+                document_count = index_stats.get("document_count", 0)
 
                 # システム情報ラベルを更新（要件5.1）
-                if hasattr(self.main_window, 'system_info_label'):
-                    files_processed = statistics.get('files_processed', 0)
-                    documents_added = statistics.get('documents_added', 0)
-                    processing_time = statistics.get('processing_time', 0)
+                if hasattr(self.main_window, "system_info_label"):
+                    files_processed = statistics.get("files_processed", 0)
+                    documents_added = statistics.get("documents_added", 0)
+                    processing_time = statistics.get("processing_time", 0)
 
                     # 詳細なシステム情報を表示
                     self.main_window.system_info_label.setText(
@@ -416,18 +479,27 @@ class IndexController(QObject, LoggerMixin):
                     )
 
                 # 検索機能が新しいインデックスを使用するように更新（要件5.2）
-                if hasattr(self.main_window, 'search_manager') and self.main_window.search_manager:
+                if (
+                    hasattr(self.main_window, "search_manager")
+                    and self.main_window.search_manager
+                ):
                     # SearchManagerの内部状態を更新
                     # インデックスマネージャーが既に更新されているため、
                     # 次回の検索時に自動的に新しいインデックスが使用されます
-                    self.logger.info("検索機能が新しいインデックスを使用するように更新されました")
+                    self.logger.info(
+                        "検索機能が新しいインデックスを使用するように更新されました"
+                    )
 
-                self.logger.info(f"システム情報更新完了: {document_count}ドキュメント, {files_processed}ファイル処理")
+                self.logger.info(
+                    f"システム情報更新完了: {document_count}ドキュメント, {files_processed}ファイル処理"
+                )
 
         except Exception as e:
             self.logger.error(f"システム情報更新でエラー: {e}")
 
-    def update_folder_tree_after_rebuild(self, thread_id: str, statistics: dict) -> None:
+    def update_folder_tree_after_rebuild(
+        self, thread_id: str, statistics: dict
+    ) -> None:
         """インデックス再構築後のフォルダツリー状態更新
 
         Args:
@@ -442,22 +514,25 @@ class IndexController(QObject, LoggerMixin):
                 return
 
             folder_path = thread_info.folder_path
-            files_processed = statistics.get('files_processed', 0)
-            documents_added = statistics.get('documents_added', 0)
+            files_processed = statistics.get("files_processed", 0)
+            documents_added = statistics.get("documents_added", 0)
 
             # フォルダツリーの状態をINDEXEDに更新
-            if hasattr(self.main_window, 'folder_tree_container') and self.main_window.folder_tree_container:
+            if (
+                hasattr(self.main_window, "folder_tree_container")
+                and self.main_window.folder_tree_container
+            ):
                 self.main_window.folder_tree_container.set_folder_indexed(
-                    folder_path,
-                    files_processed,
-                    documents_added
+                    folder_path, files_processed, documents_added
                 )
-                self.logger.info(f"フォルダツリー状態更新: {folder_path} -> INDEXED ({documents_added}ドキュメント)")
+                self.logger.info(
+                    f"フォルダツリー状態更新: {folder_path} -> INDEXED ({documents_added}ドキュメント)"
+                )
 
                 # フォルダツリーの統計情報を更新
                 # set_folder_indexedメソッド内で既に視覚的更新が行われるため、
                 # 追加のリフレッシュは不要ですが、統計情報の更新を確実にします
-                if hasattr(self.main_window.folder_tree_container, '_update_stats'):
+                if hasattr(self.main_window.folder_tree_container, "_update_stats"):
                     self.main_window.folder_tree_container._update_stats()
                     self.logger.debug(f"フォルダツリー統計情報更新完了: {folder_path}")
 
@@ -475,15 +550,17 @@ class IndexController(QObject, LoggerMixin):
             error_message: エラーメッセージ
         """
         try:
-            self.logger.error(f"インデックス再構築エラー発生: {thread_id} - {error_message}")
+            self.logger.error(
+                f"インデックス再構築エラー発生: {thread_id} - {error_message}"
+            )
 
             # タイムアウト監視をキャンセル
-            if hasattr(self.main_window, 'timeout_manager'):
+            if hasattr(self.main_window, "timeout_manager"):
                 self.main_window.timeout_manager.cancel_timeout(thread_id)
 
             # スレッド情報を取得
             thread_info = None
-            if hasattr(self.main_window, 'thread_manager'):
+            if hasattr(self.main_window, "thread_manager"):
                 thread_info = self.main_window.thread_manager.get_thread_info(thread_id)
 
             # エラータイプの詳細分析と分岐処理
@@ -527,36 +604,64 @@ class IndexController(QObject, LoggerMixin):
         error_lower = error_message.lower()
 
         # タイムアウト関連
-        if any(keyword in error_lower for keyword in ["timeout", "タイムアウト", "応答なし"]):
+        if any(
+            keyword in error_lower
+            for keyword in ["timeout", "タイムアウト", "応答なし"]
+        ):
             return "timeout"
 
         # ファイルアクセス関連
-        elif any(keyword in error_lower for keyword in ["file not found", "ファイルが見つかりません", "no such file"]):
+        elif any(
+            keyword in error_lower
+            for keyword in [
+                "file not found",
+                "ファイルが見つかりません",
+                "no such file",
+            ]
+        ):
             return "file_access"
 
         # 権限関連
-        elif any(keyword in error_lower for keyword in ["permission denied", "アクセスが拒否", "権限", "access denied"]):
+        elif any(
+            keyword in error_lower
+            for keyword in [
+                "permission denied",
+                "アクセスが拒否",
+                "権限",
+                "access denied",
+            ]
+        ):
             return "permission"
 
         # ディスク容量関連
-        elif any(keyword in error_lower for keyword in ["no space", "disk full", "容量不足", "ディスク"]):
+        elif any(
+            keyword in error_lower
+            for keyword in ["no space", "disk full", "容量不足", "ディスク"]
+        ):
             return "disk_space"
 
         # リソース関連
-        elif any(keyword in error_lower for keyword in ["memory", "メモリ", "resource", "リソース", "out of memory"]):
+        elif any(
+            keyword in error_lower
+            for keyword in ["memory", "メモリ", "resource", "リソース", "out of memory"]
+        ):
             return "resource"
 
         # データ破損関連
-        elif any(keyword in error_lower for keyword in ["corrupt", "破損", "invalid", "不正"]):
+        elif any(
+            keyword in error_lower for keyword in ["corrupt", "破損", "invalid", "不正"]
+        ):
             return "corruption"
 
         else:
             return "system"
 
-    def _handle_file_access_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
+    def _handle_file_access_error(
+        self, thread_id: str, error_message: str, thread_info: object | None
+    ) -> None:
         """ファイルアクセスエラーの処理"""
         folder_path = "不明なフォルダ"
-        if thread_info and hasattr(thread_info, 'folder_path'):
+        if thread_info and hasattr(thread_info, "folder_path"):
             folder_path = thread_info.folder_path
 
         self.logger.warning(f"ファイルアクセスエラー: {folder_path}")
@@ -571,13 +676,15 @@ class IndexController(QObject, LoggerMixin):
             "• ファイルの権限を確認してください\n"
             "• 他のアプリケーションでファイルが使用されていないか確認してください\n"
             "• 管理者権限で実行してください\n\n"
-            "処理可能なファイルのみでインデックスを作成しました。"
+            "処理可能なファイルのみでインデックスを作成しました。",
         )
 
-    def _handle_permission_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
+    def _handle_permission_error(
+        self, thread_id: str, error_message: str, thread_info: object | None
+    ) -> None:
         """権限エラーの処理"""
         folder_path = "不明なフォルダ"
-        if thread_info and hasattr(thread_info, 'folder_path'):
+        if thread_info and hasattr(thread_info, "folder_path"):
             folder_path = thread_info.folder_path
 
         self.logger.error(f"権限エラー: {folder_path}")
@@ -595,13 +702,15 @@ class IndexController(QObject, LoggerMixin):
             "• 管理者権限でアプリケーションを実行してください\n"
             "• フォルダの権限設定を確認してください\n"
             "• 別のフォルダを選択してください\n\n"
-            "部分的に処理されたインデックスはクリアされました。"
+            "部分的に処理されたインデックスはクリアされました。",
         )
 
-    def _handle_resource_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
+    def _handle_resource_error(
+        self, thread_id: str, error_message: str, thread_info: object | None
+    ) -> None:
         """リソースエラーの処理"""
         folder_path = "不明なフォルダ"
-        if thread_info and hasattr(thread_info, 'folder_path'):
+        if thread_info and hasattr(thread_info, "folder_path"):
             folder_path = thread_info.folder_path
 
         self.logger.error(f"リソースエラー: {folder_path}")
@@ -619,13 +728,15 @@ class IndexController(QObject, LoggerMixin):
             "• 他のアプリケーションを終了してください\n"
             "• より小さなフォルダから開始してください\n"
             "• システムを再起動してください\n\n"
-            "部分的に処理されたインデックスはクリアされました。"
+            "部分的に処理されたインデックスはクリアされました。",
         )
 
-    def _handle_disk_space_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
+    def _handle_disk_space_error(
+        self, thread_id: str, error_message: str, thread_info: object | None
+    ) -> None:
         """ディスク容量エラーの処理"""
         folder_path = "不明なフォルダ"
-        if thread_info and hasattr(thread_info, 'folder_path'):
+        if thread_info and hasattr(thread_info, "folder_path"):
             folder_path = thread_info.folder_path
 
         self.logger.error(f"ディスク容量エラー: {folder_path}")
@@ -643,13 +754,15 @@ class IndexController(QObject, LoggerMixin):
             "• 不要なファイルを削除してください\n"
             "• 一時ファイルをクリアしてください\n"
             "• より小さなフォルダから開始してください\n\n"
-            "部分的に処理されたインデックスはクリアされました。"
+            "部分的に処理されたインデックスはクリアされました。",
         )
 
-    def _handle_corruption_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
+    def _handle_corruption_error(
+        self, thread_id: str, error_message: str, thread_info: object | None
+    ) -> None:
         """データ破損エラーの処理"""
         folder_path = "不明なフォルダ"
-        if thread_info and hasattr(thread_info, 'folder_path'):
+        if thread_info and hasattr(thread_info, "folder_path"):
             folder_path = thread_info.folder_path
 
         self.logger.error(f"データ破損エラー: {folder_path}")
@@ -667,13 +780,15 @@ class IndexController(QObject, LoggerMixin):
             "• ファイルシステムをチェックしてください\n"
             "• 破損したファイルを修復または削除してください\n"
             "• インデックスを完全に再構築してください\n\n"
-            "既存のインデックスはクリアされました。"
+            "既存のインデックスはクリアされました。",
         )
 
-    def _handle_system_error(self, thread_id: str, error_message: str, thread_info: object | None) -> None:
+    def _handle_system_error(
+        self, thread_id: str, error_message: str, thread_info: object | None
+    ) -> None:
         """システムエラーの処理"""
         folder_path = "不明なフォルダ"
-        if thread_info and hasattr(thread_info, 'folder_path'):
+        if thread_info and hasattr(thread_info, "folder_path"):
             folder_path = thread_info.folder_path
 
         self.logger.error(f"システムエラー: {folder_path}")
@@ -691,7 +806,7 @@ class IndexController(QObject, LoggerMixin):
             "• しばらく待ってから再試行してください\n"
             "• システムを再起動してください\n"
             "• より小さなフォルダから開始してください\n\n"
-            "部分的に処理されたインデックスはクリアされました。"
+            "部分的に処理されたインデックスはクリアされました。",
         )
 
     def _cleanup_partial_index(self) -> None:
@@ -701,32 +816,39 @@ class IndexController(QObject, LoggerMixin):
         データの一貫性を保持します。
         """
         try:
-            if hasattr(self.main_window, 'index_manager') and self.main_window.index_manager:
+            if (
+                hasattr(self.main_window, "index_manager")
+                and self.main_window.index_manager
+            ):
                 self.logger.info("部分的インデックスのクリーンアップを開始")
                 self.main_window.index_manager.clear_index()
 
                 # 検索結果をクリア
-                if hasattr(self.main_window, 'search_results_widget'):
+                if hasattr(self.main_window, "search_results_widget"):
                     self.main_window.search_results_widget.clear_results()
 
                 # プレビューをクリア
-                if hasattr(self.main_window, 'preview_widget'):
+                if hasattr(self.main_window, "preview_widget"):
                     self.main_window.preview_widget.clear_preview()
 
                 # 検索提案キャッシュをクリア
-                if hasattr(self.main_window, 'search_manager'):
+                if hasattr(self.main_window, "search_manager"):
                     self.main_window.search_manager.clear_suggestion_cache()
 
                 # システム情報を更新
-                if hasattr(self.main_window, 'system_info_label'):
-                    self.main_window.system_info_label.setText("インデックス: エラーによりクリア済み")
+                if hasattr(self.main_window, "system_info_label"):
+                    self.main_window.system_info_label.setText(
+                        "インデックス: エラーによりクリア済み"
+                    )
 
                 self.logger.info("部分的インデックスのクリーンアップが完了")
 
         except Exception as e:
             self.logger.error(f"インデックスクリーンアップでエラー: {e}")
 
-    def _perform_error_cleanup(self, thread_id: str, error_type: str, thread_info: object | None) -> None:
+    def _perform_error_cleanup(
+        self, thread_id: str, error_type: str, thread_info: object | None
+    ) -> None:
         """エラー後の共通クリーンアップ処理
 
         Args:
@@ -736,24 +858,29 @@ class IndexController(QObject, LoggerMixin):
         """
         try:
             # フォルダツリーの状態を更新
-            if thread_info and hasattr(thread_info, 'folder_path'):
-                if hasattr(self.main_window, 'folder_tree_container'):
+            if thread_info and hasattr(thread_info, "folder_path"):
+                if hasattr(self.main_window, "folder_tree_container"):
                     self.main_window.folder_tree_container.set_folder_error(
-                        thread_info.folder_path,
-                        f"{error_type}エラー"
+                        thread_info.folder_path, f"{error_type}エラー"
                     )
 
             # システム情報を更新
-            if hasattr(self.main_window, 'thread_manager'):
+            if hasattr(self.main_window, "thread_manager"):
                 active_count = self.main_window.thread_manager.get_active_thread_count()
                 indexed_count = 0
-                if hasattr(self.main_window, 'folder_tree_container'):
-                    indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
+                if hasattr(self.main_window, "folder_tree_container"):
+                    indexed_count = len(
+                        self.main_window.folder_tree_container.get_indexed_folders()
+                    )
 
                 if active_count > 0:
-                    self.main_window.update_system_info(f"インデックス: {indexed_count}フォルダ, 処理中: {active_count}スレッド (エラー発生)")
+                    self.main_window.update_system_info(
+                        f"インデックス: {indexed_count}フォルダ, 処理中: {active_count}スレッド (エラー発生)"
+                    )
                 else:
-                    self.main_window.update_system_info(f"インデックス: {indexed_count}フォルダ, エラーで停止")
+                    self.main_window.update_system_info(
+                        f"インデックス: {indexed_count}フォルダ, エラーで停止"
+                    )
 
             self.logger.info(f"エラークリーンアップ完了: {thread_id} ({error_type})")
 

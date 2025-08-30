@@ -17,7 +17,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 # プロジェクトルートをパスに追加
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.utils.exceptions import DocMindException
 
@@ -43,12 +43,12 @@ class TestIndexRebuildBasic:
         test_files = [
             ("test1.txt", "テストファイル1の内容"),
             ("test2.txt", "テストファイル2の内容"),
-            ("test3.md", "# マークダウンファイル\n\nテスト内容")
+            ("test3.md", "# マークダウンファイル\n\nテスト内容"),
         ]
 
         for filename, content in test_files:
             file_path = os.path.join(temp_dir, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
         yield temp_dir
@@ -71,7 +71,7 @@ class TestIndexRebuildBasic:
     def test_file_content_reading(self, temp_folder):
         """ファイル内容が正しく読み取れることをテスト"""
         test1_path = os.path.join(temp_folder, "test1.txt")
-        with open(test1_path, encoding='utf-8') as f:
+        with open(test1_path, encoding="utf-8") as f:
             content = f.read()
 
         assert content == "テストファイル1の内容"
@@ -81,13 +81,13 @@ class TestIndexRebuildBasic:
         progress_calls = []
 
         def mock_show_progress(message, value=0):
-            progress_calls.append(('show', message, value))
+            progress_calls.append(("show", message, value))
 
         def mock_update_progress(current, total, message=""):
-            progress_calls.append(('update', current, total, message))
+            progress_calls.append(("update", current, total, message))
 
         def mock_hide_progress(message=""):
-            progress_calls.append(('hide', message))
+            progress_calls.append(("hide", message))
 
         # モック関数を呼び出し
         mock_show_progress("開始", 0)
@@ -98,12 +98,13 @@ class TestIndexRebuildBasic:
 
         # 呼び出しが記録されていることを確認
         assert len(progress_calls) == 5
-        assert progress_calls[0] == ('show', '開始', 0)
-        assert progress_calls[1] == ('update', 1, 3, '処理中')
-        assert progress_calls[-1] == ('hide', '完了')
+        assert progress_calls[0] == ("show", "開始", 0)
+        assert progress_calls[1] == ("update", 1, 3, "処理中")
+        assert progress_calls[-1] == ("hide", "完了")
 
     def test_exception_handling(self):
         """例外ハンドリングの基本動作をテスト"""
+
         def raise_docmind_exception():
             raise DocMindException("テスト例外")
 
@@ -140,7 +141,9 @@ class TestIndexRebuildBasic:
 
     def test_mock_message_box(self, app):
         """QMessageBoxのモック機能をテスト"""
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes) as mock_question:
+        with patch.object(
+            QMessageBox, "question", return_value=QMessageBox.Yes
+        ) as mock_question:
             result = QMessageBox.question(None, "テスト", "続行しますか？")
 
             assert result == QMessageBox.Yes
@@ -149,14 +152,14 @@ class TestIndexRebuildBasic:
     def test_file_permissions(self, temp_folder):
         """ファイル権限の操作をテスト"""
         test_file = os.path.join(temp_folder, "permission_test.txt")
-        with open(test_file, 'w', encoding='utf-8') as f:
+        with open(test_file, "w", encoding="utf-8") as f:
             f.write("権限テスト")
 
         # 読み取り専用に設定
         os.chmod(test_file, 0o444)
 
         # ファイルが読み取り可能であることを確認
-        with open(test_file, encoding='utf-8') as f:
+        with open(test_file, encoding="utf-8") as f:
             content = f.read()
         assert content == "権限テスト"
 
@@ -254,7 +257,7 @@ class TestIndexRebuildErrorSimulation:
         try:
             # 書き込み試行（エラーが発生するはず）
             with pytest.raises(PermissionError):
-                with open(test_file, 'w') as f:
+                with open(test_file, "w") as f:
                     f.write("新しい内容")
         finally:
             # 権限を元に戻す
@@ -284,6 +287,7 @@ class TestIndexRebuildErrorSimulation:
 
     def test_exception_propagation(self):
         """例外の伝播をテスト"""
+
         def inner_function():
             raise DocMindException("内部エラー")
 

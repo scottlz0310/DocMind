@@ -23,11 +23,13 @@ class SearchWorkerThread(QThread):
     """
 
     # シグナル定義
-    progress_updated = Signal(str, int)      # 進捗更新 (メッセージ, 進捗%)
-    search_completed = Signal(list, float)   # 検索完了 (結果, 実行時間)
-    search_error = Signal(str)               # 検索エラー (エラーメッセージ)
+    progress_updated = Signal(str, int)  # 進捗更新 (メッセージ, 進捗%)
+    search_completed = Signal(list, float)  # 検索完了 (結果, 実行時間)
+    search_error = Signal(str)  # 検索エラー (エラーメッセージ)
 
-    def __init__(self, search_manager, query: SearchQuery, parent: QWidget | None = None):
+    def __init__(
+        self, search_manager, query: SearchQuery, parent: QWidget | None = None
+    ):
         """
         検索ワーカーを初期化
 

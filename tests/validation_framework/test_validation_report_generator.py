@@ -11,7 +11,7 @@ import tempfile
 from datetime import datetime, timedelta
 
 # プロジェクトルートをパスに追加
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from tests.validation_framework.validation_report_generator import (
     PerformanceMetrics,
@@ -34,7 +34,7 @@ def create_sample_validation_results() -> list[ValidationMetrics]:
             memory_usage=512 + (i * 20),
             cpu_usage=45 + (i * 2),
             category="search",
-            timestamp=datetime.now() - timedelta(minutes=i*2)
+            timestamp=datetime.now() - timedelta(minutes=i * 2),
         )
         sample_results.append(result)
 
@@ -48,7 +48,7 @@ def create_sample_validation_results() -> list[ValidationMetrics]:
             cpu_usage=75 + (i * 5),
             error_message="Timeout error occurred during test execution: Connection timeout after 30 seconds",
             category="error_handling",
-            timestamp=datetime.now() - timedelta(minutes=i*3)
+            timestamp=datetime.now() - timedelta(minutes=i * 3),
         )
         sample_results.append(result)
 
@@ -60,9 +60,11 @@ def create_sample_validation_results() -> list[ValidationMetrics]:
             execution_time=1.8 + (i * 0.2),
             memory_usage=256 + (i * 15),
             cpu_usage=30 + (i * 3),
-            error_message="Assertion failed: Expected element not found" if i == 7 else None,
+            error_message=(
+                "Assertion failed: Expected element not found" if i == 7 else None
+            ),
             category="gui",
-            timestamp=datetime.now() - timedelta(minutes=i*1.5)
+            timestamp=datetime.now() - timedelta(minutes=i * 1.5),
         )
         sample_results.append(result)
 
@@ -75,7 +77,7 @@ def create_sample_validation_results() -> list[ValidationMetrics]:
             memory_usage=2048 + (i * 200),
             cpu_usage=80 + (i * 3),
             category="performance",
-            timestamp=datetime.now() - timedelta(minutes=i*4)
+            timestamp=datetime.now() - timedelta(minutes=i * 4),
         )
         sample_results.append(result)
 
@@ -93,7 +95,7 @@ def create_sample_performance_metrics() -> PerformanceMetrics:
         disk_write_mb=89.4,
         network_sent_mb=12.3,
         network_received_mb=45.6,
-        monitoring_duration_seconds=300.0
+        monitoring_duration_seconds=300.0,
     )
 
 
@@ -116,7 +118,7 @@ def test_comprehensive_report_generation():
             include_performance_graphs=True,
             include_error_analysis=True,
             chart_format="png",
-            report_formats=["html", "markdown", "json"]
+            report_formats=["html", "markdown", "json"],
         )
 
         # レポート生成器の初期化
@@ -138,8 +140,8 @@ def test_comprehensive_report_generation():
             additional_data={
                 "test_environment": "Windows 10",
                 "python_version": "3.11.0",
-                "test_suite_version": "1.0.0"
-            }
+                "test_suite_version": "1.0.0",
+            },
         )
 
         print(f"\n✅ レポート生成完了! 生成されたファイル数: {len(generated_files)}")
@@ -148,23 +150,23 @@ def test_comprehensive_report_generation():
         print("\n📋 生成されたファイル一覧:")
         for report_type, file_path in generated_files.items():
             file_size = os.path.getsize(file_path) if os.path.exists(file_path) else 0
-            print(f"  - {report_type}: {os.path.basename(file_path)} ({file_size:,} bytes)")
+            print(
+                f"  - {report_type}: {os.path.basename(file_path)} ({file_size:,} bytes)"
+            )
 
         # 過去結果との比較レポート生成（履歴データがある場合）
         print("\n🔍 過去結果との比較レポートを生成中...")
-        comparison_report = generator.generate_comparison_with_historical_results({
-            'summary': {
-                'success_rate': 85.7,
-                'average_execution_time': 5.2,
-                'peak_memory_usage': 1536.0
-            },
-            'quality_indicators': {
-                'overall_quality_score': 82.5
-            },
-            'metadata': {
-                'generation_time': datetime.now().isoformat()
+        comparison_report = generator.generate_comparison_with_historical_results(
+            {
+                "summary": {
+                    "success_rate": 85.7,
+                    "average_execution_time": 5.2,
+                    "peak_memory_usage": 1536.0,
+                },
+                "quality_indicators": {"overall_quality_score": 82.5},
+                "metadata": {"generation_time": datetime.now().isoformat()},
             }
-        })
+        )
 
         if comparison_report:
             print(f"✅ 比較レポート生成完了: {os.path.basename(comparison_report)}")
@@ -177,6 +179,7 @@ def test_comprehensive_report_generation():
     except Exception as e:
         print(f"❌ テスト中にエラーが発生しました: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -199,7 +202,7 @@ def test_individual_report_types():
             ("サマリーレポートのみ", ["html"], False, False, False),
             ("詳細レポート + チャート", ["html", "markdown"], True, False, True),
             ("トレンド分析のみ", ["html"], False, True, False),
-            ("エラー分析のみ", ["html"], False, False, False)
+            ("エラー分析のみ", ["html"], False, False, False),
         ]
 
         validation_results = create_sample_validation_results()
@@ -214,13 +217,12 @@ def test_individual_report_types():
                 include_charts=charts,
                 include_trend_analysis=trends,
                 include_performance_graphs=perf_graphs,
-                report_formats=formats
+                report_formats=formats,
             )
 
             generator = ValidationReportGenerator(config)
             generated_files = generator.generate_comprehensive_report(
-                validation_results=validation_results,
-                performance_data=performance_data
+                validation_results=validation_results, performance_data=performance_data
             )
 
             print(f"  ✅ 生成完了: {len(generated_files)} ファイル")
@@ -244,8 +246,7 @@ def test_error_scenarios():
 
     try:
         config = ReportGenerationConfig(
-            output_directory=temp_dir,
-            report_name="error_scenario_test"
+            output_directory=temp_dir, report_name="error_scenario_test"
         )
 
         generator = ValidationReportGenerator(config)
@@ -253,8 +254,7 @@ def test_error_scenarios():
         # 空の検証結果でのテスト
         print("📝 空の検証結果でのレポート生成をテスト...")
         generated_files = generator.generate_comprehensive_report(
-            validation_results=[],
-            performance_data=None
+            validation_results=[], performance_data=None
         )
         print(f"  ✅ 空データでも正常に処理: {len(generated_files)} ファイル生成")
 
@@ -282,7 +282,7 @@ def main():
     # ログレベルの設定
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     test_results = []

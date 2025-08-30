@@ -17,7 +17,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 # プロジェクトルートをパスに追加
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.utils.exceptions import DocMindException
 
@@ -47,7 +47,7 @@ class TestIndexRebuildSimple:
 
         for filename, content in test_files:
             file_path = os.path.join(temp_dir, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
         yield temp_dir
@@ -67,6 +67,7 @@ class TestIndexRebuildSimple:
         """MainWindowのインポートテスト"""
         try:
             from src.gui.main_window import MainWindow
+
             assert MainWindow is not None
         except ImportError as e:
             pytest.skip(f"MainWindowをインポートできません: {e}")
@@ -77,18 +78,22 @@ class TestIndexRebuildSimple:
             from src.gui.main_window import MainWindow
 
             # 必要なコンポーネントをモック
-            with patch('src.core.index_manager.IndexManager'):
-                with patch('src.core.search_manager.SearchManager'):
-                    with patch('src.core.thread_manager.IndexingThreadManager'):
-                        with patch('src.utils.config.Config.get_data_directory') as mock_data_dir:
-                            mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_mock_test_")
+            with patch("src.core.index_manager.IndexManager"):
+                with patch("src.core.search_manager.SearchManager"):
+                    with patch("src.core.thread_manager.IndexingThreadManager"):
+                        with patch(
+                            "src.utils.config.Config.get_data_directory"
+                        ) as mock_data_dir:
+                            mock_data_dir.return_value = tempfile.mkdtemp(
+                                prefix="docmind_mock_test_"
+                            )
 
                             # MainWindowを作成
                             window = MainWindow()
 
                             # 基本的な属性が存在することを確認
                             assert window is not None
-                            assert hasattr(window, '_rebuild_index')
+                            assert hasattr(window, "_rebuild_index")
 
                             window.close()
 
@@ -105,23 +110,31 @@ class TestIndexRebuildSimple:
         try:
             from src.gui.main_window import MainWindow
 
-            with patch('src.core.index_manager.IndexManager'):
-                with patch('src.core.search_manager.SearchManager'):
-                    with patch('src.core.thread_manager.IndexingThreadManager'):
-                        with patch('src.utils.config.Config.get_data_directory') as mock_data_dir:
-                            mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_mock_test_")
+            with patch("src.core.index_manager.IndexManager"):
+                with patch("src.core.search_manager.SearchManager"):
+                    with patch("src.core.thread_manager.IndexingThreadManager"):
+                        with patch(
+                            "src.utils.config.Config.get_data_directory"
+                        ) as mock_data_dir:
+                            mock_data_dir.return_value = tempfile.mkdtemp(
+                                prefix="docmind_mock_test_"
+                            )
 
                             window = MainWindow()
 
                             # 確認ダイアログをモック（キャンセル）
-                            with patch.object(QMessageBox, 'question', return_value=QMessageBox.No):
+                            with patch.object(
+                                QMessageBox, "question", return_value=QMessageBox.No
+                            ):
                                 # _rebuild_indexメソッドを呼び出し（エラーが発生しないことを確認）
                                 try:
                                     window._rebuild_index()
                                     # エラーが発生しなければ成功
                                     assert True
                                 except Exception as e:
-                                    pytest.fail(f"_rebuild_indexメソッドの呼び出しでエラー: {e}")
+                                    pytest.fail(
+                                        f"_rebuild_indexメソッドの呼び出しでエラー: {e}"
+                                    )
 
                             window.close()
 
@@ -138,11 +151,15 @@ class TestIndexRebuildSimple:
         try:
             from src.gui.main_window import MainWindow
 
-            with patch('src.core.index_manager.IndexManager'):
-                with patch('src.core.search_manager.SearchManager'):
-                    with patch('src.core.thread_manager.IndexingThreadManager'):
-                        with patch('src.utils.config.Config.get_data_directory') as mock_data_dir:
-                            mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_mock_test_")
+            with patch("src.core.index_manager.IndexManager"):
+                with patch("src.core.search_manager.SearchManager"):
+                    with patch("src.core.thread_manager.IndexingThreadManager"):
+                        with patch(
+                            "src.utils.config.Config.get_data_directory"
+                        ) as mock_data_dir:
+                            mock_data_dir.return_value = tempfile.mkdtemp(
+                                prefix="docmind_mock_test_"
+                            )
 
                             window = MainWindow()
 
@@ -263,7 +280,7 @@ class TestIndexRebuildErrorHandling:
         try:
             # 書き込み試行（エラーが発生するはず）
             with pytest.raises(PermissionError):
-                with open(test_file, 'w') as f:
+                with open(test_file, "w") as f:
                     f.write("新しい内容")
         finally:
             # 権限を元に戻す
@@ -271,6 +288,7 @@ class TestIndexRebuildErrorHandling:
 
     def test_docmind_exception_handling(self):
         """DocMindException例外ハンドリングのテスト"""
+
         def raise_exception():
             raise DocMindException("テスト例外", "詳細情報")
 

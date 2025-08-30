@@ -53,9 +53,7 @@ class ConnectionPool:
     def _create_connection(self) -> sqlite3.Connection:
         """新しい接続を作成"""
         conn = sqlite3.connect(
-            self.db_path,
-            timeout=self.timeout,
-            check_same_thread=False
+            self.db_path, timeout=self.timeout, check_same_thread=False
         )
 
         # 最適化設定
@@ -145,7 +143,7 @@ class DatabaseManager(LoggerMixin):
             "total_queries": 0,
             "cache_hits": 0,
             "cache_misses": 0,
-            "avg_query_time": 0.0
+            "avg_query_time": 0.0,
         }
         self._stats_lock = threading.Lock()
 
@@ -184,19 +182,27 @@ class DatabaseManager(LoggerMixin):
                     # 新しいデータベースの場合、スキーマを作成
                     self._create_schema(conn)
                     self._set_schema_version(conn, self.SCHEMA_VERSION)
-                    self.logger.info(f"新しいデータベースを作成しました: {self.db_path}")
+                    self.logger.info(
+                        f"新しいデータベースを作成しました: {self.db_path}"
+                    )
                 elif current_version < self.SCHEMA_VERSION:
                     # マイグレーションが必要
                     self._migrate_schema(conn, current_version, self.SCHEMA_VERSION)
-                    self.logger.info(f"データベースをバージョン{current_version}から{self.SCHEMA_VERSION}にマイグレーションしました")
+                    self.logger.info(
+                        f"データベースをバージョン{current_version}から{self.SCHEMA_VERSION}にマイグレーションしました"
+                    )
 
         except Exception as e:
             self.logger.error(f"データベース初期化エラー: {e}")
             raise DatabaseError(f"データベースの初期化に失敗しました: {e}")
 
-    def _execute_cached_query(self, query: str, params: tuple = (),
-                            cache_key: str | None = None,
-                            cache_ttl: float | None = None) -> list[sqlite3.Row]:
+    def _execute_cached_query(
+        self,
+        query: str,
+        params: tuple = (),
+        cache_key: str | None = None,
+        cache_ttl: float | None = None,
+    ) -> list[sqlite3.Row]:
         """
         キャッシュ機能付きクエリ実行
 
@@ -242,8 +248,8 @@ class DatabaseManager(LoggerMixin):
                     total = self._query_stats["total_queries"]
                     current_avg = self._query_stats["avg_query_time"]
                     self._query_stats["avg_query_time"] = (
-                        (current_avg * (total - 1) + execution_time) / total
-                    )
+                        current_avg * (total - 1) + execution_time
+                    ) / total
 
                 return results
 
@@ -269,14 +275,16 @@ class DatabaseManager(LoggerMixin):
             self._query_cache[cache_key] = {
                 "data": data,
                 "timestamp": time.time(),
-                "ttl": ttl
+                "ttl": ttl,
             }
 
             # キャッシュサイズ制限（1000エントリ）
             if len(self._query_cache) > 1000:
                 # 最も古いエントリを削除
-                oldest_key = min(self._query_cache.keys(),
-                               key=lambda k: self._query_cache[k]["timestamp"])
+                oldest_key = min(
+                    self._query_cache.keys(),
+                    key=lambda k: self._query_cache[k]["timestamp"],
+                )
                 del self._query_cache[oldest_key]
 
     def clear_query_cache(self):
@@ -307,11 +315,13 @@ class DatabaseManager(LoggerMixin):
 
     def _create_schema_version_table(self, conn: sqlite3.Connection):
         """スキーマバージョン管理テーブルを作成"""
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS schema_version (
                 version INTEGER PRIMARY KEY
             )
-        """)
+        """
+        )
 
     def _get_schema_version(self, conn: sqlite3.Connection) -> int:
         """現在のスキーマバージョンを取得
@@ -319,20 +329,25 @@ class DatabaseManager(LoggerMixin):
         Returns:
             int: スキーマバージョン（存在しない場合は0）
         """
-        cursor = conn.execute("SELECT version FROM schema_version ORDER BY version DESC LIMIT 1")
+        cursor = conn.execute(
+            "SELECT version FROM schema_version ORDER BY version DESC LIMIT 1"
+        )
         row = cursor.fetchone()
         return row[0] if row else 0
 
     def _set_schema_version(self, conn: sqlite3.Connection, version: int):
         """スキーマバージョンを設定"""
-        conn.execute("INSERT OR REPLACE INTO schema_version (version) VALUES (?)", (version,))
+        conn.execute(
+            "INSERT OR REPLACE INTO schema_version (version) VALUES (?)", (version,)
+        )
         conn.commit()
 
     def _create_schema(self, conn: sqlite3.Connection):
         """データベーススキーマを作成"""
 
         # ドキュメントテーブル
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE documents (
                 id TEXT PRIMARY KEY,
                 file_path TEXT UNIQUE NOT NULL,
@@ -347,10 +362,12 @@ class DatabaseManager(LoggerMixin):
                 CONSTRAINT chk_file_type CHECK (file_type IN ('pdf', 'word', 'excel', 'markdown', 'text', 'unknown')),
                 CONSTRAINT chk_size CHECK (size >= 0)
             )
-        """)
+        """
+        )
 
         # 検索履歴テーブル
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE search_history (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 query TEXT NOT NULL,
@@ -362,10 +379,12 @@ class DatabaseManager(LoggerMixin):
                 CONSTRAINT chk_result_count CHECK (result_count >= 0),
                 CONSTRAINT chk_execution_time CHECK (execution_time_ms >= 0)
             )
-        """)
+        """
+        )
 
         # 保存された検索テーブル
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE saved_searches (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
@@ -378,7 +397,8 @@ class DatabaseManager(LoggerMixin):
                 CONSTRAINT chk_search_type CHECK (search_type IN ('full_text', 'semantic', 'hybrid')),
                 CONSTRAINT chk_use_count CHECK (use_count >= 0)
             )
-        """)
+        """
+        )
 
         # インデックス作成
         self._create_indexes(conn)
@@ -390,25 +410,49 @@ class DatabaseManager(LoggerMixin):
         """パフォーマンス最適化のためのインデックスを作成"""
 
         # ドキュメントテーブルのインデックス
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_path ON documents(file_path)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_type ON documents(file_type)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_modified ON documents(modified_date)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_indexed ON documents(indexed_date)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_documents_hash ON documents(content_hash)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_documents_path ON documents(file_path)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_documents_type ON documents(file_type)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_documents_modified ON documents(modified_date)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_documents_indexed ON documents(indexed_date)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_documents_hash ON documents(content_hash)"
+        )
 
         # 検索履歴テーブルのインデックス
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_search_history_timestamp ON search_history(timestamp)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_search_history_type ON search_history(search_type)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_search_history_query ON search_history(query)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_search_history_timestamp ON search_history(timestamp)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_search_history_type ON search_history(search_type)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_search_history_query ON search_history(query)"
+        )
 
         # 保存された検索テーブルのインデックス
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_saved_searches_name ON saved_searches(name)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_saved_searches_last_used ON saved_searches(last_used)")
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_saved_searches_use_count ON saved_searches(use_count)")
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_saved_searches_name ON saved_searches(name)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_saved_searches_last_used ON saved_searches(last_used)"
+        )
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_saved_searches_use_count ON saved_searches(use_count)"
+        )
 
         self.logger.info("データベースインデックスを作成しました")
 
-    def _migrate_schema(self, conn: sqlite3.Connection, from_version: int, to_version: int):
+    def _migrate_schema(
+        self, conn: sqlite3.Connection, from_version: int, to_version: int
+    ):
         """スキーママイグレーションを実行
 
         Args:
@@ -416,7 +460,9 @@ class DatabaseManager(LoggerMixin):
             from_version: 現在のバージョン
             to_version: 目標バージョン
         """
-        self.logger.info(f"スキーママイグレーションを開始: v{from_version} -> v{to_version}")
+        self.logger.info(
+            f"スキーママイグレーションを開始: v{from_version} -> v{to_version}"
+        )
 
         # 将来のマイグレーション処理をここに追加
         # 現在はバージョン1のみなので、マイグレーション処理は不要
@@ -457,27 +503,33 @@ class DatabaseManager(LoggerMixin):
 
                 # ドキュメント数
                 cursor = conn.execute("SELECT COUNT(*) FROM documents")
-                stats['document_count'] = cursor.fetchone()[0]
+                stats["document_count"] = cursor.fetchone()[0]
 
                 # 検索履歴数
                 cursor = conn.execute("SELECT COUNT(*) FROM search_history")
-                stats['search_history_count'] = cursor.fetchone()[0]
+                stats["search_history_count"] = cursor.fetchone()[0]
 
                 # 保存された検索数
                 cursor = conn.execute("SELECT COUNT(*) FROM saved_searches")
-                stats['saved_searches_count'] = cursor.fetchone()[0]
+                stats["saved_searches_count"] = cursor.fetchone()[0]
 
                 # ファイルタイプ別統計
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT file_type, COUNT(*) as count, SUM(size) as total_size
                     FROM documents
                     GROUP BY file_type
-                """)
-                stats['file_type_stats'] = {row[0]: {'count': row[1], 'size': row[2]}
-                                          for row in cursor.fetchall()}
+                """
+                )
+                stats["file_type_stats"] = {
+                    row[0]: {"count": row[1], "size": row[2]}
+                    for row in cursor.fetchall()
+                }
 
                 # データベースファイルサイズ
-                stats['db_file_size'] = self.db_path.stat().st_size if self.db_path.exists() else 0
+                stats["db_file_size"] = (
+                    self.db_path.stat().st_size if self.db_path.exists() else 0
+                )
 
                 return stats
 
@@ -498,6 +550,6 @@ class DatabaseManager(LoggerMixin):
 
     def close(self):
         """データベース接続を閉じる"""
-        if hasattr(self, '_connection_pool'):
+        if hasattr(self, "_connection_pool"):
             self._connection_pool.close_all()
         self.logger.info("データベース接続を閉じました")

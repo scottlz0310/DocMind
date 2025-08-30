@@ -86,7 +86,7 @@ class TestConfig(unittest.TestCase):
     def test_invalid_config_file(self):
         """無効な設定ファイルの処理テスト"""
         # 無効なJSONファイルを作成
-        with open(self.config_file, 'w') as f:
+        with open(self.config_file, "w") as f:
             f.write("invalid json content")
 
         # 設定オブジェクトの作成（エラーが発生しないことを確認）
@@ -262,7 +262,7 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(os.path.exists(export_file))
 
         # エクスポートファイルの内容確認
-        with open(export_file, encoding='utf-8') as f:
+        with open(export_file, encoding="utf-8") as f:
             export_data = json.load(f)
 
         self.assertIn("version", export_data)
@@ -286,11 +286,11 @@ class TestConfig(unittest.TestCase):
 
         # 無効なJSONファイルからのインポート
         invalid_json_file = os.path.join(self.temp_dir, "invalid.json")
-        with open(invalid_json_file, 'w') as f:
+        with open(invalid_json_file, "w") as f:
             f.write("invalid json")
 
         self.assertFalse(self.config.import_settings(invalid_json_file))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

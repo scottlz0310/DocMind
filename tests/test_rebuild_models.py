@@ -211,7 +211,7 @@ class TestRebuildProgress:
             stage="processing",
             current_file="/path/to/document.pdf",
             files_processed=10,
-            total_files=50
+            total_files=50,
         )
 
         message = progress.get_display_message()
@@ -254,7 +254,7 @@ class TestRebuildProgress:
             stage="processing",
             current_file="test.pdf",
             files_processed=25,
-            total_files=100
+            total_files=100,
         )
 
         details = progress.get_progress_details()
@@ -340,7 +340,7 @@ class TestRebuildProgress:
             current_file="test.pdf",
             files_processed=50,
             total_files=100,
-            message="テストメッセージ"
+            message="テストメッセージ",
         )
 
         progress.reset()
@@ -359,7 +359,9 @@ class TestRebuildProgress:
 
     def test_バリデーション_負の処理済みファイル数(self):
         """負の処理済みファイル数でのバリデーション"""
-        with pytest.raises(ValueError, match="処理済みファイル数は0以上である必要があります"):
+        with pytest.raises(
+            ValueError, match="処理済みファイル数は0以上である必要があります"
+        ):
             RebuildProgress(files_processed=-1)
 
     def test_バリデーション_負の総ファイル数(self):
@@ -375,5 +377,7 @@ class TestRebuildProgress:
 
     def test_バリデーション_無効な進捗率(self):
         """無効な進捗率でのバリデーション"""
-        with pytest.raises(ValueError, match="進捗率は0から100の範囲である必要があります"):
+        with pytest.raises(
+            ValueError, match="進捗率は0から100の範囲である必要があります"
+        ):
             RebuildProgress(percentage=150)

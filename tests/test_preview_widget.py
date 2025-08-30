@@ -39,10 +39,12 @@ class TestDocumentSummarizer:
     def test_generate_summary_long_content(self):
         """長いコンテンツの要約生成テスト"""
         # 長いコンテンツを作成
-        content = "これは最初の段落です。重要な情報が含まれています。\n\n" \
-                 "これは2番目の段落です。追加の詳細情報があります。\n\n" \
-                 "これは3番目の段落です。さらなる説明が続きます。\n\n" \
-                 "これは最後の段落です。結論が述べられています。"
+        content = (
+            "これは最初の段落です。重要な情報が含まれています。\n\n"
+            "これは2番目の段落です。追加の詳細情報があります。\n\n"
+            "これは3番目の段落です。さらなる説明が続きます。\n\n"
+            "これは最後の段落です。結論が述べられています。"
+        )
 
         summary = self.summarizer.generate_summary(content, max_length=100)
 
@@ -63,13 +65,11 @@ class TestDocumentSummarizer:
 
     def test_select_important_paragraphs(self):
         """重要段落選択機能のテスト"""
-        paragraphs = [
-            "最初の段落です。",
-            "2番目の段落です。",
-            "3番目の段落です。"
-        ]
+        paragraphs = ["最初の段落です。", "2番目の段落です。", "3番目の段落です。"]
 
-        summary = self.summarizer._select_important_paragraphs(paragraphs, max_length=50)
+        summary = self.summarizer._select_important_paragraphs(
+            paragraphs, max_length=50
+        )
 
         # 最初の段落は常に含まれる
         assert "最初の段落です。" in summary
@@ -95,6 +95,7 @@ class TestSearchHighlighter:
         """検索語設定のテスト"""
         # モックのQTextDocumentを作成
         from PySide6.QtGui import QTextDocument
+
         mock_document = QTextDocument()
         self.text_edit.document.return_value = mock_document
 
@@ -114,7 +115,7 @@ class TestSearchHighlighter:
         mock_cursor = Mock()
         self.text_edit.document.return_value = mock_document
 
-        with patch('src.gui.preview_widget.QTextCursor', return_value=mock_cursor):
+        with patch("src.gui.preview_widget.QTextCursor", return_value=mock_cursor):
             self.highlighter.clear_highlights()
 
             # QTextCursorが呼び出されたことを確認
@@ -126,14 +127,16 @@ class TestSearchHighlighter:
 @pytest.fixture
 def sample_document():
     """テスト用のサンプルドキュメントを作成"""
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".txt", delete=False, encoding="utf-8"
+    ) as f:
         f.write("これはテスト用のドキュメントです。\n検索機能をテストします。")
         temp_path = f.name
 
     try:
         doc = Document.create_from_file(
             temp_path,
-            content="これはテスト用のドキュメントです。\n検索機能をテストします。"
+            content="これはテスト用のドキュメントです。\n検索機能をテストします。",
         )
         yield doc
     finally:
@@ -235,7 +238,7 @@ class TestPreviewWidget:
         preview_widget.set_zoom_level(300)  # 200%を超える
         assert preview_widget.zoom_slider.value() == 200
 
-        preview_widget.set_zoom_level(25)   # 50%未満
+        preview_widget.set_zoom_level(25)  # 50%未満
         assert preview_widget.zoom_slider.value() == 50
 
     def test_format_change(self, preview_widget, sample_document):
@@ -261,7 +264,9 @@ class TestPreviewWidget:
         # ドキュメントがクリアされている
         assert preview_widget.current_document is None
         assert preview_widget.text_browser.toPlainText() == ""
-        assert "ドキュメントが選択されていません" in preview_widget.doc_info_label.text()
+        assert (
+            "ドキュメントが選択されていません" in preview_widget.doc_info_label.text()
+        )
 
     def test_file_size_formatting(self, preview_widget):
         """ファイルサイズフォーマット機能のテスト"""
@@ -393,7 +398,8 @@ class TestPreviewWidgetIntegration:
     def test_large_document_handling(self, preview_widget):
         """大きなドキュメントの処理テスト"""
         # 大きなコンテンツを持つドキュメントを作成（段落構造を持つ）
-        large_content = """これは最初の段落です。重要な情報が含まれています。
+        large_content = (
+            """これは最初の段落です。重要な情報が含まれています。
 
 これは2番目の段落です。追加の詳細情報があります。
 
@@ -401,9 +407,13 @@ class TestPreviewWidgetIntegration:
 
 これは4番目の段落です。より多くの情報があります。
 
-これは最後の段落です。結論が述べられています。""" * 10  # 約2000文字
+これは最後の段落です。結論が述べられています。"""
+            * 10
+        )  # 約2000文字
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False, encoding="utf-8"
+        ) as f:
             f.write(large_content)
             temp_path = f.name
 

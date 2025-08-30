@@ -32,7 +32,7 @@ class TestSearchFunctionalityValidator(unittest.TestCase):
             enable_performance_monitoring=True,
             enable_memory_monitoring=True,
             enable_error_injection=False,
-            log_level="DEBUG"
+            log_level="DEBUG",
         )
 
         self.validator = SearchFunctionalityValidator(self.config)
@@ -59,12 +59,17 @@ class TestSearchFunctionalityValidator(unittest.TestCase):
         self.assertEqual(self.validator.min_recall, 0.6)
         self.assertEqual(self.validator.min_f1_score, 0.65)
 
-    @patch('src.core.search_manager.SearchManager')
-    @patch('src.core.document_processor.DocumentProcessor')
-    @patch('src.core.embedding_manager.EmbeddingManager')
-    @patch('src.core.index_manager.IndexManager')
-    def test_setup_test_environment(self, mock_index_manager, mock_embedding_manager,
-                                  mock_doc_processor, mock_search_manager):
+    @patch("src.core.search_manager.SearchManager")
+    @patch("src.core.document_processor.DocumentProcessor")
+    @patch("src.core.embedding_manager.EmbeddingManager")
+    @patch("src.core.index_manager.IndexManager")
+    def test_setup_test_environment(
+        self,
+        mock_index_manager,
+        mock_embedding_manager,
+        mock_doc_processor,
+        mock_search_manager,
+    ):
         """テスト環境セットアップのテスト"""
         # モックの設定
         mock_index_manager.return_value = Mock()
@@ -107,23 +112,23 @@ class TestSearchFunctionalityValidator(unittest.TestCase):
         # テストデータの準備
         test_documents = [
             {
-                'filename': 'test_doc_001.txt',
-                'content': 'これはテストドキュメントです。',
-                'keywords': ['テスト', 'ドキュメント']
+                "filename": "test_doc_001.txt",
+                "content": "これはテストドキュメントです。",
+                "keywords": ["テスト", "ドキュメント"],
             },
             {
-                'filename': 'test_doc_002.txt',
-                'content': '検索機能のテストです。',
-                'keywords': ['検索', '機能', 'テスト']
-            }
+                "filename": "test_doc_002.txt",
+                "content": "検索機能のテストです。",
+                "keywords": ["検索", "機能", "テスト"],
+            },
         ]
 
         # モック検索結果の作成
         mock_result1 = Mock()
-        mock_result1.document.file_path = '/path/to/test_doc_001.txt'
+        mock_result1.document.file_path = "/path/to/test_doc_001.txt"
 
         mock_result2 = Mock()
-        mock_result2.document.file_path = '/path/to/test_doc_002.txt'
+        mock_result2.document.file_path = "/path/to/test_doc_002.txt"
 
         results = [mock_result1, mock_result2]
 
@@ -144,20 +149,19 @@ class TestSearchFunctionalityValidator(unittest.TestCase):
         """セマンティック検索精度計算のテスト"""
         # テストデータの準備
         test_documents = [
-            {
-                'filename': 'doc1.txt',
-                'keywords': ['ドキュメント', '検索']
-            }
+            {"filename": "doc1.txt", "keywords": ["ドキュメント", "検索"]}
         ]
 
         # モック検索結果
         mock_result = Mock()
-        mock_result.document.file_path = '/path/to/doc1.txt'
+        mock_result.document.file_path = "/path/to/doc1.txt"
         results = [mock_result]
 
         # テスト実行
-        precision, recall, f1_score = self.validator._calculate_semantic_search_accuracy(
-            "文書の検索", results, test_documents
+        precision, recall, f1_score = (
+            self.validator._calculate_semantic_search_accuracy(
+                "文書の検索", results, test_documents
+            )
         )
 
         # 検証
@@ -186,7 +190,7 @@ class TestSearchFunctionalityValidator(unittest.TestCase):
             memory_usage=100.0,
             precision=0.8,
             recall=0.7,
-            f1_score=0.75
+            f1_score=0.75,
         )
 
         metrics2 = SearchTestMetrics(
@@ -197,7 +201,7 @@ class TestSearchFunctionalityValidator(unittest.TestCase):
             memory_usage=150.0,
             precision=0.7,
             recall=0.6,
-            f1_score=0.65
+            f1_score=0.65,
         )
 
         self.validator.search_metrics = [metrics1, metrics2]
@@ -206,17 +210,17 @@ class TestSearchFunctionalityValidator(unittest.TestCase):
         summary = self.validator.get_search_metrics_summary()
 
         # 検証
-        self.assertEqual(summary['total_searches'], 2)
-        self.assertIn('by_type', summary)
-        self.assertIn('overall_avg_time', summary)
-        self.assertIn('performance_requirement_met', summary)
-        self.assertIn('memory_requirement_met', summary)
+        self.assertEqual(summary["total_searches"], 2)
+        self.assertIn("by_type", summary)
+        self.assertIn("overall_avg_time", summary)
+        self.assertIn("performance_requirement_met", summary)
+        self.assertIn("memory_requirement_met", summary)
 
         # 平均実行時間の検証
         expected_avg_time = (1.5 + 2.0) / 2
-        self.assertEqual(summary['overall_avg_time'], expected_avg_time)
+        self.assertEqual(summary["overall_avg_time"], expected_avg_time)
 
-    @patch('tests.validation_framework.test_data_generator.TestDataGenerator')
+    @patch("tests.validation_framework.test_data_generator.TestDataGenerator")
     def test_data_generator_integration(self, mock_generator_class):
         """データ生成器統合のテスト"""
         mock_generator = Mock()
@@ -239,12 +243,12 @@ class TestSearchFunctionalityValidatorIntegration(unittest.TestCase):
             enable_performance_monitoring=False,  # 統合テストでは無効化
             enable_memory_monitoring=False,
             enable_error_injection=False,
-            log_level="WARNING"  # ログレベルを上げてノイズを減らす
+            log_level="WARNING",  # ログレベルを上げてノイズを減らす
         )
 
     @unittest.skipIf(
-        not os.path.exists(os.path.join(os.path.dirname(__file__), '..', 'src')),
-        "DocMindソースコードが見つかりません"
+        not os.path.exists(os.path.join(os.path.dirname(__file__), "..", "src")),
+        "DocMindソースコードが見つかりません",
     )
     def test_full_validation_workflow(self):
         """完全な検証ワークフローのテスト"""
@@ -257,7 +261,7 @@ class TestSearchFunctionalityValidatorIntegration(unittest.TestCase):
             # 簡単なテストデータを作成
             test_dir = validator.test_data_dir
             test_file = os.path.join(test_dir, "test.txt")
-            with open(test_file, 'w', encoding='utf-8') as f:
+            with open(test_file, "w", encoding="utf-8") as f:
                 f.write("これはテストドキュメントです。")
 
             # 基本的な機能が動作することを確認
@@ -270,6 +274,6 @@ class TestSearchFunctionalityValidatorIntegration(unittest.TestCase):
             validator.cleanup()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # テスト実行
     unittest.main(verbosity=2)

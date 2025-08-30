@@ -49,6 +49,7 @@ except ImportError as e:
 
 class UsagePatternType(Enum):
     """使用パターンタイプ"""
+
     DAILY = "daily"
     WEEKLY = "weekly"
     MONTHLY = "monthly"
@@ -58,6 +59,7 @@ class UsagePatternType(Enum):
 
 class UserScenarioType(Enum):
     """ユーザーシナリオタイプ"""
+
     NEW_USER = "new_user"
     EXISTING_USER = "existing_user"
     POWER_USER = "power_user"
@@ -66,6 +68,7 @@ class UserScenarioType(Enum):
 
 class EdgeCaseType(Enum):
     """エッジケースタイプ"""
+
     LARGE_FILES = "large_files"
     MANY_FILES = "many_files"
     SPECIAL_CHARACTERS = "special_characters"
@@ -77,6 +80,7 @@ class EdgeCaseType(Enum):
 @dataclass
 class SimulationMetrics:
     """シミュレーション実行メトリクス"""
+
     start_time: datetime = field(default_factory=datetime.now)
     end_time: datetime | None = None
     total_operations: int = 0
@@ -107,6 +111,7 @@ class SimulationMetrics:
 @dataclass
 class UsagePattern:
     """使用パターン定義"""
+
     name: str
     pattern_type: UsagePatternType
     operations_per_session: int
@@ -193,7 +198,7 @@ class RealWorldSimulator(BaseValidator):
             self.test_config.data_dir,
             self.test_config.index_dir,
             self.test_config.cache_dir,
-            self.test_config.logs_dir
+            self.test_config.logs_dir,
         ]:
             dir_path.mkdir(parents=True, exist_ok=True)
 
@@ -253,15 +258,17 @@ class RealWorldSimulator(BaseValidator):
         # パフォーマンス要件の確認
         self.assert_condition(
             metrics.success_rate >= 95.0,
-            f"日次使用パターンの成功率が要件を下回る: {metrics.success_rate:.1f}% < 95%"
+            f"日次使用パターンの成功率が要件を下回る: {metrics.success_rate:.1f}% < 95%",
         )
 
         self.assert_condition(
             metrics.average_response_time < 2.0,
-            f"日次使用パターンの平均応答時間が要件を超過: {metrics.average_response_time:.2f}秒 > 2秒"
+            f"日次使用パターンの平均応答時間が要件を超過: {metrics.average_response_time:.2f}秒 > 2秒",
         )
 
-        self.logger.info(f"日次使用パターン完了 - 成功率: {metrics.success_rate:.1f}%, 応答時間: {metrics.average_response_time:.2f}秒")
+        self.logger.info(
+            f"日次使用パターン完了 - 成功率: {metrics.success_rate:.1f}%, 応答時間: {metrics.average_response_time:.2f}秒"
+        )
 
     def test_weekly_usage_pattern(self) -> None:
         """
@@ -277,15 +284,17 @@ class RealWorldSimulator(BaseValidator):
         # 安定性要件の確認
         self.assert_condition(
             metrics.success_rate >= 90.0,
-            f"週次使用パターンの成功率が要件を下回る: {metrics.success_rate:.1f}% < 90%"
+            f"週次使用パターンの成功率が要件を下回る: {metrics.success_rate:.1f}% < 90%",
         )
 
         self.assert_condition(
             metrics.peak_memory_usage_mb < 2048.0,
-            f"週次使用パターンのメモリ使用量が要件を超過: {metrics.peak_memory_usage_mb:.1f}MB > 2048MB"
+            f"週次使用パターンのメモリ使用量が要件を超過: {metrics.peak_memory_usage_mb:.1f}MB > 2048MB",
         )
 
-        self.logger.info(f"週次使用パターン完了 - 成功率: {metrics.success_rate:.1f}%, メモリ: {metrics.peak_memory_usage_mb:.1f}MB")
+        self.logger.info(
+            f"週次使用パターン完了 - 成功率: {metrics.success_rate:.1f}%, メモリ: {metrics.peak_memory_usage_mb:.1f}MB"
+        )
 
     def test_monthly_usage_pattern(self) -> None:
         """
@@ -301,17 +310,21 @@ class RealWorldSimulator(BaseValidator):
         # 長期安定性要件の確認
         self.assert_condition(
             metrics.success_rate >= 85.0,
-            f"月次使用パターンの成功率が要件を下回る: {metrics.success_rate:.1f}% < 85%"
+            f"月次使用パターンの成功率が要件を下回る: {metrics.success_rate:.1f}% < 85%",
         )
 
         # メモリリークの確認
-        memory_growth_rate = (metrics.peak_memory_usage_mb - 500.0) / 500.0 * 100  # 500MBをベースライン
+        memory_growth_rate = (
+            (metrics.peak_memory_usage_mb - 500.0) / 500.0 * 100
+        )  # 500MBをベースライン
         self.assert_condition(
             memory_growth_rate < 50.0,
-            f"月次使用パターンでメモリリークが検出: {memory_growth_rate:.1f}% > 50%"
+            f"月次使用パターンでメモリリークが検出: {memory_growth_rate:.1f}% > 50%",
         )
 
-        self.logger.info(f"月次使用パターン完了 - 成功率: {metrics.success_rate:.1f}%, メモリ増加: {memory_growth_rate:.1f}%")
+        self.logger.info(
+            f"月次使用パターン完了 - 成功率: {metrics.success_rate:.1f}%, メモリ増加: {memory_growth_rate:.1f}%"
+        )
 
     def test_large_files_edge_case(self) -> None:
         """
@@ -332,40 +345,50 @@ class RealWorldSimulator(BaseValidator):
                 result = self._process_large_file(file_path)
                 processing_time = time.time() - start_time
 
-                processing_results.append({
-                    'file_path': file_path,
-                    'success': result is not None,
-                    'processing_time': processing_time,
-                    'file_size_mb': os.path.getsize(file_path) / (1024 * 1024)
-                })
+                processing_results.append(
+                    {
+                        "file_path": file_path,
+                        "success": result is not None,
+                        "processing_time": processing_time,
+                        "file_size_mb": os.path.getsize(file_path) / (1024 * 1024),
+                    }
+                )
 
                 # 処理時間要件の確認（ファイルサイズに応じて調整）
                 file_size_mb = os.path.getsize(file_path) / (1024 * 1024)
-                max_time = min(60.0, file_size_mb * 2.0)  # 最大60秒、またはファイルサイズ×2秒
+                max_time = min(
+                    60.0, file_size_mb * 2.0
+                )  # 最大60秒、またはファイルサイズ×2秒
 
                 self.assert_condition(
                     processing_time < max_time,
-                    f"大容量ファイル処理時間が要件を超過: {processing_time:.2f}秒 > {max_time:.2f}秒 (ファイルサイズ: {file_size_mb:.1f}MB)"
+                    f"大容量ファイル処理時間が要件を超過: {processing_time:.2f}秒 > {max_time:.2f}秒 (ファイルサイズ: {file_size_mb:.1f}MB)",
                 )
 
             except Exception as e:
-                processing_results.append({
-                    'file_path': file_path,
-                    'success': False,
-                    'error': str(e),
-                    'processing_time': time.time() - start_time
-                })
+                processing_results.append(
+                    {
+                        "file_path": file_path,
+                        "success": False,
+                        "error": str(e),
+                        "processing_time": time.time() - start_time,
+                    }
+                )
 
         # 成功率の確認
-        success_count = sum(1 for r in processing_results if r['success'])
-        success_rate = (success_count / len(processing_results)) * 100 if processing_results else 0
+        success_count = sum(1 for r in processing_results if r["success"])
+        success_rate = (
+            (success_count / len(processing_results)) * 100 if processing_results else 0
+        )
 
         self.assert_condition(
             success_rate >= 80.0,
-            f"大容量ファイル処理成功率が要件を下回る: {success_rate:.1f}% < 80%"
+            f"大容量ファイル処理成功率が要件を下回る: {success_rate:.1f}% < 80%",
         )
 
-        self.logger.info(f"大容量ファイルエッジケース完了 - 成功率: {success_rate:.1f}%")
+        self.logger.info(
+            f"大容量ファイルエッジケース完了 - 成功率: {success_rate:.1f}%"
+        )
 
     def test_many_files_edge_case(self) -> None:
         """
@@ -382,7 +405,7 @@ class RealWorldSimulator(BaseValidator):
         processing_results = []
 
         for i in range(0, len(many_files), batch_size):
-            batch = many_files[i:i + batch_size]
+            batch = many_files[i : i + batch_size]
             batch_start = time.time()
 
             batch_success = 0
@@ -395,29 +418,35 @@ class RealWorldSimulator(BaseValidator):
                     self.logger.warning(f"ファイル処理エラー: {file_path} - {e}")
 
             batch_time = time.time() - batch_start
-            processing_results.append({
-                'batch_size': len(batch),
-                'success_count': batch_success,
-                'processing_time': batch_time
-            })
+            processing_results.append(
+                {
+                    "batch_size": len(batch),
+                    "success_count": batch_success,
+                    "processing_time": batch_time,
+                }
+            )
 
             # バッチ処理時間要件の確認
             self.assert_condition(
                 batch_time < 30.0,
-                f"バッチ処理時間が要件を超過: {batch_time:.2f}秒 > 30秒 (バッチサイズ: {len(batch)})"
+                f"バッチ処理時間が要件を超過: {batch_time:.2f}秒 > 30秒 (バッチサイズ: {len(batch)})",
             )
 
         # 全体の成功率確認
-        total_files = sum(r['batch_size'] for r in processing_results)
-        total_success = sum(r['success_count'] for r in processing_results)
-        overall_success_rate = (total_success / total_files) * 100 if total_files > 0 else 0
+        total_files = sum(r["batch_size"] for r in processing_results)
+        total_success = sum(r["success_count"] for r in processing_results)
+        overall_success_rate = (
+            (total_success / total_files) * 100 if total_files > 0 else 0
+        )
 
         self.assert_condition(
             overall_success_rate >= 90.0,
-            f"多数ファイル処理成功率が要件を下回る: {overall_success_rate:.1f}% < 90%"
+            f"多数ファイル処理成功率が要件を下回る: {overall_success_rate:.1f}% < 90%",
         )
 
-        self.logger.info(f"多数ファイルエッジケース完了 - 成功率: {overall_success_rate:.1f}% ({total_success}/{total_files})")
+        self.logger.info(
+            f"多数ファイルエッジケース完了 - 成功率: {overall_success_rate:.1f}% ({total_success}/{total_files})"
+        )
 
     def test_special_characters_edge_case(self) -> None:
         """
@@ -432,45 +461,53 @@ class RealWorldSimulator(BaseValidator):
 
         processing_results = []
         for file_info in special_files:
-            file_path = file_info['path']
-            char_type = file_info['type']
+            file_path = file_info["path"]
+            char_type = file_info["type"]
 
             try:
                 start_time = time.time()
                 result = self._process_file_simple(file_path)
                 processing_time = time.time() - start_time
 
-                processing_results.append({
-                    'file_path': file_path,
-                    'char_type': char_type,
-                    'success': result is not None,
-                    'processing_time': processing_time
-                })
+                processing_results.append(
+                    {
+                        "file_path": file_path,
+                        "char_type": char_type,
+                        "success": result is not None,
+                        "processing_time": processing_time,
+                    }
+                )
 
                 # 処理時間要件の確認
                 self.assert_condition(
                     processing_time < 10.0,
-                    f"特殊文字ファイル処理時間が要件を超過: {processing_time:.2f}秒 > 10秒 (文字タイプ: {char_type})"
+                    f"特殊文字ファイル処理時間が要件を超過: {processing_time:.2f}秒 > 10秒 (文字タイプ: {char_type})",
                 )
 
             except Exception as e:
-                processing_results.append({
-                    'file_path': file_path,
-                    'char_type': char_type,
-                    'success': False,
-                    'error': str(e)
-                })
+                processing_results.append(
+                    {
+                        "file_path": file_path,
+                        "char_type": char_type,
+                        "success": False,
+                        "error": str(e),
+                    }
+                )
 
         # 文字タイプ別成功率の確認
-        char_types = {r['char_type'] for r in processing_results}
+        char_types = {r["char_type"] for r in processing_results}
         for char_type in char_types:
-            type_results = [r for r in processing_results if r['char_type'] == char_type]
-            success_count = sum(1 for r in type_results if r['success'])
-            success_rate = (success_count / len(type_results)) * 100 if type_results else 0
+            type_results = [
+                r for r in processing_results if r["char_type"] == char_type
+            ]
+            success_count = sum(1 for r in type_results if r["success"])
+            success_rate = (
+                (success_count / len(type_results)) * 100 if type_results else 0
+            )
 
             self.assert_condition(
                 success_rate >= 85.0,
-                f"特殊文字ファイル処理成功率が要件を下回る ({char_type}): {success_rate:.1f}% < 85%"
+                f"特殊文字ファイル処理成功率が要件を下回る ({char_type}): {success_rate:.1f}% < 85%",
             )
 
         self.logger.info("特殊文字エッジケース完了")
@@ -489,16 +526,18 @@ class RealWorldSimulator(BaseValidator):
         # 新規ユーザー要件の確認
         self.assert_condition(
             metrics.success_rate >= 95.0,
-            f"新規ユーザーシナリオ成功率が要件を下回る: {metrics.success_rate:.1f}% < 95%"
+            f"新規ユーザーシナリオ成功率が要件を下回る: {metrics.success_rate:.1f}% < 95%",
         )
 
         # 初回起動時間の確認
         self.assert_condition(
             metrics.average_response_time < 15.0,
-            f"新規ユーザー初回起動時間が要件を超過: {metrics.average_response_time:.2f}秒 > 15秒"
+            f"新規ユーザー初回起動時間が要件を超過: {metrics.average_response_time:.2f}秒 > 15秒",
         )
 
-        self.logger.info(f"新規ユーザーシナリオ完了 - 成功率: {metrics.success_rate:.1f}%")
+        self.logger.info(
+            f"新規ユーザーシナリオ完了 - 成功率: {metrics.success_rate:.1f}%"
+        )
 
     def test_existing_user_scenario(self) -> None:
         """
@@ -517,15 +556,17 @@ class RealWorldSimulator(BaseValidator):
         # 既存ユーザー要件の確認
         self.assert_condition(
             metrics.success_rate >= 98.0,
-            f"既存ユーザーシナリオ成功率が要件を下回る: {metrics.success_rate:.1f}% < 98%"
+            f"既存ユーザーシナリオ成功率が要件を下回る: {metrics.success_rate:.1f}% < 98%",
         )
 
         self.assert_condition(
             metrics.average_response_time < 3.0,
-            f"既存ユーザー操作応答時間が要件を超過: {metrics.average_response_time:.2f}秒 > 3秒"
+            f"既存ユーザー操作応答時間が要件を超過: {metrics.average_response_time:.2f}秒 > 3秒",
         )
 
-        self.logger.info(f"既存ユーザーシナリオ完了 - 成功率: {metrics.success_rate:.1f}%")
+        self.logger.info(
+            f"既存ユーザーシナリオ完了 - 成功率: {metrics.success_rate:.1f}%"
+        )
 
     def test_bulk_processing_scenario(self) -> None:
         """
@@ -541,16 +582,18 @@ class RealWorldSimulator(BaseValidator):
         # 大量処理要件の確認
         self.assert_condition(
             metrics.success_rate >= 85.0,
-            f"大量データ処理シナリオ成功率が要件を下回る: {metrics.success_rate:.1f}% < 85%"
+            f"大量データ処理シナリオ成功率が要件を下回る: {metrics.success_rate:.1f}% < 85%",
         )
 
         # メモリ効率の確認
         self.assert_condition(
             metrics.peak_memory_usage_mb < 3072.0,  # 3GB
-            f"大量データ処理メモリ使用量が要件を超過: {metrics.peak_memory_usage_mb:.1f}MB > 3072MB"
+            f"大量データ処理メモリ使用量が要件を超過: {metrics.peak_memory_usage_mb:.1f}MB > 3072MB",
         )
 
-        self.logger.info(f"大量データ処理シナリオ完了 - 成功率: {metrics.success_rate:.1f}%, メモリ: {metrics.peak_memory_usage_mb:.1f}MB")
+        self.logger.info(
+            f"大量データ処理シナリオ完了 - 成功率: {metrics.success_rate:.1f}%, メモリ: {metrics.peak_memory_usage_mb:.1f}MB"
+        )
 
     def _define_usage_patterns(self) -> dict[UsagePatternType, UsagePattern]:
         """使用パターンの定義"""
@@ -563,7 +606,7 @@ class RealWorldSimulator(BaseValidator):
                 search_frequency=0.7,
                 document_add_frequency=0.1,
                 concurrent_operations=1,
-                break_duration_seconds=2.0
+                break_duration_seconds=2.0,
             ),
             UsagePatternType.WEEKLY: UsagePattern(
                 name="週次使用パターン",
@@ -573,7 +616,7 @@ class RealWorldSimulator(BaseValidator):
                 search_frequency=0.6,
                 document_add_frequency=0.2,
                 concurrent_operations=2,
-                break_duration_seconds=1.0
+                break_duration_seconds=1.0,
             ),
             UsagePatternType.MONTHLY: UsagePattern(
                 name="月次使用パターン",
@@ -583,47 +626,57 @@ class RealWorldSimulator(BaseValidator):
                 search_frequency=0.5,
                 document_add_frequency=0.3,
                 concurrent_operations=3,
-                break_duration_seconds=0.5
-            )
+                break_duration_seconds=0.5,
+            ),
         }
 
     def _define_edge_cases(self) -> dict[EdgeCaseType, dict[str, Any]]:
         """エッジケースの定義"""
         return {
             EdgeCaseType.LARGE_FILES: {
-                'name': '大容量ファイル',
-                'file_sizes_mb': [50, 100, 200, 500],
-                'file_count': 5
+                "name": "大容量ファイル",
+                "file_sizes_mb": [50, 100, 200, 500],
+                "file_count": 5,
             },
             EdgeCaseType.MANY_FILES: {
-                'name': '多数ファイル',
-                'file_count': 1000,
-                'file_size_kb': 10
+                "name": "多数ファイル",
+                "file_count": 1000,
+                "file_size_kb": 10,
             },
             EdgeCaseType.SPECIAL_CHARACTERS: {
-                'name': '特殊文字',
-                'character_sets': ['emoji', 'unicode', 'japanese', 'symbols']
-            }
+                "name": "特殊文字",
+                "character_sets": ["emoji", "unicode", "japanese", "symbols"],
+            },
         }
 
     def _define_user_scenarios(self) -> dict[UserScenarioType, dict[str, Any]]:
         """ユーザーシナリオの定義"""
         return {
             UserScenarioType.NEW_USER: {
-                'name': '新規ユーザー',
-                'operations': ['startup', 'folder_selection', 'initial_indexing', 'first_search'],
-                'expected_duration_minutes': 10
+                "name": "新規ユーザー",
+                "operations": [
+                    "startup",
+                    "folder_selection",
+                    "initial_indexing",
+                    "first_search",
+                ],
+                "expected_duration_minutes": 10,
             },
             UserScenarioType.EXISTING_USER: {
-                'name': '既存ユーザー',
-                'operations': ['startup', 'search', 'add_document', 'search_again'],
-                'expected_duration_minutes': 5
+                "name": "既存ユーザー",
+                "operations": ["startup", "search", "add_document", "search_again"],
+                "expected_duration_minutes": 5,
             },
             UserScenarioType.BULK_PROCESSING: {
-                'name': '大量データ処理',
-                'operations': ['startup', 'bulk_add', 'bulk_index', 'performance_search'],
-                'expected_duration_minutes': 60
-            }
+                "name": "大量データ処理",
+                "operations": [
+                    "startup",
+                    "bulk_add",
+                    "bulk_index",
+                    "performance_search",
+                ],
+                "expected_duration_minutes": 60,
+            },
         }
 
     def _initialize_docmind_components(self) -> None:
@@ -639,8 +692,7 @@ class RealWorldSimulator(BaseValidator):
             self.document_processor = DocumentProcessor()
 
             self.search_manager = SearchManager(
-                self.index_manager,
-                self.embedding_manager
+                self.index_manager, self.embedding_manager
             )
 
             self.logger.info("DocMindコンポーネント初期化完了")
@@ -676,8 +728,7 @@ class RealWorldSimulator(BaseValidator):
 
                 # 操作の実行
                 success = self._execute_random_operation(
-                    pattern.search_frequency,
-                    pattern.document_add_frequency
+                    pattern.search_frequency, pattern.document_add_frequency
                 )
 
                 operation_time = time.time() - operation_start
@@ -705,7 +756,9 @@ class RealWorldSimulator(BaseValidator):
 
             # 平均応答時間の計算
             if response_times:
-                metrics.average_response_time = sum(response_times) / len(response_times)
+                metrics.average_response_time = sum(response_times) / len(
+                    response_times
+                )
 
         except Exception as e:
             metrics.errors.append(str(e))
@@ -726,7 +779,7 @@ class RealWorldSimulator(BaseValidator):
         metrics = SimulationMetrics()
 
         try:
-            for operation in scenario['operations']:
+            for operation in scenario["operations"]:
                 operation_start = time.time()
                 success = self._execute_scenario_operation(operation)
                 operation_time = time.time() - operation_start
@@ -741,7 +794,9 @@ class RealWorldSimulator(BaseValidator):
                 if metrics.average_response_time == 0:
                     metrics.average_response_time = operation_time
                 else:
-                    metrics.average_response_time = (metrics.average_response_time + operation_time) / 2
+                    metrics.average_response_time = (
+                        metrics.average_response_time + operation_time
+                    ) / 2
 
         except Exception as e:
             metrics.errors.append(str(e))
@@ -753,7 +808,9 @@ class RealWorldSimulator(BaseValidator):
         self.logger.info(f"ユーザーシナリオ実行完了: {scenario['name']}")
         return metrics
 
-    def _execute_random_operation(self, search_freq: float, doc_add_freq: float) -> bool:
+    def _execute_random_operation(
+        self, search_freq: float, doc_add_freq: float
+    ) -> bool:
         """ランダム操作の実行"""
         rand = random.random()
 
@@ -774,25 +831,25 @@ class RealWorldSimulator(BaseValidator):
     def _execute_scenario_operation(self, operation: str) -> bool:
         """シナリオ操作の実行"""
         try:
-            if operation == 'startup':
+            if operation == "startup":
                 return self._perform_startup_operation()
-            elif operation == 'folder_selection':
+            elif operation == "folder_selection":
                 return self._perform_folder_selection_operation()
-            elif operation == 'initial_indexing':
+            elif operation == "initial_indexing":
                 return self._perform_initial_indexing_operation()
-            elif operation == 'first_search':
+            elif operation == "first_search":
                 return self._perform_search_operation()
-            elif operation == 'search':
+            elif operation == "search":
                 return self._perform_search_operation()
-            elif operation == 'add_document':
+            elif operation == "add_document":
                 return self._perform_document_add_operation()
-            elif operation == 'search_again':
+            elif operation == "search_again":
                 return self._perform_search_operation()
-            elif operation == 'bulk_add':
+            elif operation == "bulk_add":
                 return self._perform_bulk_add_operation()
-            elif operation == 'bulk_index':
+            elif operation == "bulk_index":
                 return self._perform_bulk_index_operation()
-            elif operation == 'performance_search':
+            elif operation == "performance_search":
                 return self._perform_performance_search_operation()
             else:
                 self.logger.warning(f"未知の操作: {operation}")
@@ -821,7 +878,7 @@ class RealWorldSimulator(BaseValidator):
         test_content = f"テストドキュメント {datetime.now()}"
 
         try:
-            test_file.write_text(test_content, encoding='utf-8')
+            test_file.write_text(test_content, encoding="utf-8")
 
             if self.document_processor:
                 doc = self.document_processor.process_file(str(test_file))
@@ -891,12 +948,16 @@ class RealWorldSimulator(BaseValidator):
             content_size = size_mb * 1024 * 1024  # バイト単位
             chunk_size = 1024  # 1KBずつ書き込み
 
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 written = 0
                 while written < content_size:
-                    chunk = ''.join(random.choices(string.ascii_letters + string.digits + ' \n', k=chunk_size))
+                    chunk = "".join(
+                        random.choices(
+                            string.ascii_letters + string.digits + " \n", k=chunk_size
+                        )
+                    )
                     f.write(chunk)
-                    written += len(chunk.encode('utf-8'))
+                    written += len(chunk.encode("utf-8"))
 
             large_files.append(str(file_path))
 
@@ -910,7 +971,7 @@ class RealWorldSimulator(BaseValidator):
             file_path = self.test_config.data_dir / f"small_file_{i:04d}.txt"
             content = f"小さなファイル {i}: {random.choice(['テスト', 'データ', '内容', '情報'])}"
 
-            file_path.write_text(content, encoding='utf-8')
+            file_path.write_text(content, encoding="utf-8")
             files.append(str(file_path))
 
         return files
@@ -922,26 +983,26 @@ class RealWorldSimulator(BaseValidator):
         # 絵文字ファイル
         emoji_file = self.test_config.data_dir / "emoji_file.txt"
         emoji_content = "絵文字テスト 😀😃😄😁😆😅😂🤣"
-        emoji_file.write_text(emoji_content, encoding='utf-8')
-        special_files.append({'path': str(emoji_file), 'type': 'emoji'})
+        emoji_file.write_text(emoji_content, encoding="utf-8")
+        special_files.append({"path": str(emoji_file), "type": "emoji"})
 
         # Unicode文字ファイル
         unicode_file = self.test_config.data_dir / "unicode_file.txt"
         unicode_content = "Unicode文字: αβγδε ñáéíóú çüöäß"
-        unicode_file.write_text(unicode_content, encoding='utf-8')
-        special_files.append({'path': str(unicode_file), 'type': 'unicode'})
+        unicode_file.write_text(unicode_content, encoding="utf-8")
+        special_files.append({"path": str(unicode_file), "type": "unicode"})
 
         # 日本語ファイル
         japanese_file = self.test_config.data_dir / "japanese_file.txt"
         japanese_content = "日本語テスト：ひらがな、カタカナ、漢字、記号！？"
-        japanese_file.write_text(japanese_content, encoding='utf-8')
-        special_files.append({'path': str(japanese_file), 'type': 'japanese'})
+        japanese_file.write_text(japanese_content, encoding="utf-8")
+        special_files.append({"path": str(japanese_file), "type": "japanese"})
 
         # 記号ファイル
         symbols_file = self.test_config.data_dir / "symbols_file.txt"
         symbols_content = "記号テスト: @#$%^&*()_+-=[]{}|;':\",./<>?"
-        symbols_file.write_text(symbols_content, encoding='utf-8')
-        special_files.append({'path': str(symbols_file), 'type': 'symbols'})
+        symbols_file.write_text(symbols_content, encoding="utf-8")
+        special_files.append({"path": str(symbols_file), "type": "symbols"})
 
         return special_files
 

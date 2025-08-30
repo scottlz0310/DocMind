@@ -38,10 +38,10 @@ class TestSystemInfoCollector(unittest.TestCase):
         system_info = self.collector.collect_system_info()
 
         # 基本的なシステム情報が含まれているかチェック
-        self.assertIn('os_name', system_info)
-        self.assertIn('python_version', system_info)
-        self.assertIn('total_memory_mb', system_info)
-        self.assertIn('cpu_count', system_info)
+        self.assertIn("os_name", system_info)
+        self.assertIn("python_version", system_info)
+        self.assertIn("total_memory_mb", system_info)
+        self.assertIn("cpu_count", system_info)
 
     def test_get_windows_version(self):
         """Windows版本取得のテスト"""
@@ -51,10 +51,10 @@ class TestSystemInfoCollector(unittest.TestCase):
         self.assertIsInstance(version, str)
         self.assertIsInstance(is_supported, bool)
 
-    @patch('platform.system')
+    @patch("platform.system")
     def test_get_windows_version_non_windows(self, mock_system):
         """非Windows環境でのテスト"""
-        mock_system.return_value = 'Linux'
+        mock_system.return_value = "Linux"
 
         version, is_supported = self.collector.get_windows_version()
 
@@ -79,7 +79,7 @@ class TestEncodingTester(unittest.TestCase):
 
     def test_test_encoding_support(self):
         """エンコーディングサポートテストのテスト"""
-        encodings = ['utf-8', 'shift_jis', 'euc-jp']
+        encodings = ["utf-8", "shift_jis", "euc-jp"]
         results = self.tester.test_encoding_support(encodings)
 
         # 結果の構造チェック
@@ -93,8 +93,10 @@ class TestEncodingTester(unittest.TestCase):
     def test_create_test_files_with_encodings(self):
         """エンコーディングテストファイル作成のテスト"""
         with tempfile.TemporaryDirectory() as temp_dir:
-            encodings = ['utf-8', 'shift_jis']
-            test_files = self.tester.create_test_files_with_encodings(temp_dir, encodings)
+            encodings = ["utf-8", "shift_jis"]
+            test_files = self.tester.create_test_files_with_encodings(
+                temp_dir, encodings
+            )
 
             # ファイルが作成されているかチェック
             self.assertIsInstance(test_files, list)
@@ -104,9 +106,9 @@ class TestEncodingTester(unittest.TestCase):
 
                 # ファイル内容の確認
                 try:
-                    with open(file_path, encoding='utf-8') as f:
+                    with open(file_path, encoding="utf-8") as f:
                         content = f.read()
-                        self.assertIn('エンコーディング', content)
+                        self.assertIn("エンコーディング", content)
                 except UnicodeDecodeError:
                     # UTF-8以外のエンコーディングの場合は正常
                     pass
@@ -164,7 +166,7 @@ class TestCompatibilityValidator(unittest.TestCase):
         self.config = ValidationConfig(
             enable_performance_monitoring=False,
             enable_memory_monitoring=False,
-            log_level="WARNING"  # テスト時はログを抑制
+            log_level="WARNING",  # テスト時はログを抑制
         )
         self.validator = CompatibilityValidator(self.config)
 
@@ -192,25 +194,25 @@ class TestCompatibilityValidator(unittest.TestCase):
         # テスト環境が正しく設定されているかチェック
         self.assertIsNotNone(self.validator.test_base_dir)
         self.assertTrue(os.path.exists(self.validator.test_base_dir))
-        self.assertIn('index_manager', self.validator.test_components)
-        self.assertIn('search_manager', self.validator.test_components)
+        self.assertIn("index_manager", self.validator.test_components)
+        self.assertIn("search_manager", self.validator.test_components)
 
-    @patch.object(CompatibilityValidator, '_test_all_docmind_features')
-    @patch.object(CompatibilityValidator, '_test_windows_performance')
+    @patch.object(CompatibilityValidator, "_test_all_docmind_features")
+    @patch.object(CompatibilityValidator, "_test_windows_performance")
     def test_windows_environment_compatibility(self, mock_performance, mock_features):
         """Windows環境互換性テストのテスト"""
         # モックの設定
         mock_features.return_value = {
-            'document_processing': True,
-            'indexing': True,
-            'search': True,
-            'embedding': True,
-            'gui': True
+            "document_processing": True,
+            "indexing": True,
+            "search": True,
+            "embedding": True,
+            "gui": True,
         }
         mock_performance.return_value = {
-            'startup_time_seconds': 5.0,
-            'search_time_seconds': 2.0,
-            'memory_usage_mb': 512
+            "startup_time_seconds": 5.0,
+            "search_time_seconds": 2.0,
+            "memory_usage_mb": 512,
         }
 
         # テスト環境のセットアップ
@@ -223,21 +225,23 @@ class TestCompatibilityValidator(unittest.TestCase):
         self.assertEqual(len(self.validator.compatibility_metrics), 1)
         metric = self.validator.compatibility_metrics[0]
         self.assertEqual(metric.test_name, "windows_environment_compatibility")
-        self.assertIn(metric.compatibility_level, ["COMPATIBLE", "LIMITED", "INCOMPATIBLE"])
+        self.assertIn(
+            metric.compatibility_level, ["COMPATIBLE", "LIMITED", "INCOMPATIBLE"]
+        )
 
-    @patch.object(CompatibilityValidator, '_get_screen_resolution')
-    @patch.object(CompatibilityValidator, '_test_resolution_compatibility')
-    @patch.object(CompatibilityValidator, '_test_filesystem_compatibility')
-    @patch.object(CompatibilityValidator, '_test_gui_display_compatibility')
+    @patch.object(CompatibilityValidator, "_get_screen_resolution")
+    @patch.object(CompatibilityValidator, "_test_resolution_compatibility")
+    @patch.object(CompatibilityValidator, "_test_filesystem_compatibility")
+    @patch.object(CompatibilityValidator, "_test_gui_display_compatibility")
     def test_screen_resolution_filesystem_compatibility(
         self, mock_gui, mock_filesystem, mock_resolution, mock_get_resolution
     ):
         """画面解像度・ファイルシステム互換性テストのテスト"""
         # モックの設定
         mock_get_resolution.return_value = (1920, 1080)
-        mock_resolution.return_value = {'ui_scaling': True}
-        mock_filesystem.return_value = {'file_operations': True}
-        mock_gui.return_value = {'display_accuracy': True}
+        mock_resolution.return_value = {"ui_scaling": True}
+        mock_filesystem.return_value = {"file_operations": True}
+        mock_gui.return_value = {"display_accuracy": True}
 
         # テスト環境のセットアップ
         self.validator.setup_test_environment()
@@ -251,18 +255,18 @@ class TestCompatibilityValidator(unittest.TestCase):
         self.assertEqual(metric.test_name, "screen_resolution_filesystem_compatibility")
         self.assertEqual(metric.screen_resolution, (1920, 1080))
 
-    @patch.object(CompatibilityValidator, '_test_encoding_file_processing')
-    @patch.object(CompatibilityValidator, '_test_encoding_search_functionality')
+    @patch.object(CompatibilityValidator, "_test_encoding_file_processing")
+    @patch.object(CompatibilityValidator, "_test_encoding_search_functionality")
     def test_character_encoding_compatibility(self, mock_search, mock_processing):
         """文字エンコーディング互換性テストのテスト"""
         # モックの設定
         mock_processing.return_value = {
-            'utf-8': {'japanese_hiragana': True, 'japanese_kanji': True},
-            'shift_jis': {'japanese_hiragana': True, 'japanese_kanji': True}
+            "utf-8": {"japanese_hiragana": True, "japanese_kanji": True},
+            "shift_jis": {"japanese_hiragana": True, "japanese_kanji": True},
         }
         mock_search.return_value = {
-            'utf-8': {'basic_search': True, 'japanese_search': True},
-            'shift_jis': {'basic_search': True, 'japanese_search': True}
+            "utf-8": {"basic_search": True, "japanese_search": True},
+            "shift_jis": {"basic_search": True, "japanese_search": True},
         }
 
         # テスト環境のセットアップ
@@ -277,38 +281,38 @@ class TestCompatibilityValidator(unittest.TestCase):
         self.assertEqual(metric.test_name, "character_encoding_compatibility")
         self.assertIsInstance(metric.encoding_support, dict)
 
-    @patch.object(CompatibilityValidator, '_test_low_memory_environment')
-    @patch.object(CompatibilityValidator, '_test_low_disk_environment')
-    @patch.object(CompatibilityValidator, '_test_low_cpu_environment')
-    @patch.object(CompatibilityValidator, '_test_combined_resource_limits')
+    @patch.object(CompatibilityValidator, "_test_low_memory_environment")
+    @patch.object(CompatibilityValidator, "_test_low_disk_environment")
+    @patch.object(CompatibilityValidator, "_test_low_cpu_environment")
+    @patch.object(CompatibilityValidator, "_test_combined_resource_limits")
     def test_limited_resource_environment_compatibility(
         self, mock_combined, mock_cpu, mock_disk, mock_memory
     ):
         """限定リソース環境互換性テストのテスト"""
         # モックの設定
         mock_memory.return_value = {
-            'basic_functionality': True,
-            'acceptable_performance': True,
-            'critical_errors': [],
-            'performance_metrics': {'execution_time': 5.0}
+            "basic_functionality": True,
+            "acceptable_performance": True,
+            "critical_errors": [],
+            "performance_metrics": {"execution_time": 5.0},
         }
         mock_disk.return_value = {
-            'basic_functionality': True,
-            'acceptable_performance': True,
-            'critical_errors': [],
-            'performance_metrics': {'execution_time': 3.0}
+            "basic_functionality": True,
+            "acceptable_performance": True,
+            "critical_errors": [],
+            "performance_metrics": {"execution_time": 3.0},
         }
         mock_cpu.return_value = {
-            'basic_functionality': True,
-            'acceptable_performance': True,
-            'critical_errors': [],
-            'performance_metrics': {'execution_time': 7.0}
+            "basic_functionality": True,
+            "acceptable_performance": True,
+            "critical_errors": [],
+            "performance_metrics": {"execution_time": 7.0},
         }
         mock_combined.return_value = {
-            'basic_functionality': True,
-            'acceptable_performance': False,
-            'critical_errors': [],
-            'performance_metrics': {'execution_time': 10.0}
+            "basic_functionality": True,
+            "acceptable_performance": False,
+            "critical_errors": [],
+            "performance_metrics": {"execution_time": 10.0},
         }
 
         # テスト環境のセットアップ
@@ -365,14 +369,14 @@ class TestCompatibilityValidator(unittest.TestCase):
         # システム互換性監査
         result = self.validator._audit_system_compatibility()
         self.assertIsInstance(result, dict)
-        self.assertIn('score', result)
-        self.assertIn('critical_issues', result)
+        self.assertIn("score", result)
+        self.assertIn("critical_issues", result)
 
         # リソース互換性監査
         result = self.validator._audit_resource_compatibility()
         self.assertIsInstance(result, dict)
-        self.assertIn('score', result)
-        self.assertIn('critical_issues', result)
+        self.assertIn("score", result)
+        self.assertIn("critical_issues", result)
 
 
 class TestCompatibilityThresholds(unittest.TestCase):
@@ -389,10 +393,10 @@ class TestCompatibilityThresholds(unittest.TestCase):
         self.assertEqual(thresholds.max_memory_usage_mb, 2048)
         self.assertEqual(thresholds.min_disk_space_mb, 1024)
         self.assertEqual(thresholds.max_search_time_seconds, 10.0)
-        self.assertIn('utf-8', thresholds.supported_encodings)
-        self.assertIn('shift_jis', thresholds.supported_encodings)
+        self.assertIn("utf-8", thresholds.supported_encodings)
+        self.assertIn("shift_jis", thresholds.supported_encodings)
         self.assertEqual(thresholds.min_screen_resolution, (1024, 768))
-        self.assertIn('NTFS', thresholds.supported_filesystems)
+        self.assertIn("NTFS", thresholds.supported_filesystems)
 
 
 class TestCompatibilityMetrics(unittest.TestCase):
@@ -401,8 +405,7 @@ class TestCompatibilityMetrics(unittest.TestCase):
     def test_initialization(self):
         """初期化のテスト"""
         metrics = CompatibilityMetrics(
-            test_name="test_compatibility",
-            compatibility_level="COMPATIBLE"
+            test_name="test_compatibility", compatibility_level="COMPATIBLE"
         )
 
         # 基本属性の確認
@@ -422,6 +425,6 @@ class TestCompatibilityMetrics(unittest.TestCase):
         self.assertEqual(metrics.additional_details, {})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # テストの実行
     unittest.main(verbosity=2)

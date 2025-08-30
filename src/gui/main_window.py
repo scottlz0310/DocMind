@@ -67,7 +67,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         context="メインウィンドウ初期化",
         user_message="メインウィンドウの初期化中にエラーが発生しました。",
         attempt_recovery=True,
-        reraise=True
+        reraise=True,
     )
     def __init__(self, parent: QWidget | None = None):
         """
@@ -143,13 +143,14 @@ class MainWindow(QMainWindow, LoggerMixin):
             self.document_processor = DocumentProcessor()
             # 検索マネージャーの初期化
             self.search_manager = SearchManager(
-                self.index_manager,
-                self.embedding_manager
+                self.index_manager, self.embedding_manager
             )
             # スレッドマネージャーの初期化
             self.thread_manager = IndexingThreadManager(max_concurrent_threads=2)
             # タイムアウトマネージャーの初期化
-            self.timeout_manager = RebuildTimeoutManager(timeout_minutes=30, parent=self)
+            self.timeout_manager = RebuildTimeoutManager(
+                timeout_minutes=30, parent=self
+            )
             # 劣化管理マネージャーで検索機能を有効化
             degradation_manager = get_global_degradation_manager()
             degradation_manager.mark_component_healthy("search_manager")
@@ -161,7 +162,7 @@ class MainWindow(QMainWindow, LoggerMixin):
             degradation_manager.mark_component_degraded(
                 "search_manager",
                 ["full_text_search", "semantic_search", "hybrid_search"],
-                f"検索コンポーネントの初期化に失敗: {e}"
+                f"検索コンポーネントの初期化に失敗: {e}",
             )
 
     # メニューアクションのスロット関数
@@ -180,7 +181,9 @@ class MainWindow(QMainWindow, LoggerMixin):
         """
         self.status_manager.show_status_message(message, timeout)
 
-    def show_progress(self, message: str, value: int, current: int = 0, total: int = 0) -> None:
+    def show_progress(
+        self, message: str, value: int, current: int = 0, total: int = 0
+    ) -> None:
         """
         進捗バーを表示（progress_managerに委譲）
         """
@@ -250,7 +253,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         """
         try:
             # ワーカーを先にクリーンアップ
-            if hasattr(self, 'indexing_worker') and self.indexing_worker:
+            if hasattr(self, "indexing_worker") and self.indexing_worker:
                 try:
                     self.indexing_worker.deleteLater()
                 except RuntimeError:
@@ -258,7 +261,7 @@ class MainWindow(QMainWindow, LoggerMixin):
                     pass
                 self.indexing_worker = None
             # スレッドをクリーンアップ
-            if hasattr(self, 'indexing_thread') and self.indexing_thread:
+            if hasattr(self, "indexing_thread") and self.indexing_thread:
                 try:
                     self.indexing_thread.deleteLater()
                 except RuntimeError:
@@ -277,33 +280,51 @@ class MainWindow(QMainWindow, LoggerMixin):
         """スレッド完了時の処理（thread_handler_managerに委譲）"""
         self.thread_handler_manager.handle_thread_finished(thread_id, statistics)
 
-    def _format_detailed_completion_message(self, folder_name: str, statistics: dict) -> str:
+    def _format_detailed_completion_message(
+        self, folder_name: str, statistics: dict
+    ) -> str:
         """詳細な完了メッセージをフォーマット（progress_system_managerに委譲）"""
-        return self.progress_system_manager.format_detailed_completion_message(folder_name, statistics)
+        return self.progress_system_manager.format_detailed_completion_message(
+            folder_name, statistics
+        )
 
     def _on_thread_error(self, thread_id: str, error_message: str) -> None:
         """スレッドエラー時の処理（thread_handler_managerに委譲）"""
         self.thread_handler_manager.handle_thread_error(thread_id, error_message)
 
-    def _on_thread_progress(self, thread_id: str, message: str, current: int, total: int) -> None:
+    def _on_thread_progress(
+        self, thread_id: str, message: str, current: int, total: int
+    ) -> None:
         """スレッド進捗更新時の処理（thread_handler_managerに委譲）"""
-        self.thread_handler_manager.handle_thread_progress(thread_id, message, current, total)
+        self.thread_handler_manager.handle_thread_progress(
+            thread_id, message, current, total
+        )
 
-    def _update_system_info_with_progress(self, folder_name: str, current: int, total: int, percentage: int) -> None:
+    def _update_system_info_with_progress(
+        self, folder_name: str, current: int, total: int, percentage: int
+    ) -> None:
         """システム情報を進捗情報で更新（progress_system_managerに委譲）"""
-        self.progress_system_manager.update_system_info_with_progress(folder_name, current, total, percentage)
+        self.progress_system_manager.update_system_info_with_progress(
+            folder_name, current, total, percentage
+        )
 
     def _format_progress_message(self, message: str, current: int, total: int) -> str:
         """進捗メッセージをフォーマット（progress_system_managerに委譲）"""
-        return self.progress_system_manager.format_progress_message(message, current, total)
+        return self.progress_system_manager.format_progress_message(
+            message, current, total
+        )
 
     def _on_manager_status_changed(self, status_message: str) -> None:
         """マネージャー状態変更時の処理（progress_system_managerに委譲）"""
         self.progress_system_manager.handle_manager_status_changed(status_message)
 
-    def _on_rebuild_progress(self, thread_id: str, message: str, current: int, total: int) -> None:
+    def _on_rebuild_progress(
+        self, thread_id: str, message: str, current: int, total: int
+    ) -> None:
         """インデックス再構築進捗処理（progress_system_managerに委譲）"""
-        self.progress_system_manager.handle_rebuild_progress(thread_id, message, current, total)
+        self.progress_system_manager.handle_rebuild_progress(
+            thread_id, message, current, total
+        )
 
     def _on_folder_excluded(self, folder_path: str) -> None:
         """フォルダ除外処理（event_ui_managerに委譲）"""

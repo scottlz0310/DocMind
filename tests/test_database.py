@@ -24,7 +24,7 @@ class TestDatabaseManager:
     @pytest.fixture
     def temp_db_path(self):
         """テスト用の一時データベースパスを提供"""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
         yield db_path
         # クリーンアップ
@@ -48,38 +48,44 @@ class TestDatabaseManager:
         """スキーマ作成をテスト"""
         with db_manager.get_connection() as conn:
             # documentsテーブルの存在確認
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT name FROM sqlite_master
                 WHERE type='table' AND name='documents'
-            """)
+            """
+            )
             assert cursor.fetchone() is not None
 
             # search_historyテーブルの存在確認
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT name FROM sqlite_master
                 WHERE type='table' AND name='search_history'
-            """)
+            """
+            )
             assert cursor.fetchone() is not None
 
             # インデックスの存在確認
-            cursor = conn.execute("""
+            cursor = conn.execute(
+                """
                 SELECT name FROM sqlite_master
                 WHERE type='index' AND name='idx_documents_path'
-            """)
+            """
+            )
             assert cursor.fetchone() is not None
 
     def test_database_stats(self, db_manager):
         """データベース統計情報の取得をテスト"""
         stats = db_manager.get_database_stats()
 
-        assert 'document_count' in stats
-        assert 'search_history_count' in stats
-        assert 'file_type_stats' in stats
-        assert 'db_file_size' in stats
+        assert "document_count" in stats
+        assert "search_history_count" in stats
+        assert "file_type_stats" in stats
+        assert "db_file_size" in stats
 
         # 初期状態では0件
-        assert stats['document_count'] == 0
-        assert stats['search_history_count'] == 0
+        assert stats["document_count"] == 0
+        assert stats["search_history_count"] == 0
 
     def test_vacuum_database(self, db_manager):
         """データベース最適化をテスト"""
@@ -93,7 +99,7 @@ class TestDocumentRepository:
     @pytest.fixture
     def temp_db_path(self):
         """テスト用の一時データベースパスを提供"""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
         yield db_path
         if os.path.exists(db_path):
@@ -114,7 +120,7 @@ class TestDocumentRepository:
         """テスト用のサンプルドキュメントを作成"""
         # テスト用ファイルを作成
         test_file = tmp_path / "test_document.txt"
-        test_file.write_text("これはテスト用のドキュメントです。", encoding='utf-8')
+        test_file.write_text("これはテスト用のドキュメントです。", encoding="utf-8")
 
         return Document.create_from_file(str(test_file), "テスト用のコンテンツです。")
 
@@ -175,7 +181,7 @@ class TestDocumentRepository:
 
         # 存在しないドキュメントの更新（テスト用の一時ファイルを作成）
         temp_file = tmp_path / "non_existent.txt"
-        temp_file.write_text("テスト", encoding='utf-8')
+        temp_file.write_text("テスト", encoding="utf-8")
 
         non_existent_doc = Document(
             id="non_existent",
@@ -186,7 +192,7 @@ class TestDocumentRepository:
             size=0,
             created_date=datetime.now(),
             modified_date=datetime.now(),
-            indexed_date=datetime.now()
+            indexed_date=datetime.now(),
         )
 
         with pytest.raises(DocumentNotFoundError):
@@ -215,7 +221,7 @@ class TestDocumentRepository:
         documents = []
         for i in range(5):
             test_file = tmp_path / f"test_{i}.txt"
-            test_file.write_text(f"テストファイル{i}", encoding='utf-8')
+            test_file.write_text(f"テストファイル{i}", encoding="utf-8")
             doc = Document.create_from_file(str(test_file), f"コンテンツ{i}")
             documents.append(doc)
             doc_repository.create_document(doc)
@@ -232,11 +238,11 @@ class TestDocumentRepository:
         """ファイルタイプ別ドキュメント取得をテスト"""
         # 異なるタイプのファイルを作成
         txt_file = tmp_path / "test.txt"
-        txt_file.write_text("テキストファイル", encoding='utf-8')
+        txt_file.write_text("テキストファイル", encoding="utf-8")
         txt_doc = Document.create_from_file(str(txt_file), "テキストコンテンツ")
 
         md_file = tmp_path / "test.md"
-        md_file.write_text("# マークダウンファイル", encoding='utf-8')
+        md_file.write_text("# マークダウンファイル", encoding="utf-8")
         md_doc = Document.create_from_file(str(md_file), "マークダウンコンテンツ")
 
         doc_repository.create_document(txt_doc)
@@ -259,7 +265,7 @@ class TestDocumentRepository:
 
         for title in titles:
             test_file = tmp_path / f"{title}.txt"
-            test_file.write_text(title, encoding='utf-8')
+            test_file.write_text(title, encoding="utf-8")
             doc = Document.create_from_file(str(test_file), title)
             doc.title = title
             doc_repository.create_document(doc)
@@ -281,7 +287,7 @@ class TestDocumentRepository:
         # ドキュメントを追加
         for i in range(3):
             test_file = tmp_path / f"test_{i}.txt"
-            test_file.write_text(f"テスト{i}", encoding='utf-8')
+            test_file.write_text(f"テスト{i}", encoding="utf-8")
             doc = Document.create_from_file(str(test_file), f"コンテンツ{i}")
             doc_repository.create_document(doc)
 
@@ -293,7 +299,7 @@ class TestDocumentRepository:
         documents = []
         for i in range(10):
             test_file = tmp_path / f"bulk_{i}.txt"
-            test_file.write_text(f"一括テスト{i}", encoding='utf-8')
+            test_file.write_text(f"一括テスト{i}", encoding="utf-8")
             doc = Document.create_from_file(str(test_file), f"一括コンテンツ{i}")
             documents.append(doc)
 
@@ -314,7 +320,7 @@ class TestDocumentRepository:
         # ドキュメントを追加
         test_file = tmp_path / "stats_test.txt"
         test_content = "統計テスト用のコンテンツです。"
-        test_file.write_text(test_content, encoding='utf-8')
+        test_file.write_text(test_content, encoding="utf-8")
 
         doc = Document.create_from_file(str(test_file), test_content)
         doc_repository.create_document(doc)
@@ -333,7 +339,7 @@ class TestSearchHistoryRepository:
     @pytest.fixture
     def temp_db_path(self):
         """テスト用の一時データベースパスを提供"""
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
         yield db_path
         if os.path.exists(db_path):
@@ -355,7 +361,7 @@ class TestSearchHistoryRepository:
             query="テスト検索",
             search_type=SearchType.FULL_TEXT,
             result_count=5,
-            execution_time_ms=150
+            execution_time_ms=150,
         )
         assert result is True
 
@@ -365,38 +371,46 @@ class TestSearchHistoryRepository:
         searches = [
             ("Python プログラミング", SearchType.FULL_TEXT, 10, 120),
             ("機械学習 入門", SearchType.SEMANTIC, 8, 200),
-            ("データベース 設計", SearchType.HYBRID, 15, 180)
+            ("データベース 設計", SearchType.HYBRID, 15, 180),
         ]
 
         for query, search_type, result_count, exec_time in searches:
-            history_repository.add_search_record(query, search_type, result_count, exec_time)
+            history_repository.add_search_record(
+                query, search_type, result_count, exec_time
+            )
 
         # 最近の検索履歴を取得
         recent = history_repository.get_recent_searches(limit=5)
         assert len(recent) == 3
 
         # 最新のものが最初に来ることを確認
-        assert recent[0]['query'] == "データベース 設計"
-        assert recent[0]['search_type'] == SearchType.HYBRID
+        assert recent[0]["query"] == "データベース 設計"
+        assert recent[0]["search_type"] == SearchType.HYBRID
 
     def test_get_popular_queries(self, history_repository):
         """人気クエリ取得をテスト"""
         # 同じクエリを複数回記録
         for _ in range(3):
-            history_repository.add_search_record("人気クエリ", SearchType.FULL_TEXT, 5, 100)
+            history_repository.add_search_record(
+                "人気クエリ", SearchType.FULL_TEXT, 5, 100
+            )
 
         for _ in range(2):
-            history_repository.add_search_record("普通のクエリ", SearchType.SEMANTIC, 3, 150)
+            history_repository.add_search_record(
+                "普通のクエリ", SearchType.SEMANTIC, 3, 150
+            )
 
-        history_repository.add_search_record("一回だけのクエリ", SearchType.HYBRID, 1, 200)
+        history_repository.add_search_record(
+            "一回だけのクエリ", SearchType.HYBRID, 1, 200
+        )
 
         # 人気クエリを取得
         popular = history_repository.get_popular_queries(days=30, limit=10)
         assert len(popular) >= 2
 
         # 最も人気のあるクエリが最初に来ることを確認
-        assert popular[0]['query'] == "人気クエリ"
-        assert popular[0]['search_count'] == 3
+        assert popular[0]["query"] == "人気クエリ"
+        assert popular[0]["search_count"] == 3
 
     def test_get_search_suggestions(self, history_repository):
         """検索提案取得をテスト"""
@@ -405,7 +419,7 @@ class TestSearchHistoryRepository:
             "Python プログラミング基礎",
             "Python 入門",
             "Python データ分析",
-            "Java プログラミング"
+            "Java プログラミング",
         ]
 
         for query in queries:
@@ -429,15 +443,15 @@ class TestSearchHistoryRepository:
         # 統計を取得
         stats = history_repository.get_search_statistics(days=30)
 
-        assert stats['total_searches'] == 3
-        assert 'by_search_type' in stats
-        assert 'daily_counts' in stats
-        assert 'performance' in stats
+        assert stats["total_searches"] == 3
+        assert "by_search_type" in stats
+        assert "daily_counts" in stats
+        assert "performance" in stats
 
         # 検索タイプ別統計を確認
-        assert 'full_text' in stats['by_search_type']
-        assert 'semantic' in stats['by_search_type']
-        assert 'hybrid' in stats['by_search_type']
+        assert "full_text" in stats["by_search_type"]
+        assert "semantic" in stats["by_search_type"]
+        assert "hybrid" in stats["by_search_type"]
 
     def test_clear_old_history(self, history_repository):
         """古い履歴削除をテスト"""
@@ -447,10 +461,13 @@ class TestSearchHistoryRepository:
         # 古い検索を直接データベースに挿入（テスト用）
         old_date = datetime.now() - timedelta(days=100)
         with history_repository.db_manager.get_connection() as conn:
-            conn.execute("""
+            conn.execute(
+                """
                 INSERT INTO search_history (query, search_type, timestamp, result_count, execution_time_ms)
                 VALUES (?, ?, ?, ?, ?)
-            """, ("古い検索", "full_text", old_date, 3, 120))
+            """,
+                ("古い検索", "full_text", old_date, 3, 120),
+            )
             conn.commit()
 
         # 古い履歴を削除（90日より古いもの）
@@ -460,7 +477,7 @@ class TestSearchHistoryRepository:
         # 新しい検索は残っていることを確認
         recent = history_repository.get_recent_searches(limit=10)
         assert len(recent) == 1
-        assert recent[0]['query'] == "新しい検索"
+        assert recent[0]["query"] == "新しい検索"
 
     def test_get_failed_searches(self, history_repository):
         """失敗した検索の取得をテスト"""
@@ -468,14 +485,16 @@ class TestSearchHistoryRepository:
         history_repository.add_search_record("成功検索", SearchType.FULL_TEXT, 5, 100)
         history_repository.add_search_record("失敗検索1", SearchType.FULL_TEXT, 0, 50)
         history_repository.add_search_record("失敗検索2", SearchType.SEMANTIC, 0, 80)
-        history_repository.add_search_record("失敗検索1", SearchType.FULL_TEXT, 0, 60)  # 重複
+        history_repository.add_search_record(
+            "失敗検索1", SearchType.FULL_TEXT, 0, 60
+        )  # 重複
 
         # 失敗した検索を取得
         failed = history_repository.get_failed_searches(days=7, limit=10)
         assert len(failed) == 2
 
         # 失敗回数の多い順に並んでいることを確認
-        assert failed[0]['query'] == "失敗検索1"
-        assert failed[0]['failure_count'] == 2
-        assert failed[1]['query'] == "失敗検索2"
-        assert failed[1]['failure_count'] == 1
+        assert failed[0]["query"] == "失敗検索1"
+        assert failed[0]["failure_count"] == 2
+        assert failed[1]["query"] == "失敗検索2"
+        assert failed[1]["failure_count"] == 1

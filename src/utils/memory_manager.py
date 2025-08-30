@@ -21,6 +21,7 @@ from ..utils.logging_config import LoggerMixin
 
 class MemoryPressureLevel(Enum):
     """メモリ圧迫レベル"""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -30,6 +31,7 @@ class MemoryPressureLevel(Enum):
 @dataclass
 class MemoryStats:
     """メモリ統計情報"""
+
     total_memory_mb: float
     available_memory_mb: float
     used_memory_mb: float
@@ -46,6 +48,7 @@ class MemoryMonitor(LoggerMixin):
     システムとプロセスのメモリ使用量を監視し、
     メモリ圧迫時にアラートを発行します。
     """
+
     """
     メモリ監視クラス
 
@@ -71,7 +74,7 @@ class MemoryMonitor(LoggerMixin):
             MemoryPressureLevel.LOW: 60,
             MemoryPressureLevel.MEDIUM: 75,
             MemoryPressureLevel.HIGH: 85,
-            MemoryPressureLevel.CRITICAL: 95
+            MemoryPressureLevel.CRITICAL: 95,
         }
 
         self._last_pressure_level = MemoryPressureLevel.LOW
@@ -90,7 +93,9 @@ class MemoryMonitor(LoggerMixin):
                 return
 
             self._monitoring = True
-            self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
+            self._monitor_thread = threading.Thread(
+                target=self._monitor_loop, daemon=True
+            )
             self._monitor_thread.start()
 
             self.logger.info("メモリ監視を開始しました")
@@ -139,7 +144,7 @@ class MemoryMonitor(LoggerMixin):
             memory_percent=system_memory.percent,
             process_memory_mb=process_memory.rss / 1024 / 1024,
             process_memory_percent=process.memory_percent(),
-            pressure_level=pressure_level
+            pressure_level=pressure_level,
         )
 
     def _determine_pressure_level(self, memory_percent: float) -> MemoryPressureLevel:
@@ -216,7 +221,9 @@ class MemoryManager(LoggerMixin):
         # メモリ監視コールバックを登録
         self.monitor.add_callback(self._on_memory_stats_updated)
 
-        self.logger.info(f"メモリマネージャーを初期化: 最大メモリ使用量={self.max_memory_mb:.1f}MB")
+        self.logger.info(
+            f"メモリマネージャーを初期化: 最大メモリ使用量={self.max_memory_mb:.1f}MB"
+        )
 
     def start(self) -> None:
         """メモリ管理を開始"""
@@ -257,7 +264,9 @@ class MemoryManager(LoggerMixin):
 
         # 統計情報をログ出力
         total_collected = sum(collected.values())
-        self.logger.info(f"ガベージコレクション完了: {total_collected}オブジェクトを回収")
+        self.logger.info(
+            f"ガベージコレクション完了: {total_collected}オブジェクトを回収"
+        )
 
         return collected
 
@@ -299,7 +308,10 @@ class MemoryManager(LoggerMixin):
             self.optimize_memory()
 
         # 高メモリ圧迫時の対応
-        if stats.pressure_level in [MemoryPressureLevel.HIGH, MemoryPressureLevel.CRITICAL]:
+        if stats.pressure_level in [
+            MemoryPressureLevel.HIGH,
+            MemoryPressureLevel.CRITICAL,
+        ]:
             self.logger.warning(f"高メモリ圧迫状態: {stats.pressure_level.value}")
 
             if stats.pressure_level == MemoryPressureLevel.CRITICAL:
@@ -318,7 +330,7 @@ class MemoryManager(LoggerMixin):
             "pressure_level": memory_stats.pressure_level.value,
             "gc_count": self._gc_count,
             "optimization_count": self._optimization_count,
-            "memory_limit_exceeded": not self.check_memory_limit()
+            "memory_limit_exceeded": not self.check_memory_limit(),
         }
 
 
@@ -349,7 +361,9 @@ class MemoryOptimizer(LoggerMixin):
                 # メモリ使用量が目標を超えている場合、キャッシュをクリア
                 reduction_needed = current_memory_mb - target_memory_mb
 
-                logger.info(f"キャッシュサイズ最適化: {reduction_needed:.1f}MB削減が必要")
+                logger.info(
+                    f"キャッシュサイズ最適化: {reduction_needed:.1f}MB削減が必要"
+                )
 
                 # 検索キャッシュをクリア
                 cache_manager.search_cache.invalidate_cache()
@@ -374,17 +388,19 @@ class MemoryOptimizer(LoggerMixin):
         logger = logging.getLogger(__name__)
 
         try:
-            if hasattr(embedding_manager, 'embeddings'):
+            if hasattr(embedding_manager, "embeddings"):
                 current_count = len(embedding_manager.embeddings)
 
                 if current_count > max_embeddings:
                     # 古い埋め込みを削除
                     excess_count = current_count - max_embeddings
 
-                    logger.info(f"埋め込みキャッシュ最適化: {excess_count}件の埋め込みを削除")
+                    logger.info(
+                        f"埋め込みキャッシュ最適化: {excess_count}件の埋め込みを削除"
+                    )
 
                     # 最も古い埋め込みを削除（実装は埋め込みマネージャーに依存）
-                    if hasattr(embedding_manager, 'cleanup_old_embeddings'):
+                    if hasattr(embedding_manager, "cleanup_old_embeddings"):
                         embedding_manager.cleanup_old_embeddings(excess_count)
 
                     logger.info("埋め込みキャッシュ最適化が完了しました")
@@ -404,7 +420,7 @@ class MemoryOptimizer(LoggerMixin):
 
         try:
             # インデックスの最適化を実行
-            if hasattr(index_manager, 'optimize_index'):
+            if hasattr(index_manager, "optimize_index"):
                 logger.info("インデックス最適化を開始")
                 index_manager.optimize_index()
                 logger.info("インデックス最適化が完了しました")

@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 # GUI環境の設定
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 # プロジェクトルートをPythonパスに追加
 project_root = Path(__file__).parent.parent
@@ -35,14 +35,14 @@ class TestGUIFunctionalityValidator:
             enable_error_injection=False,
             max_execution_time=10.0,
             max_memory_usage=256.0,
-            log_level="INFO"
+            log_level="INFO",
         )
 
         self.validator = GUIFunctionalityValidator(self.config)
 
     def teardown_method(self):
         """各テストメソッドの後に実行されるクリーンアップ"""
-        if hasattr(self, 'validator'):
+        if hasattr(self, "validator"):
             try:
                 self.validator.teardown_test_environment()
                 self.validator.cleanup()
@@ -75,7 +75,7 @@ class TestGUIFunctionalityValidator:
 
         # 最新の結果を確認
         latest_result = self.validator.validation_results[-1]
-        assert latest_result.test_name == 'test_gui_imports'
+        assert latest_result.test_name == "test_gui_imports"
 
     def test_qt_widget_creation_validation(self):
         """Qtウィジェット作成検証のテスト"""
@@ -90,7 +90,7 @@ class TestGUIFunctionalityValidator:
 
         # 最新の結果を確認
         latest_result = self.validator.validation_results[-1]
-        assert latest_result.test_name == 'test_qt_widget_creation'
+        assert latest_result.test_name == "test_qt_widget_creation"
 
     def test_main_window_instantiation_validation(self):
         """メインウィンドウインスタンス化検証のテスト"""
@@ -105,7 +105,7 @@ class TestGUIFunctionalityValidator:
 
         # 最新の結果を確認
         latest_result = self.validator.validation_results[-1]
-        assert latest_result.test_name == 'test_main_window_instantiation'
+        assert latest_result.test_name == "test_main_window_instantiation"
 
     def test_gui_component_interfaces_validation(self):
         """GUIコンポーネントインターフェース検証のテスト"""
@@ -120,7 +120,7 @@ class TestGUIFunctionalityValidator:
 
         # 最新の結果を確認
         latest_result = self.validator.validation_results[-1]
-        assert latest_result.test_name == 'test_gui_component_interfaces'
+        assert latest_result.test_name == "test_gui_component_interfaces"
 
     def test_gui_error_handling_validation(self):
         """GUIエラーハンドリング検証のテスト"""
@@ -135,7 +135,7 @@ class TestGUIFunctionalityValidator:
 
         # 最新の結果を確認
         latest_result = self.validator.validation_results[-1]
-        assert latest_result.test_name == 'test_gui_error_handling'
+        assert latest_result.test_name == "test_gui_error_handling"
 
     def test_gui_performance_basics_validation(self):
         """GUI基本パフォーマンス検証のテスト"""
@@ -150,7 +150,7 @@ class TestGUIFunctionalityValidator:
 
         # 最新の結果を確認
         latest_result = self.validator.validation_results[-1]
-        assert latest_result.test_name == 'test_gui_performance_basics'
+        assert latest_result.test_name == "test_gui_performance_basics"
 
     def test_run_validation_integration(self):
         """統合検証実行のテスト"""
@@ -158,10 +158,7 @@ class TestGUIFunctionalityValidator:
         self.validator.setup_test_environment()
 
         # 特定のテストメソッドのみを実行
-        test_methods = [
-            'test_gui_imports',
-            'test_qt_widget_creation'
-        ]
+        test_methods = ["test_gui_imports", "test_qt_widget_creation"]
 
         results = self.validator.run_validation(test_methods)
 
@@ -186,7 +183,7 @@ class TestGUIFunctionalityValidator:
         self.validator.test_failing_test = failing_test
 
         # 失敗するテストを実行
-        results = self.validator.run_validation(['test_failing_test'])
+        results = self.validator.run_validation(["test_failing_test"])
 
         # 結果の確認
         assert len(results) == 1

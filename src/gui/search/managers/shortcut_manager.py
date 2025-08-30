@@ -32,7 +32,9 @@ class ShortcutManager(QObject):
         self.parent_widget = parent
         self.shortcuts = []
 
-    def setup_search_shortcuts(self, execute_search_callback, toggle_options_callback) -> None:
+    def setup_search_shortcuts(
+        self, execute_search_callback, toggle_options_callback
+    ) -> None:
         """
         検索関連のショートカットを設定
 

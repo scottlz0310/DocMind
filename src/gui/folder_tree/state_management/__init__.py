@@ -8,7 +8,4 @@ DocMind フォルダツリー状態管理コンポーネント
 from .folder_item_type import FolderItemType
 from .folder_tree_item import FolderTreeItem
 
-__all__ = [
-    'FolderItemType',
-    'FolderTreeItem'
-]
+__all__ = ["FolderItemType", "FolderTreeItem"]

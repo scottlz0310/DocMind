@@ -14,7 +14,7 @@ from unittest.mock import Mock
 import pytest
 
 # テスト対象のモジュールをインポートするためのパス設定
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtTest import QTest
@@ -156,7 +156,7 @@ class TestAdvancedSearchOptions:
 
         # デフォルトでは全てのファイルタイプが選択されている
         expected_types = [ft for ft in FileType if ft != FileType.UNKNOWN]
-        assert set(options['file_types']) == set(expected_types)
+        assert set(options["file_types"]) == set(expected_types)
 
     def test_date_filter(self, widget):
         """日付フィルターのテスト"""
@@ -168,8 +168,8 @@ class TestAdvancedSearchOptions:
         assert widget.date_to.isEnabled()
 
         options = widget.get_search_options()
-        assert options['date_from'] is not None
-        assert options['date_to'] is not None
+        assert options["date_from"] is not None
+        assert options["date_to"] is not None
 
     def test_weight_synchronization(self, widget):
         """重みの同期テスト"""
@@ -243,6 +243,7 @@ class TestSearchProgressWidget:
         # 2秒後に非表示になることを確認
         def check_visibility():
             assert not widget.isVisible()
+
         QTimer.singleShot(2100, check_visibility)
 
     def test_cancel_signal(self, widget, qtbot):
@@ -276,31 +277,23 @@ class TestSearchHistoryWidget:
         """サンプルの最近の検索データ"""
         return [
             {
-                'query': 'テスト検索1',
-                'timestamp': datetime.now() - timedelta(minutes=5),
-                'result_count': 10
+                "query": "テスト検索1",
+                "timestamp": datetime.now() - timedelta(minutes=5),
+                "result_count": 10,
             },
             {
-                'query': 'テスト検索2',
-                'timestamp': datetime.now() - timedelta(hours=1),
-                'result_count': 5
-            }
+                "query": "テスト検索2",
+                "timestamp": datetime.now() - timedelta(hours=1),
+                "result_count": 5,
+            },
         ]
 
     @pytest.fixture
     def sample_popular_searches(self):
         """サンプルの人気検索データ"""
         return [
-            {
-                'query': '人気検索1',
-                'search_count': 15,
-                'avg_results': 8.5
-            },
-            {
-                'query': '人気検索2',
-                'search_count': 10,
-                'avg_results': 12.0
-            }
+            {"query": "人気検索1", "search_count": 15, "avg_results": 8.5},
+            {"query": "人気検索2", "search_count": 10, "avg_results": 12.0},
         ]
 
     def test_initialization(self, widget):
@@ -453,18 +446,10 @@ class TestSearchInterface:
     def test_search_history_update(self, widget):
         """検索履歴更新のテスト"""
         recent_searches = [
-            {
-                'query': '最近の検索',
-                'timestamp': datetime.now(),
-                'result_count': 5
-            }
+            {"query": "最近の検索", "timestamp": datetime.now(), "result_count": 5}
         ]
         popular_searches = [
-            {
-                'query': '人気の検索',
-                'search_count': 10,
-                'avg_results': 7.5
-            }
+            {"query": "人気の検索", "search_count": 10, "avg_results": 7.5}
         ]
 
         widget.update_search_history(recent_searches, popular_searches)
@@ -486,10 +471,7 @@ class TestSearchWorkerThread:
     @pytest.fixture
     def sample_query(self):
         """サンプル検索クエリ"""
-        return SearchQuery(
-            query_text="テスト検索",
-            search_type=SearchType.HYBRID
-        )
+        return SearchQuery(query_text="テスト検索", search_type=SearchType.HYBRID)
 
     def test_successful_search(self, mock_search_manager, sample_query, qtbot):
         """成功する検索のテスト"""
@@ -554,7 +536,7 @@ class TestSearchInterfaceIntegration:
             size=100,
             created_date=datetime.now(),
             modified_date=datetime.now(),
-            indexed_date=datetime.now()
+            indexed_date=datetime.now(),
         )
 
         sample_result = SearchResult(
@@ -563,13 +545,15 @@ class TestSearchInterfaceIntegration:
             search_type=SearchType.HYBRID,
             snippet="これはテストドキュメント...",
             highlighted_terms=["テスト"],
-            relevance_explanation="ハイブリッド検索結果"
+            relevance_explanation="ハイブリッド検索結果",
         )
 
         manager.search.return_value = [sample_result]
         return manager
 
-    def test_complete_search_workflow(self, search_interface, mock_search_manager, qtbot):
+    def test_complete_search_workflow(
+        self, search_interface, mock_search_manager, qtbot
+    ):
         """完全な検索ワークフローのテスト"""
         # 1. 検索テキストを入力
         search_interface.set_search_text("テスト検索")
@@ -577,14 +561,19 @@ class TestSearchInterfaceIntegration:
 
         # 2. 検索タイプを変更
         search_interface.search_type_selector.set_search_type(SearchType.FULL_TEXT)
-        assert search_interface.search_type_selector.get_search_type() == SearchType.FULL_TEXT
+        assert (
+            search_interface.search_type_selector.get_search_type()
+            == SearchType.FULL_TEXT
+        )
 
         # 3. 高度なオプションを設定
         search_interface.advanced_options.setChecked(True)
         search_interface.advanced_options.result_limit.setValue(50)
 
         # 4. 検索を実行
-        with qtbot.waitSignal(search_interface.search_requested, timeout=1000) as blocker:
+        with qtbot.waitSignal(
+            search_interface.search_requested, timeout=1000
+        ) as blocker:
             search_interface._execute_search()
 
         search_query = blocker.args[0]
@@ -603,28 +592,20 @@ class TestSearchInterfaceIntegration:
         """検索履歴統合のテスト"""
         # 履歴データを更新
         recent_searches = [
-            {
-                'query': '履歴検索1',
-                'timestamp': datetime.now(),
-                'result_count': 3
-            }
+            {"query": "履歴検索1", "timestamp": datetime.now(), "result_count": 3}
         ]
         popular_searches = [
-            {
-                'query': '人気検索1',
-                'search_count': 5,
-                'avg_results': 4.0
-            }
+            {"query": "人気検索1", "search_count": 5, "avg_results": 4.0}
         ]
 
         search_interface.update_search_history(recent_searches, popular_searches)
 
         # 履歴から検索を選択
         with qtbot.waitSignal(search_interface.search_requested, timeout=1000):
-            search_interface._on_history_selected('履歴検索1')
+            search_interface._on_history_selected("履歴検索1")
             search_interface._execute_search()
 
-        assert search_interface.get_search_text() == '履歴検索1'
+        assert search_interface.get_search_text() == "履歴検索1"
 
     def test_search_suggestions_integration(self, search_interface):
         """検索提案統合のテスト"""
@@ -645,7 +626,10 @@ class TestSearchInterfaceIntegration:
         search_interface.advanced_options.setChecked(True)
 
         # ファイルタイプフィルターを設定
-        for file_type, checkbox in search_interface.advanced_options.file_type_checkboxes.items():
+        for (
+            file_type,
+            checkbox,
+        ) in search_interface.advanced_options.file_type_checkboxes.items():
             if file_type == FileType.PDF:
                 checkbox.setChecked(True)
             else:
@@ -677,5 +661,5 @@ class TestSearchInterfaceIntegration:
         assert search_interface.search_button.text() == "検索"
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

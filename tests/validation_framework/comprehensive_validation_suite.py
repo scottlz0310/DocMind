@@ -34,14 +34,16 @@ from .validation_report_generator import ValidationReportGenerator
 
 class ValidationLevel(Enum):
     """検証レベルの定義"""
-    COMMIT = "commit"      # コミット時の基本検証
-    DAILY = "daily"        # 日次の包括検証
-    WEEKLY = "weekly"      # 週次の詳細検証
-    RELEASE = "release"    # リリース前の完全検証
+
+    COMMIT = "commit"  # コミット時の基本検証
+    DAILY = "daily"  # 日次の包括検証
+    WEEKLY = "weekly"  # 週次の詳細検証
+    RELEASE = "release"  # リリース前の完全検証
 
 
 class ValidationResult(Enum):
     """検証結果の定義"""
+
     PASSED = "passed"
     FAILED = "failed"
     WARNING = "warning"
@@ -51,6 +53,7 @@ class ValidationResult(Enum):
 @dataclass
 class ValidationConfig:
     """検証設定"""
+
     level: ValidationLevel
     timeout_seconds: int = 3600  # 1時間のデフォルトタイムアウト
     parallel_execution: bool = True
@@ -75,6 +78,7 @@ class ValidationConfig:
 @dataclass
 class ValidationSummary:
     """検証結果サマリー"""
+
     total_tests: int
     passed_tests: int
     failed_tests: int
@@ -118,10 +122,13 @@ class ComprehensiveValidationSuite:
         logger.setLevel(logging.INFO)
 
         # ログファイルハンドラー
-        log_file = self.config.output_dir / f"validation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        log_file = (
+            self.config.output_dir
+            / f"validation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        )
         self.config.output_dir.mkdir(parents=True, exist_ok=True)
 
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setLevel(logging.DEBUG)
 
         # コンソールハンドラー
@@ -130,7 +137,7 @@ class ComprehensiveValidationSuite:
 
         # フォーマッター
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
@@ -145,37 +152,37 @@ class ComprehensiveValidationSuite:
         self.validators = {}
 
         if self.config.enable_startup:
-            self.validators['startup'] = ApplicationStartupValidator()
+            self.validators["startup"] = ApplicationStartupValidator()
 
         if self.config.enable_document_processing:
-            self.validators['document_processing'] = DocumentProcessingValidator()
+            self.validators["document_processing"] = DocumentProcessingValidator()
 
         if self.config.enable_search:
-            self.validators['search'] = SearchFunctionalityValidator()
+            self.validators["search"] = SearchFunctionalityValidator()
 
         if self.config.enable_gui:
-            self.validators['gui'] = GUIFunctionalityValidator()
+            self.validators["gui"] = GUIFunctionalityValidator()
 
         if self.config.enable_data_persistence:
-            self.validators['data_persistence'] = DataPersistenceValidator()
+            self.validators["data_persistence"] = DataPersistenceValidator()
 
         if self.config.enable_error_handling:
-            self.validators['error_handling'] = ErrorHandlingValidator()
+            self.validators["error_handling"] = ErrorHandlingValidator()
 
         if self.config.enable_performance:
-            self.validators['performance'] = PerformanceValidator()
+            self.validators["performance"] = PerformanceValidator()
 
         if self.config.enable_security:
-            self.validators['security'] = SecurityValidator()
+            self.validators["security"] = SecurityValidator()
 
         if self.config.enable_end_to_end:
-            self.validators['end_to_end'] = EndToEndWorkflowValidator()
+            self.validators["end_to_end"] = EndToEndWorkflowValidator()
 
         if self.config.enable_compatibility:
-            self.validators['compatibility'] = CompatibilityValidator()
+            self.validators["compatibility"] = CompatibilityValidator()
 
         if self.config.enable_real_world:
-            self.validators['real_world'] = RealWorldSimulator()
+            self.validators["real_world"] = RealWorldSimulator()
 
     async def run_validation(self) -> ValidationSummary:
         """包括的検証の実行
@@ -203,7 +210,9 @@ class ComprehensiveValidationSuite:
             if self.config.generate_report:
                 await self._generate_reports(summary)
 
-            self.logger.info(f"包括的検証が完了しました - 結果: {summary.overall_result.value}")
+            self.logger.info(
+                f"包括的検証が完了しました - 結果: {summary.overall_result.value}"
+            )
             return summary
 
         except Exception as e:
@@ -242,8 +251,7 @@ class ComprehensiveValidationSuite:
         tasks = []
         for name, validator in self.validators.items():
             task = asyncio.create_task(
-                self._run_single_validator(name, validator),
-                name=f"validation_{name}"
+                self._run_single_validator(name, validator), name=f"validation_{name}"
             )
             tasks.append(task)
 
@@ -251,10 +259,12 @@ class ComprehensiveValidationSuite:
         try:
             await asyncio.wait_for(
                 asyncio.gather(*tasks, return_exceptions=True),
-                timeout=self.config.timeout_seconds
+                timeout=self.config.timeout_seconds,
             )
         except TimeoutError:
-            self.logger.error(f"検証がタイムアウトしました ({self.config.timeout_seconds}秒)")
+            self.logger.error(
+                f"検証がタイムアウトしました ({self.config.timeout_seconds}秒)"
+            )
             # 実行中のタスクをキャンセル
             for task in tasks:
                 if not task.done():
@@ -269,9 +279,11 @@ class ComprehensiveValidationSuite:
                 await self._run_single_validator(name, validator)
 
                 # fail_fast が有効で失敗した場合は中断
-                if (self.config.fail_fast and
-                    name in self.results and
-                    self.results[name].get('result') == ValidationResult.FAILED):
+                if (
+                    self.config.fail_fast
+                    and name in self.results
+                    and self.results[name].get("result") == ValidationResult.FAILED
+                ):
                     self.logger.error(f"検証 {name} が失敗したため、検証を中断します")
                     break
 
@@ -292,9 +304,9 @@ class ComprehensiveValidationSuite:
 
         try:
             # 検証の実行
-            if hasattr(validator, 'run_validation'):
+            if hasattr(validator, "run_validation"):
                 result = await validator.run_validation()
-            elif hasattr(validator, 'validate'):
+            elif hasattr(validator, "validate"):
                 result = await validator.validate()
             else:
                 # 同期メソッドの場合
@@ -304,35 +316,53 @@ class ComprehensiveValidationSuite:
 
             # 結果の保存
             self.results[name] = {
-                'result': ValidationResult.PASSED if result.get('success', False) else ValidationResult.FAILED,
-                'execution_time': execution_time,
-                'details': result,
-                'timestamp': datetime.now()
+                "result": (
+                    ValidationResult.PASSED
+                    if result.get("success", False)
+                    else ValidationResult.FAILED
+                ),
+                "execution_time": execution_time,
+                "details": result,
+                "timestamp": datetime.now(),
             }
 
-            self.logger.info(f"検証 '{name}' が完了しました - 実行時間: {execution_time:.2f}秒")
+            self.logger.info(
+                f"検証 '{name}' が完了しました - 実行時間: {execution_time:.2f}秒"
+            )
 
         except Exception as e:
             execution_time = time.time() - start_time
             self.logger.error(f"検証 '{name}' でエラーが発生しました: {e}")
 
             self.results[name] = {
-                'result': ValidationResult.FAILED,
-                'execution_time': execution_time,
-                'error': str(e),
-                'timestamp': datetime.now()
+                "result": ValidationResult.FAILED,
+                "execution_time": execution_time,
+                "error": str(e),
+                "timestamp": datetime.now(),
             }
 
     def _generate_summary(self) -> ValidationSummary:
         """検証結果サマリーの生成"""
         total_tests = len(self.results)
-        passed_tests = sum(1 for r in self.results.values() if r['result'] == ValidationResult.PASSED)
-        failed_tests = sum(1 for r in self.results.values() if r['result'] == ValidationResult.FAILED)
-        warning_tests = sum(1 for r in self.results.values() if r['result'] == ValidationResult.WARNING)
-        skipped_tests = sum(1 for r in self.results.values() if r['result'] == ValidationResult.SKIPPED)
+        passed_tests = sum(
+            1 for r in self.results.values() if r["result"] == ValidationResult.PASSED
+        )
+        failed_tests = sum(
+            1 for r in self.results.values() if r["result"] == ValidationResult.FAILED
+        )
+        warning_tests = sum(
+            1 for r in self.results.values() if r["result"] == ValidationResult.WARNING
+        )
+        skipped_tests = sum(
+            1 for r in self.results.values() if r["result"] == ValidationResult.SKIPPED
+        )
 
         # 全体の実行時間
-        execution_time = (self.end_time - self.start_time).total_seconds() if self.end_time and self.start_time else 0
+        execution_time = (
+            (self.end_time - self.start_time).total_seconds()
+            if self.end_time and self.start_time
+            else 0
+        )
 
         # 全体結果の判定
         if failed_tests > 0:
@@ -345,8 +375,8 @@ class ComprehensiveValidationSuite:
         # 重要な失敗の抽出
         critical_failures = []
         for name, result in self.results.items():
-            if result['result'] == ValidationResult.FAILED:
-                if 'error' in result:
+            if result["result"] == ValidationResult.FAILED:
+                if "error" in result:
                     critical_failures.append(f"{name}: {result['error']}")
                 else:
                     critical_failures.append(f"{name}: 検証失敗")
@@ -354,10 +384,12 @@ class ComprehensiveValidationSuite:
         # パフォーマンスメトリクスの収集
         performance_metrics = {}
         for name, result in self.results.items():
-            performance_metrics[f"{name}_execution_time"] = result['execution_time']
-            if 'details' in result and isinstance(result['details'], dict):
-                if 'performance' in result['details']:
-                    performance_metrics[f"{name}_performance"] = result['details']['performance']
+            performance_metrics[f"{name}_execution_time"] = result["execution_time"]
+            if "details" in result and isinstance(result["details"], dict):
+                if "performance" in result["details"]:
+                    performance_metrics[f"{name}_performance"] = result["details"][
+                        "performance"
+                    ]
 
         return ValidationSummary(
             total_tests=total_tests,
@@ -368,7 +400,7 @@ class ComprehensiveValidationSuite:
             execution_time=execution_time,
             overall_result=overall_result,
             critical_failures=critical_failures,
-            performance_metrics=performance_metrics
+            performance_metrics=performance_metrics,
         )
 
     async def _generate_reports(self, summary: ValidationSummary):
@@ -378,30 +410,32 @@ class ComprehensiveValidationSuite:
         try:
             # 統計情報の収集
             stats = {
-                'validation_level': self.config.level.value,
-                'timestamp': datetime.now().isoformat(),
-                'summary': summary.__dict__,
-                'detailed_results': self.results,
-                'configuration': self.config.__dict__
+                "validation_level": self.config.level.value,
+                "timestamp": datetime.now().isoformat(),
+                "summary": summary.__dict__,
+                "detailed_results": self.results,
+                "configuration": self.config.__dict__,
             }
 
             # レポート生成
             report_data = {
-                'summary': summary,
-                'results': self.results,
-                'statistics': stats
+                "summary": summary,
+                "results": self.results,
+                "statistics": stats,
             }
 
             # HTML レポートの生成
             html_report = await self.report_generator.generate_html_report(
                 report_data,
-                self.config.output_dir / f"validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+                self.config.output_dir
+                / f"validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
             )
 
             # JSON レポートの生成
             json_report = await self.report_generator.generate_json_report(
                 report_data,
-                self.config.output_dir / f"validation_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                self.config.output_dir
+                / f"validation_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
             )
 
             self.logger.info(f"レポートが生成されました: {html_report}, {json_report}")
@@ -439,10 +473,14 @@ async def main():
         "--level",
         choices=[level.value for level in ValidationLevel],
         default=ValidationLevel.DAILY.value,
-        help="検証レベル"
+        help="検証レベル",
     )
-    parser.add_argument("--output-dir", default="validation_results", help="出力ディレクトリ")
-    parser.add_argument("--timeout", type=int, default=3600, help="タイムアウト時間（秒）")
+    parser.add_argument(
+        "--output-dir", default="validation_results", help="出力ディレクトリ"
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=3600, help="タイムアウト時間（秒）"
+    )
     parser.add_argument("--no-parallel", action="store_true", help="並列実行を無効化")
     parser.add_argument("--fail-fast", action="store_true", help="最初の失敗で中断")
     parser.add_argument("--no-report", action="store_true", help="レポート生成を無効化")
@@ -456,7 +494,7 @@ async def main():
         timeout_seconds=args.timeout,
         parallel_execution=not args.no_parallel,
         fail_fast=args.fail_fast,
-        generate_report=not args.no_report
+        generate_report=not args.no_report,
     )
 
     # 検証スイートの実行

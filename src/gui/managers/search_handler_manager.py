@@ -41,19 +41,30 @@ class SearchHandlerManager(QObject, LoggerMixin):
         Args:
             search_query: 検索クエリオブジェクト
         """
-        self.logger.info(f"検索要求: '{search_query.query_text}' ({search_query.search_type.value})")
+        self.logger.info(
+            f"検索要求: '{search_query.query_text}' ({search_query.search_type.value})"
+        )
 
-        if not hasattr(self.main_window, 'search_manager') or self.main_window.search_manager is None:
+        if (
+            not hasattr(self.main_window, "search_manager")
+            or self.main_window.search_manager is None
+        ):
             error_msg = "検索機能が初期化されていません"
             self.logger.error(error_msg)
             self.main_window.search_interface.on_search_error(error_msg)
             return
 
-        self.main_window.show_status_message(f"検索実行: '{search_query.query_text}'", 3000)
+        self.main_window.show_status_message(
+            f"検索実行: '{search_query.query_text}'", 3000
+        )
 
         # 検索ワーカースレッドを作成して実行
-        self.search_worker = SearchWorkerThread(self.main_window.search_manager, search_query)
-        self.search_worker.progress_updated.connect(self.main_window.search_interface.progress_widget.update_progress)
+        self.search_worker = SearchWorkerThread(
+            self.main_window.search_manager, search_query
+        )
+        self.search_worker.progress_updated.connect(
+            self.main_window.search_interface.progress_widget.update_progress
+        )
         self.search_worker.search_completed.connect(self.handle_search_completed)
         self.search_worker.search_error.connect(self.handle_search_error)
         self.search_worker.start()
@@ -85,7 +96,9 @@ class SearchHandlerManager(QObject, LoggerMixin):
 
         # ステータス更新
         result_count = len(results)
-        self.main_window.show_status_message(f"検索完了: {result_count}件の結果 ({execution_time:.1f}秒)", 5000)
+        self.main_window.show_status_message(
+            f"検索完了: {result_count}件の結果 ({execution_time:.1f}秒)", 5000
+        )
 
     def handle_search_error(self, error_message: str) -> None:
         """検索エラー時の処理
@@ -107,9 +120,15 @@ class SearchHandlerManager(QObject, LoggerMixin):
         Args:
             text: 入力されたテキスト
         """
-        if hasattr(self.main_window, 'search_manager') and self.main_window.search_manager and len(text.strip()) >= 2:
+        if (
+            hasattr(self.main_window, "search_manager")
+            and self.main_window.search_manager
+            and len(text.strip()) >= 2
+        ):
             try:
-                suggestions = self.main_window.search_manager.get_search_suggestions(text.strip(), limit=10)
+                suggestions = self.main_window.search_manager.get_search_suggestions(
+                    text.strip(), limit=10
+                )
                 self.main_window.search_interface.update_search_suggestions(suggestions)
             except Exception as e:
                 self.logger.debug(f"検索提案の取得に失敗: {e}")
@@ -129,8 +148,10 @@ class SearchHandlerManager(QObject, LoggerMixin):
         self.main_window.preview_widget.display_document(result.document)
 
         # 検索語をハイライト
-        if hasattr(result, 'highlighted_terms') and result.highlighted_terms:
-            self.main_window.preview_widget.highlight_search_terms(result.highlighted_terms)
+        if hasattr(result, "highlighted_terms") and result.highlighted_terms:
+            self.main_window.preview_widget.highlight_search_terms(
+                result.highlighted_terms
+            )
 
     def handle_preview_requested(self, result) -> None:
         """プレビューが要求された時の処理
@@ -140,14 +161,18 @@ class SearchHandlerManager(QObject, LoggerMixin):
         """
         self.logger.info(f"プレビューが要求されました: {result.document.title}")
         self.main_window.document_selected.emit(result.document.file_path)
-        self.main_window.show_status_message(f"プレビュー: {result.document.title}", 3000)
+        self.main_window.show_status_message(
+            f"プレビュー: {result.document.title}", 3000
+        )
 
         # プレビューペインに内容を表示
         self.main_window.preview_widget.display_document(result.document)
 
         # 検索語をハイライト
-        if hasattr(result, 'highlighted_terms') and result.highlighted_terms:
-            self.main_window.preview_widget.highlight_search_terms(result.highlighted_terms)
+        if hasattr(result, "highlighted_terms") and result.highlighted_terms:
+            self.main_window.preview_widget.highlight_search_terms(
+                result.highlighted_terms
+            )
 
     def handle_page_changed(self, page: int) -> None:
         """ページが変更された時の処理
@@ -191,7 +216,9 @@ class SearchHandlerManager(QObject, LoggerMixin):
         Args:
             format_name: 新しい表示フォーマット名
         """
-        self.logger.debug(f"プレビューの表示フォーマットが変更されました: {format_name}")
+        self.logger.debug(
+            f"プレビューの表示フォーマットが変更されました: {format_name}"
+        )
         self.main_window.show_status_message(f"表示形式: {format_name}", 2000)
 
     def cleanup(self) -> None:
@@ -203,7 +230,11 @@ class SearchHandlerManager(QObject, LoggerMixin):
                 self.search_worker.wait()
                 self.search_worker = None
 
-            self.logger.debug("検索・プレビューハンドラーマネージャーをクリーンアップしました")
+            self.logger.debug(
+                "検索・プレビューハンドラーマネージャーをクリーンアップしました"
+            )
 
         except Exception as e:
-            self.logger.error(f"検索・プレビューハンドラーマネージャーのクリーンアップ中にエラー: {e}")
+            self.logger.error(
+                f"検索・プレビューハンドラーマネージャーのクリーンアップ中にエラー: {e}"
+            )

@@ -45,7 +45,7 @@ class DocumentIndexingService:
             index_manager=self.index_manager,
             embedding_manager=self.embedding_manager,
             document_processor=self.document_processor,
-            config=self.config
+            config=self.config,
         )
 
         # 状態管理
@@ -75,8 +75,7 @@ class DocumentIndexingService:
 
             # SearchManagerの初期化
             self.search_manager = SearchManager(
-                self.index_manager,
-                self.embedding_manager
+                self.index_manager, self.embedding_manager
             )
 
             self.logger.info("すべてのコンポーネントが初期化されました")
@@ -100,7 +99,9 @@ class DocumentIndexingService:
             raise FileSystemError(f"ディレクトリが存在しません: {directory_path}")
 
         if not os.path.isdir(directory_path):
-            raise FileSystemError(f"指定されたパスはディレクトリではありません: {directory_path}")
+            raise FileSystemError(
+                f"指定されたパスはディレクトリではありません: {directory_path}"
+            )
 
         self.file_watcher.add_watch_path(directory_path)
         self.logger.info(f"監視対象ディレクトリを追加しました: {directory_path}")
@@ -185,14 +186,16 @@ class DocumentIndexingService:
             self.logger.warning("スキャン対象のディレクトリが指定されていません")
             return {"processed_files": 0, "errors": 0}
 
-        self.logger.info(f"初期スキャンを開始します: {len(directory_paths)}個のディレクトリ")
+        self.logger.info(
+            f"初期スキャンを開始します: {len(directory_paths)}個のディレクトリ"
+        )
 
         stats = {
             "processed_files": 0,
             "added_files": 0,
             "updated_files": 0,
             "errors": 0,
-            "skipped_files": 0
+            "skipped_files": 0,
         }
 
         for directory_path in directory_paths:
@@ -233,7 +236,9 @@ class DocumentIndexingService:
 
                         # 進捗をログ出力
                         if stats["processed_files"] % 100 == 0:
-                            self.logger.info(f"進捗: {stats['processed_files']}ファイル処理完了")
+                            self.logger.info(
+                                f"進捗: {stats['processed_files']}ファイル処理完了"
+                            )
 
                     except Exception as e:
                         self.logger.error(f"ファイル処理中にエラー: {file_path} - {e}")
@@ -284,7 +289,7 @@ class DocumentIndexingService:
             "file_watcher": file_watcher_stats,
             "index": index_stats,
             "embeddings": embedding_stats,
-            "search": search_stats
+            "search": search_stats,
         }
 
     def wait_for_processing_complete(self, timeout: float = 30.0) -> bool:
@@ -299,11 +304,13 @@ class DocumentIndexingService:
         """
         return self.file_watcher.wait_for_queue_empty(timeout)
 
-    def set_callbacks(self,
-                     on_document_added: Callable[[str], None] | None = None,
-                     on_document_updated: Callable[[str], None] | None = None,
-                     on_document_deleted: Callable[[str], None] | None = None,
-                     on_error: Callable[[Exception], None] | None = None) -> None:
+    def set_callbacks(
+        self,
+        on_document_added: Callable[[str], None] | None = None,
+        on_document_updated: Callable[[str], None] | None = None,
+        on_document_deleted: Callable[[str], None] | None = None,
+        on_error: Callable[[Exception], None] | None = None,
+    ) -> None:
         """
         コールバック関数を設定
 
@@ -328,7 +335,9 @@ class DocumentIndexingService:
         self.stop_service()
 
 
-def create_document_indexing_service(config: Config | None = None) -> DocumentIndexingService:
+def create_document_indexing_service(
+    config: Config | None = None,
+) -> DocumentIndexingService:
     """
     DocumentIndexingServiceのファクトリー関数
 
@@ -341,8 +350,9 @@ def create_document_indexing_service(config: Config | None = None) -> DocumentIn
     return DocumentIndexingService(config)
 
 
-def setup_file_watching_for_directories(directories: list[str],
-                                       config: Config | None = None) -> DocumentIndexingService:
+def setup_file_watching_for_directories(
+    directories: list[str], config: Config | None = None
+) -> DocumentIndexingService:
     """
     指定されたディレクトリのファイル監視を設定
 
@@ -368,7 +378,7 @@ if __name__ == "__main__":
     # ログ設定
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     # 設定を作成
@@ -397,11 +407,11 @@ if __name__ == "__main__":
         # サービス統計を表示
         stats = service.get_service_stats()
 
-
         # メインループ（Ctrl+Cで終了）
         try:
             while True:
                 import time
+
                 time.sleep(1)
         except KeyboardInterrupt:
             pass

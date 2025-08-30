@@ -20,6 +20,7 @@ from ..utils.logging_config import LoggerMixin
 
 class TaskStatus(Enum):
     """タスクステータス列挙型"""
+
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
@@ -29,6 +30,7 @@ class TaskStatus(Enum):
 
 class TaskPriority(Enum):
     """タスク優先度列挙型"""
+
     LOW = 1
     NORMAL = 2
     HIGH = 3
@@ -38,6 +40,7 @@ class TaskPriority(Enum):
 @dataclass
 class ProgressInfo:
     """進捗情報を表すデータクラス"""
+
     current: int = 0
     total: int = 0
     message: str = ""
@@ -54,6 +57,7 @@ class ProgressInfo:
 @dataclass
 class BackgroundTask:
     """バックグラウンドタスクを表すデータクラス"""
+
     task_id: str
     name: str
     func: Callable
@@ -68,9 +72,9 @@ class BackgroundTask:
     started_at: float | None = None
     completed_at: float | None = None
     progress_callback: Callable[[ProgressInfo], None] | None = None
-    completion_callback: Callable[['BackgroundTask'], None] | None = None
+    completion_callback: Callable[["BackgroundTask"], None] | None = None
 
-    def __lt__(self, other: 'BackgroundTask') -> bool:
+    def __lt__(self, other: "BackgroundTask") -> bool:
         """優先度による比較（優先度キューで使用）"""
         return self.priority.value > other.priority.value
 
@@ -82,8 +86,12 @@ class ProgressTracker(LoggerMixin):
     長時間実行される操作の進捗を追跡し、コールバック通知を提供します。
     """
 
-    def __init__(self, task_id: str, total_steps: int,
-                 progress_callback: Callable[[ProgressInfo], None] | None = None):
+    def __init__(
+        self,
+        task_id: str,
+        total_steps: int,
+        progress_callback: Callable[[ProgressInfo], None] | None = None,
+    ):
         """
         進捗追跡を初期化
 
@@ -131,6 +139,7 @@ class BackgroundProcessor(LoggerMixin):
 
     タスクキューイング、並行処理、進捗追跡機能を提供します。
     """
+
     """
     バックグラウンド処理管理クラス
 
@@ -166,7 +175,9 @@ class BackgroundProcessor(LoggerMixin):
         # ワーカースレッド
         self._worker_thread: threading.Thread | None = None
 
-        self.logger.info(f"バックグラウンドプロセッサーを初期化: ワーカー数={max_workers}")
+        self.logger.info(
+            f"バックグラウンドプロセッサーを初期化: ワーカー数={max_workers}"
+        )
 
     def __del__(self):
         """デストラクタでリソースをクリーンアップ"""
@@ -185,7 +196,9 @@ class BackgroundProcessor(LoggerMixin):
             self._shutdown = False
 
             # ワーカースレッドを開始
-            self._worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
+            self._worker_thread = threading.Thread(
+                target=self._worker_loop, daemon=True
+            )
             self._worker_thread.start()
 
             self.logger.info("バックグラウンド処理を開始しました")
@@ -251,11 +264,16 @@ class BackgroundProcessor(LoggerMixin):
         except queue.Full:
             raise BackgroundProcessingError("タスクキューが満杯です")
 
-    def create_and_submit_task(self, name: str, func: Callable,
-                             args: tuple = (), kwargs: dict = None,
-                             priority: TaskPriority = TaskPriority.NORMAL,
-                             progress_callback: Callable[[ProgressInfo], None] | None = None,
-                             completion_callback: Callable[[BackgroundTask], None] | None = None) -> str:
+    def create_and_submit_task(
+        self,
+        name: str,
+        func: Callable,
+        args: tuple = (),
+        kwargs: dict = None,
+        priority: TaskPriority = TaskPriority.NORMAL,
+        progress_callback: Callable[[ProgressInfo], None] | None = None,
+        completion_callback: Callable[[BackgroundTask], None] | None = None,
+    ) -> str:
         """
         タスクを作成してキューに追加
 
@@ -282,7 +300,7 @@ class BackgroundProcessor(LoggerMixin):
             kwargs=kwargs or {},
             priority=priority,
             progress_callback=progress_callback,
-            completion_callback=completion_callback
+            completion_callback=completion_callback,
         )
 
         return self.submit_task(task)
@@ -315,7 +333,11 @@ class BackgroundProcessor(LoggerMixin):
             if not task:
                 return False
 
-            if task.status in [TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED]:
+            if task.status in [
+                TaskStatus.COMPLETED,
+                TaskStatus.FAILED,
+                TaskStatus.CANCELLED,
+            ]:
                 return False
 
             # 実行中の場合はFutureをキャンセル
@@ -337,14 +359,20 @@ class BackgroundProcessor(LoggerMixin):
     def get_queue_stats(self) -> dict[str, Any]:
         """キューの統計情報を取得"""
         with self._lock:
-            pending_count = sum(1 for task in self._tasks.values()
-                              if task.status == TaskStatus.PENDING)
-            running_count = sum(1 for task in self._tasks.values()
-                              if task.status == TaskStatus.RUNNING)
-            completed_count = sum(1 for task in self._tasks.values()
-                                if task.status == TaskStatus.COMPLETED)
-            failed_count = sum(1 for task in self._tasks.values()
-                             if task.status == TaskStatus.FAILED)
+            pending_count = sum(
+                1 for task in self._tasks.values() if task.status == TaskStatus.PENDING
+            )
+            running_count = sum(
+                1 for task in self._tasks.values() if task.status == TaskStatus.RUNNING
+            )
+            completed_count = sum(
+                1
+                for task in self._tasks.values()
+                if task.status == TaskStatus.COMPLETED
+            )
+            failed_count = sum(
+                1 for task in self._tasks.values() if task.status == TaskStatus.FAILED
+            )
 
             return {
                 "queue_size": self._task_queue.qsize(),
@@ -355,7 +383,7 @@ class BackgroundProcessor(LoggerMixin):
                 "completed": completed_count,
                 "failed": failed_count,
                 "max_workers": self.max_workers,
-                "is_running": self._running
+                "is_running": self._running,
             }
 
     def _worker_loop(self) -> None:
@@ -397,9 +425,7 @@ class BackgroundProcessor(LoggerMixin):
 
             # 進捗トラッカーを作成
             progress_tracker = ProgressTracker(
-                task.task_id,
-                100,  # デフォルトの総ステップ数
-                task.progress_callback
+                task.task_id, 100, task.progress_callback  # デフォルトの総ステップ数
             )
 
             # タスクの引数に進捗トラッカーを追加（関数がサポートしている場合のみ）
@@ -407,9 +433,10 @@ class BackgroundProcessor(LoggerMixin):
 
             # 関数のシグネチャをチェックして進捗トラッカーをサポートしているか確認
             import inspect
+
             sig = inspect.signature(task.func)
-            if 'progress_tracker' in sig.parameters:
-                enhanced_kwargs['progress_tracker'] = progress_tracker
+            if "progress_tracker" in sig.parameters:
+                enhanced_kwargs["progress_tracker"] = progress_tracker
 
             # Futureを作成して実行
             future = self._executor.submit(task.func, *task.args, **enhanced_kwargs)
@@ -469,7 +496,7 @@ class TaskManager(LoggerMixin):
         self._processors = {
             "indexing": self.indexing_processor,
             "search": self.search_processor,
-            "file": self.file_processor
+            "file": self.file_processor,
         }
 
         self.logger.info("タスクマネージャーを初期化しました")
@@ -486,31 +513,46 @@ class TaskManager(LoggerMixin):
             processor.stop(timeout=timeout)
             self.logger.info(f"{name}プロセッサーを停止")
 
-    def submit_indexing_task(self, name: str, func: Callable,
-                           args: tuple = (), kwargs: dict = None,
-                           priority: TaskPriority = TaskPriority.NORMAL,
-                           progress_callback: Callable[[ProgressInfo], None] | None = None,
-                           completion_callback: Callable[[BackgroundTask], None] | None = None) -> str:
+    def submit_indexing_task(
+        self,
+        name: str,
+        func: Callable,
+        args: tuple = (),
+        kwargs: dict = None,
+        priority: TaskPriority = TaskPriority.NORMAL,
+        progress_callback: Callable[[ProgressInfo], None] | None = None,
+        completion_callback: Callable[[BackgroundTask], None] | None = None,
+    ) -> str:
         """インデックス化タスクを送信"""
         return self.indexing_processor.create_and_submit_task(
             name, func, args, kwargs, priority, progress_callback, completion_callback
         )
 
-    def submit_search_task(self, name: str, func: Callable,
-                         args: tuple = (), kwargs: dict = None,
-                         priority: TaskPriority = TaskPriority.HIGH,
-                         progress_callback: Callable[[ProgressInfo], None] | None = None,
-                         completion_callback: Callable[[BackgroundTask], None] | None = None) -> str:
+    def submit_search_task(
+        self,
+        name: str,
+        func: Callable,
+        args: tuple = (),
+        kwargs: dict = None,
+        priority: TaskPriority = TaskPriority.HIGH,
+        progress_callback: Callable[[ProgressInfo], None] | None = None,
+        completion_callback: Callable[[BackgroundTask], None] | None = None,
+    ) -> str:
         """検索タスクを送信"""
         return self.search_processor.create_and_submit_task(
             name, func, args, kwargs, priority, progress_callback, completion_callback
         )
 
-    def submit_file_task(self, name: str, func: Callable,
-                       args: tuple = (), kwargs: dict = None,
-                       priority: TaskPriority = TaskPriority.NORMAL,
-                       progress_callback: Callable[[ProgressInfo], None] | None = None,
-                       completion_callback: Callable[[BackgroundTask], None] | None = None) -> str:
+    def submit_file_task(
+        self,
+        name: str,
+        func: Callable,
+        args: tuple = (),
+        kwargs: dict = None,
+        priority: TaskPriority = TaskPriority.NORMAL,
+        progress_callback: Callable[[ProgressInfo], None] | None = None,
+        completion_callback: Callable[[BackgroundTask], None] | None = None,
+    ) -> str:
         """ファイル処理タスクを送信"""
         return self.file_processor.create_and_submit_task(
             name, func, args, kwargs, priority, progress_callback, completion_callback

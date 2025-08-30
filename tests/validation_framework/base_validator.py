@@ -30,6 +30,7 @@ except ImportError:
 @dataclass
 class ValidationResult:
     """検証結果を格納するデータクラス"""
+
     test_name: str
     success: bool
     execution_time: float
@@ -42,6 +43,7 @@ class ValidationResult:
 @dataclass
 class ValidationConfig:
     """検証設定を格納するデータクラス"""
+
     enable_performance_monitoring: bool = True
     enable_memory_monitoring: bool = True
     enable_error_injection: bool = False
@@ -89,14 +91,16 @@ class BaseValidator(ABC):
         if not logger.handlers:
             handler = logging.StreamHandler()
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
             handler.setFormatter(formatter)
             logger.addHandler(handler)
 
         return logger
 
-    def run_validation(self, test_methods: list[str] | None = None) -> list[ValidationResult]:
+    def run_validation(
+        self, test_methods: list[str] | None = None
+    ) -> list[ValidationResult]:
         """
         検証の実行
 
@@ -112,15 +116,18 @@ class BaseValidator(ABC):
         # 実行するテストメソッドの決定
         if test_methods is None:
             test_methods = [
-                method for method in dir(self)
-                if method.startswith('test_') and callable(getattr(self, method))
+                method
+                for method in dir(self)
+                if method.startswith("test_") and callable(getattr(self, method))
             ]
 
         # 各テストメソッドの実行
         for method_name in test_methods:
             self._run_single_test(method_name)
 
-        self.logger.info(f"検証が完了しました。実行テスト数: {len(self.validation_results)}")
+        self.logger.info(
+            f"検証が完了しました。実行テスト数: {len(self.validation_results)}"
+        )
         return self.validation_results
 
     def _run_single_test(self, method_name: str) -> ValidationResult:
@@ -153,21 +160,31 @@ class BaseValidator(ABC):
 
             # 成功時の結果作成
             execution_time = time.time() - start_time
-            memory_usage = self.memory_monitor.get_peak_memory() if self.config.enable_memory_monitoring else 0.0
+            memory_usage = (
+                self.memory_monitor.get_peak_memory()
+                if self.config.enable_memory_monitoring
+                else 0.0
+            )
 
             result = ValidationResult(
                 test_name=method_name,
                 success=True,
                 execution_time=execution_time,
-                memory_usage=memory_usage
+                memory_usage=memory_usage,
             )
 
-            self.logger.info(f"テスト '{method_name}' が成功しました (実行時間: {execution_time:.2f}秒)")
+            self.logger.info(
+                f"テスト '{method_name}' が成功しました (実行時間: {execution_time:.2f}秒)"
+            )
 
         except Exception as e:
             # 失敗時の結果作成
             execution_time = time.time() - start_time
-            memory_usage = self.memory_monitor.get_peak_memory() if self.config.enable_memory_monitoring else 0.0
+            memory_usage = (
+                self.memory_monitor.get_peak_memory()
+                if self.config.enable_memory_monitoring
+                else 0.0
+            )
 
             result = ValidationResult(
                 test_name=method_name,
@@ -175,7 +192,7 @@ class BaseValidator(ABC):
                 execution_time=execution_time,
                 memory_usage=memory_usage,
                 error_message=str(e),
-                details={'traceback': traceback.format_exc()}
+                details={"traceback": traceback.format_exc()},
             )
 
             self.logger.error(f"テスト '{method_name}' が失敗しました: {str(e)}")
@@ -195,7 +212,9 @@ class BaseValidator(ABC):
 
         return result
 
-    def validate_performance_requirements(self, max_time: float, max_memory: float) -> bool:
+    def validate_performance_requirements(
+        self, max_time: float, max_memory: float
+    ) -> bool:
         """
         パフォーマンス要件の検証
 
@@ -296,7 +315,9 @@ class BaseValidator(ABC):
 
         self.logger.debug(f"アサーション成功: {message}")
 
-    def measure_execution_time(self, func: Callable, *args, **kwargs) -> tuple[Any, float]:
+    def measure_execution_time(
+        self, func: Callable, *args, **kwargs
+    ) -> tuple[Any, float]:
         """
         関数の実行時間を測定
 

@@ -46,7 +46,7 @@ class DialogManager(LoggerMixin):
             self.parent,
             "検索対象フォルダを選択",
             str(Path.home()),
-            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
+            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
         )
 
         if folder_path:
@@ -57,7 +57,7 @@ class DialogManager(LoggerMixin):
 
     def show_search_dialog(self) -> None:
         """検索ダイアログを表示（検索インターフェースにフォーカス）"""
-        if hasattr(self.parent, 'search_interface'):
+        if hasattr(self.parent, "search_interface"):
             self.parent.search_interface.search_input.setFocus()
             self.parent.search_interface.search_input.selectAll()
 
@@ -71,7 +71,7 @@ class DialogManager(LoggerMixin):
         try:
             dialog = SettingsDialog(self.config, self.parent)
 
-            if hasattr(self.parent, '_on_settings_changed'):
+            if hasattr(self.parent, "_on_settings_changed"):
                 dialog.settings_changed.connect(self.parent._on_settings_changed)
 
             if dialog.exec() == SettingsDialog.Accepted:
@@ -85,7 +85,7 @@ class DialogManager(LoggerMixin):
             self.show_operation_failed_dialog(
                 "設定ダイアログ",
                 f"設定ダイアログの表示に失敗しました:\n{e}",
-                "アプリケーションを再起動してから再試行してください。"
+                "アプリケーションを再起動してから再試行してください。",
             )
             return False
 
@@ -104,7 +104,7 @@ class DialogManager(LoggerMixin):
             "<li>Whoosh (全文検索)</li>"
             "<li>sentence-transformers (セマンティック検索)</li>"
             "</ul>"
-            "<p>© 2024 DocMind Project</p>"
+            "<p>© 2024 DocMind Project</p>",
         )
 
     def show_rebuild_confirmation_dialog(self) -> bool:
@@ -133,7 +133,8 @@ class DialogManager(LoggerMixin):
         rebuild_button = msg_box.addButton("🚀 再構築開始", QMessageBox.AcceptRole)
         cancel_button = msg_box.addButton("❌ キャンセル", QMessageBox.RejectRole)
 
-        rebuild_button.setStyleSheet("""
+        rebuild_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #4CAF50;
                 color: white;
@@ -145,9 +146,11 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #45a049;
             }
-        """)
+        """
+        )
 
-        cancel_button.setStyleSheet("""
+        cancel_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #f44336;
                 color: white;
@@ -159,7 +162,8 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #da190b;
             }
-        """)
+        """
+        )
 
         msg_box.setDefaultButton(cancel_button)
         msg_box.exec()
@@ -193,7 +197,8 @@ class DialogManager(LoggerMixin):
         clear_button = msg_box.addButton("🗑️ クリア実行", QMessageBox.DestructiveRole)
         cancel_button = msg_box.addButton("❌ キャンセル", QMessageBox.RejectRole)
 
-        clear_button.setStyleSheet("""
+        clear_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #f44336;
                 color: white;
@@ -205,9 +210,11 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #da190b;
             }
-        """)
+        """
+        )
 
-        cancel_button.setStyleSheet("""
+        cancel_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #757575;
                 color: white;
@@ -219,7 +226,8 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #616161;
             }
-        """)
+        """
+        )
 
         msg_box.setDefaultButton(cancel_button)
         msg_box.exec()
@@ -242,7 +250,8 @@ class DialogManager(LoggerMixin):
         msg_box.setText(message)
 
         ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
-        ok_button.setStyleSheet("""
+        ok_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #2196F3;
                 color: white;
@@ -254,11 +263,14 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #1976D2;
             }
-        """)
+        """
+        )
 
         msg_box.exec()
 
-    def show_system_error_dialog(self, title: str, error_message: str, suggestion: str = "") -> None:
+    def show_system_error_dialog(
+        self, title: str, error_message: str, suggestion: str = ""
+    ) -> None:
         """
         システムエラーダイアログを表示
 
@@ -271,7 +283,9 @@ class DialogManager(LoggerMixin):
         msg_box.setWindowTitle(f"🚨 {title}")
         msg_box.setIcon(QMessageBox.Critical)
 
-        message = f"システムエラーが発生しました。\n\n📋 エラー詳細:\n{error_message}\n\n"
+        message = (
+            f"システムエラーが発生しました。\n\n📋 エラー詳細:\n{error_message}\n\n"
+        )
 
         if suggestion:
             message += f"🔧 推奨対処:\n{suggestion}\n\n"
@@ -287,7 +301,8 @@ class DialogManager(LoggerMixin):
         msg_box.setText(message)
 
         ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
-        ok_button.setStyleSheet("""
+        ok_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #f44336;
                 color: white;
@@ -299,11 +314,14 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #da190b;
             }
-        """)
+        """
+        )
 
         msg_box.exec()
 
-    def show_operation_failed_dialog(self, operation_name: str, error_message: str, suggestion: str = "") -> None:
+    def show_operation_failed_dialog(
+        self, operation_name: str, error_message: str, suggestion: str = ""
+    ) -> None:
         """
         操作失敗ダイアログを表示
 
@@ -334,7 +352,8 @@ class DialogManager(LoggerMixin):
         retry_button = msg_box.addButton("🔄 再試行", QMessageBox.AcceptRole)
         close_button = msg_box.addButton("❌ 閉じる", QMessageBox.RejectRole)
 
-        retry_button.setStyleSheet("""
+        retry_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #4CAF50;
                 color: white;
@@ -346,9 +365,11 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #45a049;
             }
-        """)
+        """
+        )
 
-        close_button.setStyleSheet("""
+        close_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #757575;
                 color: white;
@@ -360,7 +381,8 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #616161;
             }
-        """)
+        """
+        )
 
         msg_box.exec()
 
@@ -391,7 +413,8 @@ class DialogManager(LoggerMixin):
         msg_box.setText(message)
 
         ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
-        ok_button.setStyleSheet("""
+        ok_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #FF9800;
                 color: white;
@@ -403,11 +426,14 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #F57C00;
             }
-        """)
+        """
+        )
 
         msg_box.exec()
 
-    def show_partial_failure_dialog(self, operation_name: str, error_message: str, suggestion: str = "") -> None:
+    def show_partial_failure_dialog(
+        self, operation_name: str, error_message: str, suggestion: str = ""
+    ) -> None:
         """
         部分的失敗ダイアログを表示
 
@@ -439,7 +465,8 @@ class DialogManager(LoggerMixin):
         msg_box.setText(message)
 
         ok_button = msg_box.addButton("✅ 了解", QMessageBox.AcceptRole)
-        ok_button.setStyleSheet("""
+        ok_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #FF9800;
                 color: white;
@@ -451,7 +478,8 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #F57C00;
             }
-        """)
+        """
+        )
 
         msg_box.exec()
 
@@ -468,10 +496,11 @@ class DialogManager(LoggerMixin):
                 "予期しないエラー",
                 f"インデックス再構築中に予期しないエラーが発生しました。\n\n"
                 f"エラー詳細: {error_message}\n\n"
-                "アプリケーションを再起動してから再試行してください。"
+                "アプリケーションを再起動してから再試行してください。",
             )
         except Exception as e:
             self.logger.error(f"フォールバックエラーダイアログの表示でエラー: {e}")
+
     def show_improved_timeout_dialog(self, thread_id: str) -> int:
         """
         改善されたタイムアウトダイアログを表示
@@ -502,12 +531,15 @@ class DialogManager(LoggerMixin):
         msg_box.setText(message)
 
         # カスタムボタンの設定
-        force_stop_button = msg_box.addButton("🛑 強制停止", QMessageBox.DestructiveRole)
+        force_stop_button = msg_box.addButton(
+            "🛑 強制停止", QMessageBox.DestructiveRole
+        )
         continue_button = msg_box.addButton("⏳ 継続待機", QMessageBox.AcceptRole)
         restart_button = msg_box.addButton("🔄 再開始", QMessageBox.ActionRole)
 
         # ボタンのスタイリング
-        force_stop_button.setStyleSheet("""
+        force_stop_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #f44336;
                 color: white;
@@ -519,9 +551,11 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #da190b;
             }
-        """)
+        """
+        )
 
-        continue_button.setStyleSheet("""
+        continue_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #FF9800;
                 color: white;
@@ -533,9 +567,11 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #F57C00;
             }
-        """)
+        """
+        )
 
-        restart_button.setStyleSheet("""
+        restart_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #4CAF50;
                 color: white;
@@ -547,7 +583,8 @@ class DialogManager(LoggerMixin):
             QPushButton:hover {
                 background-color: #45a049;
             }
-        """)
+        """
+        )
 
         # デフォルトボタンを継続待機に設定
         msg_box.setDefaultButton(continue_button)
@@ -559,11 +596,12 @@ class DialogManager(LoggerMixin):
         if clicked_button == force_stop_button:
             return QMessageBox.Yes  # 強制停止
         elif clicked_button == continue_button:
-            return QMessageBox.No   # 継続待機
+            return QMessageBox.No  # 継続待機
         elif clicked_button == restart_button:
             return QMessageBox.Retry  # 再開始
         else:
-            return QMessageBox.No   # デフォルトは継続
+            return QMessageBox.No  # デフォルトは継続
+
     def show_fallback_error_dialog(self, error_message: str) -> None:
         """
         フォールバックエラーダイアログを表示
@@ -577,7 +615,7 @@ class DialogManager(LoggerMixin):
                 "予期しないエラー",
                 f"インデックス再構築中に予期しないエラーが発生しました。\n\n"
                 f"エラー詳細: {error_message}\n\n"
-                "アプリケーションを再起動してから再試行してください。"
+                "アプリケーションを再起動してから再試行してください。",
             )
         except Exception as e:
             self.logger.error(f"フォールバックエラーダイアログの表示でエラー: {e}")

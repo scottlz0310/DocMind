@@ -70,17 +70,17 @@ class DocumentSyntaxHighlighter(QSyntaxHighlighter):
         header_format = QTextCharFormat()
         header_format.setForeground(QColor("#2E86AB"))
         header_format.setFontWeight(QFont.Bold)
-        self.highlighting_rules.append((r'^#{1,6}\s.*$', header_format))
+        self.highlighting_rules.append((r"^#{1,6}\s.*$", header_format))
 
         # 太字
         bold_format = QTextCharFormat()
         bold_format.setFontWeight(QFont.Bold)
-        self.highlighting_rules.append((r'\*\*.*?\*\*', bold_format))
+        self.highlighting_rules.append((r"\*\*.*?\*\*", bold_format))
 
         # 斜体
         italic_format = QTextCharFormat()
         italic_format.setFontItalic(True)
-        self.highlighting_rules.append((r'\*.*?\*', italic_format))
+        self.highlighting_rules.append((r"\*.*?\*", italic_format))
 
         # コードブロック
         code_format = QTextCharFormat()
@@ -88,13 +88,13 @@ class DocumentSyntaxHighlighter(QSyntaxHighlighter):
         code_format.setBackground(QColor("#F5F5F5"))
         code_font = QFont("Consolas, Monaco, monospace")
         code_format.setFont(code_font)
-        self.highlighting_rules.append((r'`.*?`', code_format))
+        self.highlighting_rules.append((r"`.*?`", code_format))
 
         # リンク
         link_format = QTextCharFormat()
         link_format.setForeground(QColor("#F18F01"))
         link_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-        self.highlighting_rules.append((r'\[.*?\]\(.*?\)', link_format))
+        self.highlighting_rules.append((r"\[.*?\]\(.*?\)", link_format))
 
     def _setup_text_rules(self):
         """テキストファイル用の基本ハイライトルールを設定"""
@@ -102,12 +102,14 @@ class DocumentSyntaxHighlighter(QSyntaxHighlighter):
         url_format = QTextCharFormat()
         url_format.setForeground(QColor("#0066CC"))
         url_format.setUnderlineStyle(QTextCharFormat.SingleUnderline)
-        self.highlighting_rules.append((r'https?://[^\s]+', url_format))
+        self.highlighting_rules.append((r"https?://[^\s]+", url_format))
 
         # メールアドレス
         email_format = QTextCharFormat()
         email_format.setForeground(QColor("#0066CC"))
-        self.highlighting_rules.append((r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email_format))
+        self.highlighting_rules.append(
+            (r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", email_format)
+        )
 
     def highlightBlock(self, text: str):
         """テキストブロックのハイライト処理"""
@@ -211,7 +213,7 @@ class DocumentSummarizer(QObject):
 
         try:
             # 段落に分割
-            paragraphs = [p.strip() for p in content.split('\n\n') if p.strip()]
+            paragraphs = [p.strip() for p in content.split("\n\n") if p.strip()]
 
             if not paragraphs:
                 # 段落がない場合は文で分割
@@ -229,7 +231,7 @@ class DocumentSummarizer(QObject):
     def _split_into_sentences(self, text: str) -> list[str]:
         """テキストを文に分割"""
         # 日本語と英語の文区切りに対応
-        sentence_endings = r'[。！？.!?]'
+        sentence_endings = r"[。！？.!?]"
         sentences = re.split(sentence_endings, text)
         return [s.strip() for s in sentences if s.strip()]
 
@@ -264,9 +266,15 @@ class DocumentSummarizer(QObject):
             else:
                 break
 
-        return '。'.join(selected_sentences) + '。' if selected_sentences else sentences[0][:max_length]
+        return (
+            "。".join(selected_sentences) + "。"
+            if selected_sentences
+            else sentences[0][:max_length]
+        )
 
-    def _select_important_paragraphs(self, paragraphs: list[str], max_length: int) -> str:
+    def _select_important_paragraphs(
+        self, paragraphs: list[str], max_length: int
+    ) -> str:
         """重要な段落を選択して要約を作成"""
         if not paragraphs:
             return ""
@@ -274,7 +282,7 @@ class DocumentSummarizer(QObject):
         # 最初の段落は常に含める（ただし長すぎる場合は切り取る）
         first_paragraph = paragraphs[0]
         if len(first_paragraph) > max_length // 2:
-            first_paragraph = first_paragraph[:max_length // 2] + "..."
+            first_paragraph = first_paragraph[: max_length // 2] + "..."
 
         summary_parts = [first_paragraph]
         current_length = len(first_paragraph)
@@ -294,7 +302,7 @@ class DocumentSummarizer(QObject):
                     summary_parts.append(paragraph[:remaining_space] + "...")
                 break
 
-        result = '\n\n'.join(summary_parts)
+        result = "\n\n".join(summary_parts)
 
         # 最終的な長さチェック
         if len(result) > max_length:
@@ -660,10 +668,10 @@ class PreviewWidget(QWidget):
             f"作成日: {doc.created_date.strftime('%Y-%m-%d %H:%M:%S')}",
             f"更新日: {doc.modified_date.strftime('%Y-%m-%d %H:%M:%S')}",
             f"インデックス日: {doc.indexed_date.strftime('%Y-%m-%d %H:%M:%S')}",
-            f"文字数: {len(doc.content):,} 文字"
+            f"文字数: {len(doc.content):,} 文字",
         ]
 
-        self.details_text.setText('\n'.join(details))
+        self.details_text.setText("\n".join(details))
 
     def _display_full_content(self):
         """完全なコンテンツを表示"""
@@ -679,7 +687,9 @@ class PreviewWidget(QWidget):
 
         # 大きなファイルの場合は要約を生成
         if len(self.current_document.content) > 1000:
-            summary = self.summarizer.generate_summary(self.current_document.content, max_length=500)
+            summary = self.summarizer.generate_summary(
+                self.current_document.content, max_length=500
+            )
             self.text_browser.setPlainText(summary)
         else:
             # 小さなファイルはそのまま表示
@@ -696,8 +706,7 @@ class PreviewWidget(QWidget):
 
         # 新しいハイライターを作成
         self.syntax_highlighter = DocumentSyntaxHighlighter(
-            self.text_browser.document(),
-            self.current_document.file_type
+            self.text_browser.document(), self.current_document.file_type
         )
 
     def _display_error(self, error_message: str):

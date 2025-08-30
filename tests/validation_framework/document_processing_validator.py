@@ -18,6 +18,7 @@ except ImportError:
     # テスト環境での代替インポート
     import os
     import sys
+
     current_dir = os.path.dirname(__file__)
     sys.path.insert(0, current_dir)
 
@@ -27,7 +28,7 @@ except ImportError:
 # DocMindアプリケーションのインポート（テスト用にモック対応）
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
     from src.core.document_processor import DocumentProcessor
@@ -44,10 +45,11 @@ except ImportError:
             class MockDocument:
                 def __init__(self, content):
                     self.content = content
+
             return MockDocument(f"Mock content for {file_path}")
 
         def _detect_encoding(self, file_path):
-            return 'utf-8'
+            return "utf-8"
 
     class FileType:
         PDF = "pdf"
@@ -92,14 +94,14 @@ class DocumentProcessingValidator(BaseValidator):
 
         # 検証結果の詳細情報
         self.processing_stats = {
-            'files_processed': 0,
-            'successful_extractions': 0,
-            'failed_extractions': 0,
-            'total_characters_extracted': 0,
-            'processing_times': [],
-            'file_type_stats': {},
-            'encoding_detection_stats': {},
-            'error_types': {}
+            "files_processed": 0,
+            "successful_extractions": 0,
+            "failed_extractions": 0,
+            "total_characters_extracted": 0,
+            "processing_times": [],
+            "file_type_stats": {},
+            "encoding_detection_stats": {},
+            "error_types": {},
         }
 
         self.logger.info("ドキュメント処理検証クラスを初期化しました")
@@ -145,12 +147,12 @@ class DocumentProcessingValidator(BaseValidator):
             dataset_name="standard_documents",
             output_directory=os.path.join(self.test_data_dir, "standard"),
             file_count=5,  # 50 -> 5に削減
-            file_types=['txt', 'md', 'json'],  # 軽量なファイル形式のみ
+            file_types=["txt", "md", "json"],  # 軽量なファイル形式のみ
             size_range_kb=(1, 10),  # 100KB -> 10KBに削減
             content_language="ja",
             include_corrupted=False,
             include_large_files=False,
-            include_special_chars=False
+            include_special_chars=False,
         )
         self.test_data_generator.generate_dataset(standard_config)
 
@@ -159,10 +161,10 @@ class DocumentProcessingValidator(BaseValidator):
             dataset_name="encoding_test",
             output_directory=os.path.join(self.test_data_dir, "encoding"),
             file_count=3,  # 20 -> 3に削減
-            file_types=['txt'],  # テキストファイルのみ
+            file_types=["txt"],  # テキストファイルのみ
             size_range_kb=(1, 5),  # 50KB -> 5KBに削減
             content_language="ja",
-            include_special_chars=True
+            include_special_chars=True,
         )
         self.test_data_generator.generate_dataset(encoding_config)
 
@@ -171,10 +173,10 @@ class DocumentProcessingValidator(BaseValidator):
             dataset_name="large_files",
             output_directory=os.path.join(self.test_data_dir, "large"),
             file_count=2,  # 10 -> 2に削減
-            file_types=['txt'],  # テキストファイルのみ
+            file_types=["txt"],  # テキストファイルのみ
             size_range_kb=(100, 200),  # 1MB-5MB -> 100KB-200KBに削減
             content_language="ja",
-            include_large_files=True
+            include_large_files=True,
         )
         self.test_data_generator.generate_dataset(large_file_config)
 
@@ -183,10 +185,10 @@ class DocumentProcessingValidator(BaseValidator):
             dataset_name="error_handling",
             output_directory=os.path.join(self.test_data_dir, "error"),
             file_count=3,  # 15 -> 3に削減
-            file_types=['txt'],  # テキストファイルのみ
+            file_types=["txt"],  # テキストファイルのみ
             size_range_kb=(1, 10),  # 100KB -> 10KBに削減
             content_language="ja",
-            include_corrupted=True
+            include_corrupted=True,
         )
         self.test_data_generator.generate_dataset(error_config)
 
@@ -214,19 +216,23 @@ class DocumentProcessingValidator(BaseValidator):
                 # 基本的な検証
                 self.assert_condition(
                     document is not None,
-                    f"PDFドキュメントオブジェクトが作成されませんでした: {pdf_file}"
+                    f"PDFドキュメントオブジェクトが作成されませんでした: {pdf_file}",
                 )
 
                 self.assert_condition(
                     len(document.content) > 0,
-                    f"PDFからテキストが抽出されませんでした: {pdf_file}"
+                    f"PDFからテキストが抽出されませんでした: {pdf_file}",
                 )
 
                 # 統計情報の更新
-                self._update_processing_stats("pdf", True, len(document.content), processing_time)
+                self._update_processing_stats(
+                    "pdf", True, len(document.content), processing_time
+                )
                 successful_count += 1
 
-                self.logger.debug(f"PDF処理成功: {pdf_file} ({len(document.content)}文字, {processing_time:.2f}秒)")
+                self.logger.debug(
+                    f"PDF処理成功: {pdf_file} ({len(document.content)}文字, {processing_time:.2f}秒)"
+                )
 
             except Exception as e:
                 self._update_processing_stats("pdf", False, 0, 0, str(e))
@@ -236,10 +242,12 @@ class DocumentProcessingValidator(BaseValidator):
         success_rate = successful_count / total_count if total_count > 0 else 0
         self.assert_condition(
             success_rate >= 0.8,  # 80%以上の成功率を要求
-            f"PDF処理成功率が低すぎます: {success_rate:.2%} (要求: 80%以上)"
+            f"PDF処理成功率が低すぎます: {success_rate:.2%} (要求: 80%以上)",
         )
 
-        self.logger.info(f"PDF処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})")
+        self.logger.info(
+            f"PDF処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})"
+        )
 
     def test_word_processing_accuracy(self) -> None:
         """Word文書処理精度の検証"""
@@ -263,25 +271,29 @@ class DocumentProcessingValidator(BaseValidator):
                 # 基本的な検証
                 self.assert_condition(
                     document is not None,
-                    f"Wordドキュメントオブジェクトが作成されませんでした: {word_file}"
+                    f"Wordドキュメントオブジェクトが作成されませんでした: {word_file}",
                 )
 
                 self.assert_condition(
                     len(document.content) > 0,
-                    f"Wordからテキストが抽出されませんでした: {word_file}"
+                    f"Wordからテキストが抽出されませんでした: {word_file}",
                 )
 
                 # 書式が除去されていることを確認
                 self.assert_condition(
-                    not any(tag in document.content for tag in ['<', '>', '{', '}']),
-                    f"Word文書に書式タグが残っています: {word_file}"
+                    not any(tag in document.content for tag in ["<", ">", "{", "}"]),
+                    f"Word文書に書式タグが残っています: {word_file}",
                 )
 
                 # 統計情報の更新
-                self._update_processing_stats("docx", True, len(document.content), processing_time)
+                self._update_processing_stats(
+                    "docx", True, len(document.content), processing_time
+                )
                 successful_count += 1
 
-                self.logger.debug(f"Word処理成功: {word_file} ({len(document.content)}文字, {processing_time:.2f}秒)")
+                self.logger.debug(
+                    f"Word処理成功: {word_file} ({len(document.content)}文字, {processing_time:.2f}秒)"
+                )
 
             except Exception as e:
                 self._update_processing_stats("docx", False, 0, 0, str(e))
@@ -291,10 +303,12 @@ class DocumentProcessingValidator(BaseValidator):
         success_rate = successful_count / total_count if total_count > 0 else 0
         self.assert_condition(
             success_rate >= 0.9,  # 90%以上の成功率を要求
-            f"Word処理成功率が低すぎます: {success_rate:.2%} (要求: 90%以上)"
+            f"Word処理成功率が低すぎます: {success_rate:.2%} (要求: 90%以上)",
         )
 
-        self.logger.info(f"Word処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})")
+        self.logger.info(
+            f"Word処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})"
+        )
 
     def test_excel_processing_accuracy(self) -> None:
         """Excel処理精度の検証"""
@@ -318,25 +332,29 @@ class DocumentProcessingValidator(BaseValidator):
                 # 基本的な検証
                 self.assert_condition(
                     document is not None,
-                    f"Excelドキュメントオブジェクトが作成されませんでした: {excel_file}"
+                    f"Excelドキュメントオブジェクトが作成されませんでした: {excel_file}",
                 )
 
                 self.assert_condition(
                     len(document.content) > 0,
-                    f"Excelからテキストが抽出されませんでした: {excel_file}"
+                    f"Excelからテキストが抽出されませんでした: {excel_file}",
                 )
 
                 # シート情報が含まれていることを確認
                 self.assert_condition(
                     "シート:" in document.content,
-                    f"Excelシート情報が含まれていません: {excel_file}"
+                    f"Excelシート情報が含まれていません: {excel_file}",
                 )
 
                 # 統計情報の更新
-                self._update_processing_stats("xlsx", True, len(document.content), processing_time)
+                self._update_processing_stats(
+                    "xlsx", True, len(document.content), processing_time
+                )
                 successful_count += 1
 
-                self.logger.debug(f"Excel処理成功: {excel_file} ({len(document.content)}文字, {processing_time:.2f}秒)")
+                self.logger.debug(
+                    f"Excel処理成功: {excel_file} ({len(document.content)}文字, {processing_time:.2f}秒)"
+                )
 
             except Exception as e:
                 self._update_processing_stats("xlsx", False, 0, 0, str(e))
@@ -346,10 +364,12 @@ class DocumentProcessingValidator(BaseValidator):
         success_rate = successful_count / total_count if total_count > 0 else 0
         self.assert_condition(
             success_rate >= 0.9,  # 90%以上の成功率を要求
-            f"Excel処理成功率が低すぎます: {success_rate:.2%} (要求: 90%以上)"
+            f"Excel処理成功率が低すぎます: {success_rate:.2%} (要求: 90%以上)",
         )
 
-        self.logger.info(f"Excel処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})")
+        self.logger.info(
+            f"Excel処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})"
+        )
 
     def test_text_processing_accuracy(self) -> None:
         """テキストファイル処理精度の検証"""
@@ -373,27 +393,31 @@ class DocumentProcessingValidator(BaseValidator):
                 # 基本的な検証
                 self.assert_condition(
                     document is not None,
-                    f"テキストドキュメントオブジェクトが作成されませんでした: {text_file}"
+                    f"テキストドキュメントオブジェクトが作成されませんでした: {text_file}",
                 )
 
                 # 元ファイルとの内容比較
-                with open(text_file, encoding='utf-8') as f:
+                with open(text_file, encoding="utf-8") as f:
                     original_content = f.read()
 
                 # 内容が一致することを確認（改行の違いは許容）
-                normalized_original = original_content.strip().replace('\r\n', '\n')
-                normalized_extracted = document.content.strip().replace('\r\n', '\n')
+                normalized_original = original_content.strip().replace("\r\n", "\n")
+                normalized_extracted = document.content.strip().replace("\r\n", "\n")
 
                 self.assert_condition(
                     normalized_original == normalized_extracted,
-                    f"テキストファイルの内容が一致しません: {text_file}"
+                    f"テキストファイルの内容が一致しません: {text_file}",
                 )
 
                 # 統計情報の更新
-                self._update_processing_stats("txt", True, len(document.content), processing_time)
+                self._update_processing_stats(
+                    "txt", True, len(document.content), processing_time
+                )
                 successful_count += 1
 
-                self.logger.debug(f"テキスト処理成功: {text_file} ({len(document.content)}文字, {processing_time:.2f}秒)")
+                self.logger.debug(
+                    f"テキスト処理成功: {text_file} ({len(document.content)}文字, {processing_time:.2f}秒)"
+                )
 
             except Exception as e:
                 self._update_processing_stats("txt", False, 0, 0, str(e))
@@ -403,10 +427,12 @@ class DocumentProcessingValidator(BaseValidator):
         success_rate = successful_count / total_count if total_count > 0 else 0
         self.assert_condition(
             success_rate >= 0.95,  # 95%以上の成功率を要求
-            f"テキスト処理成功率が低すぎます: {success_rate:.2%} (要求: 95%以上)"
+            f"テキスト処理成功率が低すぎます: {success_rate:.2%} (要求: 95%以上)",
         )
 
-        self.logger.info(f"テキスト処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})")
+        self.logger.info(
+            f"テキスト処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})"
+        )
 
     def test_markdown_processing_accuracy(self) -> None:
         """Markdown処理精度の検証"""
@@ -430,25 +456,29 @@ class DocumentProcessingValidator(BaseValidator):
                 # 基本的な検証
                 self.assert_condition(
                     document is not None,
-                    f"Markdownドキュメントオブジェクトが作成されませんでした: {md_file}"
+                    f"Markdownドキュメントオブジェクトが作成されませんでした: {md_file}",
                 )
 
                 self.assert_condition(
                     len(document.content) > 0,
-                    f"Markdownからテキストが抽出されませんでした: {md_file}"
+                    f"Markdownからテキストが抽出されませんでした: {md_file}",
                 )
 
                 # マークアップが適切に処理されていることを確認
                 self.assert_condition(
-                    not document.content.startswith('#'),
-                    f"Markdownの見出し記法が残っています: {md_file}"
+                    not document.content.startswith("#"),
+                    f"Markdownの見出し記法が残っています: {md_file}",
                 )
 
                 # 統計情報の更新
-                self._update_processing_stats("md", True, len(document.content), processing_time)
+                self._update_processing_stats(
+                    "md", True, len(document.content), processing_time
+                )
                 successful_count += 1
 
-                self.logger.debug(f"Markdown処理成功: {md_file} ({len(document.content)}文字, {processing_time:.2f}秒)")
+                self.logger.debug(
+                    f"Markdown処理成功: {md_file} ({len(document.content)}文字, {processing_time:.2f}秒)"
+                )
 
             except Exception as e:
                 self._update_processing_stats("md", False, 0, 0, str(e))
@@ -458,10 +488,12 @@ class DocumentProcessingValidator(BaseValidator):
         success_rate = successful_count / total_count if total_count > 0 else 0
         self.assert_condition(
             success_rate >= 0.9,  # 90%以上の成功率を要求
-            f"Markdown処理成功率が低すぎます: {success_rate:.2%} (要求: 90%以上)"
+            f"Markdown処理成功率が低すぎます: {success_rate:.2%} (要求: 90%以上)",
         )
 
-        self.logger.info(f"Markdown処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})")
+        self.logger.info(
+            f"Markdown処理精度検証完了: {successful_count}/{total_count} ({success_rate:.2%})"
+        )
 
     def test_encoding_detection_accuracy(self) -> None:
         """エンコーディング自動検出の検証"""
@@ -484,12 +516,12 @@ class DocumentProcessingValidator(BaseValidator):
                 # 基本的な検証
                 self.assert_condition(
                     document is not None,
-                    f"エンコーディングテストファイルの処理に失敗: {file_path}"
+                    f"エンコーディングテストファイルの処理に失敗: {file_path}",
                 )
 
                 self.assert_condition(
                     len(document.content) > 0,
-                    f"エンコーディングテストファイルからテキストが抽出されませんでした: {file_path}"
+                    f"エンコーディングテストファイルからテキストが抽出されませんでした: {file_path}",
                 )
 
                 # 日本語文字が正しく読み込まれているかチェック
@@ -498,10 +530,16 @@ class DocumentProcessingValidator(BaseValidator):
 
                 # 統計情報の更新
                 encoding_key = f"{expected_encoding}->{detected_encoding}"
-                self.processing_stats['encoding_detection_stats'][encoding_key] = \
-                    self.processing_stats['encoding_detection_stats'].get(encoding_key, 0) + 1
+                self.processing_stats["encoding_detection_stats"][encoding_key] = (
+                    self.processing_stats["encoding_detection_stats"].get(
+                        encoding_key, 0
+                    )
+                    + 1
+                )
 
-                self.logger.debug(f"エンコーディング検出成功: {file_path} ({expected_encoding}->{detected_encoding})")
+                self.logger.debug(
+                    f"エンコーディング検出成功: {file_path} ({expected_encoding}->{detected_encoding})"
+                )
 
             except Exception as e:
                 self.logger.error(f"エンコーディング検出失敗: {file_path} - {e}")
@@ -510,10 +548,12 @@ class DocumentProcessingValidator(BaseValidator):
         detection_rate = successful_detections / total_files if total_files > 0 else 0
         self.assert_condition(
             detection_rate >= 0.8,  # 80%以上の検出精度を要求
-            f"エンコーディング検出精度が低すぎます: {detection_rate:.2%} (要求: 80%以上)"
+            f"エンコーディング検出精度が低すぎます: {detection_rate:.2%} (要求: 80%以上)",
         )
 
-        self.logger.info(f"エンコーディング検出検証完了: {successful_detections}/{total_files} ({detection_rate:.2%})")
+        self.logger.info(
+            f"エンコーディング検出検証完了: {successful_detections}/{total_files} ({detection_rate:.2%})"
+        )
 
     def test_large_file_processing(self) -> None:
         """大容量ファイル処理の検証"""
@@ -532,7 +572,9 @@ class DocumentProcessingValidator(BaseValidator):
         for large_file in large_files:
             try:
                 file_size_kb = os.path.getsize(large_file) / 1024
-                self.logger.debug(f"大容量ファイル処理開始: {large_file} ({file_size_kb:.2f}KB)")
+                self.logger.debug(
+                    f"大容量ファイル処理開始: {large_file} ({file_size_kb:.2f}KB)"
+                )
 
                 start_time = time.time()
                 document = self.document_processor.process_file(large_file)
@@ -540,19 +582,18 @@ class DocumentProcessingValidator(BaseValidator):
 
                 # 基本的な検証
                 self.assert_condition(
-                    document is not None,
-                    f"大容量ファイルの処理に失敗: {large_file}"
+                    document is not None, f"大容量ファイルの処理に失敗: {large_file}"
                 )
 
                 self.assert_condition(
                     len(document.content) > 0,
-                    f"大容量ファイルからテキストが抽出されませんでした: {large_file}"
+                    f"大容量ファイルからテキストが抽出されませんでした: {large_file}",
                 )
 
                 # 処理時間の検証
                 self.assert_condition(
                     processing_time <= max_processing_time,
-                    f"大容量ファイルの処理時間が長すぎます: {processing_time:.2f}秒 (要求: {max_processing_time}秒以内)"
+                    f"大容量ファイルの処理時間が長すぎます: {processing_time:.2f}秒 (要求: {max_processing_time}秒以内)",
                 )
 
                 # メモリ使用量の検証（現在のメモリ使用量をチェック）
@@ -560,13 +601,15 @@ class DocumentProcessingValidator(BaseValidator):
                     current_memory = self.memory_monitor.get_current_memory()
                     self.assert_condition(
                         current_memory <= self.config.max_memory_usage,
-                        f"大容量ファイル処理中のメモリ使用量が多すぎます: {current_memory:.2f}MB"
+                        f"大容量ファイル処理中のメモリ使用量が多すぎます: {current_memory:.2f}MB",
                     )
                 except Exception as e:
                     self.logger.warning(f"メモリ監視エラー: {e}")
 
                 successful_count += 1
-                self.logger.info(f"大容量ファイル処理成功: {large_file} ({file_size_kb:.2f}KB, {processing_time:.2f}秒)")
+                self.logger.info(
+                    f"大容量ファイル処理成功: {large_file} ({file_size_kb:.2f}KB, {processing_time:.2f}秒)"
+                )
 
             except Exception as e:
                 self.logger.error(f"大容量ファイル処理失敗: {large_file} - {e}")
@@ -575,10 +618,12 @@ class DocumentProcessingValidator(BaseValidator):
         success_rate = successful_count / total_count if total_count > 0 else 0
         self.assert_condition(
             success_rate >= 0.8,  # 80%以上の成功率を要求
-            f"大容量ファイル処理成功率が低すぎます: {success_rate:.2%} (要求: 80%以上)"
+            f"大容量ファイル処理成功率が低すぎます: {success_rate:.2%} (要求: 80%以上)",
         )
 
-        self.logger.info(f"大容量ファイル処理検証完了: {successful_count}/{total_count} ({success_rate:.2%})")
+        self.logger.info(
+            f"大容量ファイル処理検証完了: {successful_count}/{total_count} ({success_rate:.2%})"
+        )
 
     def test_error_handling_robustness(self) -> None:
         """エラーハンドリングの堅牢性検証"""
@@ -596,7 +641,7 @@ class DocumentProcessingValidator(BaseValidator):
         error_test_cases = [
             ("corrupted_files", corrupted_files),
             ("non_existent_file", [non_existent_file]),
-            ("empty_file", [empty_file])
+            ("empty_file", [empty_file]),
         ]
 
         total_error_cases = 0
@@ -612,7 +657,9 @@ class DocumentProcessingValidator(BaseValidator):
 
                     # 破損ファイルや存在しないファイルの場合、例外が発生すべき
                     if test_type in ["corrupted_files", "non_existent_file"]:
-                        self.logger.warning(f"例外が発生すべきファイルで処理が成功: {test_file}")
+                        self.logger.warning(
+                            f"例外が発生すべきファイルで処理が成功: {test_file}"
+                        )
                     else:
                         # 空ファイルの場合は処理成功も許容
                         handled_errors += 1
@@ -621,12 +668,11 @@ class DocumentProcessingValidator(BaseValidator):
                     # 適切なエラーハンドリング
                     self.assert_condition(
                         e.file_path is not None,
-                        f"DocumentProcessingErrorにfile_pathが設定されていません: {test_file}"
+                        f"DocumentProcessingErrorにfile_pathが設定されていません: {test_file}",
                     )
 
                     self.assert_condition(
-                        len(str(e)) > 0,
-                        f"エラーメッセージが空です: {test_file}"
+                        len(str(e)) > 0, f"エラーメッセージが空です: {test_file}"
                     )
 
                     handled_errors += 1
@@ -634,21 +680,26 @@ class DocumentProcessingValidator(BaseValidator):
 
                     # エラー統計の更新
                     error_type = type(e).__name__
-                    self.processing_stats['error_types'][error_type] = \
-                        self.processing_stats['error_types'].get(error_type, 0) + 1
+                    self.processing_stats["error_types"][error_type] = (
+                        self.processing_stats["error_types"].get(error_type, 0) + 1
+                    )
 
                 except Exception as e:
                     # 予期しない例外
                     self.logger.error(f"予期しない例外が発生: {test_file} - {e}")
 
         # エラーハンドリング率の検証
-        error_handling_rate = handled_errors / total_error_cases if total_error_cases > 0 else 0
+        error_handling_rate = (
+            handled_errors / total_error_cases if total_error_cases > 0 else 0
+        )
         self.assert_condition(
             error_handling_rate >= 0.9,  # 90%以上のエラーハンドリング率を要求
-            f"エラーハンドリング率が低すぎます: {error_handling_rate:.2%} (要求: 90%以上)"
+            f"エラーハンドリング率が低すぎます: {error_handling_rate:.2%} (要求: 90%以上)",
         )
 
-        self.logger.info(f"エラーハンドリング検証完了: {handled_errors}/{total_error_cases} ({error_handling_rate:.2%})")
+        self.logger.info(
+            f"エラーハンドリング検証完了: {handled_errors}/{total_error_cases} ({error_handling_rate:.2%})"
+        )
 
     def test_processing_performance_requirements(self) -> None:
         """処理パフォーマンス要件の検証"""
@@ -656,11 +707,11 @@ class DocumentProcessingValidator(BaseValidator):
 
         # 各ファイル形式の処理時間要件
         performance_requirements = {
-            'txt': 1.0,    # 1秒以内
-            'md': 1.0,     # 1秒以内
-            'pdf': 5.0,    # 5秒以内
-            'docx': 3.0,   # 3秒以内
-            'xlsx': 3.0    # 3秒以内
+            "txt": 1.0,  # 1秒以内
+            "md": 1.0,  # 1秒以内
+            "pdf": 5.0,  # 5秒以内
+            "docx": 3.0,  # 3秒以内
+            "xlsx": 3.0,  # 3秒以内
         }
 
         performance_results = {}
@@ -682,29 +733,33 @@ class DocumentProcessingValidator(BaseValidator):
                     processing_times.append(processing_time)
 
                 except Exception as e:
-                    self.logger.warning(f"パフォーマンステスト中にエラー: {test_file} - {e}")
+                    self.logger.warning(
+                        f"パフォーマンステスト中にエラー: {test_file} - {e}"
+                    )
 
             if processing_times:
                 avg_time = sum(processing_times) / len(processing_times)
                 max_observed_time = max(processing_times)
 
                 performance_results[file_type] = {
-                    'average_time': avg_time,
-                    'max_time': max_observed_time,
-                    'requirement': max_time,
-                    'meets_requirement': max_observed_time <= max_time
+                    "average_time": avg_time,
+                    "max_time": max_observed_time,
+                    "requirement": max_time,
+                    "meets_requirement": max_observed_time <= max_time,
                 }
 
                 # パフォーマンス要件の検証
                 self.assert_condition(
                     max_observed_time <= max_time,
-                    f"{file_type}ファイルの処理時間が要件を超過: {max_observed_time:.2f}秒 > {max_time}秒"
+                    f"{file_type}ファイルの処理時間が要件を超過: {max_observed_time:.2f}秒 > {max_time}秒",
                 )
 
-                self.logger.info(f"{file_type}パフォーマンス: 平均{avg_time:.2f}秒, 最大{max_observed_time:.2f}秒 (要件: {max_time}秒以内)")
+                self.logger.info(
+                    f"{file_type}パフォーマンス: 平均{avg_time:.2f}秒, 最大{max_observed_time:.2f}秒 (要件: {max_time}秒以内)"
+                )
 
         # 全体的なパフォーマンス統計
-        all_times = self.processing_stats['processing_times']
+        all_times = self.processing_stats["processing_times"]
         if all_times:
             overall_avg = sum(all_times) / len(all_times)
             self.logger.info(f"全体平均処理時間: {overall_avg:.2f}秒")
@@ -719,7 +774,7 @@ class DocumentProcessingValidator(BaseValidator):
         import threading
 
         test_files = []
-        for file_type in ['txt', 'pdf', 'docx']:
+        for file_type in ["txt", "pdf", "docx"]:
             test_files.extend(self._get_test_files_by_type(file_type)[:3])
 
         if len(test_files) < 3:
@@ -736,18 +791,17 @@ class DocumentProcessingValidator(BaseValidator):
                 document = self.document_processor.process_file(file_path)
                 processing_time = time.time() - start_time
 
-                results_queue.put({
-                    'file_path': file_path,
-                    'success': True,
-                    'processing_time': processing_time,
-                    'content_length': len(document.content)
-                })
+                results_queue.put(
+                    {
+                        "file_path": file_path,
+                        "success": True,
+                        "processing_time": processing_time,
+                        "content_length": len(document.content),
+                    }
+                )
 
             except Exception as e:
-                errors_queue.put({
-                    'file_path': file_path,
-                    'error': str(e)
-                })
+                errors_queue.put({"file_path": file_path, "error": str(e)})
 
         # 並行処理の実行
         threads = []
@@ -771,27 +825,31 @@ class DocumentProcessingValidator(BaseValidator):
 
         # 成功率の検証
         total_processed = len(successful_results) + len(errors)
-        success_rate = len(successful_results) / total_processed if total_processed > 0 else 0
+        success_rate = (
+            len(successful_results) / total_processed if total_processed > 0 else 0
+        )
 
         self.assert_condition(
             success_rate >= 0.8,  # 80%以上の成功率を要求
-            f"並行処理の成功率が低すぎます: {success_rate:.2%} (要求: 80%以上)"
+            f"並行処理の成功率が低すぎます: {success_rate:.2%} (要求: 80%以上)",
         )
 
         # データ整合性の検証（同じファイルを複数回処理した場合の結果一致）
         if len(successful_results) > 1:
             # 処理時間のばらつきをチェック
-            processing_times = [r['processing_time'] for r in successful_results]
+            processing_times = [r["processing_time"] for r in successful_results]
             avg_time = sum(processing_times) / len(processing_times)
 
             # 処理時間が極端にばらついていないかチェック
             for time_val in processing_times:
                 self.assert_condition(
                     abs(time_val - avg_time) <= avg_time * 2,  # 平均の2倍以内
-                    f"並行処理時の処理時間のばらつきが大きすぎます: {time_val:.2f}秒 (平均: {avg_time:.2f}秒)"
+                    f"並行処理時の処理時間のばらつきが大きすぎます: {time_val:.2f}秒 (平均: {avg_time:.2f}秒)",
                 )
 
-        self.logger.info(f"並行処理安全性検証完了: 成功{len(successful_results)}, エラー{len(errors)}")
+        self.logger.info(
+            f"並行処理安全性検証完了: 成功{len(successful_results)}, エラー{len(errors)}"
+        )
 
     def _get_test_files_by_type(self, file_type: str) -> list[str]:
         """指定されたファイル形式のテストファイルを取得"""
@@ -802,7 +860,7 @@ class DocumentProcessingValidator(BaseValidator):
 
         for root, _dirs, files in os.walk(self.test_data_dir):
             for file in files:
-                if file.endswith(f'.{file_type}'):
+                if file.endswith(f".{file_type}"):
                     test_files.append(os.path.join(root, file))
 
         return test_files
@@ -855,24 +913,26 @@ class DocumentProcessingValidator(BaseValidator):
         test_content = "これは日本語のテストファイルです。\nエンコーディング検出のテストを行います。"
 
         encodings = [
-            ('utf-8', 'utf-8'),
-            ('shift_jis', 'shift_jis'),
-            ('euc-jp', 'euc-jp'),
-            ('iso-2022-jp', 'iso-2022-jp')
+            ("utf-8", "utf-8"),
+            ("shift_jis", "shift_jis"),
+            ("euc-jp", "euc-jp"),
+            ("iso-2022-jp", "iso-2022-jp"),
         ]
 
         for i, (encoding_name, encoding) in enumerate(encodings):
             try:
                 file_path = os.path.join(encoding_dir, f"test_{encoding_name}_{i}.txt")
 
-                with open(file_path, 'w', encoding=encoding) as f:
+                with open(file_path, "w", encoding=encoding) as f:
                     f.write(test_content)
 
                 encoding_files.append((file_path, encoding))
                 self.temp_dirs.append(file_path)  # クリーンアップ対象に追加
 
             except Exception as e:
-                self.logger.warning(f"エンコーディングテストファイル作成失敗 ({encoding}): {e}")
+                self.logger.warning(
+                    f"エンコーディングテストファイル作成失敗 ({encoding}): {e}"
+                )
 
         return encoding_files
 
@@ -880,23 +940,28 @@ class DocumentProcessingValidator(BaseValidator):
         """空ファイルを作成"""
         empty_file_path = os.path.join(self.test_data_dir, "empty_file.txt")
 
-        with open(empty_file_path, 'w', encoding='utf-8'):
+        with open(empty_file_path, "w", encoding="utf-8"):
             pass  # 空ファイルを作成
 
         return empty_file_path
 
-    def _update_processing_stats(self, file_type: str, success: bool,
-                               content_length: int, processing_time: float,
-                               error_message: str = None) -> None:
+    def _update_processing_stats(
+        self,
+        file_type: str,
+        success: bool,
+        content_length: int,
+        processing_time: float,
+        error_message: str = None,
+    ) -> None:
         """処理統計情報の更新"""
-        self.processing_stats['files_processed'] += 1
+        self.processing_stats["files_processed"] += 1
 
         if success:
-            self.processing_stats['successful_extractions'] += 1
-            self.processing_stats['total_characters_extracted'] += content_length
-            self.processing_stats['processing_times'].append(processing_time)
+            self.processing_stats["successful_extractions"] += 1
+            self.processing_stats["total_characters_extracted"] += content_length
+            self.processing_stats["processing_times"].append(processing_time)
         else:
-            self.processing_stats['failed_extractions'] += 1
+            self.processing_stats["failed_extractions"] += 1
             if error_message:
                 error_type = "Unknown"
                 if "DocumentProcessingError" in error_message:
@@ -906,46 +971,61 @@ class DocumentProcessingValidator(BaseValidator):
                 elif "PermissionError" in error_message:
                     error_type = "PermissionError"
 
-                self.processing_stats['error_types'][error_type] = \
-                    self.processing_stats['error_types'].get(error_type, 0) + 1
+                self.processing_stats["error_types"][error_type] = (
+                    self.processing_stats["error_types"].get(error_type, 0) + 1
+                )
 
         # ファイル形式別統計
-        if file_type not in self.processing_stats['file_type_stats']:
-            self.processing_stats['file_type_stats'][file_type] = {
-                'processed': 0,
-                'successful': 0,
-                'failed': 0,
-                'total_chars': 0,
-                'avg_processing_time': 0.0
+        if file_type not in self.processing_stats["file_type_stats"]:
+            self.processing_stats["file_type_stats"][file_type] = {
+                "processed": 0,
+                "successful": 0,
+                "failed": 0,
+                "total_chars": 0,
+                "avg_processing_time": 0.0,
             }
 
-        stats = self.processing_stats['file_type_stats'][file_type]
-        stats['processed'] += 1
+        stats = self.processing_stats["file_type_stats"][file_type]
+        stats["processed"] += 1
 
         if success:
-            stats['successful'] += 1
-            stats['total_chars'] += content_length
+            stats["successful"] += 1
+            stats["total_chars"] += content_length
 
             # 平均処理時間の更新
-            current_avg = stats['avg_processing_time']
-            stats['avg_processing_time'] = (current_avg * (stats['successful'] - 1) + processing_time) / stats['successful']
+            current_avg = stats["avg_processing_time"]
+            stats["avg_processing_time"] = (
+                current_avg * (stats["successful"] - 1) + processing_time
+            ) / stats["successful"]
         else:
-            stats['failed'] += 1
+            stats["failed"] += 1
 
     def get_processing_statistics(self) -> dict[str, Any]:
         """処理統計情報の取得"""
         return {
-            'overall_stats': self.processing_stats,
-            'success_rate': (
-                self.processing_stats['successful_extractions'] /
-                self.processing_stats['files_processed']
-            ) if self.processing_stats['files_processed'] > 0 else 0,
-            'average_processing_time': (
-                sum(self.processing_stats['processing_times']) /
-                len(self.processing_stats['processing_times'])
-            ) if self.processing_stats['processing_times'] else 0,
-            'average_content_length': (
-                self.processing_stats['total_characters_extracted'] /
-                self.processing_stats['successful_extractions']
-            ) if self.processing_stats['successful_extractions'] > 0 else 0
+            "overall_stats": self.processing_stats,
+            "success_rate": (
+                (
+                    self.processing_stats["successful_extractions"]
+                    / self.processing_stats["files_processed"]
+                )
+                if self.processing_stats["files_processed"] > 0
+                else 0
+            ),
+            "average_processing_time": (
+                (
+                    sum(self.processing_stats["processing_times"])
+                    / len(self.processing_stats["processing_times"])
+                )
+                if self.processing_stats["processing_times"]
+                else 0
+            ),
+            "average_content_length": (
+                (
+                    self.processing_stats["total_characters_extracted"]
+                    / self.processing_stats["successful_extractions"]
+                )
+                if self.processing_stats["successful_extractions"] > 0
+                else 0
+            ),
         }

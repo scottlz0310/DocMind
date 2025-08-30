@@ -28,8 +28,9 @@ from .index_manager import IndexManager
 @dataclass
 class SearchWeights:
     """検索重み設定を管理するデータクラス"""
-    full_text: float = 0.6      # 全文検索の重み
-    semantic: float = 0.4       # セマンティック検索の重み
+
+    full_text: float = 0.6  # 全文検索の重み
+    semantic: float = 0.4  # セマンティック検索の重み
 
     def __post_init__(self):
         """重みの合計が1.0になるように正規化"""
@@ -48,7 +49,9 @@ class SearchManager(LoggerMixin):
     エラーハンドリングと優雅な劣化機能を統合しています。
     """
 
-    def __init__(self, index_manager: IndexManager, embedding_manager: EmbeddingManager):
+    def __init__(
+        self, index_manager: IndexManager, embedding_manager: EmbeddingManager
+    ):
         """
         SearchManagerを初期化
 
@@ -62,7 +65,7 @@ class SearchManager(LoggerMixin):
         # デフォルト検索設定
         self.default_weights = SearchWeights()
         self.min_semantic_similarity = 0.1  # セマンティック検索の最小類似度
-        self.snippet_max_length = 200       # スニペットの最大長
+        self.snippet_max_length = 200  # スニペットの最大長
 
         # 検索提案用のキャッシュ
         self._suggestion_cache: dict[str, list[str]] = {}
@@ -92,21 +95,27 @@ class SearchManager(LoggerMixin):
                 self.clear_suggestion_cache()
 
                 # インデックスマネージャーの状態をチェック
-                if hasattr(self.index_manager, 'is_healthy') and not self.index_manager.is_healthy():
+                if (
+                    hasattr(self.index_manager, "is_healthy")
+                    and not self.index_manager.is_healthy()
+                ):
                     self.logger.warning("インデックスマネージャーが不健全な状態です")
                     degradation_manager.mark_component_degraded(
                         "search_manager",
                         ["full_text_search", "hybrid_search"],
-                        "インデックスマネージャーの問題により全文検索が無効化されました"
+                        "インデックスマネージャーの問題により全文検索が無効化されました",
                     )
 
                 # 埋め込みマネージャーの状態をチェック
-                if hasattr(self.embedding_manager, 'is_healthy') and not self.embedding_manager.is_healthy():
+                if (
+                    hasattr(self.embedding_manager, "is_healthy")
+                    and not self.embedding_manager.is_healthy()
+                ):
                     self.logger.warning("埋め込みマネージャーが不健全な状態です")
                     degradation_manager.mark_component_degraded(
                         "search_manager",
                         ["semantic_search", "hybrid_search"],
-                        "埋め込みマネージャーの問題によりセマンティック検索が無効化されました"
+                        "埋め込みマネージャーの問題によりセマンティック検索が無効化されました",
                     )
 
                 return True
@@ -120,7 +129,7 @@ class SearchManager(LoggerMixin):
         context="検索実行",
         user_message="検索中にエラーが発生しました。検索条件を変更して再試行してください。",
         attempt_recovery=True,
-        reraise=True
+        reraise=True,
     )
     def search(self, query: SearchQuery) -> list[SearchResult]:
         """
@@ -137,16 +146,20 @@ class SearchManager(LoggerMixin):
         """
         degradation_manager = get_global_degradation_manager()
 
-        self.logger.info(f"検索開始: '{query.query_text}' (タイプ: {query.search_type.value})")
+        self.logger.info(
+            f"検索開始: '{query.query_text}' (タイプ: {query.search_type.value})"
+        )
 
         # キャッシュから結果を取得を試行
         filters = {
-            "file_types": [ft.value for ft in query.file_types] if query.file_types else None,
+            "file_types": (
+                [ft.value for ft in query.file_types] if query.file_types else None
+            ),
             "date_from": query.date_from.isoformat() if query.date_from else None,
             "date_to": query.date_to.isoformat() if query.date_to else None,
             "folder_paths": query.folder_paths,
             "limit": query.limit,
-            "weights": query.weights
+            "weights": query.weights,
         }
 
         cached_results = self._cache_manager.search_cache.get_search_results(
@@ -168,26 +181,42 @@ class SearchManager(LoggerMixin):
         self.logger.info(f"検索完了: {len(results)}件の結果")
         return results
 
-    def _execute_search(self, query: SearchQuery, degradation_manager) -> list[SearchResult]:
+    def _execute_search(
+        self, query: SearchQuery, degradation_manager
+    ) -> list[SearchResult]:
         """実際の検索処理を実行"""
         # 検索タイプに応じて機能の可用性をチェック
         if query.search_type == SearchType.FULL_TEXT:
-            if not degradation_manager.is_capability_available("search_manager", "full_text_search"):
+            if not degradation_manager.is_capability_available(
+                "search_manager", "full_text_search"
+            ):
                 raise SearchError("全文検索機能は現在利用できません")
             results = self._full_text_search(query)
         elif query.search_type == SearchType.SEMANTIC:
-            if not degradation_manager.is_capability_available("search_manager", "semantic_search"):
+            if not degradation_manager.is_capability_available(
+                "search_manager", "semantic_search"
+            ):
                 raise SearchError("セマンティック検索機能は現在利用できません")
             results = self._semantic_search(query)
         elif query.search_type == SearchType.HYBRID:
-            if not degradation_manager.is_capability_available("search_manager", "hybrid_search"):
+            if not degradation_manager.is_capability_available(
+                "search_manager", "hybrid_search"
+            ):
                 # ハイブリッド検索が利用できない場合、利用可能な検索にフォールバック
-                if degradation_manager.is_capability_available("search_manager", "full_text_search"):
-                    self.logger.warning("ハイブリッド検索が利用できないため、全文検索にフォールバック")
+                if degradation_manager.is_capability_available(
+                    "search_manager", "full_text_search"
+                ):
+                    self.logger.warning(
+                        "ハイブリッド検索が利用できないため、全文検索にフォールバック"
+                    )
                     query.search_type = SearchType.FULL_TEXT
                     results = self._full_text_search(query)
-                elif degradation_manager.is_capability_available("search_manager", "semantic_search"):
-                    self.logger.warning("ハイブリッド検索が利用できないため、セマンティック検索にフォールバック")
+                elif degradation_manager.is_capability_available(
+                    "search_manager", "semantic_search"
+                ):
+                    self.logger.warning(
+                        "ハイブリッド検索が利用できないため、セマンティック検索にフォールバック"
+                    )
                     query.search_type = SearchType.SEMANTIC
                     results = self._semantic_search(query)
                 else:
@@ -204,7 +233,7 @@ class SearchManager(LoggerMixin):
     @with_graceful_degradation(
         "search_manager",
         disable_capabilities=["full_text_search", "hybrid_search"],
-        fallback_return=[]
+        fallback_return=[],
     )
     def _full_text_search(self, query: SearchQuery) -> list[SearchResult]:
         """全文検索を実行"""
@@ -214,25 +243,29 @@ class SearchManager(LoggerMixin):
                 limit=query.limit,
                 file_types=query.file_types,
                 date_from=query.date_from,
-                date_to=query.date_to
+                date_to=query.date_to,
             )
 
             # 検索結果を強化
             enhanced_results = []
             for i, result in enumerate(results):
-                enhanced_result = self._enhance_search_result(result, query.query_text, i + 1)
+                enhanced_result = self._enhance_search_result(
+                    result, query.query_text, i + 1
+                )
                 enhanced_results.append(enhanced_result)
 
             return enhanced_results
 
         except Exception as e:
             self.logger.error(f"全文検索に失敗しました: {e}")
-            raise SearchError(f"全文検索エラー: {e}", query=query.query_text, search_type="full_text") from e
+            raise SearchError(
+                f"全文検索エラー: {e}", query=query.query_text, search_type="full_text"
+            ) from e
 
     @with_graceful_degradation(
         "search_manager",
         disable_capabilities=["semantic_search", "hybrid_search"],
-        fallback_return=[]
+        fallback_return=[],
     )
     def _semantic_search(self, query: SearchQuery) -> list[SearchResult]:
         """セマンティック検索を実行"""
@@ -240,7 +273,7 @@ class SearchManager(LoggerMixin):
             similarities = self.embedding_manager.search_similar(
                 query_text=query.query_text,
                 limit=query.limit,
-                min_similarity=self.min_semantic_similarity
+                min_similarity=self.min_semantic_similarity,
             )
 
             results = []
@@ -251,10 +284,12 @@ class SearchManager(LoggerMixin):
                         document=document,
                         score=similarity,
                         search_type=SearchType.SEMANTIC,
-                        snippet=self._generate_snippet(document.content, query.query_text),
+                        snippet=self._generate_snippet(
+                            document.content, query.query_text
+                        ),
                         highlighted_terms=self._extract_query_terms(query.query_text),
                         relevance_explanation=f"セマンティック類似度: {similarity:.2f}",
-                        rank=i + 1
+                        rank=i + 1,
                     )
                     results.append(search_result)
 
@@ -262,14 +297,20 @@ class SearchManager(LoggerMixin):
 
         except Exception as e:
             self.logger.error(f"セマンティック検索に失敗しました: {e}")
-            raise SearchError(f"セマンティック検索エラー: {e}", query=query.query_text, search_type="semantic") from e
+            raise SearchError(
+                f"セマンティック検索エラー: {e}",
+                query=query.query_text,
+                search_type="semantic",
+            ) from e
 
     def _hybrid_search(self, query: SearchQuery) -> list[SearchResult]:
         """ハイブリッド検索を実行"""
         try:
             weights = SearchWeights(
-                full_text=query.weights.get("full_text", self.default_weights.full_text),
-                semantic=query.weights.get("semantic", self.default_weights.semantic)
+                full_text=query.weights.get(
+                    "full_text", self.default_weights.full_text
+                ),
+                semantic=query.weights.get("semantic", self.default_weights.semantic),
             )
 
             # 全文検索を実行
@@ -279,7 +320,7 @@ class SearchManager(LoggerMixin):
                 limit=query.limit * 2,
                 file_types=query.file_types,
                 date_from=query.date_from,
-                date_to=query.date_to
+                date_to=query.date_to,
             )
             full_text_results = self._full_text_search(full_text_query)
 
@@ -290,30 +331,37 @@ class SearchManager(LoggerMixin):
                 limit=query.limit * 2,
                 file_types=query.file_types,
                 date_from=query.date_from,
-                date_to=query.date_to
+                date_to=query.date_to,
             )
             semantic_results = self._semantic_search(semantic_query)
 
             # 結果をマージ
-            merged_results = self._merge_search_results(full_text_results, semantic_results, weights)
+            merged_results = self._merge_search_results(
+                full_text_results, semantic_results, weights
+            )
 
-            return merged_results[:query.limit]
+            return merged_results[: query.limit]
 
         except Exception as e:
             self.logger.error(f"ハイブリッド検索に失敗しました: {e}")
             raise SearchError(f"ハイブリッド検索エラー: {e}") from e
 
-    def _merge_search_results(self, full_text_results: list[SearchResult],
-                            semantic_results: list[SearchResult],
-                            weights: SearchWeights) -> list[SearchResult]:
+    def _merge_search_results(
+        self,
+        full_text_results: list[SearchResult],
+        semantic_results: list[SearchResult],
+        weights: SearchWeights,
+    ) -> list[SearchResult]:
         """検索結果をマージ"""
-        doc_scores = defaultdict(lambda: {
-            "document": None,
-            "full_text_score": 0.0,
-            "semantic_score": 0.0,
-            "full_text_result": None,
-            "semantic_result": None
-        })
+        doc_scores = defaultdict(
+            lambda: {
+                "document": None,
+                "full_text_score": 0.0,
+                "semantic_score": 0.0,
+                "full_text_result": None,
+                "semantic_result": None,
+            }
+        )
 
         # 全文検索結果を処理
         for result in full_text_results:
@@ -334,18 +382,16 @@ class SearchManager(LoggerMixin):
         merged_results = []
         for doc_id, scores in doc_scores.items():
             combined_score = (
-                scores["full_text_score"] * weights.full_text +
-                scores["semantic_score"] * weights.semantic
+                scores["full_text_score"] * weights.full_text
+                + scores["semantic_score"] * weights.semantic
             )
 
             snippet = self._select_best_snippet(
-                scores["full_text_result"],
-                scores["semantic_result"]
+                scores["full_text_result"], scores["semantic_result"]
             )
 
             highlighted_terms = self._merge_highlighted_terms(
-                scores["full_text_result"],
-                scores["semantic_result"]
+                scores["full_text_result"], scores["semantic_result"]
             )
 
             relevance_explanation = (
@@ -362,7 +408,7 @@ class SearchManager(LoggerMixin):
                 snippet=snippet,
                 highlighted_terms=highlighted_terms,
                 relevance_explanation=relevance_explanation,
-                rank=0
+                rank=0,
             )
             merged_results.append(merged_result)
 
@@ -375,7 +421,9 @@ class SearchManager(LoggerMixin):
 
         return merged_results
 
-    def _enhance_search_result(self, result: SearchResult, query_text: str, rank: int) -> SearchResult:
+    def _enhance_search_result(
+        self, result: SearchResult, query_text: str, rank: int
+    ) -> SearchResult:
         """検索結果を強化"""
         enhanced_snippet = self._generate_snippet(result.document.content, query_text)
         enhanced_terms = self._extract_query_terms(query_text)
@@ -395,10 +443,13 @@ class SearchManager(LoggerMixin):
         if len(content) <= self.snippet_max_length:
             return content
         else:
-            return content[:self.snippet_max_length] + "..."
+            return content[: self.snippet_max_length] + "..."
 
-    def _select_best_snippet(self, full_text_result: SearchResult | None,
-                           semantic_result: SearchResult | None) -> str:
+    def _select_best_snippet(
+        self,
+        full_text_result: SearchResult | None,
+        semantic_result: SearchResult | None,
+    ) -> str:
         """最適なスニペットを選択"""
         if full_text_result and semantic_result:
             if len(full_text_result.snippet) > len(semantic_result.snippet):
@@ -412,8 +463,11 @@ class SearchManager(LoggerMixin):
         else:
             return ""
 
-    def _merge_highlighted_terms(self, full_text_result: SearchResult | None,
-                               semantic_result: SearchResult | None) -> list[str]:
+    def _merge_highlighted_terms(
+        self,
+        full_text_result: SearchResult | None,
+        semantic_result: SearchResult | None,
+    ) -> list[str]:
         """ハイライト用語をマージ"""
         terms = set()
 
@@ -430,6 +484,7 @@ class SearchManager(LoggerMixin):
         try:
             with self.index_manager._index.searcher() as searcher:
                 from whoosh.query import Term
+
                 results = searcher.search(Term("id", doc_id), limit=1)
 
                 if results:
@@ -444,7 +499,7 @@ class SearchManager(LoggerMixin):
                         created_date=hit["created_date"],
                         modified_date=hit["modified_date"],
                         indexed_date=hit["indexed_date"],
-                        content_hash=hit["content_hash"]
+                        content_hash=hit["content_hash"],
                     )
                     return document
 
@@ -458,23 +513,29 @@ class SearchManager(LoggerMixin):
         terms = []
 
         # 英語の単語を抽出
-        english_words = re.findall(r'\b[a-zA-Z]{2,}\b', query_text)
+        english_words = re.findall(r"\b[a-zA-Z]{2,}\b", query_text)
         terms.extend(word.lower() for word in english_words)
 
         # 日本語の単語を抽出（ひらがな、カタカナ、漢字のUnicode範囲）
-        japanese_words = re.findall(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+', query_text)
+        japanese_words = re.findall(
+            r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+", query_text
+        )
         terms.extend(japanese_words)
 
         return list(set(terms))
 
-    def _post_process_results(self, results: list[SearchResult], query: SearchQuery) -> list[SearchResult]:
+    def _post_process_results(
+        self, results: list[SearchResult], query: SearchQuery
+    ) -> list[SearchResult]:
         """検索結果の後処理"""
         # 重複除去
         unique_results = self._remove_duplicate_results(results)
 
         # フォルダパスフィルタリング
         if query.folder_paths:
-            unique_results = self._filter_by_folder_paths(unique_results, query.folder_paths)
+            unique_results = self._filter_by_folder_paths(
+                unique_results, query.folder_paths
+            )
 
         # スコア順でソート
         unique_results.sort(key=lambda x: x.score, reverse=True)
@@ -485,7 +546,9 @@ class SearchManager(LoggerMixin):
 
         return unique_results
 
-    def _remove_duplicate_results(self, results: list[SearchResult]) -> list[SearchResult]:
+    def _remove_duplicate_results(
+        self, results: list[SearchResult]
+    ) -> list[SearchResult]:
         """重複する検索結果を除去"""
         seen_docs = set()
         unique_results = []
@@ -498,8 +561,9 @@ class SearchManager(LoggerMixin):
 
         return unique_results
 
-    def _filter_by_folder_paths(self, results: list[SearchResult],
-                               folder_paths: list[str]) -> list[SearchResult]:
+    def _filter_by_folder_paths(
+        self, results: list[SearchResult], folder_paths: list[str]
+    ) -> list[SearchResult]:
         """フォルダパスで検索結果をフィルタリング"""
         if not folder_paths:
             return results
@@ -559,6 +623,7 @@ class SearchManager(LoggerMixin):
             with self.index_manager._index.searcher() as searcher:
                 # 全ドキュメントを取得
                 from whoosh.query import Every
+
                 results = searcher.search(Every(), limit=None)
 
                 for hit in results:
@@ -568,7 +633,9 @@ class SearchManager(LoggerMixin):
                     terms = self._extract_indexable_terms(title + " " + content)
                     self._indexed_terms.update(terms)
 
-            self.logger.info(f"検索提案インデックス構築完了: {len(self._indexed_terms)}用語")
+            self.logger.info(
+                f"検索提案インデックス構築完了: {len(self._indexed_terms)}用語"
+            )
 
         except Exception as e:
             self.logger.error(f"検索提案インデックスの構築に失敗しました: {e}")
@@ -578,11 +645,13 @@ class SearchManager(LoggerMixin):
         terms = set()
 
         # 英語の単語
-        english_words = re.findall(r'\b[a-zA-Z]{2,}\b', text)
+        english_words = re.findall(r"\b[a-zA-Z]{2,}\b", text)
         terms.update(word.lower() for word in english_words)
 
         # 日本語の単語（ひらがな、カタカナ、漢字のUnicode範囲）
-        japanese_words = re.findall(r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]{2,}', text)
+        japanese_words = re.findall(
+            r"[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]{2,}", text
+        )
         terms.update(japanese_words)
 
         return terms
@@ -595,9 +664,12 @@ class SearchManager(LoggerMixin):
         self._cache_manager.search_cache.invalidate_cache()
         self.logger.info("検索提案キャッシュをクリアしました")
 
-    def search_async(self, query: SearchQuery,
-                    completion_callback: Callable[[list[SearchResult]], None] | None = None,
-                    progress_callback: Callable[[Any], None] | None = None) -> str:
+    def search_async(
+        self,
+        query: SearchQuery,
+        completion_callback: Callable[[list[SearchResult]], None] | None = None,
+        progress_callback: Callable[[Any], None] | None = None,
+    ) -> str:
         """
         非同期検索を実行
 
@@ -609,6 +681,7 @@ class SearchManager(LoggerMixin):
         Returns:
             タスクID
         """
+
         def search_task(progress_tracker=None):
             """検索タスクの実装"""
             if progress_tracker:
@@ -634,7 +707,7 @@ class SearchManager(LoggerMixin):
             func=search_task,
             priority=TaskPriority.HIGH,
             progress_callback=progress_callback,
-            completion_callback=task_completion_callback
+            completion_callback=task_completion_callback,
         )
 
         self.logger.info(f"非同期検索タスクを送信: {task_id}")
@@ -649,16 +722,15 @@ class SearchManager(LoggerMixin):
             "suggestion_cache_size": len(self._suggestion_cache),
             "default_weights": {
                 "full_text": self.default_weights.full_text,
-                "semantic": self.default_weights.semantic
-            }
+                "semantic": self.default_weights.semantic,
+            },
         }
 
     def update_search_settings(self, **kwargs) -> None:
         """検索設定を更新"""
         if "full_text_weight" in kwargs and "semantic_weight" in kwargs:
             self.default_weights = SearchWeights(
-                full_text=kwargs["full_text_weight"],
-                semantic=kwargs["semantic_weight"]
+                full_text=kwargs["full_text_weight"], semantic=kwargs["semantic_weight"]
             )
 
         if "min_semantic_similarity" in kwargs:

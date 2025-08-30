@@ -120,7 +120,7 @@ class SignalManager:
             self.tree_widget.customContextMenuRequested.disconnect()
 
             # 非同期処理のシグナル切断
-            if hasattr(self.tree_widget, 'async_manager'):
+            if hasattr(self.tree_widget, "async_manager"):
                 self.tree_widget.async_manager.folder_loaded.disconnect()
                 self.tree_widget.async_manager.load_error.disconnect()
                 self.tree_widget.async_manager.load_finished.disconnect()

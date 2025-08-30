@@ -44,8 +44,10 @@ class EventUIManager(QObject, LoggerMixin):
         try:
             self.logger.info(f"フォルダが除外されました: {folder_path}")
 
-            if hasattr(self.main_window, 'show_status_message'):
-                self.main_window.show_status_message(f"除外: {os.path.basename(folder_path)}", 3000)
+            if hasattr(self.main_window, "show_status_message"):
+                self.main_window.show_status_message(
+                    f"除外: {os.path.basename(folder_path)}", 3000
+                )
 
             # システム情報を更新
             self._update_folder_system_info()
@@ -60,8 +62,10 @@ class EventUIManager(QObject, LoggerMixin):
         try:
             self.logger.info("フォルダツリーがリフレッシュされました")
 
-            if hasattr(self.main_window, 'show_status_message'):
-                self.main_window.show_status_message("フォルダツリーを更新しました", 2000)
+            if hasattr(self.main_window, "show_status_message"):
+                self.main_window.show_status_message(
+                    "フォルダツリーを更新しました", 2000
+                )
 
             # システム情報を更新
             self._update_folder_system_info()
@@ -75,15 +79,19 @@ class EventUIManager(QObject, LoggerMixin):
             indexed_count = 0
             excluded_count = 0
 
-            if hasattr(self.main_window, 'folder_tree_container'):
-                indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
-                excluded_count = len(self.main_window.folder_tree_container.get_excluded_folders())
+            if hasattr(self.main_window, "folder_tree_container"):
+                indexed_count = len(
+                    self.main_window.folder_tree_container.get_indexed_folders()
+                )
+                excluded_count = len(
+                    self.main_window.folder_tree_container.get_excluded_folders()
+                )
 
             info_text = f"インデックス: {indexed_count}フォルダ"
             if excluded_count > 0:
                 info_text += f", 除外: {excluded_count}フォルダ"
 
-            if hasattr(self.main_window, 'update_system_info'):
+            if hasattr(self.main_window, "update_system_info"):
                 self.main_window.update_system_info(info_text)
 
         except Exception as e:
@@ -100,19 +108,23 @@ class EventUIManager(QObject, LoggerMixin):
             self.logger.info(f"検索結果が選択されました: {result.document.title}")
 
             # シグナルを発信
-            if hasattr(self.main_window, 'document_selected'):
+            if hasattr(self.main_window, "document_selected"):
                 self.main_window.document_selected.emit(result.document.file_path)
 
-            if hasattr(self.main_window, 'show_status_message'):
-                self.main_window.show_status_message(f"選択: {result.document.title}", 3000)
+            if hasattr(self.main_window, "show_status_message"):
+                self.main_window.show_status_message(
+                    f"選択: {result.document.title}", 3000
+                )
 
             # プレビューペインに内容を表示
-            if hasattr(self.main_window, 'preview_widget'):
+            if hasattr(self.main_window, "preview_widget"):
                 self.main_window.preview_widget.display_document(result.document)
 
                 # 検索語をハイライト
-                if hasattr(result, 'highlighted_terms') and result.highlighted_terms:
-                    self.main_window.preview_widget.highlight_search_terms(result.highlighted_terms)
+                if hasattr(result, "highlighted_terms") and result.highlighted_terms:
+                    self.main_window.preview_widget.highlight_search_terms(
+                        result.highlighted_terms
+                    )
 
         except Exception as e:
             self.logger.error(f"検索結果選択処理でエラー: {e}")
@@ -128,19 +140,23 @@ class EventUIManager(QObject, LoggerMixin):
             self.logger.info(f"プレビューが要求されました: {result.document.title}")
 
             # シグナルを発信
-            if hasattr(self.main_window, 'document_selected'):
+            if hasattr(self.main_window, "document_selected"):
                 self.main_window.document_selected.emit(result.document.file_path)
 
-            if hasattr(self.main_window, 'show_status_message'):
-                self.main_window.show_status_message(f"プレビュー: {result.document.title}", 3000)
+            if hasattr(self.main_window, "show_status_message"):
+                self.main_window.show_status_message(
+                    f"プレビュー: {result.document.title}", 3000
+                )
 
             # プレビューペインに内容を表示
-            if hasattr(self.main_window, 'preview_widget'):
+            if hasattr(self.main_window, "preview_widget"):
                 self.main_window.preview_widget.display_document(result.document)
 
                 # 検索語をハイライト
-                if hasattr(result, 'highlighted_terms') and result.highlighted_terms:
-                    self.main_window.preview_widget.highlight_search_terms(result.highlighted_terms)
+                if hasattr(result, "highlighted_terms") and result.highlighted_terms:
+                    self.main_window.preview_widget.highlight_search_terms(
+                        result.highlighted_terms
+                    )
 
         except Exception as e:
             self.logger.error(f"プレビュー要求処理でエラー: {e}")
@@ -155,7 +171,7 @@ class EventUIManager(QObject, LoggerMixin):
         try:
             self.logger.debug(f"検索結果のページが変更されました: {page}")
 
-            if hasattr(self.main_window, 'show_status_message'):
+            if hasattr(self.main_window, "show_status_message"):
                 self.main_window.show_status_message(f"ページ {page} を表示中", 2000)
 
         except Exception as e:
@@ -171,7 +187,7 @@ class EventUIManager(QObject, LoggerMixin):
         try:
             self.logger.debug(f"検索結果のソート順が変更されました: {sort_order}")
 
-            if hasattr(self.main_window, 'show_status_message'):
+            if hasattr(self.main_window, "show_status_message"):
                 self.main_window.show_status_message("検索結果を並び替えました", 2000)
 
         except Exception as e:
@@ -187,8 +203,10 @@ class EventUIManager(QObject, LoggerMixin):
         try:
             self.logger.debug(f"検索結果のフィルターが変更されました: {filters}")
 
-            if hasattr(self.main_window, 'show_status_message'):
-                self.main_window.show_status_message("検索結果をフィルタリングしました", 2000)
+            if hasattr(self.main_window, "show_status_message"):
+                self.main_window.show_status_message(
+                    "検索結果をフィルタリングしました", 2000
+                )
 
         except Exception as e:
             self.logger.error(f"フィルター変更処理でエラー: {e}")
@@ -201,9 +219,11 @@ class EventUIManager(QObject, LoggerMixin):
             zoom_level: 新しいズームレベル
         """
         try:
-            self.logger.debug(f"プレビューのズームレベルが変更されました: {zoom_level}%")
+            self.logger.debug(
+                f"プレビューのズームレベルが変更されました: {zoom_level}%"
+            )
 
-            if hasattr(self.main_window, 'show_status_message'):
+            if hasattr(self.main_window, "show_status_message"):
                 self.main_window.show_status_message(f"ズーム: {zoom_level}%", 2000)
 
         except Exception as e:
@@ -217,9 +237,11 @@ class EventUIManager(QObject, LoggerMixin):
             format_name: 新しい表示フォーマット名
         """
         try:
-            self.logger.debug(f"プレビューの表示フォーマットが変更されました: {format_name}")
+            self.logger.debug(
+                f"プレビューの表示フォーマットが変更されました: {format_name}"
+            )
 
-            if hasattr(self.main_window, 'show_status_message'):
+            if hasattr(self.main_window, "show_status_message"):
                 self.main_window.show_status_message(f"表示形式: {format_name}", 2000)
 
         except Exception as e:
@@ -236,7 +258,7 @@ class EventUIManager(QObject, LoggerMixin):
             self.logger.info(f"ドキュメントが開かれました: {file_path}")
 
             file_name = os.path.basename(file_path)
-            if hasattr(self.main_window, 'show_status_message'):
+            if hasattr(self.main_window, "show_status_message"):
                 self.main_window.show_status_message(f"開く: {file_name}", 3000)
 
         except Exception as e:
@@ -251,10 +273,14 @@ class EventUIManager(QObject, LoggerMixin):
             file_path: エクスポート先ファイルパス
         """
         try:
-            self.logger.info(f"エクスポートが要求されました: {export_format} -> {file_path}")
+            self.logger.info(
+                f"エクスポートが要求されました: {export_format} -> {file_path}"
+            )
 
-            if hasattr(self.main_window, 'show_status_message'):
-                self.main_window.show_status_message(f"エクスポート中: {export_format}", 3000)
+            if hasattr(self.main_window, "show_status_message"):
+                self.main_window.show_status_message(
+                    f"エクスポート中: {export_format}", 3000
+                )
 
         except Exception as e:
             self.logger.error(f"エクスポート処理でエラー: {e}")
@@ -269,13 +295,15 @@ class EventUIManager(QObject, LoggerMixin):
         try:
             self.logger.info(f"印刷が要求されました: {document_title}")
 
-            if hasattr(self.main_window, 'show_status_message'):
+            if hasattr(self.main_window, "show_status_message"):
                 self.main_window.show_status_message(f"印刷中: {document_title}", 3000)
 
         except Exception as e:
             self.logger.error(f"印刷処理でエラー: {e}")
 
-    def handle_bookmark_added(self, document_path: str, page_number: int | None = None) -> None:
+    def handle_bookmark_added(
+        self, document_path: str, page_number: int | None = None
+    ) -> None:
         """
         ブックマークが追加された時の処理
 
@@ -286,13 +314,15 @@ class EventUIManager(QObject, LoggerMixin):
         try:
             document_name = os.path.basename(document_path)
             if page_number:
-                self.logger.info(f"ブックマークが追加されました: {document_name} (ページ {page_number})")
+                self.logger.info(
+                    f"ブックマークが追加されました: {document_name} (ページ {page_number})"
+                )
                 status_message = f"ブックマーク追加: {document_name} (p.{page_number})"
             else:
                 self.logger.info(f"ブックマークが追加されました: {document_name}")
                 status_message = f"ブックマーク追加: {document_name}"
 
-            if hasattr(self.main_window, 'show_status_message'):
+            if hasattr(self.main_window, "show_status_message"):
                 self.main_window.show_status_message(status_message, 3000)
 
         except Exception as e:
@@ -308,9 +338,11 @@ class EventUIManager(QObject, LoggerMixin):
         """
         try:
             document_name = os.path.basename(document_path)
-            self.logger.info(f"注釈が追加されました: {document_name} - {annotation_text[:50]}...")
+            self.logger.info(
+                f"注釈が追加されました: {document_name} - {annotation_text[:50]}..."
+            )
 
-            if hasattr(self.main_window, 'show_status_message'):
+            if hasattr(self.main_window, "show_status_message"):
                 self.main_window.show_status_message(f"注釈追加: {document_name}", 3000)
 
         except Exception as e:

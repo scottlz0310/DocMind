@@ -60,7 +60,9 @@ class DocumentProcessor:
             missing_deps.append("openpyxl (Excel処理用)")
 
         if missing_deps:
-            self.logger.warning(f"以下の依存関係が不足しています: {', '.join(missing_deps)}")
+            self.logger.warning(
+                f"以下の依存関係が不足しています: {', '.join(missing_deps)}"
+            )
 
     def process_file(self, file_path: str) -> Document:
         """ファイルを処理してDocumentオブジェクトを作成
@@ -76,14 +78,15 @@ class DocumentProcessor:
         """
         if not os.path.exists(file_path):
             raise DocumentProcessingError(
-                f"ファイルが存在しません: {file_path}",
-                file_path=file_path
+                f"ファイルが存在しません: {file_path}", file_path=file_path
             )
 
         try:
             # ファイルタイプを判定
             file_type = FileType.from_extension(file_path)
-            self.logger.info(f"ファイル処理開始: {file_path} (タイプ: {file_type.value})")
+            self.logger.info(
+                f"ファイル処理開始: {file_path} (タイプ: {file_type.value})"
+            )
 
             # ファイルタイプに応じてテキストを抽出
             content = self._extract_text_by_type(file_path, file_type)
@@ -91,7 +94,9 @@ class DocumentProcessor:
             # Documentオブジェクトを作成
             document = Document.create_from_file(file_path, content)
 
-            self.logger.info(f"ファイル処理完了: {file_path} (コンテンツ長: {len(content)}文字)")
+            self.logger.info(
+                f"ファイル処理完了: {file_path} (コンテンツ長: {len(content)}文字)"
+            )
             return document
 
         except Exception as e:
@@ -100,8 +105,8 @@ class DocumentProcessor:
             raise DocumentProcessingError(
                 error_msg,
                 file_path=file_path,
-                file_type=file_type.value if 'file_type' in locals() else "unknown",
-                details=str(e)
+                file_type=file_type.value if "file_type" in locals() else "unknown",
+                details=str(e),
             )
 
     def _extract_text_by_type(self, file_path: str, file_type: FileType) -> str:
@@ -126,7 +131,9 @@ class DocumentProcessor:
             return self.extract_text_file(file_path)
         else:
             # 未知のファイルタイプの場合、テキストファイルとして処理を試行
-            self.logger.warning(f"未知のファイルタイプ: {file_type.value}, テキストファイルとして処理します")
+            self.logger.warning(
+                f"未知のファイルタイプ: {file_type.value}, テキストファイルとして処理します"
+            )
             return self.extract_text_file(file_path)
 
     def extract_pdf_text(self, file_path: str) -> str:
@@ -147,7 +154,7 @@ class DocumentProcessor:
             raise DocumentProcessingError(
                 "PyMuPDFがインストールされていません。PDF処理には PyMuPDF が必要です。",
                 file_path=file_path,
-                file_type="pdf"
+                file_type="pdf",
             )
 
         try:
@@ -155,7 +162,9 @@ class DocumentProcessor:
 
             # PDFドキュメントを開く
             with fitz.open(file_path) as pdf_doc:
-                self.logger.debug(f"PDF処理開始: {file_path} (ページ数: {len(pdf_doc)})")
+                self.logger.debug(
+                    f"PDF処理開始: {file_path} (ページ数: {len(pdf_doc)})"
+                )
 
                 # 各ページからテキストを抽出
                 for page_num in range(len(pdf_doc)):
@@ -165,19 +174,27 @@ class DocumentProcessor:
 
                         if page_text.strip():
                             text_content.append(page_text)
-                            self.logger.debug(f"ページ {page_num + 1}: {len(page_text)}文字抽出")
+                            self.logger.debug(
+                                f"ページ {page_num + 1}: {len(page_text)}文字抽出"
+                            )
 
                     except Exception as e:
-                        self.logger.warning(f"ページ {page_num + 1} の処理中にエラー: {str(e)}")
+                        self.logger.warning(
+                            f"ページ {page_num + 1} の処理中にエラー: {str(e)}"
+                        )
                         continue
 
             extracted_text = "\n\n".join(text_content)
 
             if not extracted_text.strip():
-                self.logger.warning(f"PDFからテキストが抽出されませんでした: {file_path}")
+                self.logger.warning(
+                    f"PDFからテキストが抽出されませんでした: {file_path}"
+                )
                 return ""
 
-            self.logger.debug(f"PDF処理完了: {file_path} (総文字数: {len(extracted_text)})")
+            self.logger.debug(
+                f"PDF処理完了: {file_path} (総文字数: {len(extracted_text)})"
+            )
             return extracted_text
 
         except Exception as e:
@@ -185,7 +202,7 @@ class DocumentProcessor:
                 f"PDF処理中にエラーが発生しました: {str(e)}",
                 file_path=file_path,
                 file_type="pdf",
-                details=str(e)
+                details=str(e),
             )
 
     def extract_word_text(self, file_path: str) -> str:
@@ -206,7 +223,7 @@ class DocumentProcessor:
             raise DocumentProcessingError(
                 "python-docxがインストールされていません。Word文書処理には python-docx が必要です。",
                 file_path=file_path,
-                file_type="word"
+                file_type="word",
             )
 
         try:
@@ -234,10 +251,14 @@ class DocumentProcessor:
             extracted_text = "\n".join(text_content)
 
             if not extracted_text.strip():
-                self.logger.warning(f"Word文書からテキストが抽出されませんでした: {file_path}")
+                self.logger.warning(
+                    f"Word文書からテキストが抽出されませんでした: {file_path}"
+                )
                 return ""
 
-            self.logger.debug(f"Word文書処理完了: {file_path} (総文字数: {len(extracted_text)})")
+            self.logger.debug(
+                f"Word文書処理完了: {file_path} (総文字数: {len(extracted_text)})"
+            )
             return extracted_text
 
         except Exception as e:
@@ -245,7 +266,7 @@ class DocumentProcessor:
                 f"Word文書処理中にエラーが発生しました: {str(e)}",
                 file_path=file_path,
                 file_type="word",
-                details=str(e)
+                details=str(e),
             )
 
     def extract_excel_text(self, file_path: str) -> str:
@@ -266,7 +287,7 @@ class DocumentProcessor:
             raise DocumentProcessingError(
                 "openpyxlがインストールされていません。Excel処理には openpyxl が必要です。",
                 file_path=file_path,
-                file_type="excel"
+                file_type="excel",
             )
 
         try:
@@ -302,10 +323,14 @@ class DocumentProcessor:
 
                     if len(sheet_content) > 1:  # シート名以外にコンテンツがある場合
                         text_content.extend(sheet_content)
-                        self.logger.debug(f"シート {sheet_name}: {len(sheet_content) - 1}行処理")
+                        self.logger.debug(
+                            f"シート {sheet_name}: {len(sheet_content) - 1}行処理"
+                        )
 
                 except Exception as e:
-                    self.logger.warning(f"シート {sheet_name} の処理中にエラー: {str(e)}")
+                    self.logger.warning(
+                        f"シート {sheet_name} の処理中にエラー: {str(e)}"
+                    )
                     continue
 
             workbook.close()
@@ -313,10 +338,14 @@ class DocumentProcessor:
             extracted_text = "\n".join(text_content)
 
             if not extracted_text.strip():
-                self.logger.warning(f"Excelファイルからテキストが抽出されませんでした: {file_path}")
+                self.logger.warning(
+                    f"Excelファイルからテキストが抽出されませんでした: {file_path}"
+                )
                 return ""
 
-            self.logger.debug(f"Excel処理完了: {file_path} (総文字数: {len(extracted_text)})")
+            self.logger.debug(
+                f"Excel処理完了: {file_path} (総文字数: {len(extracted_text)})"
+            )
             return extracted_text
 
         except Exception as e:
@@ -324,7 +353,7 @@ class DocumentProcessor:
                 f"Excel処理中にエラーが発生しました: {str(e)}",
                 file_path=file_path,
                 file_type="excel",
-                details=str(e)
+                details=str(e),
             )
 
     def extract_markdown_text(self, file_path: str) -> str:
@@ -357,7 +386,9 @@ class DocumentProcessor:
             # 基本的なMarkdown記法を処理（見出し、リスト、コードブロックなど）
             processed_content = self._process_markdown_content(content)
 
-            self.logger.debug(f"Markdown処理完了: {file_path} (総文字数: {len(processed_content)})")
+            self.logger.debug(
+                f"Markdown処理完了: {file_path} (総文字数: {len(processed_content)})"
+            )
             return processed_content
 
         except Exception as e:
@@ -365,7 +396,7 @@ class DocumentProcessor:
                 f"Markdown処理中にエラーが発生しました: {str(e)}",
                 file_path=file_path,
                 file_type="markdown",
-                details=str(e)
+                details=str(e),
             )
 
     def extract_text_file(self, file_path: str) -> str:
@@ -395,7 +426,9 @@ class DocumentProcessor:
                 self.logger.warning(f"テキストファイルが空です: {file_path}")
                 return ""
 
-            self.logger.debug(f"テキストファイル処理完了: {file_path} (総文字数: {len(content)})")
+            self.logger.debug(
+                f"テキストファイル処理完了: {file_path} (総文字数: {len(content)})"
+            )
             return content
 
         except Exception as e:
@@ -403,7 +436,7 @@ class DocumentProcessor:
                 f"テキストファイル処理中にエラーが発生しました: {str(e)}",
                 file_path=file_path,
                 file_type="text",
-                details=str(e)
+                details=str(e),
             )
 
     def _detect_encoding(self, file_path: str) -> str:
@@ -417,28 +450,32 @@ class DocumentProcessor:
         """
         try:
             # ファイルの一部を読み込んでエンコーディングを検出
-            with open(file_path, 'rb') as file:
+            with open(file_path, "rb") as file:
                 raw_data = file.read(10000)  # 最初の10KBを読み込み
 
             if raw_data:
                 detected = chardet.detect(raw_data)
-                encoding = detected.get('encoding', 'utf-8')
-                confidence = detected.get('confidence', 0)
+                encoding = detected.get("encoding", "utf-8")
+                confidence = detected.get("confidence", 0)
 
-                self.logger.debug(f"エンコーディング検出: {encoding} (信頼度: {confidence:.2f})")
+                self.logger.debug(
+                    f"エンコーディング検出: {encoding} (信頼度: {confidence:.2f})"
+                )
 
                 # 信頼度が低い場合はUTF-8を使用
                 if confidence < 0.7:
                     self.logger.debug("信頼度が低いため UTF-8 を使用します")
-                    encoding = 'utf-8'
+                    encoding = "utf-8"
 
                 return encoding
             else:
-                return 'utf-8'
+                return "utf-8"
 
         except Exception as e:
-            self.logger.warning(f"エンコーディング検出に失敗: {str(e)}, UTF-8を使用します")
-            return 'utf-8'
+            self.logger.warning(
+                f"エンコーディング検出に失敗: {str(e)}, UTF-8を使用します"
+            )
+            return "utf-8"
 
     def _process_markdown_content(self, content: str) -> str:
         """Markdownコンテンツを処理
@@ -451,7 +488,7 @@ class DocumentProcessor:
         Returns:
             str: 処理されたコンテンツ
         """
-        lines = content.split('\n')
+        lines = content.split("\n")
         processed_lines = []
 
         for line in lines:
@@ -461,28 +498,30 @@ class DocumentProcessor:
                 continue
 
             # 見出し記法を処理
-            if line.startswith('#'):
+            if line.startswith("#"):
                 # # を削除して見出しテキストを抽出
-                heading_text = line.lstrip('#').strip()
+                heading_text = line.lstrip("#").strip()
                 if heading_text:
                     processed_lines.append(f"見出し: {heading_text}")
 
             # リスト記法を処理
-            elif line.startswith(('- ', '* ', '+ ')) or line.lstrip().startswith(('- ', '* ', '+ ')):
-                list_text = line.lstrip('- *+').strip()
+            elif line.startswith(("- ", "* ", "+ ")) or line.lstrip().startswith(
+                ("- ", "* ", "+ ")
+            ):
+                list_text = line.lstrip("- *+").strip()
                 if list_text:
                     processed_lines.append(f"リスト項目: {list_text}")
 
             # 番号付きリストを処理
-            elif line.lstrip() and line.lstrip()[0].isdigit() and '. ' in line:
-                parts = line.split('. ', 1)
+            elif line.lstrip() and line.lstrip()[0].isdigit() and ". " in line:
+                parts = line.split(". ", 1)
                 if len(parts) > 1:
                     list_text = parts[1].strip()
                     if list_text:
                         processed_lines.append(f"番号付きリスト: {list_text}")
 
             # コードブロックは除外（```で囲まれた部分）
-            elif line.startswith('```'):
+            elif line.startswith("```"):
                 continue
 
             # インラインコードやリンクなどの記法を除去
@@ -492,21 +531,22 @@ class DocumentProcessor:
 
                 # **太字** を除去
                 import re
-                cleaned_line = re.sub(r'\*\*(.*?)\*\*', r'\1', cleaned_line)
+
+                cleaned_line = re.sub(r"\*\*(.*?)\*\*", r"\1", cleaned_line)
 
                 # *斜体* を除去
-                cleaned_line = re.sub(r'\*(.*?)\*', r'\1', cleaned_line)
+                cleaned_line = re.sub(r"\*(.*?)\*", r"\1", cleaned_line)
 
                 # `インラインコード` を除去
-                cleaned_line = re.sub(r'`(.*?)`', r'\1', cleaned_line)
+                cleaned_line = re.sub(r"`(.*?)`", r"\1", cleaned_line)
 
                 # [リンクテキスト](URL) からリンクテキストのみ抽出
-                cleaned_line = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', cleaned_line)
+                cleaned_line = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", cleaned_line)
 
                 if cleaned_line.strip():
                     processed_lines.append(cleaned_line.strip())
 
-        return '\n'.join(processed_lines)
+        return "\n".join(processed_lines)
 
     def get_supported_extensions(self) -> dict[str, FileType]:
         """サポートされているファイル拡張子とFileTypeのマッピングを取得
@@ -515,15 +555,15 @@ class DocumentProcessor:
             Dict[str, FileType]: 拡張子とFileTypeのマッピング
         """
         return {
-            '.pdf': FileType.PDF,
-            '.doc': FileType.WORD,
-            '.docx': FileType.WORD,
-            '.xls': FileType.EXCEL,
-            '.xlsx': FileType.EXCEL,
-            '.md': FileType.MARKDOWN,
-            '.markdown': FileType.MARKDOWN,
-            '.txt': FileType.TEXT,
-            '.text': FileType.TEXT
+            ".pdf": FileType.PDF,
+            ".doc": FileType.WORD,
+            ".docx": FileType.WORD,
+            ".xls": FileType.EXCEL,
+            ".xlsx": FileType.EXCEL,
+            ".md": FileType.MARKDOWN,
+            ".markdown": FileType.MARKDOWN,
+            ".txt": FileType.TEXT,
+            ".text": FileType.TEXT,
         }
 
     def is_supported_file(self, file_path: str) -> bool:
@@ -555,14 +595,14 @@ class DocumentProcessor:
             path_obj = Path(file_path)
 
             return {
-                'name': path_obj.name,
-                'stem': path_obj.stem,
-                'suffix': path_obj.suffix,
-                'size': file_stat.st_size,
-                'created': file_stat.st_ctime,
-                'modified': file_stat.st_mtime,
-                'file_type': FileType.from_extension(file_path),
-                'is_supported': self.is_supported_file(file_path)
+                "name": path_obj.name,
+                "stem": path_obj.stem,
+                "suffix": path_obj.suffix,
+                "size": file_stat.st_size,
+                "created": file_stat.st_ctime,
+                "modified": file_stat.st_mtime,
+                "file_type": FileType.from_extension(file_path),
+                "is_supported": self.is_supported_file(file_path),
             }
         except Exception as e:
             self.logger.error(f"ファイル情報取得エラー: {file_path} - {str(e)}")

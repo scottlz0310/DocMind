@@ -64,12 +64,14 @@ class WindowStateManager(QObject, LoggerMixin):
         """キーボードショートカットを設定"""
         try:
             # Escキーでプレビューペインをクリア
-            self.shortcuts['clear_preview'] = QShortcut(QKeySequence("Escape"), self.main_window)
-            self.shortcuts['clear_preview'].activated.connect(self._clear_preview)
+            self.shortcuts["clear_preview"] = QShortcut(
+                QKeySequence("Escape"), self.main_window
+            )
+            self.shortcuts["clear_preview"].activated.connect(self._clear_preview)
 
             # F5キーでリフレッシュ
-            self.shortcuts['refresh'] = QShortcut(QKeySequence("F5"), self.main_window)
-            self.shortcuts['refresh'].activated.connect(self._refresh_view)
+            self.shortcuts["refresh"] = QShortcut(QKeySequence("F5"), self.main_window)
+            self.shortcuts["refresh"].activated.connect(self._refresh_view)
 
             self.logger.info("キーボードショートカットの設定が完了しました")
 
@@ -82,25 +84,50 @@ class WindowStateManager(QObject, LoggerMixin):
         try:
             # ウィンドウのアクセシブル名と説明を設定
             self.main_window.setAccessibleName("DocMind メインウィンドウ")
-            self.main_window.setAccessibleDescription("ローカルドキュメント検索アプリケーションのメインウィンドウ")
+            self.main_window.setAccessibleDescription(
+                "ローカルドキュメント検索アプリケーションのメインウィンドウ"
+            )
 
             # 各ペインにアクセシブル名を設定
-            if hasattr(self.main_window, 'folder_tree_container'):
-                self.main_window.folder_tree_container.setAccessibleName("フォルダツリーペイン")
-                self.main_window.folder_tree_container.setAccessibleDescription("検索対象フォルダの階層構造を表示します")
+            if hasattr(self.main_window, "folder_tree_container"):
+                self.main_window.folder_tree_container.setAccessibleName(
+                    "フォルダツリーペイン"
+                )
+                self.main_window.folder_tree_container.setAccessibleDescription(
+                    "検索対象フォルダの階層構造を表示します"
+                )
 
-            if hasattr(self.main_window, 'search_results_widget'):
-                self.main_window.search_results_widget.setAccessibleName("検索結果ペイン")
-                self.main_window.search_results_widget.setAccessibleDescription("検索結果の一覧を表示します")
+            if hasattr(self.main_window, "search_results_widget"):
+                self.main_window.search_results_widget.setAccessibleName(
+                    "検索結果ペイン"
+                )
+                self.main_window.search_results_widget.setAccessibleDescription(
+                    "検索結果の一覧を表示します"
+                )
 
-            if hasattr(self.main_window, 'preview_widget'):
+            if hasattr(self.main_window, "preview_widget"):
                 self.main_window.preview_widget.setAccessibleName("プレビューペイン")
-                self.main_window.preview_widget.setAccessibleDescription("選択されたドキュメントの内容をプレビュー表示します")
+                self.main_window.preview_widget.setAccessibleDescription(
+                    "選択されたドキュメントの内容をプレビュー表示します"
+                )
 
             # タブオーダーの設定（キーボードナビゲーション用）
-            if all(hasattr(self.main_window, attr) for attr in ['folder_tree_container', 'search_results_widget', 'preview_widget']):
-                self.main_window.setTabOrder(self.main_window.folder_tree_container, self.main_window.search_results_widget)
-                self.main_window.setTabOrder(self.main_window.search_results_widget, self.main_window.preview_widget)
+            if all(
+                hasattr(self.main_window, attr)
+                for attr in [
+                    "folder_tree_container",
+                    "search_results_widget",
+                    "preview_widget",
+                ]
+            ):
+                self.main_window.setTabOrder(
+                    self.main_window.folder_tree_container,
+                    self.main_window.search_results_widget,
+                )
+                self.main_window.setTabOrder(
+                    self.main_window.search_results_widget,
+                    self.main_window.preview_widget,
+                )
 
             self.logger.info("アクセシビリティ機能の設定が完了しました")
 
@@ -193,7 +220,9 @@ class WindowStateManager(QObject, LoggerMixin):
                 self.settings.setValue("font_family", font_family)
                 self.settings.setValue("font_size", font_size)
 
-                self.logger.info(f"フォント設定を適用しました: {font_family}, {font_size}pt")
+                self.logger.info(
+                    f"フォント設定を適用しました: {font_family}, {font_size}pt"
+                )
 
         except Exception as e:
             self.logger.error(f"フォント設定適用中にエラーが発生: {e}")
@@ -216,7 +245,7 @@ class WindowStateManager(QObject, LoggerMixin):
 
     def _clear_preview(self) -> None:
         """プレビューペインをクリア"""
-        if hasattr(self.main_window, 'preview_widget'):
+        if hasattr(self.main_window, "preview_widget"):
             self.main_window.preview_widget.clear_preview()
             self.main_window.show_status_message("プレビューをクリアしました", 2000)
 
@@ -233,11 +262,11 @@ class WindowStateManager(QObject, LoggerMixin):
             dict: ウィンドウ設定の辞書
         """
         return {
-            'size': self.main_window.size(),
-            'position': self.main_window.pos(),
-            'theme': self.settings.value("theme", "system"),
-            'font_family': self.settings.value("font_family", "システムデフォルト"),
-            'font_size': self.settings.value("font_size", 10)
+            "size": self.main_window.size(),
+            "position": self.main_window.pos(),
+            "theme": self.settings.value("theme", "system"),
+            "font_family": self.settings.value("font_family", "システムデフォルト"),
+            "font_size": self.settings.value("font_size", 10),
         }
 
     def cleanup(self) -> None:
@@ -252,4 +281,6 @@ class WindowStateManager(QObject, LoggerMixin):
             self.logger.debug("ウィンドウ状態管理マネージャーをクリーンアップしました")
 
         except Exception as e:
-            self.logger.error(f"ウィンドウ状態管理マネージャーのクリーンアップ中にエラー: {e}")
+            self.logger.error(
+                f"ウィンドウ状態管理マネージャーのクリーンアップ中にエラー: {e}"
+            )

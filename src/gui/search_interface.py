@@ -34,7 +34,7 @@ class SearchInterface(QWidget):
 
     # シグナル定義
     search_requested = Signal(SearchQuery)  # 検索が要求された時
-    search_cancelled = Signal()             # 検索がキャンセルされた時
+    search_cancelled = Signal()  # 検索がキャンセルされた時
 
     def __init__(self, parent: QWidget | None = None):
         """
@@ -47,15 +47,15 @@ class SearchInterface(QWidget):
         self.logger = logging.getLogger(__name__)
 
         # 各種マネージャーを初期化（責務分離のため）
-        self.search_controller = SearchController(self)      # 検索ロジック制御
-        self.ui_manager = SearchUIManager(self)              # UI状態管理
-        self.event_manager = SearchEventManager(self)        # イベント処理
-        self.style_manager = SearchStyleManager(self)        # スタイル管理
-        self.shortcut_manager = ShortcutManager(self)        # ショートカット管理
-        self.options_manager = SearchOptionsManager(self)    # オプション管理
-        self.layout_manager = SearchLayoutManager(self)      # レイアウト管理
+        self.search_controller = SearchController(self)  # 検索ロジック制御
+        self.ui_manager = SearchUIManager(self)  # UI状態管理
+        self.event_manager = SearchEventManager(self)  # イベント処理
+        self.style_manager = SearchStyleManager(self)  # スタイル管理
+        self.shortcut_manager = ShortcutManager(self)  # ショートカット管理
+        self.options_manager = SearchOptionsManager(self)  # オプション管理
+        self.layout_manager = SearchLayoutManager(self)  # レイアウト管理
         self.connection_manager = SearchConnectionManager(self)  # シグナル接続管理
-        self.api_manager = SearchAPIManager(self)            # 外部API管理
+        self.api_manager = SearchAPIManager(self)  # 外部API管理
 
         self._setup_ui()
         self._setup_connections()
@@ -68,15 +68,20 @@ class SearchInterface(QWidget):
         main_search_frame = self.layout_manager.create_search_frame()
 
         # 検索入力エリアを設定
-        self.search_input, self.search_button, self.clear_button = \
+        self.search_input, self.search_button, self.clear_button = (
             self.layout_manager.setup_search_input_layout(main_search_frame)
+        )
 
         # ボタンスタイルを適用
         self.style_manager.apply_button_styles(self.search_button, self.clear_button)
 
         # 検索コンポーネントを作成
-        self.search_type_selector, self.progress_widget, self.advanced_options, self.history_widget = \
-            self.layout_manager.create_search_components(layout, main_search_frame)
+        (
+            self.search_type_selector,
+            self.progress_widget,
+            self.advanced_options,
+            self.history_widget,
+        ) = self.layout_manager.create_search_components(layout, main_search_frame)
 
         # 全体のスタイルを適用
         self.style_manager.apply_interface_style(self)
@@ -85,22 +90,33 @@ class SearchInterface(QWidget):
         """シグナル接続の設定"""
         # 基本的なボタン接続
         self.connection_manager.setup_basic_connections(
-            self.search_input, self.search_button, self.clear_button,
-            self._execute_search, self._clear_all
+            self.search_input,
+            self.search_button,
+            self.clear_button,
+            self._execute_search,
+            self._clear_all,
         )
 
         # ウィジェット間の接続
         self.connection_manager.setup_widget_connections(
-            self.search_input, self.search_type_selector, self.advanced_options,
-            self.progress_widget, self.history_widget, self.event_manager,
-            self.ui_manager, self._execute_search, self._cancel_search,
-            self._apply_search_options
+            self.search_input,
+            self.search_type_selector,
+            self.advanced_options,
+            self.progress_widget,
+            self.history_widget,
+            self.event_manager,
+            self.ui_manager,
+            self._execute_search,
+            self._cancel_search,
+            self._apply_search_options,
         )
 
         # コントローラーとの接続
         self.connection_manager.setup_controller_connections(
-            self.search_controller, self.search_requested, self.search_cancelled,
-            self._on_search_state_changed
+            self.search_controller,
+            self.search_requested,
+            self.search_cancelled,
+            self._on_search_state_changed,
         )
 
     def _setup_shortcuts(self) -> None:
@@ -172,9 +188,12 @@ class SearchInterface(QWidget):
             suggestions, self.search_input, self.ui_manager
         )
 
-    def update_search_history(self, recent_searches: list[dict[str, Any]],
-                            popular_searches: list[dict[str, Any]],
-                            saved_searches: list[dict[str, Any]] = None) -> None:
+    def update_search_history(
+        self,
+        recent_searches: list[dict[str, Any]],
+        popular_searches: list[dict[str, Any]],
+        saved_searches: list[dict[str, Any]] = None,
+    ) -> None:
         """
         検索履歴を更新
 
@@ -184,8 +203,11 @@ class SearchInterface(QWidget):
             saved_searches: 保存された検索リスト
         """
         self.api_manager.update_search_history(
-            recent_searches, popular_searches, saved_searches,
-            self.history_widget, self.ui_manager
+            recent_searches,
+            popular_searches,
+            saved_searches,
+            self.history_widget,
+            self.ui_manager,
         )
 
     def set_search_text(self, text: str) -> None:
@@ -208,7 +230,11 @@ class SearchInterface(QWidget):
     def set_enabled(self, enabled: bool) -> None:
         """インターフェースの有効/無効を設定"""
         self.api_manager.set_interface_enabled(
-            enabled, self.search_input, self.search_button, self.search_type_selector,
-            self.advanced_options, self.search_controller, self.ui_manager
+            enabled,
+            self.search_input,
+            self.search_button,
+            self.search_type_selector,
+            self.advanced_options,
+            self.search_controller,
+            self.ui_manager,
         )
-

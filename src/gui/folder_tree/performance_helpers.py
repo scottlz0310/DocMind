@@ -33,6 +33,7 @@ class PathOptimizer:
         self._path_cache.clear()
         self._basename_cache.clear()
 
+
 class SetManager:
     """セット操作の最適化クラス"""
 
@@ -66,6 +67,7 @@ class SetManager:
     def cleanup(self):
         """全セットをクリア"""
         self._sets.clear()
+
 
 class BatchProcessor:
     """バッチ処理最適化クラス"""

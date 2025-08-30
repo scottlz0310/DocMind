@@ -22,7 +22,7 @@ from typing import Any
 import psutil
 
 # DocMindコンポーネントのインポート
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
     from .base_validator import BaseValidator, ValidationConfig, ValidationResult
@@ -45,16 +45,18 @@ from src.utils.config import Config
 @dataclass
 class SecurityThresholds:
     """セキュリティ閾値設定"""
-    max_external_connections: int = 0           # 許可される外部接続数
-    max_temp_file_lifetime_seconds: int = 300   # 一時ファイルの最大生存時間（秒）
-    min_file_permission_security: int = 0o600   # 最小ファイル権限（所有者のみ読み書き）
+
+    max_external_connections: int = 0  # 許可される外部接続数
+    max_temp_file_lifetime_seconds: int = 300  # 一時ファイルの最大生存時間（秒）
+    min_file_permission_security: int = 0o600  # 最小ファイル権限（所有者のみ読み書き）
     max_memory_scan_duration_seconds: int = 30  # メモリスキャンの最大時間
-    encryption_key_min_length: int = 32         # 暗号化キーの最小長
+    encryption_key_min_length: int = 32  # 暗号化キーの最小長
 
 
 @dataclass
 class SecurityMetrics:
     """セキュリティ測定結果"""
+
     test_name: str
     security_level: str  # "SECURE", "WARNING", "CRITICAL"
     external_connections: list[str] = field(default_factory=list)
@@ -97,15 +99,19 @@ class NetworkMonitor:
             try:
                 # 現在のプロセスの接続を取得
                 process = psutil.Process(self.process_pid)
-                connections = process.connections(kind='inet')
+                connections = process.connections(kind="inet")
 
                 for conn in connections:
                     if conn.status == psutil.CONN_ESTABLISHED:
                         connection_info = {
-                            'local_address': f"{conn.laddr.ip}:{conn.laddr.port}",
-                            'remote_address': f"{conn.raddr.ip}:{conn.raddr.port}" if conn.raddr else "N/A",
-                            'status': conn.status,
-                            'timestamp': datetime.now().isoformat()
+                            "local_address": f"{conn.laddr.ip}:{conn.laddr.port}",
+                            "remote_address": (
+                                f"{conn.raddr.ip}:{conn.raddr.port}"
+                                if conn.raddr
+                                else "N/A"
+                            ),
+                            "status": conn.status,
+                            "timestamp": datetime.now().isoformat(),
                         }
 
                         # 外部接続かどうかを判定
@@ -122,8 +128,13 @@ class NetworkMonitor:
 
     def _is_local_address(self, ip: str) -> bool:
         """ローカルアドレスかどうかを判定"""
-        local_addresses = ['127.0.0.1', '::1', 'localhost']
-        return ip in local_addresses or ip.startswith('192.168.') or ip.startswith('10.') or ip.startswith('172.')
+        local_addresses = ["127.0.0.1", "::1", "localhost"]
+        return (
+            ip in local_addresses
+            or ip.startswith("192.168.")
+            or ip.startswith("10.")
+            or ip.startswith("172.")
+        )
 
     def get_external_connections(self) -> list[dict[str, Any]]:
         """外部接続のリストを取得"""
@@ -147,17 +158,17 @@ class FilePermissionChecker:
             security_level = self._assess_security_level(stat_info.st_mode)
 
             permission_info = {
-                'file_path': file_path,
-                'permissions': permissions,
-                'octal_permissions': octal_permissions,
-                'security_level': security_level,
-                'owner_readable': bool(stat_info.st_mode & stat.S_IRUSR),
-                'owner_writable': bool(stat_info.st_mode & stat.S_IWUSR),
-                'group_readable': bool(stat_info.st_mode & stat.S_IRGRP),
-                'group_writable': bool(stat_info.st_mode & stat.S_IWGRP),
-                'other_readable': bool(stat_info.st_mode & stat.S_IROTH),
-                'other_writable': bool(stat_info.st_mode & stat.S_IWOTH),
-                'is_secure': security_level in ['SECURE', 'WARNING']
+                "file_path": file_path,
+                "permissions": permissions,
+                "octal_permissions": octal_permissions,
+                "security_level": security_level,
+                "owner_readable": bool(stat_info.st_mode & stat.S_IRUSR),
+                "owner_writable": bool(stat_info.st_mode & stat.S_IWUSR),
+                "group_readable": bool(stat_info.st_mode & stat.S_IRGRP),
+                "group_writable": bool(stat_info.st_mode & stat.S_IWGRP),
+                "other_readable": bool(stat_info.st_mode & stat.S_IROTH),
+                "other_writable": bool(stat_info.st_mode & stat.S_IWOTH),
+                "is_secure": security_level in ["SECURE", "WARNING"],
             }
 
             self.checked_files[file_path] = permission_info
@@ -165,30 +176,31 @@ class FilePermissionChecker:
 
         except OSError as e:
             return {
-                'file_path': file_path,
-                'error': str(e),
-                'security_level': 'ERROR',
-                'is_secure': False
+                "file_path": file_path,
+                "error": str(e),
+                "security_level": "ERROR",
+                "is_secure": False,
             }
 
     def _assess_security_level(self, mode: int) -> str:
         """セキュリティレベルを評価"""
         # 他者に読み書き権限がある場合は危険
         if mode & (stat.S_IROTH | stat.S_IWOTH):
-            return 'CRITICAL'
+            return "CRITICAL"
 
         # グループに書き込み権限がある場合は警告
         if mode & stat.S_IWGRP:
-            return 'WARNING'
+            return "WARNING"
 
         # 所有者のみアクセス可能な場合は安全
-        return 'SECURE'
+        return "SECURE"
 
     def get_insecure_files(self) -> list[str]:
         """セキュアでないファイルのリストを取得"""
         return [
-            file_path for file_path, info in self.checked_files.items()
-            if not info.get('is_secure', False)
+            file_path
+            for file_path, info in self.checked_files.items()
+            if not info.get("is_secure", False)
         ]
 
 
@@ -197,17 +209,17 @@ class MemoryScanner:
 
     def __init__(self):
         self.sensitive_patterns = [
-            b'password',
-            b'secret',
-            b'token',
-            b'key',
-            b'credential',
-            b'private',
+            b"password",
+            b"secret",
+            b"token",
+            b"key",
+            b"credential",
+            b"private",
             # 日本語パターン
-            'パスワード'.encode(),
-            '秘密'.encode(),
-            '機密'.encode(),
-            'トークン'.encode()
+            "パスワード".encode(),
+            "秘密".encode(),
+            "機密".encode(),
+            "トークン".encode(),
         ]
         self.found_patterns: list[str] = []
 
@@ -230,11 +242,17 @@ class MemoryScanner:
 
                 try:
                     if isinstance(obj, str | bytes):
-                        obj_data = obj if isinstance(obj, bytes) else obj.encode('utf-8', errors='ignore')
+                        obj_data = (
+                            obj
+                            if isinstance(obj, bytes)
+                            else obj.encode("utf-8", errors="ignore")
+                        )
 
                         for pattern in self.sensitive_patterns:
                             if pattern in obj_data.lower():
-                                found_issues.append(f"機密パターン検出: {pattern.decode('utf-8', errors='ignore')}")
+                                found_issues.append(
+                                    f"機密パターン検出: {pattern.decode('utf-8', errors='ignore')}"
+                                )
                                 break
 
                 except (UnicodeError, AttributeError):
@@ -311,23 +329,22 @@ class SecurityValidator(BaseValidator):
 
             # インデックスマネージャーの初期化
             index_path = os.path.join(test_data_dir, "whoosh_index")
-            self.test_components['index_manager'] = IndexManager(index_path)
+            self.test_components["index_manager"] = IndexManager(index_path)
 
             # 埋め込みマネージャーの初期化
             embeddings_path = os.path.join(test_data_dir, "embeddings.pkl")
-            self.test_components['embedding_manager'] = EmbeddingManager(
-                model_name="all-MiniLM-L6-v2",
-                embeddings_path=embeddings_path
+            self.test_components["embedding_manager"] = EmbeddingManager(
+                model_name="all-MiniLM-L6-v2", embeddings_path=embeddings_path
             )
 
             # 検索マネージャーの初期化
-            self.test_components['search_manager'] = SearchManager(
-                self.test_components['index_manager'],
-                self.test_components['embedding_manager']
+            self.test_components["search_manager"] = SearchManager(
+                self.test_components["index_manager"],
+                self.test_components["embedding_manager"],
             )
 
             # ドキュメントプロセッサーの初期化
-            self.test_components['document_processor'] = DocumentProcessor()
+            self.test_components["document_processor"] = DocumentProcessor()
 
             self.logger.debug("DocMindコンポーネントの初期化が完了しました")
 
@@ -353,9 +370,9 @@ class SecurityValidator(BaseValidator):
 
             # コンポーネントのクリーンアップ
             for _component_name, component in self.test_components.items():
-                if hasattr(component, 'close'):
+                if hasattr(component, "close"):
                     component.close()
-                elif hasattr(component, 'cleanup'):
+                elif hasattr(component, "cleanup"):
                     component.cleanup()
 
             # テストデータのクリーンアップ
@@ -364,7 +381,9 @@ class SecurityValidator(BaseValidator):
             # 一時ディレクトリの削除
             if self.test_base_dir and os.path.exists(self.test_base_dir):
                 shutil.rmtree(self.test_base_dir)
-                self.logger.debug(f"テストディレクトリを削除しました: {self.test_base_dir}")
+                self.logger.debug(
+                    f"テストディレクトリを削除しました: {self.test_base_dir}"
+                )
 
             # メモリのクリーンアップ
             gc.collect()
@@ -386,25 +405,23 @@ class SecurityValidator(BaseValidator):
             test_documents = self._create_test_documents(10)
 
             # DocMind操作の実行（外部通信が発生しないことを確認）
-            search_manager = self.test_components['search_manager']
-            document_processor = self.test_components['document_processor']
+            search_manager = self.test_components["search_manager"]
+            document_processor = self.test_components["document_processor"]
 
             # ドキュメント処理
             for doc_path in test_documents:
                 document = document_processor.process_file(doc_path)
                 if document:
-                    self.test_components['index_manager'].add_document(document)
+                    self.test_components["index_manager"].add_document(document)
 
             # 検索実行
             query = SearchQuery(
-                query_text="テスト検索",
-                search_type=SearchType.HYBRID,
-                limit=10
+                query_text="テスト検索", search_type=SearchType.HYBRID, limit=10
             )
             search_manager.search(query)
 
             # 埋め込み処理（ローカルモデル使用）
-            embedding_manager = self.test_components['embedding_manager']
+            embedding_manager = self.test_components["embedding_manager"]
             test_text = "これはローカル処理のテストです"
             embedding_manager.get_embeddings([test_text])
 
@@ -424,24 +441,33 @@ class SecurityValidator(BaseValidator):
         metrics = SecurityMetrics(
             test_name="local_processing_verification",
             security_level=security_level,
-            external_connections=[conn['remote_address'] for conn in external_connections],
+            external_connections=[
+                conn["remote_address"] for conn in external_connections
+            ],
             compliance_score=1.0 if len(external_connections) == 0 else 0.0,
             additional_details={
-                'total_connections_detected': len(external_connections),
-                'connection_details': external_connections,
-                'test_operations': ['document_processing', 'indexing', 'search', 'embedding']
-            }
+                "total_connections_detected": len(external_connections),
+                "connection_details": external_connections,
+                "test_operations": [
+                    "document_processing",
+                    "indexing",
+                    "search",
+                    "embedding",
+                ],
+            },
         )
 
         # 要件の検証
         self.assert_condition(
             len(external_connections) <= self.thresholds.max_external_connections,
-            f"外部通信が検出されました: {len(external_connections)}件の接続が発生"
+            f"外部通信が検出されました: {len(external_connections)}件の接続が発生",
         )
 
         self.security_metrics.append(metrics)
 
-        self.logger.info(f"ローカル処理検証完了 - 外部接続: {len(external_connections)}件")
+        self.logger.info(
+            f"ローカル処理検証完了 - 外部接続: {len(external_connections)}件"
+        )
 
     def test_file_access_permissions_verification(self) -> None:
         """ファイルアクセス権限と一時ファイル安全削除の検証"""
@@ -455,20 +481,24 @@ class SecurityValidator(BaseValidator):
         insecure_files = []
 
         for file_path in test_files:
-            permission_info = self.file_permission_checker.check_file_permissions(file_path)
+            permission_info = self.file_permission_checker.check_file_permissions(
+                file_path
+            )
             permission_results[file_path] = permission_info
 
-            if not permission_info.get('is_secure', False):
+            if not permission_info.get("is_secure", False):
                 insecure_files.append(file_path)
 
         # DocMindが作成するファイルの権限チェック
         docmind_files = self._get_docmind_created_files()
         for file_path in docmind_files:
             if os.path.exists(file_path):
-                permission_info = self.file_permission_checker.check_file_permissions(file_path)
+                permission_info = self.file_permission_checker.check_file_permissions(
+                    file_path
+                )
                 permission_results[file_path] = permission_info
 
-                if not permission_info.get('is_secure', False):
+                if not permission_info.get("is_secure", False):
                     insecure_files.append(file_path)
 
         # 一時ファイルの安全削除テスト
@@ -478,7 +508,7 @@ class SecurityValidator(BaseValidator):
         security_level = "SECURE"
         if len(insecure_files) > 0:
             security_level = "CRITICAL"
-        elif not temp_file_test_results['secure_deletion']:
+        elif not temp_file_test_results["secure_deletion"]:
             security_level = "WARNING"
 
         # セキュリティメトリクスの作成
@@ -486,18 +516,21 @@ class SecurityValidator(BaseValidator):
             test_name="file_access_permissions_verification",
             security_level=security_level,
             file_permissions={
-                file_path: info.get('permissions', 'ERROR')
+                file_path: info.get("permissions", "ERROR")
                 for file_path, info in permission_results.items()
             },
-            temp_files_created=temp_file_test_results['created_files'],
-            temp_files_cleaned=temp_file_test_results['cleaned_files'],
-            vulnerabilities=[f"セキュアでないファイル権限: {f}" for f in insecure_files],
-            compliance_score=1.0 - (len(insecure_files) / max(len(permission_results), 1)),
+            temp_files_created=temp_file_test_results["created_files"],
+            temp_files_cleaned=temp_file_test_results["cleaned_files"],
+            vulnerabilities=[
+                f"セキュアでないファイル権限: {f}" for f in insecure_files
+            ],
+            compliance_score=1.0
+            - (len(insecure_files) / max(len(permission_results), 1)),
             additional_details={
-                'total_files_checked': len(permission_results),
-                'insecure_files_count': len(insecure_files),
-                'temp_file_security': temp_file_test_results
-            }
+                "total_files_checked": len(permission_results),
+                "insecure_files_count": len(insecure_files),
+                "temp_file_security": temp_file_test_results,
+            },
         )
 
         # メトリクスを先に追加
@@ -506,15 +539,17 @@ class SecurityValidator(BaseValidator):
         # 要件の検証
         self.assert_condition(
             len(insecure_files) == 0,
-            f"セキュアでないファイル権限が検出されました: {insecure_files}"
+            f"セキュアでないファイル権限が検出されました: {insecure_files}",
         )
 
         self.assert_condition(
-            temp_file_test_results['secure_deletion'],
-            "一時ファイルの安全削除が確認できませんでした"
+            temp_file_test_results["secure_deletion"],
+            "一時ファイルの安全削除が確認できませんでした",
         )
 
-        self.logger.info(f"ファイル権限検証完了 - チェック済みファイル: {len(permission_results)}件")
+        self.logger.info(
+            f"ファイル権限検証完了 - チェック済みファイル: {len(permission_results)}件"
+        )
 
     def test_data_encryption_verification(self) -> None:
         """機密データ暗号化とメモリ内データ保護の検証"""
@@ -536,21 +571,23 @@ class SecurityValidator(BaseValidator):
 
         # 暗号化状況の評価
         encryption_status = {
-            'configuration_encrypted': encryption_results['encrypted'],
-            'database_encrypted': database_encryption['encrypted'],
-            'embedding_cache_encrypted': embedding_encryption['encrypted'],
-            'memory_scan_clean': len(memory_scan_results) == 0
+            "configuration_encrypted": encryption_results["encrypted"],
+            "database_encrypted": database_encryption["encrypted"],
+            "embedding_cache_encrypted": embedding_encryption["encrypted"],
+            "memory_scan_clean": len(memory_scan_results) == 0,
         }
 
         # セキュリティレベルの判定
         security_level = "SECURE"
         vulnerabilities = []
 
-        if not encryption_status['memory_scan_clean']:
+        if not encryption_status["memory_scan_clean"]:
             security_level = "WARNING"
-            vulnerabilities.extend([f"メモリ内機密データ: {issue}" for issue in memory_scan_results])
+            vulnerabilities.extend(
+                [f"メモリ内機密データ: {issue}" for issue in memory_scan_results]
+            )
 
-        if not encryption_status['configuration_encrypted']:
+        if not encryption_status["configuration_encrypted"]:
             security_level = "WARNING"
             vulnerabilities.append("設定ファイルが暗号化されていません")
 
@@ -566,14 +603,14 @@ class SecurityValidator(BaseValidator):
             vulnerabilities=vulnerabilities,
             compliance_score=compliance_score,
             additional_details={
-                'encryption_test_results': {
-                    'configuration': encryption_results,
-                    'database': database_encryption,
-                    'embedding_cache': embedding_encryption
+                "encryption_test_results": {
+                    "configuration": encryption_results,
+                    "database": database_encryption,
+                    "embedding_cache": embedding_encryption,
                 },
-                'memory_scan_duration': self.thresholds.max_memory_scan_duration_seconds,
-                'memory_issues_found': len(memory_scan_results)
-            }
+                "memory_scan_duration": self.thresholds.max_memory_scan_duration_seconds,
+                "memory_issues_found": len(memory_scan_results),
+            },
         )
 
         # メトリクスを先に追加
@@ -582,10 +619,12 @@ class SecurityValidator(BaseValidator):
         # 要件の検証（警告レベルは許容）
         self.assert_condition(
             security_level != "CRITICAL",
-            f"重大なセキュリティ問題が検出されました: {vulnerabilities}"
+            f"重大なセキュリティ問題が検出されました: {vulnerabilities}",
         )
 
-        self.logger.info(f"データ暗号化検証完了 - コンプライアンススコア: {compliance_score:.2f}")
+        self.logger.info(
+            f"データ暗号化検証完了 - コンプライアンススコア: {compliance_score:.2f}"
+        )
 
     def test_privacy_protection_verification(self) -> None:
         """プライバシー保護機能の包括検証"""
@@ -605,10 +644,10 @@ class SecurityValidator(BaseValidator):
 
         # プライバシー保護レベルの評価
         privacy_issues = []
-        privacy_issues.extend(log_privacy_results.get('issues', []))
-        privacy_issues.extend(temp_file_privacy_results.get('issues', []))
-        privacy_issues.extend(memory_privacy_results.get('issues', []))
-        privacy_issues.extend(network_privacy_results.get('issues', []))
+        privacy_issues.extend(log_privacy_results.get("issues", []))
+        privacy_issues.extend(temp_file_privacy_results.get("issues", []))
+        privacy_issues.extend(memory_privacy_results.get("issues", []))
+        privacy_issues.extend(network_privacy_results.get("issues", []))
 
         # セキュリティレベルの判定
         security_level = "SECURE"
@@ -616,12 +655,14 @@ class SecurityValidator(BaseValidator):
             security_level = "WARNING" if len(privacy_issues) <= 3 else "CRITICAL"
 
         # コンプライアンススコアの計算
-        total_checks = sum([
-            len(log_privacy_results.get('checked_items', [])),
-            len(temp_file_privacy_results.get('checked_items', [])),
-            len(memory_privacy_results.get('checked_items', [])),
-            len(network_privacy_results.get('checked_items', []))
-        ])
+        total_checks = sum(
+            [
+                len(log_privacy_results.get("checked_items", [])),
+                len(temp_file_privacy_results.get("checked_items", [])),
+                len(memory_privacy_results.get("checked_items", [])),
+                len(network_privacy_results.get("checked_items", [])),
+            ]
+        )
 
         compliance_score = 1.0 - (len(privacy_issues) / max(total_checks, 1))
 
@@ -632,13 +673,13 @@ class SecurityValidator(BaseValidator):
             vulnerabilities=privacy_issues,
             compliance_score=compliance_score,
             additional_details={
-                'log_privacy': log_privacy_results,
-                'temp_file_privacy': temp_file_privacy_results,
-                'memory_privacy': memory_privacy_results,
-                'network_privacy': network_privacy_results,
-                'total_privacy_issues': len(privacy_issues),
-                'privacy_categories_checked': 4
-            }
+                "log_privacy": log_privacy_results,
+                "temp_file_privacy": temp_file_privacy_results,
+                "memory_privacy": memory_privacy_results,
+                "network_privacy": network_privacy_results,
+                "total_privacy_issues": len(privacy_issues),
+                "privacy_categories_checked": 4,
+            },
         )
 
         # メトリクスを先に追加
@@ -647,7 +688,7 @@ class SecurityValidator(BaseValidator):
         # 要件の検証
         self.assert_condition(
             security_level != "CRITICAL",
-            f"重大なプライバシー問題が検出されました: {privacy_issues}"
+            f"重大なプライバシー問題が検出されました: {privacy_issues}",
         )
 
         self.logger.info(f"プライバシー保護検証完了 - 問題: {len(privacy_issues)}件")
@@ -658,21 +699,21 @@ class SecurityValidator(BaseValidator):
 
         # 全セキュリティテストの統合実行
         audit_results = {
-            'local_processing': self._audit_local_processing(),
-            'file_security': self._audit_file_security(),
-            'data_protection': self._audit_data_protection(),
-            'privacy_compliance': self._audit_privacy_compliance(),
-            'system_hardening': self._audit_system_hardening()
+            "local_processing": self._audit_local_processing(),
+            "file_security": self._audit_file_security(),
+            "data_protection": self._audit_data_protection(),
+            "privacy_compliance": self._audit_privacy_compliance(),
+            "system_hardening": self._audit_system_hardening(),
         }
 
         # 総合セキュリティスコアの計算
-        category_scores = [result['score'] for result in audit_results.values()]
+        category_scores = [result["score"] for result in audit_results.values()]
         overall_score = sum(category_scores) / len(category_scores)
 
         # 重大な脆弱性の集計
         critical_vulnerabilities = []
         for _category, result in audit_results.items():
-            critical_vulnerabilities.extend(result.get('critical_issues', []))
+            critical_vulnerabilities.extend(result.get("critical_issues", []))
 
         # セキュリティレベルの判定
         if overall_score >= 0.9:
@@ -689,17 +730,19 @@ class SecurityValidator(BaseValidator):
             vulnerabilities=critical_vulnerabilities,
             compliance_score=overall_score,
             additional_details={
-                'audit_categories': audit_results,
-                'category_scores': {
-                    category: result['score']
+                "audit_categories": audit_results,
+                "category_scores": {
+                    category: result["score"]
                     for category, result in audit_results.items()
                 },
-                'total_checks_performed': sum(
-                    result.get('checks_performed', 0)
+                "total_checks_performed": sum(
+                    result.get("checks_performed", 0)
                     for result in audit_results.values()
                 ),
-                'security_recommendations': self._generate_security_recommendations(audit_results)
-            }
+                "security_recommendations": self._generate_security_recommendations(
+                    audit_results
+                ),
+            },
         )
 
         # メトリクスを先に追加
@@ -708,15 +751,17 @@ class SecurityValidator(BaseValidator):
         # 要件の検証
         self.assert_condition(
             overall_score >= 0.7,
-            f"セキュリティ監査で不合格: スコア {overall_score:.2f} < 0.7"
+            f"セキュリティ監査で不合格: スコア {overall_score:.2f} < 0.7",
         )
 
         self.assert_condition(
             len(critical_vulnerabilities) == 0,
-            f"重大な脆弱性が検出されました: {critical_vulnerabilities}"
+            f"重大な脆弱性が検出されました: {critical_vulnerabilities}",
         )
 
-        self.logger.info(f"包括的セキュリティ監査完了 - 総合スコア: {overall_score:.2f}")
+        self.logger.info(
+            f"包括的セキュリティ監査完了 - 総合スコア: {overall_score:.2f}"
+        )
 
     # ヘルパーメソッド
 
@@ -729,7 +774,7 @@ class SecurityValidator(BaseValidator):
             file_path = os.path.join(self.test_base_dir, f"test_doc_{i:03d}.txt")
             content = f"これはテストドキュメント{i}です。\n機密情報は含まれていません。\nローカル処理のテスト用です。"
 
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             test_documents.append(file_path)
@@ -743,16 +788,16 @@ class SecurityValidator(BaseValidator):
 
         # 異なる権限のテストファイルを作成
         permission_tests = [
-            ('secure_file.txt', 0o600),      # 所有者のみ読み書き
-            ('group_readable.txt', 0o640),   # グループ読み取り可能
-            ('world_readable.txt', 0o644),   # 全員読み取り可能
+            ("secure_file.txt", 0o600),  # 所有者のみ読み書き
+            ("group_readable.txt", 0o640),  # グループ読み取り可能
+            ("world_readable.txt", 0o644),  # 全員読み取り可能
         ]
 
         for filename, permissions in permission_tests:
             file_path = os.path.join(self.test_base_dir, filename)
 
             # ファイル作成
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(f"テストファイル: {filename}")
 
             # 権限設定
@@ -805,14 +850,12 @@ class SecurityValidator(BaseValidator):
         # 一時ファイルの作成と削除テスト
         for i in range(3):
             temp_file = tempfile.NamedTemporaryFile(
-                prefix="docmind_security_test_",
-                suffix=".tmp",
-                delete=False
+                prefix="docmind_security_test_", suffix=".tmp", delete=False
             )
 
             # 機密データの書き込み
             sensitive_data = f"機密テストデータ{i}: password123, secret_key_xyz"
-            temp_file.write(sensitive_data.encode('utf-8'))
+            temp_file.write(sensitive_data.encode("utf-8"))
             temp_file.close()
 
             created_files.append(temp_file.name)
@@ -822,8 +865,8 @@ class SecurityValidator(BaseValidator):
                 # 安全な削除の実行
                 try:
                     # ファイルを0で上書き（セキュア削除の模擬）
-                    with open(temp_file.name, 'wb') as f:
-                        f.write(b'\x00' * len(sensitive_data.encode('utf-8')))
+                    with open(temp_file.name, "wb") as f:
+                        f.write(b"\x00" * len(sensitive_data.encode("utf-8")))
 
                     # ファイル削除
                     os.remove(temp_file.name)
@@ -833,9 +876,9 @@ class SecurityValidator(BaseValidator):
                     pass
 
         return {
-            'created_files': created_files,
-            'cleaned_files': cleaned_files,
-            'secure_deletion': len(cleaned_files) == len(created_files)
+            "created_files": created_files,
+            "cleaned_files": cleaned_files,
+            "secure_deletion": len(cleaned_files) == len(created_files),
         }
 
     def _test_configuration_encryption(self) -> dict[str, Any]:
@@ -847,28 +890,25 @@ class SecurityValidator(BaseValidator):
         config_data = {
             "database_path": "/path/to/database",
             "api_key": "test_api_key_12345",  # 機密情報
-            "user_preferences": {
-                "theme": "dark",
-                "language": "ja"
-            }
+            "user_preferences": {"theme": "dark", "language": "ja"},
         }
 
         # 設定ファイルの作成
-        with open(config_file, 'w', encoding='utf-8') as f:
+        with open(config_file, "w", encoding="utf-8") as f:
             json.dump(config_data, f, indent=2)
 
         # 暗号化状況の確認（実際の実装では暗号化ライブラリを使用）
-        with open(config_file, encoding='utf-8') as f:
+        with open(config_file, encoding="utf-8") as f:
             content = f.read()
 
         # 平文で機密情報が保存されているかチェック
         has_plaintext_secrets = "api_key" in content and "test_api_key_12345" in content
 
         return {
-            'config_file': config_file,
-            'encrypted': not has_plaintext_secrets,  # 平文でなければ暗号化されているとみなす
-            'has_sensitive_data': True,
-            'encryption_method': 'AES-256' if not has_plaintext_secrets else 'NONE'
+            "config_file": config_file,
+            "encrypted": not has_plaintext_secrets,  # 平文でなければ暗号化されているとみなす
+            "has_sensitive_data": True,
+            "encryption_method": "AES-256" if not has_plaintext_secrets else "NONE",
         }
 
     def _test_database_encryption(self) -> dict[str, Any]:
@@ -878,67 +918,79 @@ class SecurityValidator(BaseValidator):
 
         if not os.path.exists(db_path):
             return {
-                'database_file': db_path,
-                'encrypted': True,  # ファイルが存在しない場合は問題なし
-                'file_exists': False
+                "database_file": db_path,
+                "encrypted": True,  # ファイルが存在しない場合は問題なし
+                "file_exists": False,
             }
 
         # ファイルヘッダーをチェックして暗号化を判定
         try:
-            with open(db_path, 'rb') as f:
+            with open(db_path, "rb") as f:
                 header = f.read(16)
 
             # SQLiteの標準ヘッダー（平文）をチェック
-            sqlite_header = b'SQLite format 3\x00'
+            sqlite_header = b"SQLite format 3\x00"
             is_plaintext_sqlite = header == sqlite_header
 
             return {
-                'database_file': db_path,
-                'encrypted': not is_plaintext_sqlite,
-                'file_exists': True,
-                'header_analysis': 'plaintext_sqlite' if is_plaintext_sqlite else 'encrypted_or_unknown'
+                "database_file": db_path,
+                "encrypted": not is_plaintext_sqlite,
+                "file_exists": True,
+                "header_analysis": (
+                    "plaintext_sqlite"
+                    if is_plaintext_sqlite
+                    else "encrypted_or_unknown"
+                ),
             }
 
         except OSError:
             return {
-                'database_file': db_path,
-                'encrypted': False,
-                'file_exists': True,
-                'error': 'ファイル読み取りエラー'
+                "database_file": db_path,
+                "encrypted": False,
+                "file_exists": True,
+                "error": "ファイル読み取りエラー",
             }
 
     def _test_embedding_cache_encryption(self) -> dict[str, Any]:
         """埋め込みキャッシュファイルの暗号化チェック"""
-        embeddings_path = os.path.join(self.test_base_dir, "docmind_data", "embeddings.pkl")
+        embeddings_path = os.path.join(
+            self.test_base_dir, "docmind_data", "embeddings.pkl"
+        )
 
         if not os.path.exists(embeddings_path):
             return {
-                'embeddings_file': embeddings_path,
-                'encrypted': True,  # ファイルが存在しない場合は問題なし
-                'file_exists': False
+                "embeddings_file": embeddings_path,
+                "encrypted": True,  # ファイルが存在しない場合は問題なし
+                "file_exists": False,
             }
 
         # Pickleファイルの暗号化チェック
         try:
-            with open(embeddings_path, 'rb') as f:
+            with open(embeddings_path, "rb") as f:
                 header = f.read(8)
 
             # Pickleの標準ヘッダーをチェック
-            is_plaintext_pickle = header.startswith(b'\x80\x03') or header.startswith(b'\x80\x04')
+            is_plaintext_pickle = header.startswith(b"\x80\x03") or header.startswith(
+                b"\x80\x04"
+            )
 
             return {
-                'embeddings_file': embeddings_path,
-                'encrypted': not is_plaintext_pickle,
-                'file_exists': True,
-                'format_analysis': 'plaintext_pickle' if is_plaintext_pickle else 'encrypted_or_unknown'
+                "embeddings_file": embeddings_path,
+                "encrypted": not is_plaintext_pickle,
+                "file_exists": True,
+                "format_analysis": (
+                    "plaintext_pickle"
+                    if is_plaintext_pickle
+                    else "encrypted_or_unknown"
+                ),
             }
 
         except OSError:
             return {
-                'embeddings_file': embeddings_path,
-                'encrypted': False,
-                'file_exists': True,
-                'error': 'ファイル読み取りエラー'
+                "embeddings_file": embeddings_path,
+                "encrypted": False,
+                "file_exists": True,
+                "error": "ファイル読み取りエラー",
             }
 
     def _test_log_file_privacy(self) -> dict[str, Any]:
@@ -947,10 +999,10 @@ class SecurityValidator(BaseValidator):
 
         if not os.path.exists(log_dir):
             return {
-                'log_directory': log_dir,
-                'checked_items': [],
-                'issues': [],
-                'directory_exists': False
+                "log_directory": log_dir,
+                "checked_items": [],
+                "issues": [],
+                "directory_exists": False,
             }
 
         issues = []
@@ -958,11 +1010,11 @@ class SecurityValidator(BaseValidator):
 
         # 個人情報パターン
         privacy_patterns = [
-            r'\b\d{3}-\d{4}-\d{4}\b',  # 電話番号
-            r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',  # メールアドレス
-            r'\b\d{4}-\d{4}-\d{4}-\d{4}\b',  # クレジットカード番号
-            r'password\s*[:=]\s*\S+',  # パスワード
-            r'secret\s*[:=]\s*\S+',    # シークレット
+            r"\b\d{3}-\d{4}-\d{4}\b",  # 電話番号
+            r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",  # メールアドレス
+            r"\b\d{4}-\d{4}-\d{4}-\d{4}\b",  # クレジットカード番号
+            r"password\s*[:=]\s*\S+",  # パスワード
+            r"secret\s*[:=]\s*\S+",  # シークレット
         ]
 
         import re
@@ -973,22 +1025,24 @@ class SecurityValidator(BaseValidator):
                 checked_items.append(log_path)
 
                 try:
-                    with open(log_path, encoding='utf-8', errors='ignore') as f:
+                    with open(log_path, encoding="utf-8", errors="ignore") as f:
                         content = f.read()
 
                     for pattern in privacy_patterns:
                         matches = re.findall(pattern, content, re.IGNORECASE)
                         if matches:
-                            issues.append(f"個人情報パターン検出 in {log_file}: {pattern}")
+                            issues.append(
+                                f"個人情報パターン検出 in {log_file}: {pattern}"
+                            )
 
                 except OSError:
                     issues.append(f"ログファイル読み取りエラー: {log_file}")
 
         return {
-            'log_directory': log_dir,
-            'checked_items': checked_items,
-            'issues': issues,
-            'directory_exists': True
+            "log_directory": log_dir,
+            "checked_items": checked_items,
+            "issues": issues,
+            "directory_exists": True,
         }
 
     def _test_temp_file_privacy(self) -> dict[str, Any]:
@@ -1004,40 +1058,52 @@ class SecurityValidator(BaseValidator):
 
             # DocMind関連の一時ファイルを検索
             for item in os.listdir(temp_dir):
-                if 'docmind' in item.lower():
+                if "docmind" in item.lower():
                     item_path = os.path.join(temp_dir, item)
                     if os.path.isfile(item_path):
                         checked_items.append(item_path)
 
                         # ファイル内容の機密情報チェック
                         try:
-                            with open(item_path, encoding='utf-8', errors='ignore') as f:
+                            with open(
+                                item_path, encoding="utf-8", errors="ignore"
+                            ) as f:
                                 content = f.read(1024)  # 最初の1KBのみチェック
 
-                            sensitive_keywords = ['password', 'secret', 'token', 'key', 'credential']
+                            sensitive_keywords = [
+                                "password",
+                                "secret",
+                                "token",
+                                "key",
+                                "credential",
+                            ]
                             for keyword in sensitive_keywords:
                                 if keyword in content.lower():
-                                    issues.append(f"一時ファイルに機密情報: {item_path} ({keyword})")
+                                    issues.append(
+                                        f"一時ファイルに機密情報: {item_path} ({keyword})"
+                                    )
 
                         except OSError:
                             pass
 
         return {
-            'temp_directories': temp_dirs,
-            'checked_items': checked_items,
-            'issues': issues
+            "temp_directories": temp_dirs,
+            "checked_items": checked_items,
+            "issues": issues,
         }
 
     def _test_memory_privacy(self) -> dict[str, Any]:
         """プロセスメモリの機密情報チェック"""
         # メモリスキャンの実行
-        memory_issues = self.memory_scanner.scan_process_memory(10)  # 10秒間のクイックスキャン
+        memory_issues = self.memory_scanner.scan_process_memory(
+            10
+        )  # 10秒間のクイックスキャン
 
         return {
-            'scan_duration_seconds': 10,
-            'checked_items': ['process_memory'],
-            'issues': memory_issues,
-            'scan_method': 'garbage_collector_objects'
+            "scan_duration_seconds": 10,
+            "checked_items": ["process_memory"],
+            "issues": memory_issues,
+            "scan_method": "garbage_collector_objects",
         }
 
     def _test_network_privacy(self) -> dict[str, Any]:
@@ -1054,10 +1120,10 @@ class SecurityValidator(BaseValidator):
             issues.append(f"外部ネットワーク通信が検出されました: {len(connections)}件")
 
         return {
-            'monitoring_duration_seconds': 3,
-            'checked_items': ['network_connections'],
-            'issues': issues,
-            'external_connections': connections
+            "monitoring_duration_seconds": 3,
+            "checked_items": ["network_connections"],
+            "issues": issues,
+            "external_connections": connections,
         }
 
     # 監査メソッド
@@ -1074,12 +1140,10 @@ class SecurityValidator(BaseValidator):
             critical_issues.append("外部通信が検出されました")
 
         return {
-            'score': score,
-            'critical_issues': critical_issues,
-            'checks_performed': 1,
-            'details': {
-                'external_connections': len(external_connections)
-            }
+            "score": score,
+            "critical_issues": critical_issues,
+            "checks_performed": 1,
+            "details": {"external_connections": len(external_connections)},
         }
 
     def _audit_file_security(self) -> dict[str, Any]:
@@ -1093,17 +1157,19 @@ class SecurityValidator(BaseValidator):
         critical_issues = []
 
         if len(insecure_files) > 0:
-            critical_issues.append(f"セキュアでないファイル権限: {len(insecure_files)}件")
+            critical_issues.append(
+                f"セキュアでないファイル権限: {len(insecure_files)}件"
+            )
 
         return {
-            'score': score,
-            'critical_issues': critical_issues,
-            'checks_performed': total_files,
-            'details': {
-                'total_files': total_files,
-                'secure_files': secure_files,
-                'insecure_files': len(insecure_files)
-            }
+            "score": score,
+            "critical_issues": critical_issues,
+            "checks_performed": total_files,
+            "details": {
+                "total_files": total_files,
+                "secure_files": secure_files,
+                "insecure_files": len(insecure_files),
+            },
         }
 
     def _audit_data_protection(self) -> dict[str, Any]:
@@ -1112,28 +1178,25 @@ class SecurityValidator(BaseValidator):
         config_encryption = self._test_configuration_encryption()
         db_encryption = self._test_database_encryption()
 
-        encryption_checks = [
-            config_encryption['encrypted'],
-            db_encryption['encrypted']
-        ]
+        encryption_checks = [config_encryption["encrypted"], db_encryption["encrypted"]]
 
         score = sum(encryption_checks) / len(encryption_checks)
         critical_issues = []
 
-        if not config_encryption['encrypted']:
+        if not config_encryption["encrypted"]:
             critical_issues.append("設定ファイルが暗号化されていません")
 
-        if not db_encryption['encrypted']:
+        if not db_encryption["encrypted"]:
             critical_issues.append("データベースが暗号化されていません")
 
         return {
-            'score': score,
-            'critical_issues': critical_issues,
-            'checks_performed': len(encryption_checks),
-            'details': {
-                'config_encrypted': config_encryption['encrypted'],
-                'database_encrypted': db_encryption['encrypted']
-            }
+            "score": score,
+            "critical_issues": critical_issues,
+            "checks_performed": len(encryption_checks),
+            "details": {
+                "config_encrypted": config_encryption["encrypted"],
+                "database_encrypted": db_encryption["encrypted"],
+            },
         }
 
     def _audit_privacy_compliance(self) -> dict[str, Any]:
@@ -1141,35 +1204,37 @@ class SecurityValidator(BaseValidator):
         log_privacy = self._test_log_file_privacy()
         memory_privacy = self._test_memory_privacy()
 
-        total_issues = len(log_privacy['issues']) + len(memory_privacy['issues'])
-        total_checks = len(log_privacy['checked_items']) + len(memory_privacy['checked_items'])
+        total_issues = len(log_privacy["issues"]) + len(memory_privacy["issues"])
+        total_checks = len(log_privacy["checked_items"]) + len(
+            memory_privacy["checked_items"]
+        )
 
         score = 1.0 - (total_issues / max(total_checks, 1))
         critical_issues = []
 
-        if log_privacy['issues']:
-            critical_issues.extend(log_privacy['issues'])
+        if log_privacy["issues"]:
+            critical_issues.extend(log_privacy["issues"])
 
-        if memory_privacy['issues']:
-            critical_issues.extend(memory_privacy['issues'])
+        if memory_privacy["issues"]:
+            critical_issues.extend(memory_privacy["issues"])
 
         return {
-            'score': score,
-            'critical_issues': critical_issues,
-            'checks_performed': total_checks,
-            'details': {
-                'log_issues': len(log_privacy['issues']),
-                'memory_issues': len(memory_privacy['issues'])
-            }
+            "score": score,
+            "critical_issues": critical_issues,
+            "checks_performed": total_checks,
+            "details": {
+                "log_issues": len(log_privacy["issues"]),
+                "memory_issues": len(memory_privacy["issues"]),
+            },
         }
 
     def _audit_system_hardening(self) -> dict[str, Any]:
         """システム強化の監査"""
         # 基本的なシステム強化チェック
         hardening_checks = {
-            'temp_file_cleanup': self._check_temp_file_cleanup(),
-            'process_isolation': self._check_process_isolation(),
-            'resource_limits': self._check_resource_limits()
+            "temp_file_cleanup": self._check_temp_file_cleanup(),
+            "process_isolation": self._check_process_isolation(),
+            "resource_limits": self._check_resource_limits(),
         }
 
         passed_checks = sum(hardening_checks.values())
@@ -1183,10 +1248,10 @@ class SecurityValidator(BaseValidator):
                 critical_issues.append(f"システム強化チェック失敗: {check_name}")
 
         return {
-            'score': score,
-            'critical_issues': critical_issues,
-            'checks_performed': total_checks,
-            'details': hardening_checks
+            "score": score,
+            "critical_issues": critical_issues,
+            "checks_performed": total_checks,
+            "details": hardening_checks,
         }
 
     def _check_temp_file_cleanup(self) -> bool:
@@ -1217,21 +1282,29 @@ class SecurityValidator(BaseValidator):
         except:
             return True
 
-    def _generate_security_recommendations(self, audit_results: dict[str, Any]) -> list[str]:
+    def _generate_security_recommendations(
+        self, audit_results: dict[str, Any]
+    ) -> list[str]:
         """セキュリティ推奨事項の生成"""
         recommendations = []
 
         for category, result in audit_results.items():
-            if result['score'] < 0.8:
-                if category == 'local_processing':
+            if result["score"] < 0.8:
+                if category == "local_processing":
                     recommendations.append("外部通信を完全に無効化することを推奨します")
-                elif category == 'file_security':
-                    recommendations.append("ファイル権限をより厳格に設定することを推奨します")
-                elif category == 'data_protection':
-                    recommendations.append("機密データの暗号化を実装することを推奨します")
-                elif category == 'privacy_compliance':
-                    recommendations.append("ログファイルから個人情報を除去することを推奨します")
-                elif category == 'system_hardening':
+                elif category == "file_security":
+                    recommendations.append(
+                        "ファイル権限をより厳格に設定することを推奨します"
+                    )
+                elif category == "data_protection":
+                    recommendations.append(
+                        "機密データの暗号化を実装することを推奨します"
+                    )
+                elif category == "privacy_compliance":
+                    recommendations.append(
+                        "ログファイルから個人情報を除去することを推奨します"
+                    )
+                elif category == "system_hardening":
                     recommendations.append("システム強化設定を見直すことを推奨します")
 
         if not recommendations:
@@ -1246,12 +1319,22 @@ class SecurityValidator(BaseValidator):
 
         # 統計計算
         total_tests = len(self.security_metrics)
-        secure_tests = sum(1 for m in self.security_metrics if m.security_level == "SECURE")
-        warning_tests = sum(1 for m in self.security_metrics if m.security_level == "WARNING")
-        critical_tests = sum(1 for m in self.security_metrics if m.security_level == "CRITICAL")
+        secure_tests = sum(
+            1 for m in self.security_metrics if m.security_level == "SECURE"
+        )
+        warning_tests = sum(
+            1 for m in self.security_metrics if m.security_level == "WARNING"
+        )
+        critical_tests = sum(
+            1 for m in self.security_metrics if m.security_level == "CRITICAL"
+        )
 
         compliance_scores = [m.compliance_score for m in self.security_metrics]
-        average_compliance = sum(compliance_scores) / len(compliance_scores) if compliance_scores else 0.0
+        average_compliance = (
+            sum(compliance_scores) / len(compliance_scores)
+            if compliance_scores
+            else 0.0
+        )
 
         # 全脆弱性の集計
         all_vulnerabilities = []
@@ -1264,17 +1347,25 @@ class SecurityValidator(BaseValidator):
                 "secure_tests": secure_tests,
                 "warning_tests": warning_tests,
                 "critical_tests": critical_tests,
-                "overall_security_level": "SECURE" if critical_tests == 0 and warning_tests <= 1 else "WARNING" if critical_tests == 0 else "CRITICAL"
+                "overall_security_level": (
+                    "SECURE"
+                    if critical_tests == 0 and warning_tests <= 1
+                    else "WARNING" if critical_tests == 0 else "CRITICAL"
+                ),
             },
             "compliance_statistics": {
                 "average_compliance_score": average_compliance,
-                "min_compliance_score": min(compliance_scores) if compliance_scores else 0.0,
-                "max_compliance_score": max(compliance_scores) if compliance_scores else 0.0
+                "min_compliance_score": (
+                    min(compliance_scores) if compliance_scores else 0.0
+                ),
+                "max_compliance_score": (
+                    max(compliance_scores) if compliance_scores else 0.0
+                ),
             },
             "vulnerability_analysis": {
                 "total_vulnerabilities": len(all_vulnerabilities),
                 "unique_vulnerabilities": len(set(all_vulnerabilities)),
-                "vulnerability_list": list(set(all_vulnerabilities))
+                "vulnerability_list": list(set(all_vulnerabilities)),
             },
             "detailed_metrics": [
                 {
@@ -1282,8 +1373,8 @@ class SecurityValidator(BaseValidator):
                     "security_level": m.security_level,
                     "compliance_score": m.compliance_score,
                     "vulnerabilities_count": len(m.vulnerabilities),
-                    "external_connections": len(m.external_connections)
+                    "external_connections": len(m.external_connections),
                 }
                 for m in self.security_metrics
-            ]
+            ],
         }

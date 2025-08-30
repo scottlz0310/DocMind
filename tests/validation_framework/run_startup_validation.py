@@ -72,7 +72,7 @@ def main():
         enable_error_injection=True,
         max_execution_time=30.0,
         max_memory_usage=1024.0,
-        log_level="INFO"
+        log_level="INFO",
     )
 
     # バリデーターの初期化
@@ -91,13 +91,13 @@ def main():
 
         # 実行するテストメソッドを定義
         test_methods = [
-            'test_startup_time_requirement',
-            'test_directory_creation',
-            'test_config_initialization',
-            'test_logging_system_initialization',
-            'test_database_initialization',
-            'test_startup_error_recovery',
-            'test_startup_error_injection'
+            "test_startup_time_requirement",
+            "test_directory_creation",
+            "test_config_initialization",
+            "test_logging_system_initialization",
+            "test_database_initialization",
+            "test_startup_error_recovery",
+            "test_startup_error_injection",
         ]
 
         # 検証実行
@@ -149,19 +149,27 @@ def main():
         print("-" * 40)
 
         # 起動時間要件（10秒以内）
-        startup_result = next((r for r in results if 'startup_time' in r.test_name), None)
+        startup_result = next(
+            (r for r in results if "startup_time" in r.test_name), None
+        )
         if startup_result:
             startup_ok = startup_result.execution_time <= 10.0
-            print(f"起動時間要件 (≤10秒): {'✓' if startup_ok else '✗'} {startup_result.execution_time:.2f}秒")
+            print(
+                f"起動時間要件 (≤10秒): {'✓' if startup_ok else '✗'} {startup_result.execution_time:.2f}秒"
+            )
 
         # メモリ使用量要件（2GB以下）
         max_memory = max((r.memory_usage for r in results), default=0)
         memory_ok = max_memory <= 2048.0
-        print(f"メモリ使用量要件 (≤2GB): {'✓' if memory_ok else '✗'} {max_memory:.1f}MB")
+        print(
+            f"メモリ使用量要件 (≤2GB): {'✓' if memory_ok else '✗'} {max_memory:.1f}MB"
+        )
 
         # 全体的な成功率要件（90%以上）
         success_rate_ok = (successful_tests / total_tests) >= 0.9
-        print(f"成功率要件 (≥90%): {'✓' if success_rate_ok else '✗'} {(successful_tests/total_tests)*100:.1f}%")
+        print(
+            f"成功率要件 (≥90%): {'✓' if success_rate_ok else '✗'} {(successful_tests/total_tests)*100:.1f}%"
+        )
 
         print()
 
@@ -169,17 +177,21 @@ def main():
         print("検証レポートを生成しています...")
 
         # 簡単なMarkdownレポートを生成
-        report_content = generate_simple_report(results, stats, total_tests, successful_tests, failed_tests)
+        report_content = generate_simple_report(
+            results, stats, total_tests, successful_tests, failed_tests
+        )
         report_file = validator.temp_dir / "startup_validation_report.md"
 
-        with open(report_file, 'w', encoding='utf-8') as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             f.write(report_content)
 
         print(f"レポートを保存しました: {report_file}")
 
         # 最終判定
         print("\n" + "=" * 60)
-        overall_success = failed_tests == 0 and startup_ok and memory_ok and success_rate_ok
+        overall_success = (
+            failed_tests == 0 and startup_ok and memory_ok and success_rate_ok
+        )
 
         if overall_success:
             print("🎉 アプリケーション起動検証: 合格")

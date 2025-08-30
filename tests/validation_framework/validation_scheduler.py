@@ -36,27 +36,30 @@ from .quality_gate_manager import (
 
 class ScheduleType(Enum):
     """スケジュールタイプ"""
-    COMMIT = "commit"          # コミット時
-    DAILY = "daily"            # 日次
-    WEEKLY = "weekly"          # 週次
-    RELEASE = "release"        # リリース前
-    MANUAL = "manual"          # 手動実行
+
+    COMMIT = "commit"  # コミット時
+    DAILY = "daily"  # 日次
+    WEEKLY = "weekly"  # 週次
+    RELEASE = "release"  # リリース前
+    MANUAL = "manual"  # 手動実行
     CONTINUOUS = "continuous"  # 継続的実行
 
 
 class ScheduleStatus(Enum):
     """スケジュール状態"""
-    PENDING = "pending"        # 実行待ち
-    RUNNING = "running"        # 実行中
-    COMPLETED = "completed"    # 完了
-    FAILED = "failed"          # 失敗
-    CANCELLED = "cancelled"    # キャンセル
-    SKIPPED = "skipped"        # スキップ
+
+    PENDING = "pending"  # 実行待ち
+    RUNNING = "running"  # 実行中
+    COMPLETED = "completed"  # 完了
+    FAILED = "failed"  # 失敗
+    CANCELLED = "cancelled"  # キャンセル
+    SKIPPED = "skipped"  # スキップ
 
 
 @dataclass
 class ScheduleConfig:
     """スケジュール設定"""
+
     schedule_type: ScheduleType
     enabled: bool = True
 
@@ -74,11 +77,11 @@ class ScheduleConfig:
     # 実行条件
     min_interval_hours: int = 1  # 最小実行間隔
     max_concurrent_runs: int = 1  # 最大同時実行数
-    timeout_minutes: int = 120   # タイムアウト時間
+    timeout_minutes: int = 120  # タイムアウト時間
 
     # Git条件
     watch_branches: list[str] = None  # 監視対象ブランチ
-    skip_if_no_changes: bool = True   # 変更がない場合はスキップ
+    skip_if_no_changes: bool = True  # 変更がない場合はスキップ
 
     # 通知設定
     notify_on_success: bool = False
@@ -89,6 +92,7 @@ class ScheduleConfig:
 @dataclass
 class ScheduleExecution:
     """スケジュール実行記録"""
+
     execution_id: str
     schedule_type: ScheduleType
     start_time: datetime
@@ -130,7 +134,9 @@ class GitWatcher:
                 try:
                     result = subprocess.run(
                         ["git", "rev-parse", f"origin/{branch}"],
-                        capture_output=True, text=True, cwd=self.project_root
+                        capture_output=True,
+                        text=True,
+                        cwd=self.project_root,
                     )
                     if result.returncode == 0:
                         self.last_commits[branch] = result.stdout.strip()
@@ -151,15 +157,16 @@ class GitWatcher:
         try:
             # リモートの最新情報を取得
             subprocess.run(
-                ["git", "fetch", "--all"],
-                capture_output=True, cwd=self.project_root
+                ["git", "fetch", "--all"], capture_output=True, cwd=self.project_root
             )
 
             for branch in self.watch_branches:
                 try:
                     result = subprocess.run(
                         ["git", "rev-parse", f"origin/{branch}"],
-                        capture_output=True, text=True, cwd=self.project_root
+                        capture_output=True,
+                        text=True,
+                        cwd=self.project_root,
                     )
 
                     if result.returncode == 0:
@@ -169,7 +176,9 @@ class GitWatcher:
                         if last_commit and current_commit != last_commit:
                             changed_branches.append(branch)
                             self.last_commits[branch] = current_commit
-                            self.logger.info(f"ブランチ {branch} で変更を検出しました: {current_commit[:8]}")
+                            self.logger.info(
+                                f"ブランチ {branch} で変更を検出しました: {current_commit[:8]}"
+                            )
                         elif not last_commit:
                             # 初回実行時
                             self.last_commits[branch] = current_commit
@@ -188,23 +197,35 @@ class GitWatcher:
             # 現在のブランチ
             branch_result = subprocess.run(
                 ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                capture_output=True, text=True, cwd=self.project_root
+                capture_output=True,
+                text=True,
+                cwd=self.project_root,
             )
 
             # 現在のコミット
             commit_result = subprocess.run(
                 ["git", "rev-parse", "HEAD"],
-                capture_output=True, text=True, cwd=self.project_root
+                capture_output=True,
+                text=True,
+                cwd=self.project_root,
             )
 
             return {
-                'branch': branch_result.stdout.strip() if branch_result.returncode == 0 else 'unknown',
-                'commit': commit_result.stdout.strip() if commit_result.returncode == 0 else 'unknown'
+                "branch": (
+                    branch_result.stdout.strip()
+                    if branch_result.returncode == 0
+                    else "unknown"
+                ),
+                "commit": (
+                    commit_result.stdout.strip()
+                    if commit_result.returncode == 0
+                    else "unknown"
+                ),
             }
 
         except Exception as e:
             self.logger.error(f"Git情報の取得に失敗しました: {e}")
-            return {'branch': 'unknown', 'commit': 'unknown'}
+            return {"branch": "unknown", "commit": "unknown"}
 
 
 class ValidationScheduler:
@@ -214,7 +235,9 @@ class ValidationScheduler:
     スケジュール管理を行う。
     """
 
-    def __init__(self, project_root: Path, output_dir: Path = Path("scheduler_results")):
+    def __init__(
+        self, project_root: Path, output_dir: Path = Path("scheduler_results")
+    ):
         self.project_root = project_root
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -240,8 +263,10 @@ class ValidationScheduler:
         logger.setLevel(logging.INFO)
 
         # ログファイルハンドラー
-        log_file = self.output_dir / f"scheduler_{datetime.now().strftime('%Y%m%d')}.log"
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        log_file = (
+            self.output_dir / f"scheduler_{datetime.now().strftime('%Y%m%d')}.log"
+        )
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setLevel(logging.DEBUG)
 
         # コンソールハンドラー
@@ -250,7 +275,7 @@ class ValidationScheduler:
 
         # フォーマッター
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
@@ -279,11 +304,17 @@ class ValidationScheduler:
             )
             self.logger.info(f"日次スケジュールを登録しました: {config.daily_time}")
 
-        elif config.schedule_type == ScheduleType.WEEKLY and config.weekly_day and config.weekly_time:
-            getattr(schedule.every(), config.weekly_day.lower()).at(config.weekly_time).do(
-                self._schedule_job, config.schedule_type
+        elif (
+            config.schedule_type == ScheduleType.WEEKLY
+            and config.weekly_day
+            and config.weekly_time
+        ):
+            getattr(schedule.every(), config.weekly_day.lower()).at(
+                config.weekly_time
+            ).do(self._schedule_job, config.schedule_type)
+            self.logger.info(
+                f"週次スケジュールを登録しました: {config.weekly_day} {config.weekly_time}"
             )
-            self.logger.info(f"週次スケジュールを登録しました: {config.weekly_day} {config.weekly_time}")
 
     def _schedule_job(self, schedule_type: ScheduleType):
         """スケジュールジョブの実行"""
@@ -299,7 +330,9 @@ class ValidationScheduler:
         self.logger.info("検証スケジューラーを開始しました")
 
         # スケジューラースレッドの開始
-        self.scheduler_thread = threading.Thread(target=self._run_scheduler, daemon=True)
+        self.scheduler_thread = threading.Thread(
+            target=self._run_scheduler, daemon=True
+        )
         self.scheduler_thread.start()
 
         # コミット監視の開始
@@ -325,12 +358,20 @@ class ValidationScheduler:
 
                 if changed_branches:
                     # 監視対象ブランチに変更があった場合
-                    watch_branches = commit_config.watch_branches or ["main", "master", "develop"]
+                    watch_branches = commit_config.watch_branches or [
+                        "main",
+                        "master",
+                        "develop",
+                    ]
 
                     for branch in changed_branches:
                         if branch in watch_branches:
-                            self.logger.info(f"ブランチ {branch} の変更によりコミット検証を実行します")
-                            await self.execute_validation(ScheduleType.COMMIT, f"git_commit_{branch}")
+                            self.logger.info(
+                                f"ブランチ {branch} の変更によりコミット検証を実行します"
+                            )
+                            await self.execute_validation(
+                                ScheduleType.COMMIT, f"git_commit_{branch}"
+                            )
                             break
 
                 # 監視間隔
@@ -352,7 +393,9 @@ class ValidationScheduler:
 
         self.logger.info("検証スケジューラーを停止しました")
 
-    async def execute_validation(self, schedule_type: ScheduleType, triggered_by: str = "manual") -> ScheduleExecution:
+    async def execute_validation(
+        self, schedule_type: ScheduleType, triggered_by: str = "manual"
+    ) -> ScheduleExecution:
         """検証の実行
 
         Args:
@@ -369,7 +412,9 @@ class ValidationScheduler:
 
         # 実行条件のチェック
         if not await self._check_execution_conditions(config):
-            self.logger.info(f"実行条件を満たさないため、{schedule_type.value} をスキップします")
+            self.logger.info(
+                f"実行条件を満たさないため、{schedule_type.value} をスキップします"
+            )
             return None
 
         # 実行記録の作成
@@ -378,13 +423,13 @@ class ValidationScheduler:
             schedule_type=schedule_type,
             start_time=datetime.now(),
             triggered_by=triggered_by,
-            status=ScheduleStatus.PENDING
+            status=ScheduleStatus.PENDING,
         )
 
         # Git情報の取得
         git_info = self.git_watcher.get_current_commit_info()
-        execution.git_branch = git_info['branch']
-        execution.git_commit = git_info['commit']
+        execution.git_branch = git_info["branch"]
+        execution.git_commit = git_info["commit"]
 
         self.executions.append(execution)
         self.running_executions[execution.execution_id] = execution
@@ -434,23 +479,34 @@ class ValidationScheduler:
         # 最小実行間隔のチェック
         if config.min_interval_hours > 0:
             recent_executions = [
-                e for e in self.executions
-                if (e.schedule_type == config.schedule_type and
-                    e.start_time > datetime.now() - timedelta(hours=config.min_interval_hours))
+                e
+                for e in self.executions
+                if (
+                    e.schedule_type == config.schedule_type
+                    and e.start_time
+                    > datetime.now() - timedelta(hours=config.min_interval_hours)
+                )
             ]
 
             if recent_executions:
-                self.logger.info(f"最小実行間隔 {config.min_interval_hours} 時間以内に実行済みです")
+                self.logger.info(
+                    f"最小実行間隔 {config.min_interval_hours} 時間以内に実行済みです"
+                )
                 return False
 
         # 最大同時実行数のチェック
-        current_runs = len([
-            e for e in self.running_executions.values()
-            if e.schedule_type == config.schedule_type
-        ])
+        current_runs = len(
+            [
+                e
+                for e in self.running_executions.values()
+                if e.schedule_type == config.schedule_type
+            ]
+        )
 
         if current_runs >= config.max_concurrent_runs:
-            self.logger.info(f"最大同時実行数 {config.max_concurrent_runs} に達しています")
+            self.logger.info(
+                f"最大同時実行数 {config.max_concurrent_runs} に達しています"
+            )
             return False
 
         # 変更チェック
@@ -462,7 +518,9 @@ class ValidationScheduler:
 
         return True
 
-    async def _run_validation_pipeline(self, execution: ScheduleExecution, config: ScheduleConfig):
+    async def _run_validation_pipeline(
+        self, execution: ScheduleExecution, config: ScheduleConfig
+    ):
         """検証パイプラインの実行"""
         artifacts = []
 
@@ -471,7 +529,7 @@ class ValidationScheduler:
             if config.validation_level:
                 validation_config = create_validation_config(
                     level=config.validation_level,
-                    output_dir=self.output_dir / execution.execution_id / "validation"
+                    output_dir=self.output_dir / execution.execution_id / "validation",
                 )
 
                 suite = ComprehensiveValidationSuite(validation_config)
@@ -485,7 +543,7 @@ class ValidationScheduler:
                 pipeline_config = create_pipeline_config(
                     project_root=self.project_root,
                     output_dir=self.output_dir / execution.execution_id / "pipeline",
-                    timeout_minutes=config.timeout_minutes
+                    timeout_minutes=config.timeout_minutes,
                 )
 
                 pipeline = CICDPipeline(pipeline_config)
@@ -513,24 +571,30 @@ class ValidationScheduler:
                 # カバレッジファイルの検索
                 coverage_files = list(self.project_root.glob("coverage.xml"))
                 if coverage_files:
-                    gate_data['coverage_file'] = str(coverage_files[0])
+                    gate_data["coverage_file"] = str(coverage_files[0])
 
                 # セキュリティレポートの検索
                 security_files = list(self.project_root.glob("security_report.json"))
                 if security_files:
-                    gate_data['security_report'] = str(security_files[0])
+                    gate_data["security_report"] = str(security_files[0])
 
                 await quality_manager.check_all_gates(gate_data)
-                execution.quality_gate_result = quality_manager.get_overall_result().value
+                execution.quality_gate_result = (
+                    quality_manager.get_overall_result().value
+                )
 
                 artifacts.extend(list(quality_manager.output_dir.glob("*")))
 
             execution.artifacts = artifacts
 
         except TimeoutError:
-            raise RuntimeError(f"検証がタイムアウトしました ({config.timeout_minutes}分)")
+            raise RuntimeError(
+                f"検証がタイムアウトしました ({config.timeout_minutes}分)"
+            )
 
-    async def _send_notification(self, execution: ScheduleExecution, config: ScheduleConfig):
+    async def _send_notification(
+        self, execution: ScheduleExecution, config: ScheduleConfig
+    ):
         """通知の送信"""
         try:
             message = self._create_notification_message(execution)
@@ -555,12 +619,14 @@ class ValidationScheduler:
         status_emoji = {
             ScheduleStatus.COMPLETED: "✅",
             ScheduleStatus.FAILED: "❌",
-            ScheduleStatus.CANCELLED: "⚠️"
+            ScheduleStatus.CANCELLED: "⚠️",
         }.get(execution.status, "ℹ️")
 
         duration = ""
         if execution.end_time and execution.start_time:
-            duration_seconds = (execution.end_time - execution.start_time).total_seconds()
+            duration_seconds = (
+                execution.end_time - execution.start_time
+            ).total_seconds()
             duration = f" ({duration_seconds:.0f}秒)"
 
         message = f"""
@@ -608,26 +674,28 @@ Git情報:
             execution_data = asdict(execution)
 
             # datetime オブジェクトを文字列に変換
-            if execution_data['start_time']:
-                execution_data['start_time'] = execution.start_time.isoformat()
-            if execution_data['end_time']:
-                execution_data['end_time'] = execution.end_time.isoformat()
+            if execution_data["start_time"]:
+                execution_data["start_time"] = execution.start_time.isoformat()
+            if execution_data["end_time"]:
+                execution_data["end_time"] = execution.end_time.isoformat()
 
             # Path オブジェクトを文字列に変換
-            if execution_data['log_file']:
-                execution_data['log_file'] = str(execution.log_file)
-            if execution_data['artifacts']:
-                execution_data['artifacts'] = [str(p) for p in execution.artifacts]
+            if execution_data["log_file"]:
+                execution_data["log_file"] = str(execution.log_file)
+            if execution_data["artifacts"]:
+                execution_data["artifacts"] = [str(p) for p in execution.artifacts]
 
             # Enum を文字列に変換
-            execution_data['schedule_type'] = execution.schedule_type.value
-            execution_data['status'] = execution.status.value
-            if execution_data['validation_result']:
-                execution_data['validation_result'] = execution.validation_result.value
+            execution_data["schedule_type"] = execution.schedule_type.value
+            execution_data["status"] = execution.status.value
+            if execution_data["validation_result"]:
+                execution_data["validation_result"] = execution.validation_result.value
 
             # 実行記録ファイルの保存
-            execution_file = self.output_dir / f"{execution.execution_id}_execution.json"
-            with open(execution_file, 'w', encoding='utf-8') as f:
+            execution_file = (
+                self.output_dir / f"{execution.execution_id}_execution.json"
+            )
+            with open(execution_file, "w", encoding="utf-8") as f:
                 json.dump(execution_data, f, indent=2, ensure_ascii=False)
 
             # 履歴ファイルの更新
@@ -641,14 +709,14 @@ Git情報:
         try:
             history_file = self.output_dir / "execution_history.json"
             if history_file.exists():
-                with open(history_file, encoding='utf-8') as f:
+                with open(history_file, encoding="utf-8") as f:
                     history_data = json.load(f)
 
                 # 最近の実行記録のみ読み込み（過去30日）
                 cutoff_date = datetime.now() - timedelta(days=30)
 
                 for execution_data in history_data:
-                    start_time = datetime.fromisoformat(execution_data['start_time'])
+                    start_time = datetime.fromisoformat(execution_data["start_time"])
                     if start_time > cutoff_date:
                         execution = self._deserialize_execution(execution_data)
                         self.executions.append(execution)
@@ -667,76 +735,84 @@ Git情報:
                 execution_data = asdict(execution)
 
                 # datetime オブジェクトを文字列に変換
-                if execution_data['start_time']:
-                    execution_data['start_time'] = execution.start_time.isoformat()
-                if execution_data['end_time']:
-                    execution_data['end_time'] = execution.end_time.isoformat()
+                if execution_data["start_time"]:
+                    execution_data["start_time"] = execution.start_time.isoformat()
+                if execution_data["end_time"]:
+                    execution_data["end_time"] = execution.end_time.isoformat()
 
                 # その他のオブジェクトを文字列に変換
-                if execution_data['log_file']:
-                    execution_data['log_file'] = str(execution.log_file)
-                if execution_data['artifacts']:
-                    execution_data['artifacts'] = [str(p) for p in execution.artifacts]
+                if execution_data["log_file"]:
+                    execution_data["log_file"] = str(execution.log_file)
+                if execution_data["artifacts"]:
+                    execution_data["artifacts"] = [str(p) for p in execution.artifacts]
 
                 # Enum を文字列に変換
-                execution_data['schedule_type'] = execution.schedule_type.value
-                execution_data['status'] = execution.status.value
-                if execution_data['validation_result']:
-                    execution_data['validation_result'] = execution.validation_result.value
+                execution_data["schedule_type"] = execution.schedule_type.value
+                execution_data["status"] = execution.status.value
+                if execution_data["validation_result"]:
+                    execution_data["validation_result"] = (
+                        execution.validation_result.value
+                    )
 
                 history_data.append(execution_data)
 
             history_file = self.output_dir / "execution_history.json"
-            with open(history_file, 'w', encoding='utf-8') as f:
+            with open(history_file, "w", encoding="utf-8") as f:
                 json.dump(history_data, f, indent=2, ensure_ascii=False)
 
         except Exception as e:
             self.logger.error(f"実行履歴更新中にエラーが発生しました: {e}")
 
-    def _deserialize_execution(self, execution_data: dict[str, Any]) -> ScheduleExecution:
+    def _deserialize_execution(
+        self, execution_data: dict[str, Any]
+    ) -> ScheduleExecution:
         """実行記録のデシリアライズ"""
         execution = ScheduleExecution(
-            execution_id=execution_data['execution_id'],
-            schedule_type=ScheduleType(execution_data['schedule_type']),
-            start_time=datetime.fromisoformat(execution_data['start_time']),
-            status=ScheduleStatus(execution_data['status']),
-            triggered_by=execution_data.get('triggered_by', 'unknown')
+            execution_id=execution_data["execution_id"],
+            schedule_type=ScheduleType(execution_data["schedule_type"]),
+            start_time=datetime.fromisoformat(execution_data["start_time"]),
+            status=ScheduleStatus(execution_data["status"]),
+            triggered_by=execution_data.get("triggered_by", "unknown"),
         )
 
-        if execution_data.get('end_time'):
-            execution.end_time = datetime.fromisoformat(execution_data['end_time'])
+        if execution_data.get("end_time"):
+            execution.end_time = datetime.fromisoformat(execution_data["end_time"])
 
-        if execution_data.get('validation_result'):
-            execution.validation_result = ValidationResult(execution_data['validation_result'])
+        if execution_data.get("validation_result"):
+            execution.validation_result = ValidationResult(
+                execution_data["validation_result"]
+            )
 
-        execution.pipeline_result = execution_data.get('pipeline_result')
-        execution.quality_gate_result = execution_data.get('quality_gate_result')
-        execution.git_commit = execution_data.get('git_commit')
-        execution.git_branch = execution_data.get('git_branch')
-        execution.error_message = execution_data.get('error_message')
+        execution.pipeline_result = execution_data.get("pipeline_result")
+        execution.quality_gate_result = execution_data.get("quality_gate_result")
+        execution.git_commit = execution_data.get("git_commit")
+        execution.git_branch = execution_data.get("git_branch")
+        execution.error_message = execution_data.get("error_message")
 
-        if execution_data.get('log_file'):
-            execution.log_file = Path(execution_data['log_file'])
+        if execution_data.get("log_file"):
+            execution.log_file = Path(execution_data["log_file"])
 
-        if execution_data.get('artifacts'):
-            execution.artifacts = [Path(p) for p in execution_data['artifacts']]
+        if execution_data.get("artifacts"):
+            execution.artifacts = [Path(p) for p in execution_data["artifacts"]]
 
         return execution
 
     def get_execution_status(self) -> dict[str, Any]:
         """実行状況の取得"""
         return {
-            'running_executions': len(self.running_executions),
-            'total_executions': len(self.executions),
-            'recent_executions': [
+            "running_executions": len(self.running_executions),
+            "total_executions": len(self.executions),
+            "recent_executions": [
                 {
-                    'execution_id': e.execution_id,
-                    'schedule_type': e.schedule_type.value,
-                    'status': e.status.value,
-                    'start_time': e.start_time.isoformat()
+                    "execution_id": e.execution_id,
+                    "schedule_type": e.schedule_type.value,
+                    "status": e.status.value,
+                    "start_time": e.start_time.isoformat(),
                 }
-                for e in sorted(self.executions, key=lambda x: x.start_time, reverse=True)[:10]
-            ]
+                for e in sorted(
+                    self.executions, key=lambda x: x.start_time, reverse=True
+                )[:10]
+            ],
         }
 
 
@@ -751,7 +827,7 @@ def create_default_schedules() -> list[ScheduleConfig]:
         min_interval_hours=0,  # コミット毎に実行
         timeout_minutes=30,
         watch_branches=["main", "master", "develop"],
-        notify_on_failure=True
+        notify_on_failure=True,
     )
     schedules.append(commit_config)
 
@@ -761,7 +837,7 @@ def create_default_schedules() -> list[ScheduleConfig]:
         validation_level=ValidationLevel.DAILY,
         daily_time="02:00",  # 午前2時
         timeout_minutes=60,
-        notify_on_failure=True
+        notify_on_failure=True,
     )
     schedules.append(daily_config)
 
@@ -773,7 +849,7 @@ def create_default_schedules() -> list[ScheduleConfig]:
         weekly_time="01:00",  # 日曜日午前1時
         timeout_minutes=120,
         notify_on_success=True,
-        notify_on_failure=True
+        notify_on_failure=True,
     )
     schedules.append(weekly_config)
 
@@ -785,18 +861,25 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="検証スケジューラー")
-    parser.add_argument("--project-root", default=".", help="プロジェクトルートディレクトリ")
-    parser.add_argument("--output-dir", default="scheduler_results", help="出力ディレクトリ")
+    parser.add_argument(
+        "--project-root", default=".", help="プロジェクトルートディレクトリ"
+    )
+    parser.add_argument(
+        "--output-dir", default="scheduler_results", help="出力ディレクトリ"
+    )
     parser.add_argument("--daemon", action="store_true", help="デーモンモードで実行")
-    parser.add_argument("--execute", choices=[t.value for t in ScheduleType], help="指定されたスケジュールを即座に実行")
+    parser.add_argument(
+        "--execute",
+        choices=[t.value for t in ScheduleType],
+        help="指定されたスケジュールを即座に実行",
+    )
     parser.add_argument("--status", action="store_true", help="実行状況を表示")
 
     args = parser.parse_args()
 
     # スケジューラーの初期化
     scheduler = ValidationScheduler(
-        project_root=Path(args.project_root),
-        output_dir=Path(args.output_dir)
+        project_root=Path(args.project_root), output_dir=Path(args.output_dir)
     )
 
     # デフォルトスケジュールの追加
@@ -809,8 +892,10 @@ async def main():
         print(f"実行中: {status['running_executions']}")
         print(f"総実行数: {status['total_executions']}")
         print("\n最近の実行:")
-        for execution in status['recent_executions']:
-            print(f"  {execution['execution_id']}: {execution['status']} ({execution['start_time']})")
+        for execution in status["recent_executions"]:
+            print(
+                f"  {execution['execution_id']}: {execution['status']} ({execution['start_time']})"
+            )
         return
 
     if args.execute:
@@ -840,7 +925,9 @@ async def main():
             print("\n検証スケジューラーを停止しています...")
             await scheduler.stop_scheduler()
     else:
-        print("使用方法: --daemon でデーモン実行、--execute でスケジュール実行、--status で状況確認")
+        print(
+            "使用方法: --daemon でデーモン実行、--execute でスケジュール実行、--status で状況確認"
+        )
 
 
 if __name__ == "__main__":

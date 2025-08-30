@@ -14,7 +14,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 # テスト用のQt環境設定
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 from PySide6.QtWidgets import QApplication, QTreeWidget
 
@@ -208,7 +208,7 @@ class TestFolderTreeWidget(unittest.TestCase):
         self.widget.folder_selected.connect(folder_selected_mock)
 
         # 非同期処理を無効化してテスト
-        with patch.object(self.widget, '_load_subfolders_async'):
+        with patch.object(self.widget, "_load_subfolders_async"):
             # フォルダ構造を読み込み
             self.widget.load_folder_structure(self.temp_dir)
 
@@ -228,7 +228,7 @@ class TestFolderTreeWidget(unittest.TestCase):
         """無効なフォルダ読み込みのテスト"""
         invalid_path = "/nonexistent/folder"
 
-        with patch('PySide6.QtWidgets.QMessageBox.warning') as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             self.widget.load_folder_structure(invalid_path)
 
             # 警告ダイアログが表示されたことを確認
@@ -308,8 +308,8 @@ class TestFolderTreeWidget(unittest.TestCase):
         # フィルターをクリア
         self.widget.filter_folders("")
 
-    @patch('os.path.exists')
-    @patch('os.path.isdir')
+    @patch("os.path.exists")
+    @patch("os.path.isdir")
     def test_expand_to_path(self, mock_isdir, mock_exists):
         """パス展開のテスト"""
         mock_exists.return_value = True
@@ -372,7 +372,9 @@ class TestFolderTreeContainer(unittest.TestCase):
     def test_stats_update(self):
         """統計情報更新のテスト"""
         # 初期状態
-        self.assertEqual(self.container.stats_label.text(), "フォルダ: 0, インデックス: 0")
+        self.assertEqual(
+            self.container.stats_label.text(), "フォルダ: 0, インデックス: 0"
+        )
 
         # フォルダを追加してから統計を更新
         self.container.load_folder_structure(self.temp_dir)
@@ -452,12 +454,12 @@ class TestFolderTreeIntegration(unittest.TestCase):
 
         # 複数レベルのディレクトリ構造
         self.folders = {
-            'root': self.temp_dir,
-            'docs': os.path.join(self.temp_dir, "documents"),
-            'images': os.path.join(self.temp_dir, "images"),
-            'docs_sub1': os.path.join(self.temp_dir, "documents", "reports"),
-            'docs_sub2': os.path.join(self.temp_dir, "documents", "presentations"),
-            'images_sub1': os.path.join(self.temp_dir, "images", "photos"),
+            "root": self.temp_dir,
+            "docs": os.path.join(self.temp_dir, "documents"),
+            "images": os.path.join(self.temp_dir, "images"),
+            "docs_sub1": os.path.join(self.temp_dir, "documents", "reports"),
+            "docs_sub2": os.path.join(self.temp_dir, "documents", "presentations"),
+            "images_sub1": os.path.join(self.temp_dir, "images", "photos"),
         }
 
         for folder in self.folders.values():
@@ -465,7 +467,7 @@ class TestFolderTreeIntegration(unittest.TestCase):
 
         # テスト用ファイルを作成
         for i in range(5):
-            with open(os.path.join(self.folders['docs'], f"doc{i}.txt"), "w") as f:
+            with open(os.path.join(self.folders["docs"], f"doc{i}.txt"), "w") as f:
                 f.write(f"Document {i} content")
 
     def tearDown(self):
@@ -479,17 +481,17 @@ class TestFolderTreeIntegration(unittest.TestCase):
         self.container.load_folder_structure(self.temp_dir)
 
         # 2. フォルダをインデックスに追加
-        self.container.set_indexed_folders([self.folders['docs']])
+        self.container.set_indexed_folders([self.folders["docs"]])
 
         # 3. フォルダを除外
-        self.container.set_excluded_folders([self.folders['images']])
+        self.container.set_excluded_folders([self.folders["images"]])
 
         # 4. 統計情報を確認
         indexed_folders = self.container.get_indexed_folders()
         excluded_folders = self.container.get_excluded_folders()
 
-        self.assertIn(self.folders['docs'], indexed_folders)
-        self.assertIn(self.folders['images'], excluded_folders)
+        self.assertIn(self.folders["docs"], indexed_folders)
+        self.assertIn(self.folders["images"], excluded_folders)
 
         # 5. フィルタリングをテスト
         self.container.filter_input.setText("documents")
@@ -506,12 +508,12 @@ class TestFolderTreeIntegration(unittest.TestCase):
     def test_error_handling(self):
         """エラーハンドリングのテスト"""
         # 存在しないフォルダを読み込み
-        with patch('PySide6.QtWidgets.QMessageBox.warning') as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             self.container.load_folder_structure("/nonexistent/folder")
             mock_warning.assert_called_once()
 
         # 権限のないフォルダのシミュレーション
-        with patch('os.listdir', side_effect=PermissionError("Access denied")):
+        with patch("os.listdir", side_effect=PermissionError("Access denied")):
             # エラーが適切に処理されることを確認
             worker = FolderLoadWorker(self.temp_dir)
 
@@ -524,6 +526,6 @@ class TestFolderTreeIntegration(unittest.TestCase):
             self.assertTrue(error_mock.called)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # テストスイートを実行
     unittest.main(verbosity=2)

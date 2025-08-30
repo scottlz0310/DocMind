@@ -58,7 +58,7 @@ class ApplicationStartupValidator(BaseValidator):
             "models",
             "whoosh_index",
             "error_reports",
-            "cache"
+            "cache",
         ]
 
         # 必要な設定項目
@@ -67,7 +67,7 @@ class ApplicationStartupValidator(BaseValidator):
             "log_level",
             "max_documents",
             "search_timeout",
-            "embedding_model"
+            "embedding_model",
         ]
 
         self.logger.info("ApplicationStartupValidatorを初期化しました")
@@ -118,7 +118,7 @@ class ApplicationStartupValidator(BaseValidator):
         # 要件の検証
         self.assert_condition(
             startup_time <= self.max_startup_time,
-            f"起動時間が要件を超過しました: {startup_time:.2f}秒 > {self.max_startup_time}秒"
+            f"起動時間が要件を超過しました: {startup_time:.2f}秒 > {self.max_startup_time}秒",
         )
 
         self.logger.info(f"起動時間要件を満たしています: {startup_time:.2f}秒")
@@ -139,7 +139,7 @@ class ApplicationStartupValidator(BaseValidator):
             dir_path = self.test_data_dir / dir_name
             self.assert_condition(
                 dir_path.exists() and dir_path.is_dir(),
-                f"必要なディレクトリが作成されていません: {dir_name}"
+                f"必要なディレクトリが作成されていません: {dir_name}",
             )
 
         self.logger.info("すべての必要なディレクトリが正常に作成されました")
@@ -159,8 +159,7 @@ class ApplicationStartupValidator(BaseValidator):
             self.logger.debug("既存の設定ファイルを削除しました")
 
         self.assert_condition(
-            not config_file.exists(),
-            "設定ファイルが削除されていません"
+            not config_file.exists(), "設定ファイルが削除されていません"
         )
 
         # 設定の初期化をテスト
@@ -169,8 +168,7 @@ class ApplicationStartupValidator(BaseValidator):
         # 必要な設定項目が存在することを確認
         for key in self.required_config_keys:
             self.assert_condition(
-                config.get(key) is not None,
-                f"必要な設定項目が存在しません: {key}"
+                config.get(key) is not None, f"必要な設定項目が存在しません: {key}"
             )
 
         # デフォルト値の妥当性をチェック
@@ -191,10 +189,7 @@ class ApplicationStartupValidator(BaseValidator):
         self._initialize_logging_system(str(log_file))
 
         # ログファイルが作成されることを確認
-        self.assert_condition(
-            log_file.exists(),
-            "ログファイルが作成されていません"
-        )
+        self.assert_condition(log_file.exists(), "ログファイルが作成されていません")
 
         # ログレベルの設定を確認
         self._verify_log_level_configuration()
@@ -218,8 +213,7 @@ class ApplicationStartupValidator(BaseValidator):
 
         # データベースファイルが作成されることを確認
         self.assert_condition(
-            db_file.exists(),
-            "データベースファイルが作成されていません"
+            db_file.exists(), "データベースファイルが作成されていません"
         )
 
         # 必要なテーブルが作成されることを確認
@@ -325,12 +319,12 @@ class ApplicationStartupValidator(BaseValidator):
                 "embedding_model": "all-MiniLM-L6-v2",
                 "whoosh_index_dir": "whoosh_index",
                 "database_file": "documents.db",
-                "embeddings_file": "embeddings.pkl"
+                "embeddings_file": "embeddings.pkl",
             }
 
             # 設定ファイルに保存
             config_file = self.test_data_dir / "config.json"
-            with open(config_file, 'w', encoding='utf-8') as f:
+            with open(config_file, "w", encoding="utf-8") as f:
                 json.dump(config_data, f, indent=2, ensure_ascii=False)
 
             return config_data
@@ -349,26 +343,24 @@ class ApplicationStartupValidator(BaseValidator):
         # データディレクトリの妥当性
         data_dir = Path(config["data_directory"])
         self.assert_condition(
-            data_dir.exists(),
-            f"データディレクトリが存在しません: {data_dir}"
+            data_dir.exists(), f"データディレクトリが存在しません: {data_dir}"
         )
 
         # ログレベルの妥当性
         valid_log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         self.assert_condition(
             config["log_level"] in valid_log_levels,
-            f"無効なログレベル: {config['log_level']}"
+            f"無効なログレベル: {config['log_level']}",
         )
 
         # 数値設定の妥当性
         self.assert_condition(
             config["max_documents"] > 0,
-            "最大ドキュメント数は正の値である必要があります"
+            "最大ドキュメント数は正の値である必要があります",
         )
 
         self.assert_condition(
-            config["search_timeout"] > 0,
-            "検索タイムアウトは正の値である必要があります"
+            config["search_timeout"] > 0, "検索タイムアウトは正の値である必要があります"
         )
 
     def _initialize_logging_system(self, log_file: str | None = None) -> None:
@@ -390,10 +382,7 @@ class ApplicationStartupValidator(BaseValidator):
 
             # ログシステムを初期化
             setup_logging(
-                level="INFO",
-                log_file=log_file,
-                enable_console=True,
-                enable_file=True
+                level="INFO", log_file=log_file, enable_console=True, enable_file=True
             )
 
         except Exception as e:
@@ -410,13 +399,12 @@ class ApplicationStartupValidator(BaseValidator):
         root_logger = logging.getLogger()
         self.assert_condition(
             root_logger.level == logging.INFO,
-            f"ログレベルが期待値と異なります: {root_logger.level}"
+            f"ログレベルが期待値と異なります: {root_logger.level}",
         )
 
         # ハンドラーが設定されていることを確認
         self.assert_condition(
-            len(root_logger.handlers) > 0,
-            "ログハンドラーが設定されていません"
+            len(root_logger.handlers) > 0, "ログハンドラーが設定されていません"
         )
 
     def _test_log_message_output(self, log_file: Path) -> None:
@@ -437,11 +425,11 @@ class ApplicationStartupValidator(BaseValidator):
         time.sleep(0.1)  # ファイル書き込みの待機
 
         if log_file.exists():
-            with open(log_file, encoding='utf-8') as f:
+            with open(log_file, encoding="utf-8") as f:
                 log_content = f.read()
                 self.assert_condition(
                     test_message in log_content,
-                    "ログメッセージがファイルに記録されていません"
+                    "ログメッセージがファイルに記録されていません",
                 )
 
     def _initialize_database(self, db_file: str | None = None) -> None:
@@ -461,6 +449,7 @@ class ApplicationStartupValidator(BaseValidator):
 
             # データベースマネージャーを初期化
             from src.data.database import DatabaseManager
+
             db_manager = DatabaseManager(db_file)
 
             # 初期化が完了したら接続を閉じる
@@ -482,15 +471,19 @@ class ApplicationStartupValidator(BaseValidator):
             cursor = conn.cursor()
 
             # 必要なテーブルが存在することを確認
-            required_tables = ["documents", "search_history", "saved_searches", "schema_version"]
+            required_tables = [
+                "documents",
+                "search_history",
+                "saved_searches",
+                "schema_version",
+            ]
 
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
             existing_tables = [row[0] for row in cursor.fetchall()]
 
             for table in required_tables:
                 self.assert_condition(
-                    table in existing_tables,
-                    f"必要なテーブルが存在しません: {table}"
+                    table in existing_tables, f"必要なテーブルが存在しません: {table}"
                 )
 
             conn.close()
@@ -513,8 +506,7 @@ class ApplicationStartupValidator(BaseValidator):
             health_ok = db_manager.health_check()
 
             self.assert_condition(
-                health_ok,
-                "データベースの健全性チェックに失敗しました"
+                health_ok, "データベースの健全性チェックに失敗しました"
             )
 
             db_manager.close()
@@ -532,7 +524,7 @@ class ApplicationStartupValidator(BaseValidator):
         try:
             # 破損した設定ファイルを作成
             config_file = self.test_data_dir / "config.json"
-            with open(config_file, 'w', encoding='utf-8') as f:
+            with open(config_file, "w", encoding="utf-8") as f:
                 f.write("{ invalid json content")
 
             # 回復処理をテスト
@@ -540,8 +532,7 @@ class ApplicationStartupValidator(BaseValidator):
 
             # デフォルト設定で動作することを確認
             self.assert_condition(
-                config is not None,
-                "破損した設定ファイルからの回復に失敗しました"
+                config is not None, "破損した設定ファイルからの回復に失敗しました"
             )
 
         except Exception as e:
@@ -557,7 +548,7 @@ class ApplicationStartupValidator(BaseValidator):
         # Windowsでは権限テストが困難なため、シミュレーションで実装
         try:
             # 権限エラーをシミュレート
-            with patch('pathlib.Path.mkdir') as mock_mkdir:
+            with patch("pathlib.Path.mkdir") as mock_mkdir:
                 mock_mkdir.side_effect = PermissionError("Permission denied")
 
                 # エラーハンドリングをテスト
@@ -581,7 +572,7 @@ class ApplicationStartupValidator(BaseValidator):
         try:
             # 破損したデータベースファイルを作成
             db_file = self.test_data_dir / "documents.db"
-            with open(db_file, 'wb') as f:
+            with open(db_file, "wb") as f:
                 f.write(b"corrupted database content")
 
             # 回復処理をテスト

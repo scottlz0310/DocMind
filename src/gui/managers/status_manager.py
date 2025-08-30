@@ -176,7 +176,7 @@ class StatusManager(QObject, LoggerMixin):
             return
 
         style_sheets = {
-            'info': """
+            "info": """
                 QProgressBar {
                     border: 1px solid #d0d0d0;
                     border-radius: 3px;
@@ -187,7 +187,7 @@ class StatusManager(QObject, LoggerMixin):
                     border-radius: 2px;
                 }
             """,
-            'success': """
+            "success": """
                 QProgressBar {
                     border: 1px solid #d0d0d0;
                     border-radius: 3px;
@@ -198,7 +198,7 @@ class StatusManager(QObject, LoggerMixin):
                     border-radius: 2px;
                 }
             """,
-            'warning': """
+            "warning": """
                 QProgressBar {
                     border: 1px solid #d0d0d0;
                     border-radius: 3px;
@@ -209,7 +209,7 @@ class StatusManager(QObject, LoggerMixin):
                     border-radius: 2px;
                 }
             """,
-            'error': """
+            "error": """
                 QProgressBar {
                     border: 1px solid #d0d0d0;
                     border-radius: 3px;
@@ -219,10 +219,10 @@ class StatusManager(QObject, LoggerMixin):
                     background-color: #F44336;
                     border-radius: 2px;
                 }
-            """
+            """,
         }
 
-        stylesheet = style_sheets.get(style, style_sheets['info'])
+        stylesheet = style_sheets.get(style, style_sheets["info"])
         self.progress_bar.setStyleSheet(stylesheet)
 
     def clear_status(self) -> None:
@@ -243,10 +243,10 @@ class StatusManager(QObject, LoggerMixin):
             dict: ステータスバーコンポーネントの辞書
         """
         return {
-            'status_bar': self.status_bar,
-            'status_label': self.status_label,
-            'progress_bar': self.progress_bar,
-            'system_info_label': self.system_info_label
+            "status_bar": self.status_bar,
+            "status_label": self.status_label,
+            "progress_bar": self.progress_bar,
+            "system_info_label": self.system_info_label,
         }
 
     def cleanup(self) -> None:
@@ -261,4 +261,6 @@ class StatusManager(QObject, LoggerMixin):
             self.logger.debug("ステータス管理マネージャーをクリーンアップしました")
 
         except Exception as e:
-            self.logger.error(f"ステータス管理マネージャーのクリーンアップ中にエラー: {e}")
+            self.logger.error(
+                f"ステータス管理マネージャーのクリーンアップ中にエラー: {e}"
+            )

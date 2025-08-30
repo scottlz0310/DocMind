@@ -23,10 +23,8 @@ def setup_logging():
     """ログ設定のセットアップ"""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.StreamHandler(sys.stdout)
-        ]
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[logging.StreamHandler(sys.stdout)],
     )
 
 
@@ -42,11 +40,11 @@ def main():
         # 検証設定の作成（シンプル化）
         config = ValidationConfig(
             enable_performance_monitoring=False,  # 基本検証では無効化
-            enable_memory_monitoring=False,       # 基本検証では無効化
+            enable_memory_monitoring=False,  # 基本検証では無効化
             enable_error_injection=False,
             max_execution_time=30.0,  # 30秒
-            max_memory_usage=512.0,   # 512MB
-            log_level="INFO"
+            max_memory_usage=512.0,  # 512MB
+            log_level="INFO",
         )
 
         # GUI機能検証クラスの初期化

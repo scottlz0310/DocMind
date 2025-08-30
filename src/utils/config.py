@@ -53,7 +53,13 @@ class Config:
             "semantic_weight": 50,
             # フォルダ管理
             "indexed_folders": [],
-            "exclude_patterns": ["*.tmp", "*.log", "__pycache__/*", ".git/*", "node_modules/*"],
+            "exclude_patterns": [
+                "*.tmp",
+                "*.log",
+                "__pycache__/*",
+                ".git/*",
+                "node_modules/*",
+            ],
             # ログ設定
             "console_logging": True,
             "file_logging": True,
@@ -65,7 +71,7 @@ class Config:
             "enable_preview_cache": True,
             "preview_cache_size": 50,
             "enable_search_history": True,
-            "search_history_limit": 1000
+            "search_history_limit": 1000,
         }
 
         # 設定の初期化（デフォルト値で開始）
@@ -86,7 +92,7 @@ class Config:
         # 設定ファイルが存在する場合は読み込み
         if self.config_file.exists():
             try:
-                with open(self.config_file, encoding='utf-8') as f:
+                with open(self.config_file, encoding="utf-8") as f:
                     file_config = json.load(f)
                     self._config.update(file_config)
                 self.logger.info(f"設定ファイルを読み込みました: {self.config_file}")
@@ -105,7 +111,7 @@ class Config:
             self.config_file.parent.mkdir(parents=True, exist_ok=True)
 
             # 設定ファイルの保存
-            with open(self.config_file, 'w', encoding='utf-8') as f:
+            with open(self.config_file, "w", encoding="utf-8") as f:
                 json.dump(self._config, f, indent=2, ensure_ascii=False)
 
             self.logger.info(f"設定ファイルを保存しました: {self.config_file}")
@@ -212,31 +218,19 @@ class Config:
 
     def get_database_path(self) -> str:
         """データベースファイルのフルパスを取得"""
-        return os.path.join(
-            self.get_data_directory(),
-            self.get("database_file")
-        )
+        return os.path.join(self.get_data_directory(), self.get("database_file"))
 
     def get_embeddings_path(self) -> str:
         """埋め込みファイルのフルパスを取得"""
-        return os.path.join(
-            self.get_data_directory(),
-            self.get("embeddings_file")
-        )
+        return os.path.join(self.get_data_directory(), self.get("embeddings_file"))
 
     def get_index_path(self) -> str:
         """Whooshインデックスディレクトリのフルパスを取得"""
-        return os.path.join(
-            self.get_data_directory(),
-            self.get("whoosh_index_dir")
-        )
+        return os.path.join(self.get_data_directory(), self.get("whoosh_index_dir"))
 
     def get_window_size(self) -> tuple:
         """ウィンドウサイズを取得"""
-        return (
-            int(self.get("window_width")),
-            int(self.get("window_height"))
-        )
+        return (int(self.get("window_width")), int(self.get("window_height")))
 
     def is_file_watching_enabled(self) -> bool:
         """ファイル監視が有効かどうかを取得"""
@@ -309,7 +303,7 @@ class Config:
         """フォント設定を取得"""
         return {
             "family": self.get("font_family", "システムデフォルト"),
-            "size": int(self.get("font_size", 10))
+            "size": int(self.get("font_size", 10)),
         }
 
     def get_ui_theme(self) -> str:
@@ -322,7 +316,7 @@ class Config:
             "max_results": int(self.get("max_results", 100)),
             "semantic_weight": float(self.get("semantic_weight", 50)),
             "enable_search_history": bool(self.get("enable_search_history", True)),
-            "search_history_limit": int(self.get("search_history_limit", 1000))
+            "search_history_limit": int(self.get("search_history_limit", 1000)),
         }
 
     def get_performance_settings(self) -> dict[str, Any]:
@@ -331,7 +325,7 @@ class Config:
             "enable_preview_cache": bool(self.get("enable_preview_cache", True)),
             "preview_cache_size": int(self.get("preview_cache_size", 50)),
             "batch_size": self.get_batch_size(),
-            "cache_size": self.get_cache_size()
+            "cache_size": self.get_cache_size(),
         }
 
     def validate_settings(self) -> list[str]:
@@ -342,7 +336,9 @@ class Config:
             # データディレクトリの検証
             data_dir = Path(self.get_data_directory())
             if not data_dir.parent.exists():
-                warnings.append(f"データディレクトリの親ディレクトリが存在しません: {data_dir.parent}")
+                warnings.append(
+                    f"データディレクトリの親ディレクトリが存在しません: {data_dir.parent}"
+                )
 
             # インデックス対象フォルダの検証
             for folder in self.get_indexed_folders():
@@ -365,7 +361,9 @@ class Config:
             # ログファイルの検証
             log_file = Path(self.get_log_file_path())
             if not log_file.parent.exists():
-                warnings.append(f"ログファイルのディレクトリが存在しません: {log_file.parent}")
+                warnings.append(
+                    f"ログファイルのディレクトリが存在しません: {log_file.parent}"
+                )
 
         except Exception as e:
             warnings.append(f"設定の検証中にエラーが発生しました: {e}")
@@ -382,11 +380,15 @@ class Config:
         try:
             export_data = {
                 "version": "1.0",
-                "timestamp": Path(file_path).stat().st_mtime if Path(file_path).exists() else None,
-                "settings": self._config.copy()
+                "timestamp": (
+                    Path(file_path).stat().st_mtime
+                    if Path(file_path).exists()
+                    else None
+                ),
+                "settings": self._config.copy(),
             }
 
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(export_data, f, indent=2, ensure_ascii=False)
 
             self.logger.info(f"設定をエクスポートしました: {file_path}")
@@ -399,7 +401,7 @@ class Config:
     def import_settings(self, file_path: str) -> bool:
         """ファイルから設定をインポート"""
         try:
-            with open(file_path, encoding='utf-8') as f:
+            with open(file_path, encoding="utf-8") as f:
                 import_data = json.load(f)
 
             if "settings" in import_data:
@@ -410,7 +412,9 @@ class Config:
                     self.logger.info(f"設定をインポートしました: {file_path}")
                     return True
                 else:
-                    self.logger.warning(f"サポートされていない設定ファイルのバージョンです: {version}")
+                    self.logger.warning(
+                        f"サポートされていない設定ファイルのバージョンです: {version}"
+                    )
                     return False
             else:
                 self.logger.error("無効な設定ファイル形式です")
@@ -419,6 +423,7 @@ class Config:
         except Exception as e:
             self.logger.error(f"設定のインポートに失敗しました: {e}")
             return False
+
 
 # グローバル設定インスタンス
 _global_config = None

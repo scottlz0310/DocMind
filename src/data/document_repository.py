@@ -44,27 +44,32 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO documents (
                         id, file_path, title, file_type, size,
                         created_date, modified_date, indexed_date,
                         content_hash, metadata
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    document.id,
-                    document.file_path,
-                    document.title,
-                    document.file_type.value,
-                    document.size,
-                    document.created_date,
-                    document.modified_date,
-                    document.indexed_date,
-                    document.content_hash,
-                    json.dumps(document.metadata, ensure_ascii=False)
-                ))
+                """,
+                    (
+                        document.id,
+                        document.file_path,
+                        document.title,
+                        document.file_type.value,
+                        document.size,
+                        document.created_date,
+                        document.modified_date,
+                        document.indexed_date,
+                        document.content_hash,
+                        json.dumps(document.metadata, ensure_ascii=False),
+                    ),
+                )
                 conn.commit()
 
-                self.logger.info(f"ドキュメントを追加しました: {document.title} ({document.id})")
+                self.logger.info(
+                    f"ドキュメントを追加しました: {document.title} ({document.id})"
+                )
                 return True
 
         except Exception as e:
@@ -82,12 +87,15 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, file_path, title, file_type, size,
                            created_date, modified_date, indexed_date,
                            content_hash, metadata
                     FROM documents WHERE id = ?
-                """, (document_id,))
+                """,
+                    (document_id,),
+                )
 
                 row = cursor.fetchone()
                 if row:
@@ -109,12 +117,15 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, file_path, title, file_type, size,
                            created_date, modified_date, indexed_date,
                            content_hash, metadata
                     FROM documents WHERE file_path = ?
-                """, (file_path,))
+                """,
+                    (file_path,),
+                )
 
                 row = cursor.fetchone()
                 if row:
@@ -140,30 +151,37 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     UPDATE documents SET
                         file_path = ?, title = ?, file_type = ?, size = ?,
                         created_date = ?, modified_date = ?, indexed_date = ?,
                         content_hash = ?, metadata = ?
                     WHERE id = ?
-                """, (
-                    document.file_path,
-                    document.title,
-                    document.file_type.value,
-                    document.size,
-                    document.created_date,
-                    document.modified_date,
-                    document.indexed_date,
-                    document.content_hash,
-                    json.dumps(document.metadata, ensure_ascii=False),
-                    document.id
-                ))
+                """,
+                    (
+                        document.file_path,
+                        document.title,
+                        document.file_type.value,
+                        document.size,
+                        document.created_date,
+                        document.modified_date,
+                        document.indexed_date,
+                        document.content_hash,
+                        json.dumps(document.metadata, ensure_ascii=False),
+                        document.id,
+                    ),
+                )
 
                 if cursor.rowcount == 0:
-                    raise DocumentNotFoundError(f"ドキュメントが見つかりません: {document.id}")
+                    raise DocumentNotFoundError(
+                        f"ドキュメントが見つかりません: {document.id}"
+                    )
 
                 conn.commit()
-                self.logger.info(f"ドキュメントを更新しました: {document.title} ({document.id})")
+                self.logger.info(
+                    f"ドキュメントを更新しました: {document.title} ({document.id})"
+                )
                 return True
 
         except DocumentNotFoundError:
@@ -187,10 +205,14 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("DELETE FROM documents WHERE id = ?", (document_id,))
+                cursor = conn.execute(
+                    "DELETE FROM documents WHERE id = ?", (document_id,)
+                )
 
                 if cursor.rowcount == 0:
-                    raise DocumentNotFoundError(f"ドキュメントが見つかりません: {document_id}")
+                    raise DocumentNotFoundError(
+                        f"ドキュメントが見つかりません: {document_id}"
+                    )
 
                 conn.commit()
                 self.logger.info(f"ドキュメントを削除しました: {document_id}")
@@ -213,10 +235,14 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("DELETE FROM documents WHERE file_path = ?", (file_path,))
+                cursor = conn.execute(
+                    "DELETE FROM documents WHERE file_path = ?", (file_path,)
+                )
 
                 if cursor.rowcount == 0:
-                    self.logger.warning(f"削除対象のドキュメントが見つかりません: {file_path}")
+                    self.logger.warning(
+                        f"削除対象のドキュメントが見つかりません: {file_path}"
+                    )
                     return False
 
                 conn.commit()
@@ -227,7 +253,9 @@ class DocumentRepository:
             self.logger.error(f"ドキュメント削除エラー: {e}")
             raise DatabaseError(f"ドキュメントの削除に失敗しました: {e}")
 
-    def get_all_documents(self, limit: int | None = None, offset: int = 0) -> list[Document]:
+    def get_all_documents(
+        self, limit: int | None = None, offset: int = 0
+    ) -> list[Document]:
         """すべてのドキュメントを取得
 
         Args:
@@ -270,13 +298,16 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, file_path, title, file_type, size,
                            created_date, modified_date, indexed_date,
                            content_hash, metadata
                     FROM documents WHERE file_type = ?
                     ORDER BY indexed_date DESC
-                """, (file_type.value,))
+                """,
+                    (file_type.value,),
+                )
 
                 return [self._row_to_document(row) for row in cursor.fetchall()]
 
@@ -295,13 +326,16 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, file_path, title, file_type, size,
                            created_date, modified_date, indexed_date,
                            content_hash, metadata
                     FROM documents WHERE modified_date > ?
                     ORDER BY modified_date DESC
-                """, (date,))
+                """,
+                    (date,),
+                )
 
                 return [self._row_to_document(row) for row in cursor.fetchall()]
 
@@ -320,13 +354,16 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, file_path, title, file_type, size,
                            created_date, modified_date, indexed_date,
                            content_hash, metadata
                     FROM documents WHERE title LIKE ?
                     ORDER BY title
-                """, (f"%{title_pattern}%",))
+                """,
+                    (f"%{title_pattern}%",),
+                )
 
                 return [self._row_to_document(row) for row in cursor.fetchall()]
 
@@ -358,26 +395,30 @@ class DocumentRepository:
         try:
             with self.db_manager.get_connection() as conn:
                 # 基本統計
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT COUNT(*) as total_docs,
                            SUM(size) as total_size,
                            MAX(indexed_date) as last_updated
                     FROM documents
-                """)
+                """
+                )
                 row = cursor.fetchone()
 
                 stats = IndexStats(
                     total_documents=row[0] or 0,
                     total_size=row[1] or 0,
-                    last_updated=datetime.fromisoformat(row[2]) if row[2] else None
+                    last_updated=datetime.fromisoformat(row[2]) if row[2] else None,
                 )
 
                 # ファイルタイプ別統計
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT file_type, COUNT(*) as count
                     FROM documents
                     GROUP BY file_type
-                """)
+                """
+                )
 
                 for row in cursor.fetchall():
                     file_type = FileType(row[0])
@@ -405,20 +446,30 @@ class DocumentRepository:
             with self.db_manager.get_connection() as conn:
                 data = [
                     (
-                        doc.id, doc.file_path, doc.title, doc.file_type.value, doc.size,
-                        doc.created_date, doc.modified_date, doc.indexed_date,
-                        doc.content_hash, json.dumps(doc.metadata, ensure_ascii=False)
+                        doc.id,
+                        doc.file_path,
+                        doc.title,
+                        doc.file_type.value,
+                        doc.size,
+                        doc.created_date,
+                        doc.modified_date,
+                        doc.indexed_date,
+                        doc.content_hash,
+                        json.dumps(doc.metadata, ensure_ascii=False),
                     )
                     for doc in documents
                 ]
 
-                conn.executemany("""
+                conn.executemany(
+                    """
                     INSERT OR REPLACE INTO documents (
                         id, file_path, title, file_type, size,
                         created_date, modified_date, indexed_date,
                         content_hash, metadata
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, data)
+                """,
+                    data,
+                )
 
                 conn.commit()
                 self.logger.info(f"{len(documents)}件のドキュメントを一括挿入しました")
@@ -438,21 +489,21 @@ class DocumentRepository:
             Document: 変換されたDocumentオブジェクト
         """
         try:
-            metadata = json.loads(row['metadata']) if row['metadata'] else {}
+            metadata = json.loads(row["metadata"]) if row["metadata"] else {}
         except json.JSONDecodeError:
             self.logger.warning(f"メタデータのJSONパースに失敗: {row['id']}")
             metadata = {}
 
         return Document(
-            id=row['id'],
-            file_path=row['file_path'],
-            title=row['title'],
+            id=row["id"],
+            file_path=row["file_path"],
+            title=row["title"],
             content="",  # コンテンツはデータベースに保存しない
-            file_type=FileType(row['file_type']),
-            size=row['size'],
-            created_date=datetime.fromisoformat(row['created_date']),
-            modified_date=datetime.fromisoformat(row['modified_date']),
-            indexed_date=datetime.fromisoformat(row['indexed_date']),
-            content_hash=row['content_hash'],
-            metadata=metadata
+            file_type=FileType(row["file_type"]),
+            size=row["size"],
+            created_date=datetime.fromisoformat(row["created_date"]),
+            modified_date=datetime.fromisoformat(row["modified_date"]),
+            indexed_date=datetime.fromisoformat(row["indexed_date"]),
+            content_hash=row["content_hash"],
+            metadata=metadata,
         )

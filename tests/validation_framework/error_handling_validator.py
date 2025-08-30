@@ -38,9 +38,11 @@ from src.utils.exceptions import (
     EmbeddingError,
     FileSystemError,
     IndexingError,
-    SearchError,
 )
 from src.utils.exceptions import MemoryError as DocMindMemoryError
+from src.utils.exceptions import (
+    SearchError,
+)
 from src.utils.graceful_degradation import ComponentStatus, GracefulDegradationManager
 
 
@@ -111,7 +113,7 @@ class ErrorHandlingValidator(BaseValidator):
 
         try:
             # テストデータ生成器のクリーンアップ
-            if hasattr(self.test_data_generator, 'cleanup'):
+            if hasattr(self.test_data_generator, "cleanup"):
                 self.test_data_generator.cleanup()
 
             # 一時ディレクトリの削除
@@ -131,7 +133,7 @@ class ErrorHandlingValidator(BaseValidator):
             ("embedding_manager", {"embedding_generation": True}),
             ("document_processor", {"pdf_processing": True, "text_processing": True}),
             ("database", {"metadata_storage": True, "search_history": True}),
-            ("file_watcher", {"file_monitoring": True})
+            ("file_watcher", {"file_monitoring": True}),
         ]
 
         for name, capabilities in components:
@@ -144,29 +146,35 @@ class ErrorHandlingValidator(BaseValidator):
         test_cases = [
             {
                 "name": "DocumentProcessingError",
-                "exception": DocumentProcessingError("テストファイル処理エラー", "/test/file.pdf"),
-                "context": "ドキュメント処理テスト"
+                "exception": DocumentProcessingError(
+                    "テストファイル処理エラー", "/test/file.pdf"
+                ),
+                "context": "ドキュメント処理テスト",
             },
             {
                 "name": "IndexingError",
-                "exception": IndexingError("インデックス作成エラー", str(self.test_index_path)),
-                "context": "インデックス作成テスト"
+                "exception": IndexingError(
+                    "インデックス作成エラー", str(self.test_index_path)
+                ),
+                "context": "インデックス作成テスト",
             },
             {
                 "name": "SearchError",
                 "exception": SearchError("検索実行エラー", "テストクエリ", "full_text"),
-                "context": "検索実行テスト"
+                "context": "検索実行テスト",
             },
             {
                 "name": "DatabaseError",
-                "exception": DatabaseError("データベース接続エラー", str(self.test_db_path)),
-                "context": "データベース操作テスト"
+                "exception": DatabaseError(
+                    "データベース接続エラー", str(self.test_db_path)
+                ),
+                "context": "データベース操作テスト",
             },
             {
                 "name": "UnexpectedException",
                 "exception": RuntimeError("予期しないランタイムエラー"),
-                "context": "予期しない例外テスト"
-            }
+                "context": "予期しない例外テスト",
+            },
         ]
 
         for test_case in test_cases:
@@ -176,7 +184,7 @@ class ErrorHandlingValidator(BaseValidator):
                     test_case["exception"],
                     test_case["context"],
                     f"テスト用エラーメッセージ: {test_case['name']}",
-                    attempt_recovery=True
+                    attempt_recovery=True,
                 )
 
                 # 結果の記録
@@ -187,7 +195,7 @@ class ErrorHandlingValidator(BaseValidator):
                     "handled_successfully": True,
                     "recovery_attempted": True,
                     "recovery_success": recovery_success,
-                    "error_report_generated": self._check_error_report_generated()
+                    "error_report_generated": self._check_error_report_generated(),
                 }
 
                 self.exception_handling_results.append(result)
@@ -195,19 +203,21 @@ class ErrorHandlingValidator(BaseValidator):
                 # アサーション
                 self.assert_condition(
                     result["handled_successfully"],
-                    f"例外 {test_case['name']} が正常に処理されました"
+                    f"例外 {test_case['name']} が正常に処理されました",
                 )
 
                 self.logger.info(f"例外処理テスト完了: {test_case['name']}")
 
             except Exception as e:
-                self.logger.error(f"例外処理テスト中にエラー: {test_case['name']} - {e}")
+                self.logger.error(
+                    f"例外処理テスト中にエラー: {test_case['name']} - {e}"
+                )
                 result = {
                     "test_name": f"exception_handling_{test_case['name']}",
                     "exception_type": type(test_case["exception"]).__name__,
                     "context": test_case["context"],
                     "handled_successfully": False,
-                    "error_message": str(e)
+                    "error_message": str(e),
                 }
                 self.exception_handling_results.append(result)
 
@@ -216,26 +226,28 @@ class ErrorHandlingValidator(BaseValidator):
         self.logger.info("エラーメッセージ表示の検証を開始します")
 
         # ログハンドラーをモックして、メッセージの内容を検証
-        with patch('logging.Logger.info') as mock_info, \
-             patch('logging.Logger.error') as mock_error, \
-             patch('logging.Logger.warning'):
+        with (
+            patch("logging.Logger.info") as mock_info,
+            patch("logging.Logger.error") as mock_error,
+            patch("logging.Logger.warning"),
+        ):
 
             test_messages = [
                 {
                     "exception": DocumentProcessingError("PDFファイルが破損しています"),
                     "user_message": "ファイルの処理中にエラーが発生しました。ファイルが破損している可能性があります。",
-                    "expected_log_level": "error"
+                    "expected_log_level": "error",
                 },
                 {
                     "exception": SearchError("検索インデックスにアクセスできません"),
                     "user_message": "検索機能が一時的に利用できません。しばらく待ってから再試行してください。",
-                    "expected_log_level": "error"
+                    "expected_log_level": "error",
                 },
                 {
                     "exception": ConfigurationError("設定ファイルが見つかりません"),
                     "user_message": "設定に問題があります。デフォルト設定で続行します。",
-                    "expected_log_level": "warning"
-                }
+                    "expected_log_level": "warning",
+                },
             ]
 
             for i, test_case in enumerate(test_messages):
@@ -244,25 +256,28 @@ class ErrorHandlingValidator(BaseValidator):
                     test_case["exception"],
                     f"メッセージ表示テスト_{i}",
                     test_case["user_message"],
-                    attempt_recovery=False
+                    attempt_recovery=False,
                 )
 
                 # ログ呼び出しの検証
                 if test_case["expected_log_level"] == "error":
                     self.assert_condition(
                         mock_error.called,
-                        f"エラーレベルのログが記録されました: {test_case['user_message']}"
+                        f"エラーレベルのログが記録されました: {test_case['user_message']}",
                     )
                 elif test_case["expected_log_level"] == "warning":
                     # 警告レベルのログも検証可能
                     pass
 
                 # ユーザーメッセージの記録確認
-                info_calls = [call for call in mock_info.call_args_list
-                             if test_case["user_message"] in str(call)]
+                info_calls = [
+                    call
+                    for call in mock_info.call_args_list
+                    if test_case["user_message"] in str(call)
+                ]
                 self.assert_condition(
                     len(info_calls) > 0,
-                    f"ユーザーメッセージがログに記録されました: {test_case['user_message']}"
+                    f"ユーザーメッセージがログに記録されました: {test_case['user_message']}",
                 )
 
         self.logger.info("エラーメッセージ表示の検証が完了しました")
@@ -277,20 +292,20 @@ class ErrorHandlingValidator(BaseValidator):
                 "component": "search_manager",
                 "error": SearchError("セマンティック検索モデルの読み込み失敗"),
                 "disable_capabilities": ["semantic_search"],
-                "expected_remaining": ["full_text_search"]
+                "expected_remaining": ["full_text_search"],
             },
             {
                 "component": "embedding_manager",
                 "error": EmbeddingError("埋め込みモデルのメモリ不足"),
                 "disable_capabilities": ["embedding_generation"],
-                "expected_remaining": []
+                "expected_remaining": [],
             },
             {
                 "component": "document_processor",
                 "error": DocumentProcessingError("PDFライブラリの初期化失敗"),
                 "disable_capabilities": ["pdf_processing"],
-                "expected_remaining": ["text_processing"]
-            }
+                "expected_remaining": ["text_processing"],
+            },
         ]
 
         for scenario in degradation_scenarios:
@@ -298,15 +313,17 @@ class ErrorHandlingValidator(BaseValidator):
             self.degradation_manager.mark_component_degraded(
                 scenario["component"],
                 scenario["disable_capabilities"],
-                str(scenario["error"])
+                str(scenario["error"]),
             )
 
             # 劣化状態の確認
-            component_state = self.degradation_manager.get_component_status(scenario["component"])
+            component_state = self.degradation_manager.get_component_status(
+                scenario["component"]
+            )
 
             self.assert_condition(
                 component_state.status == ComponentStatus.DEGRADED,
-                f"コンポーネント {scenario['component']} が劣化状態になりました"
+                f"コンポーネント {scenario['component']} が劣化状態になりました",
             )
 
             # 無効化された機能の確認
@@ -315,8 +332,7 @@ class ErrorHandlingValidator(BaseValidator):
                     scenario["component"], disabled_capability
                 )
                 self.assert_condition(
-                    not is_available,
-                    f"機能 {disabled_capability} が無効化されました"
+                    not is_available, f"機能 {disabled_capability} が無効化されました"
                 )
 
             # 残存機能の確認
@@ -325,8 +341,7 @@ class ErrorHandlingValidator(BaseValidator):
                     scenario["component"], remaining_capability
                 )
                 self.assert_condition(
-                    is_available,
-                    f"機能 {remaining_capability} は利用可能です"
+                    is_available, f"機能 {remaining_capability} は利用可能です"
                 )
 
             # 結果の記録
@@ -335,7 +350,8 @@ class ErrorHandlingValidator(BaseValidator):
                 "error_type": type(scenario["error"]).__name__,
                 "disabled_capabilities": scenario["disable_capabilities"],
                 "remaining_capabilities": scenario["expected_remaining"],
-                "degradation_successful": component_state.status == ComponentStatus.DEGRADED
+                "degradation_successful": component_state.status
+                == ComponentStatus.DEGRADED,
             }
             self.degradation_results.append(result)
 
@@ -345,7 +361,7 @@ class ErrorHandlingValidator(BaseValidator):
         system_health = self.degradation_manager.get_system_health()
         self.assert_condition(
             system_health["overall_health"] in ["degraded", "critical"],
-            "システム全体が劣化状態を正しく認識しています"
+            "システム全体が劣化状態を正しく認識しています",
         )
 
         self.logger.info("優雅な劣化機能の検証が完了しました")
@@ -398,25 +414,27 @@ class ErrorHandlingValidator(BaseValidator):
 
         try:
             # 書き込み試行でエラーを発生
-            with open(test_file, 'w') as f:
+            with open(test_file, "w") as f:
                 f.write("新しいデータ")
         except PermissionError:
             # 権限エラーからの回復
             self.error_handler.handle_exception(
                 FileSystemError("ファイル書き込み権限がありません", str(test_file)),
                 "権限回復テスト",
-                attempt_recovery=True
+                attempt_recovery=True,
             )
         finally:
             # 権限を復元
             test_file.chmod(original_mode)
 
         # 結果の記録
-        self.recovery_results.append({
-            "test_type": "filesystem_recovery",
-            "scenarios": ["directory_creation", "permission_recovery"],
-            "success": True
-        })
+        self.recovery_results.append(
+            {
+                "test_type": "filesystem_recovery",
+                "scenarios": ["directory_creation", "permission_recovery"],
+                "success": True,
+            }
+        )
 
         self.logger.info("ファイルシステム回復テストが完了しました")
 
@@ -439,8 +457,8 @@ class ErrorHandlingValidator(BaseValidator):
 
         # 2. データベース破損からの回復
         # 破損ファイルを作成
-        with open(test_db, 'wb') as f:
-            f.write(b'corrupted database content')
+        with open(test_db, "wb") as f:
+            f.write(b"corrupted database content")
 
         try:
             # SQLite接続を試行
@@ -451,21 +469,23 @@ class ErrorHandlingValidator(BaseValidator):
             recovery_success = self.error_handler.handle_exception(
                 DatabaseError("データベースが破損しています", str(test_db)),
                 "データベース破損回復テスト",
-                attempt_recovery=True
+                attempt_recovery=True,
             )
         finally:
-            if 'conn' in locals():
+            if "conn" in locals():
                 conn.close()
 
         # 3. データベースロックからの回復
         # 正常なデータベースを作成
         conn = sqlite3.connect(str(test_db))
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS test_table (
                 id INTEGER PRIMARY KEY,
                 content TEXT
             )
-        """)
+        """
+        )
         conn.commit()
 
         # ロック状況をシミュレート
@@ -485,19 +505,21 @@ class ErrorHandlingValidator(BaseValidator):
             recovery_success = self.error_handler.handle_exception(
                 DatabaseError("データベースがロックされています", str(test_db)),
                 "データベースロック回復テスト",
-                attempt_recovery=True
+                attempt_recovery=True,
             )
         finally:
             lock_thread.join()
-            if 'conn2' in locals():
+            if "conn2" in locals():
                 conn2.close()
 
         # 結果の記録
-        self.recovery_results.append({
-            "test_type": "database_recovery",
-            "scenarios": ["file_missing", "corruption", "lock"],
-            "success": True
-        })
+        self.recovery_results.append(
+            {
+                "test_type": "database_recovery",
+                "scenarios": ["file_missing", "corruption", "lock"],
+                "success": True,
+            }
+        )
 
         self.logger.info("データベース回復テストが完了しました")
 
@@ -522,6 +544,7 @@ class ErrorHandlingValidator(BaseValidator):
 
             # メモリ使用量をチェック
             import psutil
+
             process = psutil.Process()
             memory_usage_mb = process.memory_info().rss / 1024 / 1024
 
@@ -535,6 +558,7 @@ class ErrorHandlingValidator(BaseValidator):
                 # メモリを解放
                 del result
                 import gc
+
                 gc.collect()
 
         except MemoryError as e:
@@ -544,11 +568,13 @@ class ErrorHandlingValidator(BaseValidator):
             )
 
         # 結果の記録
-        self.recovery_results.append({
-            "test_type": "memory_recovery",
-            "scenarios": ["memory_exhaustion"],
-            "success": True
-        })
+        self.recovery_results.append(
+            {
+                "test_type": "memory_recovery",
+                "scenarios": ["memory_exhaustion"],
+                "success": True,
+            }
+        )
 
         self.logger.info("メモリ回復テストが完了しました")
 
@@ -570,7 +596,7 @@ class ErrorHandlingValidator(BaseValidator):
             self.error_handler.handle_exception(
                 ConnectionError("ネットワーク接続がタイムアウトしました"),
                 "ネットワーク回復テスト",
-                attempt_recovery=True
+                attempt_recovery=True,
             )
         finally:
             sock.close()
@@ -583,15 +609,17 @@ class ErrorHandlingValidator(BaseValidator):
             self.error_handler.handle_exception(
                 ConnectionError("DNS解決に失敗しました"),
                 "DNS回復テスト",
-                attempt_recovery=True
+                attempt_recovery=True,
             )
 
         # 結果の記録
-        self.recovery_results.append({
-            "test_type": "network_recovery",
-            "scenarios": ["connection_timeout", "dns_resolution"],
-            "success": True
-        })
+        self.recovery_results.append(
+            {
+                "test_type": "network_recovery",
+                "scenarios": ["connection_timeout", "dns_resolution"],
+                "success": True,
+            }
+        )
 
         self.logger.info("ネットワーク回復テストが完了しました")
 
@@ -604,36 +632,35 @@ class ErrorHandlingValidator(BaseValidator):
             {
                 "error_type": "file_not_found",
                 "parameters": {"target_file": str(self.temp_dir / "missing_file.txt")},
-                "expected_exception": FileNotFoundError
+                "expected_exception": FileNotFoundError,
             },
             {
                 "error_type": "permission_denied",
                 "parameters": {"target_path": str(self.temp_dir)},
-                "expected_exception": PermissionError
+                "expected_exception": PermissionError,
             },
             {
                 "error_type": "corrupted_file",
                 "parameters": {"target_file": str(self.temp_dir / "corrupted.txt")},
-                "expected_exception": UnicodeDecodeError
+                "expected_exception": UnicodeDecodeError,
             },
             {
                 "error_type": "database_connection_error",
                 "parameters": {"db_file": str(self.test_db_path)},
-                "expected_exception": sqlite3.Error
-            }
+                "expected_exception": sqlite3.Error,
+            },
         ]
 
         for scenario in injection_scenarios:
             try:
                 # エラーを注入
                 injection_success = self.error_injector.inject_error(
-                    scenario["error_type"],
-                    parameters=scenario["parameters"]
+                    scenario["error_type"], parameters=scenario["parameters"]
                 )
 
                 self.assert_condition(
                     injection_success,
-                    f"エラー注入が成功しました: {scenario['error_type']}"
+                    f"エラー注入が成功しました: {scenario['error_type']}",
                 )
 
                 # 注入されたエラーに対する処理をテスト
@@ -642,13 +669,14 @@ class ErrorHandlingValidator(BaseValidator):
                 self.logger.info(f"エラー注入テスト完了: {scenario['error_type']}")
 
             except Exception as e:
-                self.logger.error(f"エラー注入テスト中にエラー: {scenario['error_type']} - {e}")
+                self.logger.error(
+                    f"エラー注入テスト中にエラー: {scenario['error_type']} - {e}"
+                )
 
         # エラー注入統計の確認
         injection_stats = self.error_injector.get_injection_statistics()
         self.assert_condition(
-            injection_stats.get("total_injections", 0) > 0,
-            "エラー注入が実行されました"
+            injection_stats.get("total_injections", 0) > 0, "エラー注入が実行されました"
         )
 
         self.logger.info("エラー注入シナリオの検証が完了しました")
@@ -662,18 +690,18 @@ class ErrorHandlingValidator(BaseValidator):
             {
                 "name": "basic_search",
                 "component": "search_manager",
-                "fallback_capability": "full_text_search"
+                "fallback_capability": "full_text_search",
             },
             {
                 "name": "document_storage",
                 "component": "database",
-                "fallback_capability": "metadata_storage"
+                "fallback_capability": "metadata_storage",
             },
             {
                 "name": "file_processing",
                 "component": "document_processor",
-                "fallback_capability": "text_processing"
-            }
+                "fallback_capability": "text_processing",
+            },
         ]
 
         for function in critical_functions:
@@ -681,18 +709,16 @@ class ErrorHandlingValidator(BaseValidator):
             self.degradation_manager.mark_component_degraded(
                 function["component"],
                 disable_capabilities=[],  # 重要機能は維持
-                error_message=f"テスト用部分失敗: {function['name']}"
+                error_message=f"テスト用部分失敗: {function['name']}",
             )
 
             # 重要機能が利用可能か確認
             is_available = self.degradation_manager.is_capability_available(
-                function["component"],
-                function["fallback_capability"]
+                function["component"], function["fallback_capability"]
             )
 
             self.assert_condition(
-                is_available,
-                f"重要機能 {function['name']} が継続利用可能です"
+                is_available, f"重要機能 {function['name']} が継続利用可能です"
             )
 
             self.logger.info(f"重要機能継続テスト完了: {function['name']}")
@@ -714,30 +740,42 @@ class ErrorHandlingValidator(BaseValidator):
         return {
             "exception_handling": {
                 "total_tests": len(self.exception_handling_results),
-                "successful_handling": sum(1 for r in self.exception_handling_results
-                                         if r.get("handled_successfully", False)),
-                "results": self.exception_handling_results
+                "successful_handling": sum(
+                    1
+                    for r in self.exception_handling_results
+                    if r.get("handled_successfully", False)
+                ),
+                "results": self.exception_handling_results,
             },
             "recovery_mechanisms": {
                 "total_tests": len(self.recovery_results),
-                "successful_recovery": sum(1 for r in self.recovery_results
-                                         if r.get("success", False)),
-                "results": self.recovery_results
+                "successful_recovery": sum(
+                    1 for r in self.recovery_results if r.get("success", False)
+                ),
+                "results": self.recovery_results,
             },
             "graceful_degradation": {
                 "total_tests": len(self.degradation_results),
-                "successful_degradation": sum(1 for r in self.degradation_results
-                                            if r.get("degradation_successful", False)),
-                "results": self.degradation_results
+                "successful_degradation": sum(
+                    1
+                    for r in self.degradation_results
+                    if r.get("degradation_successful", False)
+                ),
+                "results": self.degradation_results,
             },
-            "system_health": self.degradation_manager.get_system_health() if self.degradation_manager else {},
-            "error_injection_stats": self.error_injector.get_injection_statistics()
+            "system_health": (
+                self.degradation_manager.get_system_health()
+                if self.degradation_manager
+                else {}
+            ),
+            "error_injection_stats": self.error_injector.get_injection_statistics(),
         }
 
 
 if __name__ == "__main__":
     # 単体テスト実行
     import logging
+
     logging.basicConfig(level=logging.INFO)
 
     # 検証設定
@@ -746,7 +784,7 @@ if __name__ == "__main__":
         enable_memory_monitoring=True,
         enable_error_injection=True,
         max_execution_time=300.0,
-        max_memory_usage=1024.0
+        max_memory_usage=1024.0,
     )
 
     # 検証実行
@@ -759,9 +797,15 @@ if __name__ == "__main__":
         # 結果の表示
         summary = validator.get_validation_summary()
         print("\n=== エラーハンドリング検証結果 ===")
-        print(f"例外処理テスト: {summary['exception_handling']['successful_handling']}/{summary['exception_handling']['total_tests']}")
-        print(f"回復機能テスト: {summary['recovery_mechanisms']['successful_recovery']}/{summary['recovery_mechanisms']['total_tests']}")
-        print(f"劣化機能テスト: {summary['graceful_degradation']['successful_degradation']}/{summary['graceful_degradation']['total_tests']}")
+        print(
+            f"例外処理テスト: {summary['exception_handling']['successful_handling']}/{summary['exception_handling']['total_tests']}"
+        )
+        print(
+            f"回復機能テスト: {summary['recovery_mechanisms']['successful_recovery']}/{summary['recovery_mechanisms']['total_tests']}"
+        )
+        print(
+            f"劣化機能テスト: {summary['graceful_degradation']['successful_degradation']}/{summary['graceful_degradation']['total_tests']}"
+        )
 
         # パフォーマンス要件の検証
         for result in results:

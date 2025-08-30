@@ -28,7 +28,7 @@ except ImportError:
 # DocMindのコアモジュールをインポート
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
@@ -151,13 +151,13 @@ class DataPersistenceValidator(BaseValidator):
         saved_count = self.storage_manager.bulk_save_documents(test_docs[:5])
         self.assert_condition(
             saved_count == 5,
-            f"一括保存で期待される件数と異なります: 期待=5, 実際={saved_count}"
+            f"一括保存で期待される件数と異なります: 期待=5, 実際={saved_count}",
         )
 
         final_count = self.storage_manager.get_document_count()
         self.assert_condition(
             final_count == initial_count + 5,
-            f"トランザクション後のドキュメント数が不正: 期待={initial_count + 5}, 実際={final_count}"
+            f"トランザクション後のドキュメント数が不正: 期待={initial_count + 5}, 実際={final_count}",
         )
 
         # エラー発生時のロールバック検証
@@ -172,7 +172,7 @@ class DataPersistenceValidator(BaseValidator):
                 size=-1,  # 無効なサイズ
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
-                indexed_date=datetime.now()
+                indexed_date=datetime.now(),
             )
 
             # 無効なドキュメントを含む一括保存（失敗するはず）
@@ -182,20 +182,44 @@ class DataPersistenceValidator(BaseValidator):
                     cursor.execute("BEGIN TRANSACTION")
                     # 正常なドキュメントを挿入
                     for doc in test_docs[5:7]:
-                        cursor.execute("""
+                        cursor.execute(
+                            """
                             INSERT INTO documents
                             (id, file_path, title, file_type, size, created_date, modified_date, indexed_date, content_hash)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (doc.id, doc.file_path, doc.title, doc.file_type.value,
-                             doc.size, doc.created_date, doc.modified_date, doc.indexed_date, doc.content_hash))
+                        """,
+                            (
+                                doc.id,
+                                doc.file_path,
+                                doc.title,
+                                doc.file_type.value,
+                                doc.size,
+                                doc.created_date,
+                                doc.modified_date,
+                                doc.indexed_date,
+                                doc.content_hash,
+                            ),
+                        )
 
                     # 無効なドキュメントを挿入（エラーが発生するはず）
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT INTO documents
                         (id, file_path, title, file_type, size, created_date, modified_date, indexed_date, content_hash)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (invalid_doc.id, invalid_doc.file_path, invalid_doc.title, invalid_doc.file_type.value,
-                         invalid_doc.size, invalid_doc.created_date, invalid_doc.modified_date, invalid_doc.indexed_date, ""))
+                    """,
+                        (
+                            invalid_doc.id,
+                            invalid_doc.file_path,
+                            invalid_doc.title,
+                            invalid_doc.file_type.value,
+                            invalid_doc.size,
+                            invalid_doc.created_date,
+                            invalid_doc.modified_date,
+                            invalid_doc.indexed_date,
+                            "",
+                        ),
+                    )
 
                     cursor.execute("COMMIT")
 
@@ -211,7 +235,7 @@ class DataPersistenceValidator(BaseValidator):
         rollback_count = self.storage_manager.get_document_count()
         self.assert_condition(
             rollback_count == final_count,
-            f"ロールバック後のドキュメント数が変化しました: 期待={final_count}, 実際={rollback_count}"
+            f"ロールバック後のドキュメント数が変化しました: 期待={final_count}, 実際={rollback_count}",
         )
 
         self.logger.info("原子性の検証が完了しました")
@@ -236,7 +260,7 @@ class DataPersistenceValidator(BaseValidator):
             size=doc.size,
             created_date=doc.created_date,
             modified_date=datetime.now(),
-            indexed_date=datetime.now()
+            indexed_date=datetime.now(),
         )
 
         self.storage_manager.save_document(doc_copy)
@@ -245,7 +269,7 @@ class DataPersistenceValidator(BaseValidator):
         retrieved_doc = self.storage_manager.load_document(doc.id)
         self.assert_condition(
             retrieved_doc is not None and retrieved_doc.title == "Updated Title",
-            "ドキュメントの更新が正しく反映されていません"
+            "ドキュメントの更新が正しく反映されていません",
         )
 
         # 外部キー制約の検証（将来の拡張に備えて）
@@ -255,16 +279,31 @@ class DataPersistenceValidator(BaseValidator):
         with self.db_manager.get_connection() as conn:
             cursor = conn.cursor()
             try:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO documents
                     (id, file_path, title, file_type, size, created_date, modified_date, indexed_date, content_hash)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, ("test_invalid_type", "/test/path", "Test", "invalid_type",
-                     100, datetime.now(), datetime.now(), datetime.now(), "hash"))
+                """,
+                    (
+                        "test_invalid_type",
+                        "/test/path",
+                        "Test",
+                        "invalid_type",
+                        100,
+                        datetime.now(),
+                        datetime.now(),
+                        datetime.now(),
+                        "hash",
+                    ),
+                )
                 conn.commit()
 
                 # 制約違反が検出されるべき
-                self.assert_condition(False, "無効なファイルタイプが挿入されました（制約違反が検出されませんでした）")
+                self.assert_condition(
+                    False,
+                    "無効なファイルタイプが挿入されました（制約違反が検出されませんでした）",
+                )
 
             except sqlite3.IntegrityError:
                 # 制約違反が正しく検出された
@@ -296,7 +335,7 @@ class DataPersistenceValidator(BaseValidator):
                     size=doc1.size,
                     created_date=doc1.created_date,
                     modified_date=doc1.modified_date,
-                    indexed_date=doc1.indexed_date
+                    indexed_date=doc1.indexed_date,
                 )
                 self.storage_manager.save_document(doc1_copy)
                 time.sleep(0.05)  # 短い待機時間
@@ -321,7 +360,7 @@ class DataPersistenceValidator(BaseValidator):
                     size=doc2.size,
                     created_date=doc2.created_date,
                     modified_date=doc2.modified_date,
-                    indexed_date=doc2.indexed_date
+                    indexed_date=doc2.indexed_date,
                 )
                 self.storage_manager.save_document(doc2_copy)
                 time.sleep(0.05)
@@ -349,20 +388,24 @@ class DataPersistenceValidator(BaseValidator):
         total_operations = len(results) + len(errors)
         self.assert_condition(
             total_operations == 2,
-            f"並行トランザクションで予期しない結果: 成功={len(results)}, エラー={len(errors)}"
+            f"並行トランザクションで予期しない結果: 成功={len(results)}, エラー={len(errors)}",
         )
 
         # 少なくとも1つのトランザクションが成功するか、適切なエラーハンドリングがされることを確認
         if len(results) == 0:
-            self.logger.warning("すべてのトランザクションが失敗しました（SQLiteの制限による可能性があります）")
+            self.logger.warning(
+                "すべてのトランザクションが失敗しました（SQLiteの制限による可能性があります）"
+            )
             # データベースロックエラーが適切に処理されていることを確認
             for error in errors:
                 self.assert_condition(
                     "database is locked" in error or "timeout" in error.lower(),
-                    f"予期しないエラータイプ: {error}"
+                    f"予期しないエラータイプ: {error}",
                 )
         else:
-            self.logger.info(f"並行トランザクション結果: 成功={len(results)}, エラー={len(errors)}")
+            self.logger.info(
+                f"並行トランザクション結果: 成功={len(results)}, エラー={len(errors)}"
+            )
 
         # データの整合性を確認
         retrieved_doc1 = self.storage_manager.load_document(f"{doc1.id}_tx1")
@@ -371,13 +414,13 @@ class DataPersistenceValidator(BaseValidator):
         if retrieved_doc1:
             self.assert_condition(
                 retrieved_doc1.title == "Updated by Transaction 1",
-                "トランザクション1の結果が正しく保存されていません"
+                "トランザクション1の結果が正しく保存されていません",
             )
 
         if retrieved_doc2:
             self.assert_condition(
                 retrieved_doc2.title == "Updated by Transaction 2",
-                "トランザクション2の結果が正しく保存されていません"
+                "トランザクション2の結果が正しく保存されていません",
             )
 
         self.logger.info("独立性の検証が完了しました")
@@ -400,12 +443,12 @@ class DataPersistenceValidator(BaseValidator):
         retrieved_doc = new_storage_manager.load_document(doc.id)
         self.assert_condition(
             retrieved_doc is not None,
-            "データベース再起動後にドキュメントが見つかりません"
+            "データベース再起動後にドキュメントが見つかりません",
         )
 
         self.assert_condition(
             retrieved_doc.title == doc.title and retrieved_doc.content == doc.content,
-            "データベース再起動後にドキュメントの内容が変化しています"
+            "データベース再起動後にドキュメントの内容が変化しています",
         )
 
         # 元のStorageManagerに戻す
@@ -463,10 +506,7 @@ class DataPersistenceValidator(BaseValidator):
             end_idx = start_idx + batch_size
             doc_batch = test_docs[start_idx:end_idx]
 
-            thread = threading.Thread(
-                target=save_documents,
-                args=(doc_batch, i)
-            )
+            thread = threading.Thread(target=save_documents, args=(doc_batch, i))
             threads.append(thread)
             thread.start()
 
@@ -477,19 +517,19 @@ class DataPersistenceValidator(BaseValidator):
         # 結果の検証
         self.assert_condition(
             len(self.concurrent_results) == 5,
-            f"並行操作で期待されるスレッド数と異なります: 期待=5, 成功={len(self.concurrent_results)}"
+            f"並行操作で期待されるスレッド数と異なります: 期待=5, 成功={len(self.concurrent_results)}",
         )
 
         self.assert_condition(
             len(self.concurrent_errors) == 0,
-            f"並行操作でエラーが発生しました: {self.concurrent_errors}"
+            f"並行操作でエラーが発生しました: {self.concurrent_errors}",
         )
 
         # データベース内のドキュメント数を確認
         final_count = self.storage_manager.get_document_count()
         self.assert_condition(
             final_count >= 50,  # 最低50件は保存されているはず
-            f"並行操作後のドキュメント数が不足: 実際={final_count}"
+            f"並行操作後のドキュメント数が不足: 実際={final_count}",
         )
 
         self.logger.info("並行データベース操作の検証が完了しました")
@@ -546,20 +586,18 @@ class DataPersistenceValidator(BaseValidator):
 
         # 結果の検証
         self.assert_condition(
-            len(errors) == 0,
-            f"読み書き競合でエラーが発生しました: {errors}"
+            len(errors) == 0, f"読み書き競合でエラーが発生しました: {errors}"
         )
 
         self.assert_condition(
             len(read_results) > 0 and len(write_results) > 0,
-            f"読み書き操作が正常に実行されませんでした: 読み取り={len(read_results)}, 書き込み={len(write_results)}"
+            f"読み書き操作が正常に実行されませんでした: 読み取り={len(read_results)}, 書き込み={len(write_results)}",
         )
 
         # 最終的なデータの整合性を確認
         final_doc = self.storage_manager.load_document("concurrent_test_doc")
         self.assert_condition(
-            final_doc is not None,
-            "読み書き競合後にドキュメントが見つかりません"
+            final_doc is not None, "読み書き競合後にドキュメントが見つかりません"
         )
 
         self.logger.info("読み書き競合の検証が完了しました")
@@ -589,7 +627,7 @@ class DataPersistenceValidator(BaseValidator):
                     # doc1を更新
                     cursor.execute(
                         "UPDATE documents SET title = ? WHERE id = ?",
-                        ("Updated by A", "deadlock_test_doc1")
+                        ("Updated by A", "deadlock_test_doc1"),
                     )
 
                     time.sleep(0.1)  # デッドロックを誘発するための待機
@@ -597,7 +635,7 @@ class DataPersistenceValidator(BaseValidator):
                     # doc2を更新
                     cursor.execute(
                         "UPDATE documents SET title = ? WHERE id = ?",
-                        ("Updated by A", "deadlock_test_doc2")
+                        ("Updated by A", "deadlock_test_doc2"),
                     )
 
                     conn.commit()
@@ -615,7 +653,7 @@ class DataPersistenceValidator(BaseValidator):
                     # doc2を更新
                     cursor.execute(
                         "UPDATE documents SET title = ? WHERE id = ?",
-                        ("Updated by B", "deadlock_test_doc2")
+                        ("Updated by B", "deadlock_test_doc2"),
                     )
 
                     time.sleep(0.1)  # デッドロックを誘発するための待機
@@ -623,7 +661,7 @@ class DataPersistenceValidator(BaseValidator):
                     # doc1を更新
                     cursor.execute(
                         "UPDATE documents SET title = ? WHERE id = ?",
-                        ("Updated by B", "deadlock_test_doc1")
+                        ("Updated by B", "deadlock_test_doc1"),
                     )
 
                     conn.commit()
@@ -646,12 +684,14 @@ class DataPersistenceValidator(BaseValidator):
         total_operations = len(deadlock_results) + len(deadlock_errors)
         self.assert_condition(
             total_operations == 2,
-            f"デッドロックテストで予期しない結果: 成功={len(deadlock_results)}, エラー={len(deadlock_errors)}"
+            f"デッドロックテストで予期しない結果: 成功={len(deadlock_results)}, エラー={len(deadlock_errors)}",
         )
 
         # SQLiteはデッドロックを自動的に解決するため、通常は両方成功するか、
         # タイムアウトエラーが発生する
-        self.logger.info(f"デッドロックテスト結果: 成功={len(deadlock_results)}, エラー={len(deadlock_errors)}")
+        self.logger.info(
+            f"デッドロックテスト結果: 成功={len(deadlock_results)}, エラー={len(deadlock_errors)}"
+        )
 
         self.logger.info("デッドロック検出の検証が完了しました")
 
@@ -685,7 +725,7 @@ class DataPersistenceValidator(BaseValidator):
         indexed_count = self.index_manager.get_document_count()
         self.assert_condition(
             indexed_count == len(test_docs),
-            f"インデックス内のドキュメント数が不正: 期待={len(test_docs)}, 実際={indexed_count}"
+            f"インデックス内のドキュメント数が不正: 期待={len(test_docs)}, 実際={indexed_count}",
         )
 
         # 各ドキュメントが検索可能であることを確認
@@ -695,8 +735,7 @@ class DataPersistenceValidator(BaseValidator):
             # 該当ドキュメントが検索結果に含まれることを確認
             found = any(result.document.id == doc.id for result in search_results)
             self.assert_condition(
-                found,
-                f"ドキュメント '{doc.title}' が検索結果に見つかりません"
+                found, f"ドキュメント '{doc.title}' が検索結果に見つかりません"
             )
 
         # ドキュメントの更新
@@ -709,10 +748,7 @@ class DataPersistenceValidator(BaseValidator):
         # 更新されたドキュメントが検索可能であることを確認
         search_results = self.index_manager.search_text("Updated Title", limit=10)
         found = any(result.document.id == updated_doc.id for result in search_results)
-        self.assert_condition(
-            found,
-            "更新されたドキュメントが検索結果に見つかりません"
-        )
+        self.assert_condition(found, "更新されたドキュメントが検索結果に見つかりません")
 
         # ドキュメントの削除
         self.index_manager.remove_document(updated_doc.id)
@@ -721,15 +757,14 @@ class DataPersistenceValidator(BaseValidator):
         search_results = self.index_manager.search_text("Updated Title", limit=10)
         found = any(result.document.id == updated_doc.id for result in search_results)
         self.assert_condition(
-            not found,
-            "削除されたドキュメントが検索結果に残っています"
+            not found, "削除されたドキュメントが検索結果に残っています"
         )
 
         # インデックス数の確認
         final_count = self.index_manager.get_document_count()
         self.assert_condition(
             final_count == len(test_docs) - 1,
-            f"削除後のインデックス内ドキュメント数が不正: 期待={len(test_docs) - 1}, 実際={final_count}"
+            f"削除後のインデックス内ドキュメント数が不正: 期待={len(test_docs) - 1}, 実際={final_count}",
         )
 
         self.logger.info("Whooshインデックスの整合性検証が完了しました")
@@ -748,7 +783,9 @@ class DataPersistenceValidator(BaseValidator):
         index_count = self.index_manager.get_document_count()
 
         # 注意: 前のテストで削除されたドキュメントがあるため、完全一致ではない
-        self.logger.info(f"データベース内ドキュメント数: {db_count}, インデックス内ドキュメント数: {index_count}")
+        self.logger.info(
+            f"データベース内ドキュメント数: {db_count}, インデックス内ドキュメント数: {index_count}"
+        )
 
         # データベース内の各ドキュメントがインデックスに存在することを確認
         db_docs = self.storage_manager.list_documents(limit=100)
@@ -756,7 +793,9 @@ class DataPersistenceValidator(BaseValidator):
         for db_doc in db_docs:
             index_exists = self.index_manager.document_exists(db_doc.id)
             if not index_exists:
-                self.logger.warning(f"ドキュメント {db_doc.id} がインデックスに存在しません")
+                self.logger.warning(
+                    f"ドキュメント {db_doc.id} がインデックスに存在しません"
+                )
 
         # 同期の整合性を確認するため、新しいドキュメントで再テスト
         sync_test_doc = test_docs[15]
@@ -772,12 +811,11 @@ class DataPersistenceValidator(BaseValidator):
 
         self.assert_condition(
             db_retrieved is not None,
-            "同期テストドキュメントがデータベースから取得できません"
+            "同期テストドキュメントがデータベースから取得できません",
         )
 
         self.assert_condition(
-            index_exists,
-            "同期テストドキュメントがインデックスに存在しません"
+            index_exists, "同期テストドキュメントがインデックスに存在しません"
         )
 
         self.logger.info("データベースとインデックスの同期検証が完了しました")
@@ -799,9 +837,9 @@ class DataPersistenceValidator(BaseValidator):
         for index_file in index_path.glob("*.toc"):
             if index_file.exists():
                 # ファイルの一部を破損
-                with open(index_file, 'r+b') as f:
+                with open(index_file, "r+b") as f:
                     f.seek(10)
-                    f.write(b'CORRUPTED_DATA')
+                    f.write(b"CORRUPTED_DATA")
                 break
 
         # 新しいIndexManagerで破損したインデックスを開こうとする
@@ -811,14 +849,18 @@ class DataPersistenceValidator(BaseValidator):
             # 破損が検出されるか、または自動回復されるかを確認
             try:
                 recovered_count = corrupted_index_manager.get_document_count()
-                self.logger.info(f"インデックス回復後のドキュメント数: {recovered_count}")
+                self.logger.info(
+                    f"インデックス回復後のドキュメント数: {recovered_count}"
+                )
 
                 # 回復が成功した場合、基本的な検索が可能であることを確認
                 search_results = corrupted_index_manager.search_text("test", limit=5)
                 self.logger.info(f"回復後の検索結果数: {len(search_results)}")
 
             except Exception as e:
-                self.logger.info(f"破損したインデックスでエラーが発生（期待される動作）: {e}")
+                self.logger.info(
+                    f"破損したインデックスでエラーが発生（期待される動作）: {e}"
+                )
 
                 # インデックスを再構築
                 corrupted_index_manager.create_index()
@@ -832,7 +874,7 @@ class DataPersistenceValidator(BaseValidator):
                 rebuilt_count = corrupted_index_manager.get_document_count()
                 self.assert_condition(
                     rebuilt_count > 0,
-                    "インデックス再構築後にドキュメントが見つかりません"
+                    "インデックス再構築後にドキュメントが見つかりません",
                 )
 
                 self.logger.info(f"インデックス再構築が完了しました: {rebuilt_count}件")
@@ -840,7 +882,9 @@ class DataPersistenceValidator(BaseValidator):
             corrupted_index_manager.close()
 
         except Exception as e:
-            self.logger.info(f"破損したインデックスの処理でエラー（期待される動作）: {e}")
+            self.logger.info(
+                f"破損したインデックスの処理でエラー（期待される動作）: {e}"
+            )
 
         # 元のIndexManagerを再初期化
         self.index_manager = IndexManager(str(index_path))
@@ -876,7 +920,7 @@ class DataPersistenceValidator(BaseValidator):
         initial_cache_info = self.embedding_manager.get_cache_info()
         self.assert_condition(
             initial_cache_info["total_embeddings"] == 0,
-            f"初期キャッシュが空ではありません: {initial_cache_info['total_embeddings']}"
+            f"初期キャッシュが空ではありません: {initial_cache_info['total_embeddings']}",
         )
 
         # ドキュメントの埋め込みを生成
@@ -887,21 +931,19 @@ class DataPersistenceValidator(BaseValidator):
         cache_info = self.embedding_manager.get_cache_info()
         self.assert_condition(
             cache_info["total_embeddings"] == 5,
-            f"キャッシュ内の埋め込み数が不正: 期待=5, 実際={cache_info['total_embeddings']}"
+            f"キャッシュ内の埋め込み数が不正: 期待=5, 実際={cache_info['total_embeddings']}",
         )
 
         # 埋め込みの検索テスト
         search_results = self.embedding_manager.search_similar("test content", limit=10)
         self.assert_condition(
-            len(search_results) > 0,
-            "埋め込み検索で結果が返されませんでした"
+            len(search_results) > 0, "埋め込み検索で結果が返されませんでした"
         )
 
         # 類似度スコアの妥当性確認
         for _doc_id, similarity in search_results:
             self.assert_condition(
-                0.0 <= similarity <= 1.0,
-                f"類似度スコアが範囲外です: {similarity}"
+                0.0 <= similarity <= 1.0, f"類似度スコアが範囲外です: {similarity}"
             )
 
         # 埋め込みの更新テスト
@@ -912,7 +954,7 @@ class DataPersistenceValidator(BaseValidator):
         updated_cache_info = self.embedding_manager.get_cache_info()
         self.assert_condition(
             updated_cache_info["total_embeddings"] == 5,
-            f"更新後のキャッシュサイズが変化しました: {updated_cache_info['total_embeddings']}"
+            f"更新後のキャッシュサイズが変化しました: {updated_cache_info['total_embeddings']}",
         )
 
         # 埋め込みの削除テスト
@@ -922,7 +964,7 @@ class DataPersistenceValidator(BaseValidator):
         final_cache_info = self.embedding_manager.get_cache_info()
         self.assert_condition(
             final_cache_info["total_embeddings"] == 4,
-            f"削除後のキャッシュサイズが不正: 期待=4, 実際={final_cache_info['total_embeddings']}"
+            f"削除後のキャッシュサイズが不正: 期待=4, 実際={final_cache_info['total_embeddings']}",
         )
 
         self.logger.info("埋め込みキャッシュの基本操作検証が完了しました")
@@ -942,42 +984,41 @@ class DataPersistenceValidator(BaseValidator):
         cache_file_path = Path(self.embedding_manager.embeddings_path)
         self.assert_condition(
             cache_file_path.exists(),
-            f"キャッシュファイルが作成されていません: {cache_file_path}"
+            f"キャッシュファイルが作成されていません: {cache_file_path}",
         )
 
         # キャッシュファイルのサイズ確認
         file_size = cache_file_path.stat().st_size
         self.assert_condition(
-            file_size > 0,
-            f"キャッシュファイルのサイズが0です: {file_size}"
+            file_size > 0, f"キャッシュファイルのサイズが0です: {file_size}"
         )
 
         # キャッシュファイルの内容確認
         try:
-            with open(cache_file_path, 'rb') as f:
+            with open(cache_file_path, "rb") as f:
                 loaded_embeddings = pickle.load(f)
 
             self.assert_condition(
                 isinstance(loaded_embeddings, dict),
-                "キャッシュファイルの形式が不正です"
+                "キャッシュファイルの形式が不正です",
             )
 
             # 埋め込みデータの構造確認
             for doc_id, embedding_data in loaded_embeddings.items():
                 self.assert_condition(
-                    hasattr(embedding_data, 'doc_id') and hasattr(embedding_data, 'embedding'),
-                    f"埋め込みデータの構造が不正です: {doc_id}"
+                    hasattr(embedding_data, "doc_id")
+                    and hasattr(embedding_data, "embedding"),
+                    f"埋め込みデータの構造が不正です: {doc_id}",
                 )
 
                 self.assert_condition(
                     isinstance(embedding_data.embedding, np.ndarray),
-                    f"埋め込みベクトルがnumpy配列ではありません: {doc_id}"
+                    f"埋め込みベクトルがnumpy配列ではありません: {doc_id}",
                 )
 
         except Exception as e:
             self.assert_condition(
-                False,
-                f"キャッシュファイルの読み込みに失敗しました: {e}"
+                False, f"キャッシュファイルの読み込みに失敗しました: {e}"
             )
 
         # ハッシュ値による整合性確認
@@ -989,8 +1030,7 @@ class DataPersistenceValidator(BaseValidator):
         # ハッシュ値が同じであることを確認
         new_hash = self._calculate_file_hash(cache_file_path)
         self.assert_condition(
-            original_hash == new_hash,
-            "同じデータの再保存でハッシュ値が変化しました"
+            original_hash == new_hash, "同じデータの再保存でハッシュ値が変化しました"
         )
 
         self.logger.info("埋め込みキャッシュファイルの整合性検証が完了しました")
@@ -1014,8 +1054,9 @@ class DataPersistenceValidator(BaseValidator):
         # キャッシュが正しく復元されることを確認
         restored_cache_info = new_embedding_manager.get_cache_info()
         self.assert_condition(
-            restored_cache_info["total_embeddings"] == original_cache_info["total_embeddings"],
-            f"復元されたキャッシュサイズが不正: 期待={original_cache_info['total_embeddings']}, 実際={restored_cache_info['total_embeddings']}"
+            restored_cache_info["total_embeddings"]
+            == original_cache_info["total_embeddings"],
+            f"復元されたキャッシュサイズが不正: 期待={original_cache_info['total_embeddings']}, 実際={restored_cache_info['total_embeddings']}",
         )
 
         # 個別の埋め込みデータの確認
@@ -1024,26 +1065,28 @@ class DataPersistenceValidator(BaseValidator):
 
             self.assert_condition(
                 restored_embedding is not None,
-                f"ドキュメント {doc_id} の埋め込みが復元されていません"
+                f"ドキュメント {doc_id} の埋め込みが復元されていません",
             )
 
             # 埋め込みベクトルの一致確認
             np.testing.assert_array_equal(
                 original_embedding.embedding,
                 restored_embedding.embedding,
-                err_msg=f"ドキュメント {doc_id} の埋め込みベクトルが一致しません"
+                err_msg=f"ドキュメント {doc_id} の埋め込みベクトルが一致しません",
             )
 
         # 復元されたキャッシュで検索が正常に動作することを確認
         search_results = new_embedding_manager.search_similar("test content", limit=5)
         self.assert_condition(
             len(search_results) > 0,
-            "復元されたキャッシュで検索結果が返されませんでした"
+            "復元されたキャッシュで検索結果が返されませんでした",
         )
 
         self.logger.info("埋め込みキャッシュの永続化と復元検証が完了しました")
 
-    def _test_embedding_cache_corruption_recovery(self, test_docs: list[Document]) -> None:
+    def _test_embedding_cache_corruption_recovery(
+        self, test_docs: list[Document]
+    ) -> None:
         """埋め込みキャッシュ破損からの回復検証"""
         self.logger.info("埋め込みキャッシュ破損からの回復を検証中...")
 
@@ -1052,7 +1095,7 @@ class DataPersistenceValidator(BaseValidator):
         self.embedding_manager.save_embeddings()
 
         # キャッシュファイルを意図的に破損
-        with open(cache_file_path, 'w') as f:
+        with open(cache_file_path, "w") as f:
             f.write("CORRUPTED_CACHE_DATA")
 
         # 破損したキャッシュファイルで新しいEmbeddingManagerを作成
@@ -1065,18 +1108,20 @@ class DataPersistenceValidator(BaseValidator):
             cache_info = corrupted_embedding_manager.get_cache_info()
             self.assert_condition(
                 cache_info["total_embeddings"] == 0,
-                f"破損したキャッシュが正しく処理されていません: {cache_info['total_embeddings']}"
+                f"破損したキャッシュが正しく処理されていません: {cache_info['total_embeddings']}",
             )
 
             # 新しい埋め込みを追加できることを確認
             test_doc = test_docs[8]
-            corrupted_embedding_manager.add_document_embedding(test_doc.id, test_doc.content)
+            corrupted_embedding_manager.add_document_embedding(
+                test_doc.id, test_doc.content
+            )
 
             # 追加後のキャッシュサイズを確認
             updated_cache_info = corrupted_embedding_manager.get_cache_info()
             self.assert_condition(
                 updated_cache_info["total_embeddings"] == 1,
-                "破損後の回復で新しい埋め込みが追加できませんでした"
+                "破損後の回復で新しい埋め込みが追加できませんでした",
             )
 
             # 回復したキャッシュを保存
@@ -1090,7 +1135,7 @@ class DataPersistenceValidator(BaseValidator):
             final_cache_info = final_embedding_manager.get_cache_info()
             self.assert_condition(
                 final_cache_info["total_embeddings"] == 1,
-                "回復したキャッシュが正しく保存・読み込みされていません"
+                "回復したキャッシュが正しく保存・読み込みされていません",
             )
 
         except Exception as e:
@@ -1136,20 +1181,18 @@ class DataPersistenceValidator(BaseValidator):
         backup_success = self.storage_manager.backup_database(backup_path)
 
         self.assert_condition(
-            backup_success,
-            "データベースバックアップの作成に失敗しました"
+            backup_success, "データベースバックアップの作成に失敗しました"
         )
 
         self.assert_condition(
             os.path.exists(backup_path),
-            f"バックアップファイルが作成されていません: {backup_path}"
+            f"バックアップファイルが作成されていません: {backup_path}",
         )
 
         # バックアップファイルのサイズ確認
         backup_size = os.path.getsize(backup_path)
         self.assert_condition(
-            backup_size > 0,
-            f"バックアップファイルのサイズが0です: {backup_size}"
+            backup_size > 0, f"バックアップファイルのサイズが0です: {backup_size}"
         )
 
         # 元のデータベースにさらにデータを追加
@@ -1158,23 +1201,19 @@ class DataPersistenceValidator(BaseValidator):
 
         modified_count = self.storage_manager.get_document_count()
         self.assert_condition(
-            modified_count > original_count,
-            "データベースの変更が反映されていません"
+            modified_count > original_count, "データベースの変更が反映されていません"
         )
 
         # バックアップからの復元
         restore_success = self.storage_manager.restore_database(backup_path)
 
-        self.assert_condition(
-            restore_success,
-            "データベースの復元に失敗しました"
-        )
+        self.assert_condition(restore_success, "データベースの復元に失敗しました")
 
         # 復元後のデータ確認
         restored_count = self.storage_manager.get_document_count()
         self.assert_condition(
             restored_count == original_count,
-            f"復元後のドキュメント数が不正: 期待={original_count}, 実際={restored_count}"
+            f"復元後のドキュメント数が不正: 期待={original_count}, 実際={restored_count}",
         )
 
         # 個別ドキュメントの確認
@@ -1182,12 +1221,12 @@ class DataPersistenceValidator(BaseValidator):
             restored_doc = self.storage_manager.load_document(doc.id)
             self.assert_condition(
                 restored_doc is not None,
-                f"復元後にドキュメント {doc.id} が見つかりません"
+                f"復元後にドキュメント {doc.id} が見つかりません",
             )
 
             self.assert_condition(
                 restored_doc.title == doc.title and restored_doc.content == doc.content,
-                f"復元されたドキュメント {doc.id} の内容が一致しません"
+                f"復元されたドキュメント {doc.id} の内容が一致しません",
             )
 
         self.logger.info("データベースバックアップ・回復の検証が完了しました")
@@ -1208,7 +1247,7 @@ class DataPersistenceValidator(BaseValidator):
 
         self.assert_condition(
             os.path.exists(index_backup_path),
-            f"インデックスバックアップディレクトリが作成されていません: {index_backup_path}"
+            f"インデックスバックアップディレクトリが作成されていません: {index_backup_path}",
         )
 
         # 元のインデックスを変更
@@ -1218,7 +1257,7 @@ class DataPersistenceValidator(BaseValidator):
         modified_index_count = self.index_manager.get_document_count()
         self.assert_condition(
             modified_index_count > original_index_count,
-            "インデックスの変更が反映されていません"
+            "インデックスの変更が反映されていません",
         )
 
         # インデックスを閉じる
@@ -1237,14 +1276,14 @@ class DataPersistenceValidator(BaseValidator):
         restored_index_count = restored_index_manager.get_document_count()
         self.assert_condition(
             restored_index_count == original_index_count,
-            f"復元後のインデックス内ドキュメント数が不正: 期待={original_index_count}, 実際={restored_index_count}"
+            f"復元後のインデックス内ドキュメント数が不正: 期待={original_index_count}, 実際={restored_index_count}",
         )
 
         # 復元されたインデックスで検索が正常に動作することを確認
         search_results = restored_index_manager.search_text("test", limit=10)
         self.assert_condition(
             len(search_results) > 0,
-            "復元されたインデックスで検索結果が返されませんでした"
+            "復元されたインデックスで検索結果が返されませんでした",
         )
 
         # 元のIndexManagerを復元
@@ -1272,18 +1311,21 @@ class DataPersistenceValidator(BaseValidator):
 
         self.assert_condition(
             os.path.exists(cache_backup_path),
-            f"埋め込みキャッシュバックアップが作成されていません: {cache_backup_path}"
+            f"埋め込みキャッシュバックアップが作成されていません: {cache_backup_path}",
         )
 
         # 元のキャッシュを変更
         additional_doc = test_docs[6]
-        self.embedding_manager.add_document_embedding(additional_doc.id, additional_doc.content)
+        self.embedding_manager.add_document_embedding(
+            additional_doc.id, additional_doc.content
+        )
         self.embedding_manager.save_embeddings()
 
         modified_cache_info = self.embedding_manager.get_cache_info()
         self.assert_condition(
-            modified_cache_info["total_embeddings"] > original_cache_info["total_embeddings"],
-            "埋め込みキャッシュの変更が反映されていません"
+            modified_cache_info["total_embeddings"]
+            > original_cache_info["total_embeddings"],
+            "埋め込みキャッシュの変更が反映されていません",
         )
 
         # バックアップからキャッシュを復元
@@ -1297,15 +1339,18 @@ class DataPersistenceValidator(BaseValidator):
         # 復元後のキャッシュ情報確認
         restored_cache_info = restored_embedding_manager.get_cache_info()
         self.assert_condition(
-            restored_cache_info["total_embeddings"] == original_cache_info["total_embeddings"],
-            f"復元後の埋め込み数が不正: 期待={original_cache_info['total_embeddings']}, 実際={restored_cache_info['total_embeddings']}"
+            restored_cache_info["total_embeddings"]
+            == original_cache_info["total_embeddings"],
+            f"復元後の埋め込み数が不正: 期待={original_cache_info['total_embeddings']}, 実際={restored_cache_info['total_embeddings']}",
         )
 
         # 復元されたキャッシュで検索が正常に動作することを確認
-        search_results = restored_embedding_manager.search_similar("test content", limit=5)
+        search_results = restored_embedding_manager.search_similar(
+            "test content", limit=5
+        )
         self.assert_condition(
             len(search_results) > 0,
-            "復元された埋め込みキャッシュで検索結果が返されませんでした"
+            "復元された埋め込みキャッシュで検索結果が返されませんでした",
         )
 
         self.logger.info("埋め込みキャッシュバックアップ・回復の検証が完了しました")
@@ -1326,7 +1371,9 @@ class DataPersistenceValidator(BaseValidator):
         # 各コンポーネントの状態を記録
         original_db_count = self.storage_manager.get_document_count()
         original_index_count = self.index_manager.get_document_count()
-        original_embedding_count = self.embedding_manager.get_cache_info()["total_embeddings"]
+        original_embedding_count = self.embedding_manager.get_cache_info()[
+            "total_embeddings"
+        ]
 
         # システム全体のバックアップ
         system_backup_path = os.path.join(self.backup_dir, "system_backup")
@@ -1367,7 +1414,7 @@ class DataPersistenceValidator(BaseValidator):
 
         self.assert_condition(
             modified_db_count != original_db_count,
-            "システム変更がデータベースに反映されていません"
+            "システム変更がデータベースに反映されていません",
         )
 
         # システム全体の復元
@@ -1394,43 +1441,44 @@ class DataPersistenceValidator(BaseValidator):
         # 復元後の状態確認
         restored_db_count = self.storage_manager.get_document_count()
         restored_index_count = self.index_manager.get_document_count()
-        restored_embedding_count = self.embedding_manager.get_cache_info()["total_embeddings"]
+        restored_embedding_count = self.embedding_manager.get_cache_info()[
+            "total_embeddings"
+        ]
 
         self.assert_condition(
             restored_db_count == original_db_count,
-            f"システム復元後のDB件数が不正: 期待={original_db_count}, 実際={restored_db_count}"
+            f"システム復元後のDB件数が不正: 期待={original_db_count}, 実際={restored_db_count}",
         )
 
         self.assert_condition(
             restored_index_count == original_index_count,
-            f"システム復元後のインデックス件数が不正: 期待={original_index_count}, 実際={restored_index_count}"
+            f"システム復元後のインデックス件数が不正: 期待={original_index_count}, 実際={restored_index_count}",
         )
 
         self.assert_condition(
             restored_embedding_count == original_embedding_count,
-            f"システム復元後の埋め込み件数が不正: 期待={original_embedding_count}, 実際={restored_embedding_count}"
+            f"システム復元後の埋め込み件数が不正: 期待={original_embedding_count}, 実際={restored_embedding_count}",
         )
 
         # 復元されたシステムで各機能が正常に動作することを確認
         # データベース検索
         db_docs = self.storage_manager.list_documents(limit=10)
         self.assert_condition(
-            len(db_docs) > 0,
-            "復元後のデータベース検索で結果が返されませんでした"
+            len(db_docs) > 0, "復元後のデータベース検索で結果が返されませんでした"
         )
 
         # インデックス検索
         index_results = self.index_manager.search_text("test", limit=5)
         self.assert_condition(
-            len(index_results) > 0,
-            "復元後のインデックス検索で結果が返されませんでした"
+            len(index_results) > 0, "復元後のインデックス検索で結果が返されませんでした"
         )
 
         # 埋め込み検索
-        embedding_results = self.embedding_manager.search_similar("test content", limit=5)
+        embedding_results = self.embedding_manager.search_similar(
+            "test content", limit=5
+        )
         self.assert_condition(
-            len(embedding_results) > 0,
-            "復元後の埋め込み検索で結果が返されませんでした"
+            len(embedding_results) > 0, "復元後の埋め込み検索で結果が返されませんでした"
         )
 
         self.logger.info("完全システムバックアップ・回復の検証が完了しました")
@@ -1454,8 +1502,8 @@ def main():
         enable_performance_monitoring=True,
         enable_memory_monitoring=True,
         max_execution_time=600.0,  # 10分
-        max_memory_usage=4096.0,   # 4GB
-        log_level="INFO"
+        max_memory_usage=4096.0,  # 4GB
+        log_level="INFO",
     )
 
     # 検証実行

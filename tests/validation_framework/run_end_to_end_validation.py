@@ -178,9 +178,7 @@ def generate_report(validator, results: list, output_dir: str) -> None:
         # HTML形式のサマリーレポート
         html_file = output_path / f"end_to_end_report_{timestamp}.html"
         reporter.generate_html_report(
-            results,
-            str(html_file),
-            title="DocMind 統合ワークフロー検証レポート"
+            results, str(html_file), title="DocMind 統合ワークフロー検証レポート"
         )
 
         print("\n=== レポート生成完了 ===")
@@ -209,66 +207,46 @@ def main():
 
   # カスタム制限で実行
   python run_end_to_end_validation.py --max-time 120 --max-memory 4096
-        """
+        """,
     )
 
     # テスト選択オプション
     parser.add_argument(
-        '--tests',
-        nargs='+',
-        help='実行するテストメソッド名（省略時は全テスト実行）'
+        "--tests", nargs="+", help="実行するテストメソッド名（省略時は全テスト実行）"
     )
 
     # 監視オプション
     parser.add_argument(
-        '--no-performance',
-        action='store_true',
-        help='パフォーマンス監視を無効化'
+        "--no-performance", action="store_true", help="パフォーマンス監視を無効化"
     )
 
-    parser.add_argument(
-        '--no-memory',
-        action='store_true',
-        help='メモリ監視を無効化'
-    )
+    parser.add_argument("--no-memory", action="store_true", help="メモリ監視を無効化")
 
     parser.add_argument(
-        '--error-injection',
-        action='store_true',
-        help='エラー注入テストを有効化'
+        "--error-injection", action="store_true", help="エラー注入テストを有効化"
     )
 
     # 制限オプション
-    parser.add_argument(
-        '--max-time',
-        type=float,
-        help='最大実行時間（秒）'
-    )
+    parser.add_argument("--max-time", type=float, help="最大実行時間（秒）")
 
-    parser.add_argument(
-        '--max-memory',
-        type=float,
-        help='最大メモリ使用量（MB）'
-    )
+    parser.add_argument("--max-memory", type=float, help="最大メモリ使用量（MB）")
 
     # 出力オプション
     parser.add_argument(
-        '--output-dir',
-        default='validation_results/end_to_end',
-        help='結果出力ディレクトリ（デフォルト: validation_results/end_to_end）'
+        "--output-dir",
+        default="validation_results/end_to_end",
+        help="結果出力ディレクトリ（デフォルト: validation_results/end_to_end）",
     )
 
     parser.add_argument(
-        '--log-level',
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
-        default='INFO',
-        help='ログレベル（デフォルト: INFO）'
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        default="INFO",
+        help="ログレベル（デフォルト: INFO）",
     )
 
     parser.add_argument(
-        '--no-report',
-        action='store_true',
-        help='レポート生成をスキップ'
+        "--no-report", action="store_true", help="レポート生成をスキップ"
     )
 
     args = parser.parse_args()

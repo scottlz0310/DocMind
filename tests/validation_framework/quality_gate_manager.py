@@ -25,6 +25,7 @@ import requests
 
 class QualityGateType(Enum):
     """品質ゲートタイプ"""
+
     TEST_COVERAGE = "test_coverage"
     SECURITY_ISSUES = "security_issues"
     PERFORMANCE_REGRESSION = "performance_regression"
@@ -35,6 +36,7 @@ class QualityGateType(Enum):
 
 class QualityGateResult(Enum):
     """品質ゲート結果"""
+
     PASSED = "passed"
     FAILED = "failed"
     WARNING = "warning"
@@ -43,6 +45,7 @@ class QualityGateResult(Enum):
 
 class ActionType(Enum):
     """自動対応アクションタイプ"""
+
     NOTIFICATION = "notification"
     ROLLBACK = "rollback"
     BLOCK_DEPLOYMENT = "block_deployment"
@@ -55,6 +58,7 @@ class ActionType(Enum):
 @dataclass
 class QualityThreshold:
     """品質閾値"""
+
     name: str
     min_value: float | None = None
     max_value: float | None = None
@@ -68,6 +72,7 @@ class QualityThreshold:
 @dataclass
 class QualityGateConfig:
     """品質ゲート設定"""
+
     gate_type: QualityGateType
     enabled: bool = True
     thresholds: list[QualityThreshold] = None
@@ -81,6 +86,7 @@ class QualityGateConfig:
 @dataclass
 class AutoActionConfig:
     """自動対応アクション設定"""
+
     action_type: ActionType
     enabled: bool = True
     trigger_conditions: list[QualityGateResult] = None  # トリガー条件
@@ -92,6 +98,7 @@ class AutoActionConfig:
 @dataclass
 class QualityGateCheckResult:
     """品質ゲートチェック結果"""
+
     gate_type: QualityGateType
     result: QualityGateResult
     score: float | None = None
@@ -123,13 +130,15 @@ class QualityGateChecker(ABC):
         """
         pass
 
-    def _create_result(self, result: QualityGateResult, **kwargs) -> QualityGateCheckResult:
+    def _create_result(
+        self, result: QualityGateResult, **kwargs
+    ) -> QualityGateCheckResult:
         """結果オブジェクトの作成ヘルパー"""
         return QualityGateCheckResult(
             gate_type=self.config.gate_type,
             result=result,
             timestamp=datetime.now(),
-            **kwargs
+            **kwargs,
         )
 
 
@@ -141,18 +150,18 @@ class TestCoverageGate(QualityGateChecker):
         start_time = time.time()
 
         try:
-            coverage_file = data.get('coverage_file')
+            coverage_file = data.get("coverage_file")
             if not coverage_file or not Path(coverage_file).exists():
                 return self._create_result(
                     QualityGateResult.FAILED,
                     message="カバレッジファイルが見つかりません",
-                    execution_time=time.time() - start_time
+                    execution_time=time.time() - start_time,
                 )
 
             # カバレッジ情報の解析
             coverage_data = await self._parse_coverage_file(coverage_file)
-            line_coverage = coverage_data.get('line_coverage', 0.0)
-            branch_coverage = coverage_data.get('branch_coverage', 0.0)
+            line_coverage = coverage_data.get("line_coverage", 0.0)
+            branch_coverage = coverage_data.get("branch_coverage", 0.0)
 
             # 閾値チェック
             for threshold in self.config.thresholds:
@@ -164,31 +173,37 @@ class TestCoverageGate(QualityGateChecker):
                             actual_value=line_coverage,
                             expected_value=threshold.min_value,
                             message=f"ラインカバレッジが基準値を下回りました: {line_coverage:.1f}% < {threshold.min_value:.1f}%",
-                            execution_time=time.time() - start_time
+                            execution_time=time.time() - start_time,
                         )
-                    elif threshold.warning_threshold and line_coverage < threshold.warning_threshold:
+                    elif (
+                        threshold.warning_threshold
+                        and line_coverage < threshold.warning_threshold
+                    ):
                         return self._create_result(
                             QualityGateResult.WARNING,
                             threshold_name=threshold.name,
                             actual_value=line_coverage,
                             expected_value=threshold.warning_threshold,
                             message=f"ラインカバレッジが警告レベルです: {line_coverage:.1f}%",
-                            execution_time=time.time() - start_time
+                            execution_time=time.time() - start_time,
                         )
 
             return self._create_result(
                 QualityGateResult.PASSED,
                 actual_value=line_coverage,
                 message=f"テストカバレッジチェック通過: {line_coverage:.1f}%",
-                details={'line_coverage': line_coverage, 'branch_coverage': branch_coverage},
-                execution_time=time.time() - start_time
+                details={
+                    "line_coverage": line_coverage,
+                    "branch_coverage": branch_coverage,
+                },
+                execution_time=time.time() - start_time,
             )
 
         except Exception as e:
             return self._create_result(
                 QualityGateResult.FAILED,
                 message=f"カバレッジチェック中にエラーが発生しました: {e}",
-                execution_time=time.time() - start_time
+                execution_time=time.time() - start_time,
             )
 
     async def _parse_coverage_file(self, coverage_file: str) -> dict[str, float]:
@@ -198,17 +213,14 @@ class TestCoverageGate(QualityGateChecker):
         tree = ET.parse(coverage_file)
         root = tree.getroot()
 
-        coverage_element = root.find('.//coverage')
+        coverage_element = root.find(".//coverage")
         if coverage_element is not None:
-            line_rate = float(coverage_element.get('line-rate', 0)) * 100
-            branch_rate = float(coverage_element.get('branch-rate', 0)) * 100
+            line_rate = float(coverage_element.get("line-rate", 0)) * 100
+            branch_rate = float(coverage_element.get("branch-rate", 0)) * 100
 
-            return {
-                'line_coverage': line_rate,
-                'branch_coverage': branch_rate
-            }
+            return {"line_coverage": line_rate, "branch_coverage": branch_rate}
 
-        return {'line_coverage': 0.0, 'branch_coverage': 0.0}
+        return {"line_coverage": 0.0, "branch_coverage": 0.0}
 
 
 class SecurityIssuesGate(QualityGateChecker):
@@ -219,19 +231,19 @@ class SecurityIssuesGate(QualityGateChecker):
         start_time = time.time()
 
         try:
-            security_report = data.get('security_report')
+            security_report = data.get("security_report")
             if not security_report or not Path(security_report).exists():
                 return self._create_result(
                     QualityGateResult.PASSED,
                     message="セキュリティレポートが見つかりません（問題なしと判定）",
-                    execution_time=time.time() - start_time
+                    execution_time=time.time() - start_time,
                 )
 
             # セキュリティレポートの解析
             security_data = await self._parse_security_report(security_report)
-            critical_issues = security_data.get('critical_issues', 0)
-            high_issues = security_data.get('high_issues', 0)
-            medium_issues = security_data.get('medium_issues', 0)
+            critical_issues = security_data.get("critical_issues", 0)
+            high_issues = security_data.get("high_issues", 0)
+            medium_issues = security_data.get("medium_issues", 0)
 
             # 閾値チェック
             for threshold in self.config.thresholds:
@@ -243,7 +255,7 @@ class SecurityIssuesGate(QualityGateChecker):
                             actual_value=critical_issues,
                             expected_value=threshold.max_value,
                             message=f"重要なセキュリティ問題が検出されました: {critical_issues}件",
-                            execution_time=time.time() - start_time
+                            execution_time=time.time() - start_time,
                         )
                 elif threshold.name == "high_issues":
                     if high_issues > threshold.max_value:
@@ -253,42 +265,48 @@ class SecurityIssuesGate(QualityGateChecker):
                             actual_value=high_issues,
                             expected_value=threshold.max_value,
                             message=f"高レベルのセキュリティ問題が検出されました: {high_issues}件",
-                            execution_time=time.time() - start_time
+                            execution_time=time.time() - start_time,
                         )
 
             return self._create_result(
                 QualityGateResult.PASSED,
                 message=f"セキュリティチェック通過: Critical={critical_issues}, High={high_issues}",
-                details={'critical_issues': critical_issues, 'high_issues': high_issues, 'medium_issues': medium_issues},
-                execution_time=time.time() - start_time
+                details={
+                    "critical_issues": critical_issues,
+                    "high_issues": high_issues,
+                    "medium_issues": medium_issues,
+                },
+                execution_time=time.time() - start_time,
             )
 
         except Exception as e:
             return self._create_result(
                 QualityGateResult.FAILED,
                 message=f"セキュリティチェック中にエラーが発生しました: {e}",
-                execution_time=time.time() - start_time
+                execution_time=time.time() - start_time,
             )
 
     async def _parse_security_report(self, security_report: str) -> dict[str, int]:
         """セキュリティレポートの解析"""
-        with open(security_report, encoding='utf-8') as f:
+        with open(security_report, encoding="utf-8") as f:
             report_data = json.load(f)
 
         # bandit レポート形式を想定
-        if 'results' in report_data:
+        if "results" in report_data:
             issues_by_severity = {}
-            for result in report_data['results']:
-                severity = result.get('issue_severity', 'UNDEFINED').lower()
+            for result in report_data["results"]:
+                severity = result.get("issue_severity", "UNDEFINED").lower()
                 issues_by_severity[severity] = issues_by_severity.get(severity, 0) + 1
 
             return {
-                'critical_issues': issues_by_severity.get('high', 0),  # bandit では HIGH が最高レベル
-                'high_issues': issues_by_severity.get('medium', 0),
-                'medium_issues': issues_by_severity.get('low', 0)
+                "critical_issues": issues_by_severity.get(
+                    "high", 0
+                ),  # bandit では HIGH が最高レベル
+                "high_issues": issues_by_severity.get("medium", 0),
+                "medium_issues": issues_by_severity.get("low", 0),
             }
 
-        return {'critical_issues': 0, 'high_issues': 0, 'medium_issues': 0}
+        return {"critical_issues": 0, "high_issues": 0, "medium_issues": 0}
 
 
 class PerformanceRegressionGate(QualityGateChecker):
@@ -299,8 +317,8 @@ class PerformanceRegressionGate(QualityGateChecker):
         start_time = time.time()
 
         try:
-            current_metrics = data.get('current_metrics', {})
-            baseline_file = data.get('baseline_file')
+            current_metrics = data.get("current_metrics", {})
+            baseline_file = data.get("baseline_file")
 
             if not baseline_file or not Path(baseline_file).exists():
                 # ベースラインファイルが存在しない場合は作成
@@ -308,12 +326,14 @@ class PerformanceRegressionGate(QualityGateChecker):
                 return self._create_result(
                     QualityGateResult.PASSED,
                     message="ベースラインファイルを作成しました",
-                    execution_time=time.time() - start_time
+                    execution_time=time.time() - start_time,
                 )
 
             # ベースラインとの比較
             baseline_metrics = await self._load_baseline(baseline_file)
-            regression_results = await self._check_regression(current_metrics, baseline_metrics)
+            regression_results = await self._check_regression(
+                current_metrics, baseline_metrics
+            )
 
             # 回帰チェック
             max_regression = 0.0
@@ -327,7 +347,9 @@ class PerformanceRegressionGate(QualityGateChecker):
                 for threshold in self.config.thresholds:
                     if threshold.name == "max_regression_percent":
                         if regression_percent > threshold.max_value:
-                            regression_details.append(f"{metric_name}: +{regression_percent:.1f}%")
+                            regression_details.append(
+                                f"{metric_name}: +{regression_percent:.1f}%"
+                            )
 
             if regression_details:
                 return self._create_result(
@@ -335,7 +357,7 @@ class PerformanceRegressionGate(QualityGateChecker):
                     actual_value=max_regression,
                     message=f"パフォーマンス回帰が検出されました: {', '.join(regression_details)}",
                     details=regression_results,
-                    execution_time=time.time() - start_time
+                    execution_time=time.time() - start_time,
                 )
 
             # ベースラインの更新
@@ -345,28 +367,30 @@ class PerformanceRegressionGate(QualityGateChecker):
                 QualityGateResult.PASSED,
                 message="パフォーマンス回帰チェック通過",
                 details=regression_results,
-                execution_time=time.time() - start_time
+                execution_time=time.time() - start_time,
             )
 
         except Exception as e:
             return self._create_result(
                 QualityGateResult.FAILED,
                 message=f"パフォーマンス回帰チェック中にエラーが発生しました: {e}",
-                execution_time=time.time() - start_time
+                execution_time=time.time() - start_time,
             )
 
     async def _create_baseline(self, metrics: dict[str, Any], baseline_file: str):
         """ベースラインファイルの作成"""
         Path(baseline_file).parent.mkdir(parents=True, exist_ok=True)
-        with open(baseline_file, 'w', encoding='utf-8') as f:
+        with open(baseline_file, "w", encoding="utf-8") as f:
             json.dump(metrics, f, indent=2, ensure_ascii=False)
 
     async def _load_baseline(self, baseline_file: str) -> dict[str, Any]:
         """ベースラインファイルの読み込み"""
-        with open(baseline_file, encoding='utf-8') as f:
+        with open(baseline_file, encoding="utf-8") as f:
             return json.load(f)
 
-    async def _check_regression(self, current: dict[str, Any], baseline: dict[str, Any]) -> dict[str, float]:
+    async def _check_regression(
+        self, current: dict[str, Any], baseline: dict[str, Any]
+    ) -> dict[str, float]:
         """回帰チェック"""
         regression_results = {}
 
@@ -374,16 +398,20 @@ class PerformanceRegressionGate(QualityGateChecker):
             if metric_name in baseline:
                 baseline_value = baseline[metric_name]
 
-                if isinstance(current_value, int | float) and isinstance(baseline_value, int | float):
+                if isinstance(current_value, int | float) and isinstance(
+                    baseline_value, int | float
+                ):
                     if baseline_value > 0:
-                        regression_percent = ((current_value - baseline_value) / baseline_value) * 100
+                        regression_percent = (
+                            (current_value - baseline_value) / baseline_value
+                        ) * 100
                         regression_results[metric_name] = regression_percent
 
         return regression_results
 
     async def _update_baseline(self, metrics: dict[str, Any], baseline_file: str):
         """ベースラインファイルの更新"""
-        with open(baseline_file, 'w', encoding='utf-8') as f:
+        with open(baseline_file, "w", encoding="utf-8") as f:
             json.dump(metrics, f, indent=2, ensure_ascii=False)
 
 
@@ -394,7 +422,9 @@ class AutoActionExecutor:
         self.config = config
         self.logger = logging.getLogger(f"auto_action_{config.action_type.value}")
 
-    async def execute(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> bool:
+    async def execute(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> bool:
         """自動対応アクションの実行
 
         Args:
@@ -408,8 +438,10 @@ class AutoActionExecutor:
             return True
 
         # トリガー条件のチェック
-        if (self.config.trigger_conditions and
-            gate_result.result not in self.config.trigger_conditions):
+        if (
+            self.config.trigger_conditions
+            and gate_result.result not in self.config.trigger_conditions
+        ):
             return True
 
         try:
@@ -428,22 +460,28 @@ class AutoActionExecutor:
             elif self.config.action_type == ActionType.CUSTOM_SCRIPT:
                 return await self._execute_custom_script(gate_result, context)
             else:
-                self.logger.warning(f"未知のアクションタイプ: {self.config.action_type}")
+                self.logger.warning(
+                    f"未知のアクションタイプ: {self.config.action_type}"
+                )
                 return False
 
         except Exception as e:
             self.logger.error(f"アクション実行中にエラーが発生しました: {e}")
             return False
 
-    async def _send_notification(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> bool:
+    async def _send_notification(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> bool:
         """通知の送信"""
         message = self._create_notification_message(gate_result, context)
         self.logger.info(f"通知: {message}")
         return True
 
-    async def _execute_rollback(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> bool:
+    async def _execute_rollback(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> bool:
         """ロールバックの実行"""
-        rollback_command = self.config.parameters.get('rollback_command')
+        rollback_command = self.config.parameters.get("rollback_command")
         if not rollback_command:
             self.logger.error("ロールバックコマンドが設定されていません")
             return False
@@ -451,8 +489,9 @@ class AutoActionExecutor:
         try:
             result = subprocess.run(
                 rollback_command.split(),
-                capture_output=True, text=True,
-                timeout=self.config.timeout_seconds
+                capture_output=True,
+                text=True,
+                timeout=self.config.timeout_seconds,
             )
 
             if result.returncode == 0:
@@ -466,17 +505,25 @@ class AutoActionExecutor:
             self.logger.error("ロールバックがタイムアウトしました")
             return False
 
-    async def _block_deployment(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> bool:
+    async def _block_deployment(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> bool:
         """デプロイメントのブロック"""
-        block_file = self.config.parameters.get('block_file', '.deployment_blocked')
+        block_file = self.config.parameters.get("block_file", ".deployment_blocked")
 
         try:
-            with open(block_file, 'w', encoding='utf-8') as f:
-                f.write(json.dumps({
-                    'blocked_at': datetime.now().isoformat(),
-                    'reason': gate_result.message,
-                    'gate_type': gate_result.gate_type.value
-                }, indent=2, ensure_ascii=False))
+            with open(block_file, "w", encoding="utf-8") as f:
+                f.write(
+                    json.dumps(
+                        {
+                            "blocked_at": datetime.now().isoformat(),
+                            "reason": gate_result.message,
+                            "gate_type": gate_result.gate_type.value,
+                        },
+                        indent=2,
+                        ensure_ascii=False,
+                    )
+                )
 
             self.logger.info(f"デプロイメントをブロックしました: {block_file}")
             return True
@@ -485,11 +532,13 @@ class AutoActionExecutor:
             self.logger.error(f"デプロイメントブロックに失敗しました: {e}")
             return False
 
-    async def _create_issue(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> bool:
+    async def _create_issue(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> bool:
         """課題の作成"""
         # GitHub Issues API を使用した例
-        github_token = self.config.parameters.get('github_token')
-        repository = self.config.parameters.get('repository')
+        github_token = self.config.parameters.get("github_token")
+        repository = self.config.parameters.get("repository")
 
         if not github_token or not repository:
             self.logger.error("GitHub設定が不完全です")
@@ -497,25 +546,25 @@ class AutoActionExecutor:
 
         try:
             issue_data = {
-                'title': f"品質ゲート失敗: {gate_result.gate_type.value}",
-                'body': self._create_issue_body(gate_result, context),
-                'labels': ['quality-gate', 'automated']
+                "title": f"品質ゲート失敗: {gate_result.gate_type.value}",
+                "body": self._create_issue_body(gate_result, context),
+                "labels": ["quality-gate", "automated"],
             }
 
             headers = {
-                'Authorization': f'token {github_token}',
-                'Accept': 'application/vnd.github.v3+json'
+                "Authorization": f"token {github_token}",
+                "Accept": "application/vnd.github.v3+json",
             }
 
             response = requests.post(
-                f'https://api.github.com/repos/{repository}/issues',
+                f"https://api.github.com/repos/{repository}/issues",
                 json=issue_data,
                 headers=headers,
-                timeout=self.config.timeout_seconds
+                timeout=self.config.timeout_seconds,
             )
 
             if response.status_code == 201:
-                issue_url = response.json().get('html_url')
+                issue_url = response.json().get("html_url")
                 self.logger.info(f"課題を作成しました: {issue_url}")
                 return True
             else:
@@ -526,13 +575,15 @@ class AutoActionExecutor:
             self.logger.error(f"課題作成中にエラーが発生しました: {e}")
             return False
 
-    async def _send_email(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> bool:
+    async def _send_email(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> bool:
         """メール送信"""
-        smtp_server = self.config.parameters.get('smtp_server')
-        smtp_port = self.config.parameters.get('smtp_port', 587)
-        username = self.config.parameters.get('username')
-        password = self.config.parameters.get('password')
-        to_addresses = self.config.parameters.get('to_addresses', [])
+        smtp_server = self.config.parameters.get("smtp_server")
+        smtp_port = self.config.parameters.get("smtp_port", 587)
+        username = self.config.parameters.get("username")
+        password = self.config.parameters.get("password")
+        to_addresses = self.config.parameters.get("to_addresses", [])
 
         if not all([smtp_server, username, password, to_addresses]):
             self.logger.error("メール設定が不完全です")
@@ -540,12 +591,12 @@ class AutoActionExecutor:
 
         try:
             msg = MimeMultipart()
-            msg['From'] = username
-            msg['To'] = ', '.join(to_addresses)
-            msg['Subject'] = f"品質ゲート失敗通知: {gate_result.gate_type.value}"
+            msg["From"] = username
+            msg["To"] = ", ".join(to_addresses)
+            msg["Subject"] = f"品質ゲート失敗通知: {gate_result.gate_type.value}"
 
             body = self._create_notification_message(gate_result, context)
-            msg.attach(MimeText(body, 'plain', 'utf-8'))
+            msg.attach(MimeText(body, "plain", "utf-8"))
 
             with smtplib.SMTP(smtp_server, smtp_port) as server:
                 server.starttls()
@@ -559,26 +610,26 @@ class AutoActionExecutor:
             self.logger.error(f"メール送信中にエラーが発生しました: {e}")
             return False
 
-    async def _send_webhook(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> bool:
+    async def _send_webhook(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> bool:
         """Webhook送信"""
-        webhook_url = self.config.parameters.get('webhook_url')
+        webhook_url = self.config.parameters.get("webhook_url")
         if not webhook_url:
             self.logger.error("Webhook URLが設定されていません")
             return False
 
         try:
             payload = {
-                'gate_type': gate_result.gate_type.value,
-                'result': gate_result.result.value,
-                'message': gate_result.message,
-                'timestamp': gate_result.timestamp.isoformat(),
-                'context': context
+                "gate_type": gate_result.gate_type.value,
+                "result": gate_result.result.value,
+                "message": gate_result.message,
+                "timestamp": gate_result.timestamp.isoformat(),
+                "context": context,
             }
 
             response = requests.post(
-                webhook_url,
-                json=payload,
-                timeout=self.config.timeout_seconds
+                webhook_url, json=payload, timeout=self.config.timeout_seconds
             )
 
             if response.status_code == 200:
@@ -592,9 +643,11 @@ class AutoActionExecutor:
             self.logger.error(f"Webhook送信中にエラーが発生しました: {e}")
             return False
 
-    async def _execute_custom_script(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> bool:
+    async def _execute_custom_script(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> bool:
         """カスタムスクリプトの実行"""
-        script_path = self.config.parameters.get('script_path')
+        script_path = self.config.parameters.get("script_path")
         if not script_path or not Path(script_path).exists():
             self.logger.error("カスタムスクリプトが見つかりません")
             return False
@@ -602,17 +655,18 @@ class AutoActionExecutor:
         try:
             # 環境変数として情報を渡す
             env = {
-                'GATE_TYPE': gate_result.gate_type.value,
-                'GATE_RESULT': gate_result.result.value,
-                'GATE_MESSAGE': gate_result.message,
-                'GATE_TIMESTAMP': gate_result.timestamp.isoformat()
+                "GATE_TYPE": gate_result.gate_type.value,
+                "GATE_RESULT": gate_result.result.value,
+                "GATE_MESSAGE": gate_result.message,
+                "GATE_TIMESTAMP": gate_result.timestamp.isoformat(),
             }
 
             result = subprocess.run(
                 [script_path],
-                capture_output=True, text=True,
+                capture_output=True,
+                text=True,
                 timeout=self.config.timeout_seconds,
-                env={**os.environ, **env}
+                env={**os.environ, **env},
             )
 
             if result.returncode == 0:
@@ -626,7 +680,9 @@ class AutoActionExecutor:
             self.logger.error("カスタムスクリプトがタイムアウトしました")
             return False
 
-    def _create_notification_message(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> str:
+    def _create_notification_message(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> str:
         """通知メッセージの作成"""
         status_emoji = "❌" if gate_result.result == QualityGateResult.FAILED else "⚠️"
 
@@ -639,7 +695,10 @@ class AutoActionExecutor:
 時刻: {gate_result.timestamp.strftime('%Y-%m-%d %H:%M:%S')}
 """
 
-        if gate_result.actual_value is not None and gate_result.expected_value is not None:
+        if (
+            gate_result.actual_value is not None
+            and gate_result.expected_value is not None
+        ):
             message += f"実際の値: {gate_result.actual_value}\n"
             message += f"期待値: {gate_result.expected_value}\n"
 
@@ -650,7 +709,9 @@ class AutoActionExecutor:
 
         return message
 
-    def _create_issue_body(self, gate_result: QualityGateCheckResult, context: dict[str, Any]) -> str:
+    def _create_issue_body(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ) -> str:
         """課題本文の作成"""
         body = f"""
 ## 品質ゲート失敗レポート
@@ -663,7 +724,10 @@ class AutoActionExecutor:
 {gate_result.message}
 """
 
-        if gate_result.actual_value is not None and gate_result.expected_value is not None:
+        if (
+            gate_result.actual_value is not None
+            and gate_result.expected_value is not None
+        ):
             body += f"""
 ### 測定値
 - **実際の値:** {gate_result.actual_value}
@@ -714,8 +778,11 @@ class QualityGateManager:
         logger.setLevel(logging.INFO)
 
         # ログファイルハンドラー
-        log_file = self.output_dir / f"quality_gate_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        log_file = (
+            self.output_dir
+            / f"quality_gate_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        )
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setLevel(logging.DEBUG)
 
         # コンソールハンドラー
@@ -724,7 +791,7 @@ class QualityGateManager:
 
         # フォーマッター
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
@@ -737,14 +804,20 @@ class QualityGateManager:
     def add_gate(self, gate_checker: QualityGateChecker):
         """品質ゲートの追加"""
         self.gates[gate_checker.config.gate_type] = gate_checker
-        self.logger.info(f"品質ゲートを追加しました: {gate_checker.config.gate_type.value}")
+        self.logger.info(
+            f"品質ゲートを追加しました: {gate_checker.config.gate_type.value}"
+        )
 
     def add_action(self, action_executor: AutoActionExecutor):
         """自動対応アクションの追加"""
         self.actions.append(action_executor)
-        self.logger.info(f"自動対応アクションを追加しました: {action_executor.config.action_type.value}")
+        self.logger.info(
+            f"自動対応アクションを追加しました: {action_executor.config.action_type.value}"
+        )
 
-    async def check_all_gates(self, data: dict[str, Any]) -> dict[QualityGateType, QualityGateCheckResult]:
+    async def check_all_gates(
+        self, data: dict[str, Any]
+    ) -> dict[QualityGateType, QualityGateCheckResult]:
         """すべての品質ゲートのチェック
 
         Args:
@@ -759,7 +832,9 @@ class QualityGateManager:
 
         for gate_type, gate_checker in self.gates.items():
             if not gate_checker.config.enabled:
-                self.logger.info(f"品質ゲート {gate_type.value} はスキップされました（無効）")
+                self.logger.info(
+                    f"品質ゲート {gate_type.value} はスキップされました（無効）"
+                )
                 continue
 
             try:
@@ -774,16 +849,21 @@ class QualityGateManager:
                 )
 
                 # 自動対応アクションの実行
-                if result.result in [QualityGateResult.FAILED, QualityGateResult.WARNING]:
+                if result.result in [
+                    QualityGateResult.FAILED,
+                    QualityGateResult.WARNING,
+                ]:
                     await self._execute_actions(result, data)
 
             except Exception as e:
-                self.logger.error(f"品質ゲート {gate_type.value} でエラーが発生しました: {e}")
+                self.logger.error(
+                    f"品質ゲート {gate_type.value} でエラーが発生しました: {e}"
+                )
                 error_result = QualityGateCheckResult(
                     gate_type=gate_type,
                     result=QualityGateResult.FAILED,
                     message=f"チェック中にエラーが発生しました: {e}",
-                    timestamp=datetime.now()
+                    timestamp=datetime.now(),
                 )
                 results[gate_type] = error_result
                 self.check_results.append(error_result)
@@ -794,32 +874,49 @@ class QualityGateManager:
         self.logger.info("品質ゲートチェックが完了しました")
         return results
 
-    async def _execute_actions(self, gate_result: QualityGateCheckResult, context: dict[str, Any]):
+    async def _execute_actions(
+        self, gate_result: QualityGateCheckResult, context: dict[str, Any]
+    ):
         """自動対応アクションの実行"""
-        self.logger.info(f"自動対応アクションを実行します: {gate_result.gate_type.value}")
+        self.logger.info(
+            f"自動対応アクションを実行します: {gate_result.gate_type.value}"
+        )
 
         for action_executor in self.actions:
             try:
                 success = await action_executor.execute(gate_result, context)
                 if success:
-                    self.logger.info(f"アクション {action_executor.config.action_type.value} が正常に実行されました")
+                    self.logger.info(
+                        f"アクション {action_executor.config.action_type.value} が正常に実行されました"
+                    )
                 else:
-                    self.logger.warning(f"アクション {action_executor.config.action_type.value} の実行に失敗しました")
+                    self.logger.warning(
+                        f"アクション {action_executor.config.action_type.value} の実行に失敗しました"
+                    )
             except Exception as e:
-                self.logger.error(f"アクション {action_executor.config.action_type.value} でエラーが発生しました: {e}")
+                self.logger.error(
+                    f"アクション {action_executor.config.action_type.value} でエラーが発生しました: {e}"
+                )
 
-    async def _save_results(self, results: dict[QualityGateType, QualityGateCheckResult]):
+    async def _save_results(
+        self, results: dict[QualityGateType, QualityGateCheckResult]
+    ):
         """結果の保存"""
         try:
             results_data = {}
             for gate_type, result in results.items():
                 results_data[gate_type.value] = asdict(result)
                 # datetime オブジェクトを文字列に変換
-                if results_data[gate_type.value]['timestamp']:
-                    results_data[gate_type.value]['timestamp'] = result.timestamp.isoformat()
+                if results_data[gate_type.value]["timestamp"]:
+                    results_data[gate_type.value][
+                        "timestamp"
+                    ] = result.timestamp.isoformat()
 
-            results_file = self.output_dir / f"quality_gate_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            with open(results_file, 'w', encoding='utf-8') as f:
+            results_file = (
+                self.output_dir
+                / f"quality_gate_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            )
+            with open(results_file, "w", encoding="utf-8") as f:
                 json.dump(results_data, f, indent=2, ensure_ascii=False)
 
             self.logger.info(f"結果を保存しました: {results_file}")
@@ -860,9 +957,9 @@ def create_default_quality_gates() -> list[QualityGateChecker]:
                 min_value=80.0,
                 warning_threshold=85.0,
                 unit="%",
-                description="ラインカバレッジ"
+                description="ラインカバレッジ",
             )
-        ]
+        ],
     )
     gates.append(TestCoverageGate(coverage_config))
 
@@ -873,14 +970,14 @@ def create_default_quality_gates() -> list[QualityGateChecker]:
             QualityThreshold(
                 name="critical_issues",
                 max_value=0,
-                description="重要なセキュリティ問題"
+                description="重要なセキュリティ問題",
             ),
             QualityThreshold(
                 name="high_issues",
                 max_value=2,
-                description="高レベルのセキュリティ問題"
-            )
-        ]
+                description="高レベルのセキュリティ問題",
+            ),
+        ],
     )
     gates.append(SecurityIssuesGate(security_config))
 
@@ -892,9 +989,9 @@ def create_default_quality_gates() -> list[QualityGateChecker]:
                 name="max_regression_percent",
                 max_value=10.0,
                 unit="%",
-                description="最大パフォーマンス回帰率"
+                description="最大パフォーマンス回帰率",
             )
-        ]
+        ],
     )
     gates.append(PerformanceRegressionGate(performance_config))
 
@@ -908,7 +1005,7 @@ def create_default_actions() -> list[AutoActionExecutor]:
     # 通知アクション
     notification_config = AutoActionConfig(
         action_type=ActionType.NOTIFICATION,
-        trigger_conditions=[QualityGateResult.FAILED, QualityGateResult.WARNING]
+        trigger_conditions=[QualityGateResult.FAILED, QualityGateResult.WARNING],
     )
     actions.append(AutoActionExecutor(notification_config))
 
@@ -916,7 +1013,7 @@ def create_default_actions() -> list[AutoActionExecutor]:
     block_config = AutoActionConfig(
         action_type=ActionType.BLOCK_DEPLOYMENT,
         trigger_conditions=[QualityGateResult.FAILED],
-        parameters={'block_file': '.deployment_blocked'}
+        parameters={"block_file": ".deployment_blocked"},
     )
     actions.append(AutoActionExecutor(block_config))
 
@@ -930,9 +1027,15 @@ async def main():
     parser = argparse.ArgumentParser(description="品質ゲート管理システム")
     parser.add_argument("--coverage-file", help="カバレッジファイルパス")
     parser.add_argument("--security-report", help="セキュリティレポートファイルパス")
-    parser.add_argument("--performance-metrics", help="パフォーマンスメトリクスファイルパス")
-    parser.add_argument("--baseline-file", help="パフォーマンスベースラインファイルパス")
-    parser.add_argument("--output-dir", default="quality_gate_results", help="出力ディレクトリ")
+    parser.add_argument(
+        "--performance-metrics", help="パフォーマンスメトリクスファイルパス"
+    )
+    parser.add_argument(
+        "--baseline-file", help="パフォーマンスベースラインファイルパス"
+    )
+    parser.add_argument(
+        "--output-dir", default="quality_gate_results", help="出力ディレクトリ"
+    )
 
     args = parser.parse_args()
 
@@ -951,17 +1054,17 @@ async def main():
     check_data = {}
 
     if args.coverage_file:
-        check_data['coverage_file'] = args.coverage_file
+        check_data["coverage_file"] = args.coverage_file
 
     if args.security_report:
-        check_data['security_report'] = args.security_report
+        check_data["security_report"] = args.security_report
 
     if args.performance_metrics:
-        with open(args.performance_metrics, encoding='utf-8') as f:
-            check_data['current_metrics'] = json.load(f)
+        with open(args.performance_metrics, encoding="utf-8") as f:
+            check_data["current_metrics"] = json.load(f)
 
         if args.baseline_file:
-            check_data['baseline_file'] = args.baseline_file
+            check_data["baseline_file"] = args.baseline_file
 
     # 品質ゲートチェックの実行
     results = await manager.check_all_gates(check_data)
@@ -983,4 +1086,5 @@ async def main():
 
 if __name__ == "__main__":
     import os
+
     asyncio.run(main())

@@ -12,10 +12,10 @@ from datetime import datetime
 from unittest.mock import Mock
 
 # テスト対象のモジュールをインポートするためにパスを追加
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 # PySide6のテスト用設定
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 from PySide6.QtCore import Qt
 from PySide6.QtTest import QTest
@@ -55,7 +55,7 @@ class TestSearchResultItemWidget(unittest.TestCase):
             size=1024,
             created_date=datetime(2024, 1, 1, 10, 0, 0),
             modified_date=datetime(2024, 1, 15, 14, 30, 0),
-            indexed_date=datetime(2024, 1, 16, 9, 0, 0)
+            indexed_date=datetime(2024, 1, 16, 9, 0, 0),
         )
 
         # テスト用の検索結果を作成
@@ -66,7 +66,7 @@ class TestSearchResultItemWidget(unittest.TestCase):
             snippet="これはテスト用のドキュメント...",
             highlighted_terms=["テスト", "ドキュメント"],
             relevance_explanation="キーワードマッチによる高い関連度",
-            rank=1
+            rank=1,
         )
 
     def test_item_widget_initialization(self):
@@ -106,7 +106,7 @@ class TestSearchResultItemWidget(unittest.TestCase):
             search_type=SearchType.FULL_TEXT,
             snippet="これは非常に長いスニペットテキストです。" * 10,  # 長いテキスト
             highlighted_terms=["テスト"],
-            rank=2
+            rank=2,
         )
         long_widget = SearchResultItemWidget(long_result)
         long_snippet = long_widget._format_snippet()
@@ -132,7 +132,7 @@ class TestSearchResultItemWidget(unittest.TestCase):
             (FileType.EXCEL, "Excel"),
             (FileType.MARKDOWN, "Markdown"),
             (FileType.TEXT, "テキスト"),
-            (FileType.UNKNOWN, "不明")
+            (FileType.UNKNOWN, "不明"),
         ]
 
         for file_type, expected_name in test_cases:
@@ -148,7 +148,7 @@ class TestSearchResultItemWidget(unittest.TestCase):
             (1024, "1.0 KB"),
             (1536, "1.5 KB"),
             (1024 * 1024, "1.0 MB"),
-            (1024 * 1024 * 1024, "1.0 GB")
+            (1024 * 1024 * 1024, "1.0 GB"),
         ]
 
         for size, expected_format in test_cases:
@@ -162,7 +162,7 @@ class TestSearchResultItemWidget(unittest.TestCase):
         test_cases = [
             (0.9, "#4caf50"),  # 緑（高スコア）
             (0.7, "#ff9800"),  # オレンジ（中スコア）
-            (0.4, "#f44336")   # 赤（低スコア）
+            (0.4, "#f44336"),  # 赤（低スコア）
         ]
 
         for score, expected_color in test_cases:
@@ -176,7 +176,7 @@ class TestSearchResultItemWidget(unittest.TestCase):
         test_cases = [
             (SearchType.FULL_TEXT, "#2196f3"),
             (SearchType.SEMANTIC, "#9c27b0"),
-            (SearchType.HYBRID, "#ff5722")
+            (SearchType.HYBRID, "#ff5722"),
         ]
 
         for search_type, expected_color in test_cases:
@@ -236,7 +236,11 @@ class TestSearchResultsWidget(unittest.TestCase):
         self.test_results = []
         for i in range(25):  # ページネーションテスト用に25件作成
             # 既存のテストファイルを使用
-            test_file = "tests/fixtures/sample_text.txt" if i % 2 == 0 else "tests/fixtures/sample_markdown.md"
+            test_file = (
+                "tests/fixtures/sample_text.txt"
+                if i % 2 == 0
+                else "tests/fixtures/sample_markdown.md"
+            )
             file_type = FileType.TEXT if i % 2 == 0 else FileType.MARKDOWN
 
             doc = Document(
@@ -248,7 +252,7 @@ class TestSearchResultsWidget(unittest.TestCase):
                 size=1024 * (i + 1),
                 created_date=datetime(2024, 1, i + 1, 10, 0, 0),
                 modified_date=datetime(2024, 1, i + 1, 14, 30, 0),
-                indexed_date=datetime(2024, 1, i + 1, 9, 0, 0)
+                indexed_date=datetime(2024, 1, i + 1, 9, 0, 0),
             )
 
             result = SearchResult(
@@ -257,7 +261,7 @@ class TestSearchResultsWidget(unittest.TestCase):
                 search_type=SearchType.HYBRID,
                 snippet=f"テストスニペット {i}",
                 highlighted_terms=["テスト"],
-                rank=i + 1
+                rank=i + 1,
             )
             self.test_results.append(result)
 
@@ -484,7 +488,10 @@ class TestSearchResultsIntegration(unittest.TestCase):
 
         for i in range(50):
             # 既存のテストファイルを使用
-            test_files = ["tests/fixtures/sample_text.txt", "tests/fixtures/sample_markdown.md"]
+            test_files = [
+                "tests/fixtures/sample_text.txt",
+                "tests/fixtures/sample_markdown.md",
+            ]
             test_file = test_files[i % len(test_files)]
             current_file_type = FileType.TEXT if i % 2 == 0 else FileType.MARKDOWN
 
@@ -497,7 +504,7 @@ class TestSearchResultsIntegration(unittest.TestCase):
                 size=1024 * (i + 1),
                 created_date=datetime(2024, 1, (i % 28) + 1, 10, 0, 0),
                 modified_date=datetime(2024, 1, (i % 28) + 1, 14, 30, 0),
-                indexed_date=datetime(2024, 1, (i % 28) + 1, 9, 0, 0)
+                indexed_date=datetime(2024, 1, (i % 28) + 1, 9, 0, 0),
             )
 
             result = SearchResult(
@@ -506,7 +513,7 @@ class TestSearchResultsIntegration(unittest.TestCase):
                 search_type=search_types[i % len(search_types)],
                 snippet=f"混合スニペット {i}",
                 highlighted_terms=["混合", "テスト"],
-                rank=i + 1
+                rank=i + 1,
             )
             self.mixed_results.append(result)
 
@@ -577,7 +584,7 @@ class TestSearchResultsIntegration(unittest.TestCase):
             (4, SortOrder.DATE_DESC, lambda r: -r.document.modified_date.timestamp()),
             (5, SortOrder.DATE_ASC, lambda r: r.document.modified_date.timestamp()),
             (6, SortOrder.SIZE_DESC, lambda r: -r.document.size),
-            (7, SortOrder.SIZE_ASC, lambda r: r.document.size)
+            (7, SortOrder.SIZE_ASC, lambda r: r.document.size),
         ]
 
         for index, expected_order, sort_key in sort_tests:
@@ -596,8 +603,12 @@ class TestSearchResultsIntegration(unittest.TestCase):
                 second_key = sort_key(second_result)
 
                 # 降順ソートの場合
-                if expected_order in [SortOrder.RELEVANCE_DESC, SortOrder.TITLE_DESC,
-                                    SortOrder.DATE_DESC, SortOrder.SIZE_DESC]:
+                if expected_order in [
+                    SortOrder.RELEVANCE_DESC,
+                    SortOrder.TITLE_DESC,
+                    SortOrder.DATE_DESC,
+                    SortOrder.SIZE_DESC,
+                ]:
                     if expected_order == SortOrder.TITLE_DESC:
                         self.assertGreaterEqual(first_key, second_key)
                     else:
@@ -607,6 +618,6 @@ class TestSearchResultsIntegration(unittest.TestCase):
                     self.assertLessEqual(first_key, second_key)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # テストスイートの実行
     unittest.main(verbosity=2)

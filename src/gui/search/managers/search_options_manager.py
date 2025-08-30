@@ -40,20 +40,22 @@ class SearchOptionsManager(QObject):
         """
         try:
             # ファイルタイプフィルター
-            if 'file_types' in options:
-                self._apply_file_type_filters(options['file_types'], advanced_options)
+            if "file_types" in options:
+                self._apply_file_type_filters(options["file_types"], advanced_options)
 
             # 日付範囲
-            if 'date_from' in options and 'date_to' in options:
-                self._apply_date_range(options['date_from'], options['date_to'], advanced_options)
+            if "date_from" in options and "date_to" in options:
+                self._apply_date_range(
+                    options["date_from"], options["date_to"], advanced_options
+                )
 
             # 結果数制限
-            if 'limit' in options:
-                self._apply_result_limit(options['limit'], advanced_options)
+            if "limit" in options:
+                self._apply_result_limit(options["limit"], advanced_options)
 
             # 重み設定
-            if 'weights' in options:
-                self._apply_weights(options['weights'], advanced_options)
+            if "weights" in options:
+                self._apply_weights(options["weights"], advanced_options)
 
         except Exception as e:
             self.logger.error(f"検索オプション適用エラー: {e}")
@@ -75,7 +77,7 @@ class SearchOptionsManager(QObject):
 
     def _apply_weights(self, weights: dict[str, float], advanced_options) -> None:
         """重み設定を適用"""
-        if 'full_text' in weights:
-            advanced_options.full_text_weight.setValue(int(weights['full_text'] * 100))
-        if 'semantic' in weights:
-            advanced_options.semantic_weight.setValue(int(weights['semantic'] * 100))
+        if "full_text" in weights:
+            advanced_options.full_text_weight.setValue(int(weights["full_text"] * 100))
+        if "semantic" in weights:
+            advanced_options.semantic_weight.setValue(int(weights["semantic"] * 100))

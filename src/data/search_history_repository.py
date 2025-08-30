@@ -31,8 +31,13 @@ class SearchHistoryRepository:
         self.db_manager = db_manager
         self.logger = logging.getLogger(__name__)
 
-    def add_search_record(self, query: str, search_type: SearchType,
-                         result_count: int, execution_time_ms: int) -> bool:
+    def add_search_record(
+        self,
+        query: str,
+        search_type: SearchType,
+        result_count: int,
+        execution_time_ms: int,
+    ) -> bool:
         """検索履歴レコードを追加
 
         Args:
@@ -46,11 +51,14 @@ class SearchHistoryRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT INTO search_history (
                         query, search_type, result_count, execution_time_ms
                     ) VALUES (?, ?, ?, ?)
-                """, (query, search_type.value, result_count, execution_time_ms))
+                """,
+                    (query, search_type.value, result_count, execution_time_ms),
+                )
 
                 conn.commit()
                 self.logger.debug(f"検索履歴を記録: {query} ({search_type.value})")
@@ -71,22 +79,25 @@ class SearchHistoryRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, query, search_type, timestamp,
                            result_count, execution_time_ms
                     FROM search_history
                     ORDER BY timestamp DESC
                     LIMIT ?
-                """, (limit,))
+                """,
+                    (limit,),
+                )
 
                 return [
                     {
-                        'id': row[0],
-                        'query': row[1],
-                        'search_type': SearchType(row[2]),
-                        'timestamp': datetime.fromisoformat(row[3]),
-                        'result_count': row[4],
-                        'execution_time_ms': row[5]
+                        "id": row[0],
+                        "query": row[1],
+                        "search_type": SearchType(row[2]),
+                        "timestamp": datetime.fromisoformat(row[3]),
+                        "result_count": row[4],
+                        "execution_time_ms": row[5],
                     }
                     for row in cursor.fetchall()
                 ]
@@ -95,7 +106,9 @@ class SearchHistoryRepository:
             self.logger.error(f"最近の検索履歴取得エラー: {e}")
             raise DatabaseError(f"検索履歴の取得に失敗しました: {e}")
 
-    def get_popular_queries(self, days: int = 30, limit: int = 20) -> list[dict[str, Any]]:
+    def get_popular_queries(
+        self, days: int = 30, limit: int = 20
+    ) -> list[dict[str, Any]]:
         """人気の検索クエリを取得
 
         Args:
@@ -109,7 +122,8 @@ class SearchHistoryRepository:
             since_date = datetime.now() - timedelta(days=days)
 
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT query, COUNT(*) as search_count,
                            AVG(result_count) as avg_results,
                            AVG(execution_time_ms) as avg_time
@@ -118,14 +132,16 @@ class SearchHistoryRepository:
                     GROUP BY query
                     ORDER BY search_count DESC, avg_results DESC
                     LIMIT ?
-                """, (since_date, limit))
+                """,
+                    (since_date, limit),
+                )
 
                 return [
                     {
-                        'query': row[0],
-                        'search_count': row[1],
-                        'avg_results': round(row[2], 1),
-                        'avg_execution_time_ms': round(row[3], 1)
+                        "query": row[0],
+                        "search_count": row[1],
+                        "avg_results": round(row[2], 1),
+                        "avg_execution_time_ms": round(row[3], 1),
                     }
                     for row in cursor.fetchall()
                 ]
@@ -146,14 +162,17 @@ class SearchHistoryRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT DISTINCT query, COUNT(*) as frequency
                     FROM search_history
                     WHERE query LIKE ? AND LENGTH(query) > ?
                     GROUP BY query
                     ORDER BY frequency DESC, LENGTH(query) ASC
                     LIMIT ?
-                """, (f"{partial_query}%", len(partial_query), limit))
+                """,
+                    (f"{partial_query}%", len(partial_query), limit),
+                )
 
                 return [row[0] for row in cursor.fetchall()]
 
@@ -177,67 +196,77 @@ class SearchHistoryRepository:
                 stats = {}
 
                 # 総検索数
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT COUNT(*) FROM search_history WHERE timestamp >= ?
-                """, (since_date,))
-                stats['total_searches'] = cursor.fetchone()[0]
+                """,
+                    (since_date,),
+                )
+                stats["total_searches"] = cursor.fetchone()[0]
 
                 # 検索タイプ別統計
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT search_type, COUNT(*) as count,
                            AVG(result_count) as avg_results,
                            AVG(execution_time_ms) as avg_time
                     FROM search_history
                     WHERE timestamp >= ?
                     GROUP BY search_type
-                """, (since_date,))
+                """,
+                    (since_date,),
+                )
 
-                stats['by_search_type'] = {
+                stats["by_search_type"] = {
                     row[0]: {
-                        'count': row[1],
-                        'avg_results': round(row[2], 1),
-                        'avg_execution_time_ms': round(row[3], 1)
+                        "count": row[1],
+                        "avg_results": round(row[2], 1),
+                        "avg_execution_time_ms": round(row[3], 1),
                     }
                     for row in cursor.fetchall()
                 }
 
                 # 日別検索数
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT DATE(timestamp) as search_date, COUNT(*) as count
                     FROM search_history
                     WHERE timestamp >= ?
                     GROUP BY DATE(timestamp)
                     ORDER BY search_date DESC
-                """, (since_date,))
+                """,
+                    (since_date,),
+                )
 
-                stats['daily_counts'] = {
-                    row[0]: row[1] for row in cursor.fetchall()
-                }
+                stats["daily_counts"] = {row[0]: row[1] for row in cursor.fetchall()}
 
                 # パフォーマンス統計
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT AVG(execution_time_ms) as avg_time,
                            MIN(execution_time_ms) as min_time,
                            MAX(execution_time_ms) as max_time,
                            AVG(result_count) as avg_results
                     FROM search_history
                     WHERE timestamp >= ?
-                """, (since_date,))
+                """,
+                    (since_date,),
+                )
 
                 row = cursor.fetchone()
                 if row and row[0] is not None:
-                    stats['performance'] = {
-                        'avg_execution_time_ms': round(row[0], 1),
-                        'min_execution_time_ms': row[1],
-                        'max_execution_time_ms': row[2],
-                        'avg_result_count': round(row[3], 1)
+                    stats["performance"] = {
+                        "avg_execution_time_ms": round(row[0], 1),
+                        "min_execution_time_ms": row[1],
+                        "max_execution_time_ms": row[2],
+                        "avg_result_count": round(row[3], 1),
                     }
                 else:
-                    stats['performance'] = {
-                        'avg_execution_time_ms': 0,
-                        'min_execution_time_ms': 0,
-                        'max_execution_time_ms': 0,
-                        'avg_result_count': 0
+                    stats["performance"] = {
+                        "avg_execution_time_ms": 0,
+                        "min_execution_time_ms": 0,
+                        "max_execution_time_ms": 0,
+                        "avg_result_count": 0,
                     }
 
                 return stats
@@ -259,9 +288,12 @@ class SearchHistoryRepository:
             cutoff_date = datetime.now() - timedelta(days=days_to_keep)
 
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     DELETE FROM search_history WHERE timestamp < ?
-                """, (cutoff_date,))
+                """,
+                    (cutoff_date,),
+                )
 
                 deleted_count = cursor.rowcount
                 conn.commit()
@@ -286,7 +318,8 @@ class SearchHistoryRepository:
             since_date = datetime.now() - timedelta(days=days)
 
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT query,
                            COUNT(*) as total_searches,
                            COUNT(DISTINCT DATE(timestamp)) as active_days,
@@ -298,16 +331,19 @@ class SearchHistoryRepository:
                     HAVING total_searches >= 2
                     ORDER BY total_searches DESC, avg_results DESC
                     LIMIT 50
-                """, (since_date,))
+                """,
+                    (since_date,),
+                )
 
                 return [
                     {
-                        'query': row[0],
-                        'total_searches': row[1],
-                        'active_days': row[2],
-                        'avg_results': round(row[3], 1),
-                        'last_searched': datetime.fromisoformat(row[4]),
-                        'frequency_score': row[1] / max(1, days - row[2])  # 検索頻度スコア
+                        "query": row[0],
+                        "total_searches": row[1],
+                        "active_days": row[2],
+                        "avg_results": round(row[3], 1),
+                        "last_searched": datetime.fromisoformat(row[4]),
+                        "frequency_score": row[1]
+                        / max(1, days - row[2]),  # 検索頻度スコア
                     }
                     for row in cursor.fetchall()
                 ]
@@ -316,7 +352,9 @@ class SearchHistoryRepository:
             self.logger.error(f"検索トレンド取得エラー: {e}")
             raise DatabaseError(f"検索トレンドの取得に失敗しました: {e}")
 
-    def get_failed_searches(self, days: int = 7, limit: int = 20) -> list[dict[str, Any]]:
+    def get_failed_searches(
+        self, days: int = 7, limit: int = 20
+    ) -> list[dict[str, Any]]:
         """結果が見つからなかった検索を取得
 
         Args:
@@ -330,7 +368,8 @@ class SearchHistoryRepository:
             since_date = datetime.now() - timedelta(days=days)
 
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT query, search_type, COUNT(*) as failure_count,
                            MAX(timestamp) as last_attempt
                     FROM search_history
@@ -338,14 +377,16 @@ class SearchHistoryRepository:
                     GROUP BY query, search_type
                     ORDER BY failure_count DESC, last_attempt DESC
                     LIMIT ?
-                """, (since_date, limit))
+                """,
+                    (since_date, limit),
+                )
 
                 return [
                     {
-                        'query': row[0],
-                        'search_type': SearchType(row[1]),
-                        'failure_count': row[2],
-                        'last_attempt': datetime.fromisoformat(row[3])
+                        "query": row[0],
+                        "search_type": SearchType(row[1]),
+                        "failure_count": row[2],
+                        "last_attempt": datetime.fromisoformat(row[3]),
                     }
                     for row in cursor.fetchall()
                 ]
@@ -354,8 +395,9 @@ class SearchHistoryRepository:
             self.logger.error(f"失敗検索取得エラー: {e}")
             raise DatabaseError(f"失敗した検索の取得に失敗しました: {e}")
 
-    def export_search_history(self, start_date: datetime | None = None,
-                            end_date: datetime | None = None) -> list[dict[str, Any]]:
+    def export_search_history(
+        self, start_date: datetime | None = None, end_date: datetime | None = None
+    ) -> list[dict[str, Any]]:
         """検索履歴をエクスポート
 
         Args:
@@ -391,12 +433,12 @@ class SearchHistoryRepository:
 
                 return [
                     {
-                        'id': row[0],
-                        'query': row[1],
-                        'search_type': row[2],
-                        'timestamp': row[3],
-                        'result_count': row[4],
-                        'execution_time_ms': row[5]
+                        "id": row[0],
+                        "query": row[1],
+                        "search_type": row[2],
+                        "timestamp": row[3],
+                        "result_count": row[4],
+                        "execution_time_ms": row[5],
                     }
                     for row in cursor.fetchall()
                 ]
@@ -407,8 +449,13 @@ class SearchHistoryRepository:
 
     # 保存された検索の管理
 
-    def save_search(self, name: str, query: str, search_type: SearchType,
-                   search_options: dict[str, Any] = None) -> bool:
+    def save_search(
+        self,
+        name: str,
+        query: str,
+        search_type: SearchType,
+        search_options: dict[str, Any] = None,
+    ) -> bool:
         """検索を保存
 
         Args:
@@ -424,11 +471,14 @@ class SearchHistoryRepository:
             options_json = json.dumps(search_options or {}, ensure_ascii=False)
 
             with self.db_manager.get_connection() as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO saved_searches (
                         name, query, search_type, search_options
                     ) VALUES (?, ?, ?, ?)
-                """, (name, query, search_type.value, options_json))
+                """,
+                    (name, query, search_type.value, options_json),
+                )
 
                 conn.commit()
                 self.logger.info(f"検索を保存: {name}")
@@ -446,23 +496,27 @@ class SearchHistoryRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, name, query, search_type, search_options,
                            created_date, last_used, use_count
                     FROM saved_searches
                     ORDER BY use_count DESC, last_used DESC
-                """)
+                """
+                )
 
                 return [
                     {
-                        'id': row[0],
-                        'name': row[1],
-                        'query': row[2],
-                        'search_type': SearchType(row[3]),
-                        'search_options': json.loads(row[4]) if row[4] else {},
-                        'created_date': datetime.fromisoformat(row[5]) if row[5] else None,
-                        'last_used': datetime.fromisoformat(row[6]) if row[6] else None,
-                        'use_count': row[7]
+                        "id": row[0],
+                        "name": row[1],
+                        "query": row[2],
+                        "search_type": SearchType(row[3]),
+                        "search_options": json.loads(row[4]) if row[4] else {},
+                        "created_date": (
+                            datetime.fromisoformat(row[5]) if row[5] else None
+                        ),
+                        "last_used": datetime.fromisoformat(row[6]) if row[6] else None,
+                        "use_count": row[7],
                     }
                     for row in cursor.fetchall()
                 ]
@@ -483,32 +537,40 @@ class SearchHistoryRepository:
         try:
             with self.db_manager.get_connection() as conn:
                 # 使用回数と最終使用日時を更新
-                conn.execute("""
+                conn.execute(
+                    """
                     UPDATE saved_searches
                     SET use_count = use_count + 1, last_used = CURRENT_TIMESTAMP
                     WHERE id = ?
-                """, (search_id,))
+                """,
+                    (search_id,),
+                )
 
                 # 更新された検索情報を取得
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     SELECT id, name, query, search_type, search_options,
                            created_date, last_used, use_count
                     FROM saved_searches
                     WHERE id = ?
-                """, (search_id,))
+                """,
+                    (search_id,),
+                )
 
                 row = cursor.fetchone()
                 if row:
                     conn.commit()
                     return {
-                        'id': row[0],
-                        'name': row[1],
-                        'query': row[2],
-                        'search_type': SearchType(row[3]),
-                        'search_options': json.loads(row[4]) if row[4] else {},
-                        'created_date': datetime.fromisoformat(row[5]) if row[5] else None,
-                        'last_used': datetime.fromisoformat(row[6]) if row[6] else None,
-                        'use_count': row[7]
+                        "id": row[0],
+                        "name": row[1],
+                        "query": row[2],
+                        "search_type": SearchType(row[3]),
+                        "search_options": json.loads(row[4]) if row[4] else {},
+                        "created_date": (
+                            datetime.fromisoformat(row[5]) if row[5] else None
+                        ),
+                        "last_used": datetime.fromisoformat(row[6]) if row[6] else None,
+                        "use_count": row[7],
                     }
 
                 return None
@@ -528,9 +590,12 @@ class SearchHistoryRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     DELETE FROM saved_searches WHERE id = ?
-                """, (search_id,))
+                """,
+                    (search_id,),
+                )
 
                 deleted_count = cursor.rowcount
                 conn.commit()
@@ -539,7 +604,9 @@ class SearchHistoryRepository:
                     self.logger.info(f"保存された検索を削除: ID {search_id}")
                     return True
                 else:
-                    self.logger.warning(f"削除対象の検索が見つかりません: ID {search_id}")
+                    self.logger.warning(
+                        f"削除対象の検索が見つかりません: ID {search_id}"
+                    )
                     return False
 
         except Exception as e:
@@ -558,18 +625,25 @@ class SearchHistoryRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute("""
+                cursor = conn.execute(
+                    """
                     UPDATE saved_searches SET name = ? WHERE id = ?
-                """, (new_name, search_id))
+                """,
+                    (new_name, search_id),
+                )
 
                 updated_count = cursor.rowcount
                 conn.commit()
 
                 if updated_count > 0:
-                    self.logger.info(f"保存された検索の名前を変更: ID {search_id} -> {new_name}")
+                    self.logger.info(
+                        f"保存された検索の名前を変更: ID {search_id} -> {new_name}"
+                    )
                     return True
                 else:
-                    self.logger.warning(f"更新対象の検索が見つかりません: ID {search_id}")
+                    self.logger.warning(
+                        f"更新対象の検索が見つかりません: ID {search_id}"
+                    )
                     return False
 
         except Exception as e:

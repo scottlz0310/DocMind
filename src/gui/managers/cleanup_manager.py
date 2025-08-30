@@ -26,7 +26,7 @@ class CleanupManager(QObject, LoggerMixin):
     適切な終了処理を提供します。
     """
 
-    def __init__(self, main_window: 'MainWindow'):
+    def __init__(self, main_window: "MainWindow"):
         """
         クリーンアップ管理マネージャーを初期化
 
@@ -49,7 +49,7 @@ class CleanupManager(QObject, LoggerMixin):
             "終了確認",
             "DocMindを終了しますか？",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
@@ -82,19 +82,27 @@ class CleanupManager(QObject, LoggerMixin):
             self.cleanup_search_components()
 
             # 進捗管理マネージャーのクリーンアップ
-            if hasattr(self.main_window, 'progress_manager') and self.main_window.progress_manager:
+            if (
+                hasattr(self.main_window, "progress_manager")
+                and self.main_window.progress_manager
+            ):
                 self.main_window.progress_manager.cleanup()
                 self.logger.info("進捗管理マネージャーをクリーンアップしました")
 
             # シグナル管理マネージャーのクリーンアップ
-            if hasattr(self.main_window, 'signal_manager') and self.main_window.signal_manager:
+            if (
+                hasattr(self.main_window, "signal_manager")
+                and self.main_window.signal_manager
+            ):
                 self.main_window.signal_manager.cleanup()
                 self.logger.info("シグナル管理マネージャーをクリーンアップしました")
 
             self.logger.info("すべてのコンポーネントクリーンアップが完了しました")
 
         except Exception as e:
-            self.logger.error(f"コンポーネントクリーンアップ中にエラーが発生しました: {e}")
+            self.logger.error(
+                f"コンポーネントクリーンアップ中にエラーが発生しました: {e}"
+            )
 
     def cleanup_rebuild_components(self):
         """
@@ -105,16 +113,26 @@ class CleanupManager(QObject, LoggerMixin):
         """
         try:
             # タイムアウトマネージャーのクリーンアップ（最優先）
-            if hasattr(self.main_window, 'timeout_manager') and self.main_window.timeout_manager:
+            if (
+                hasattr(self.main_window, "timeout_manager")
+                and self.main_window.timeout_manager
+            ):
                 self.main_window.timeout_manager.cancel_all_timeouts()
                 self.logger.info("タイムアウトマネージャーをクリーンアップしました")
 
             # スレッドマネージャーのクリーンアップ
-            if hasattr(self.main_window, 'thread_manager') and self.main_window.thread_manager:
+            if (
+                hasattr(self.main_window, "thread_manager")
+                and self.main_window.thread_manager
+            ):
                 # 実行中のスレッドを安全に停止
-                active_threads = self.main_window.thread_manager.get_active_thread_count()
+                active_threads = (
+                    self.main_window.thread_manager.get_active_thread_count()
+                )
                 if active_threads > 0:
-                    self.logger.info(f"実行中のスレッド {active_threads} 個を停止します")
+                    self.logger.info(
+                        f"実行中のスレッド {active_threads} 個を停止します"
+                    )
 
                 # シャットダウン処理を実行
                 self.main_window.thread_manager.shutdown()
@@ -130,13 +148,24 @@ class CleanupManager(QObject, LoggerMixin):
         """UIコンポーネントのクリーンアップ"""
         try:
             # フォルダツリーのクリーンアップ
-            if hasattr(self.main_window, 'folder_tree_container') and self.main_window.folder_tree_container:
-                if hasattr(self.main_window.folder_tree_container, 'tree_widget') and hasattr(self.main_window.folder_tree_container.tree_widget, '_cleanup_worker'):
+            if (
+                hasattr(self.main_window, "folder_tree_container")
+                and self.main_window.folder_tree_container
+            ):
+                if hasattr(
+                    self.main_window.folder_tree_container, "tree_widget"
+                ) and hasattr(
+                    self.main_window.folder_tree_container.tree_widget,
+                    "_cleanup_worker",
+                ):
                     self.main_window.folder_tree_container.tree_widget._cleanup_worker()
                 self.logger.info("フォルダツリーをクリーンアップしました")
 
             # プレビューウィジェットのクリーンアップ
-            if hasattr(self.main_window, 'preview_widget') and self.main_window.preview_widget:
+            if (
+                hasattr(self.main_window, "preview_widget")
+                and self.main_window.preview_widget
+            ):
                 self.main_window.preview_widget.clear_preview()
                 self.logger.info("プレビューウィジェットをクリーンアップしました")
 
@@ -147,10 +176,16 @@ class CleanupManager(QObject, LoggerMixin):
         """検索関連コンポーネントのクリーンアップ"""
         try:
             # 検索インターフェースのクリーンアップ（ワーカースレッドがあれば）
-            if hasattr(self.main_window, 'search_interface') and self.main_window.search_interface:
+            if (
+                hasattr(self.main_window, "search_interface")
+                and self.main_window.search_interface
+            ):
                 # 実行中のタスクがあればキャンセル
                 try:
-                    if hasattr(self.main_window, 'search_worker') and self.main_window.search_worker.isRunning():
+                    if (
+                        hasattr(self.main_window, "search_worker")
+                        and self.main_window.search_worker.isRunning()
+                    ):
                         self.main_window.search_worker.cancel()
                         self.main_window.search_worker.wait()
                 except:
@@ -158,7 +193,7 @@ class CleanupManager(QObject, LoggerMixin):
                 self.logger.info("検索インターフェースをクリーンアップしました")
 
             # 検索マネージャーのクリーンアップ
-            if hasattr(self.main_window, 'search_manager'):
+            if hasattr(self.main_window, "search_manager"):
                 try:
                     self.main_window.search_manager.clear_suggestion_cache()
                 except:
@@ -173,10 +208,16 @@ class CleanupManager(QObject, LoggerMixin):
         インデックス処理スレッドのクリーンアップ
         """
         try:
-            if hasattr(self.main_window, 'indexing_worker') and self.main_window.indexing_worker:
+            if (
+                hasattr(self.main_window, "indexing_worker")
+                and self.main_window.indexing_worker
+            ):
                 try:
                     self.main_window.indexing_worker.stop()
-                    if hasattr(self.main_window, 'indexing_thread') and self.main_window.indexing_thread:
+                    if (
+                        hasattr(self.main_window, "indexing_thread")
+                        and self.main_window.indexing_thread
+                    ):
                         if self.main_window.indexing_thread.isRunning():
                             self.main_window.indexing_thread.quit()
                             self.main_window.indexing_thread.wait(3000)  # 3秒待機
@@ -188,12 +229,19 @@ class CleanupManager(QObject, LoggerMixin):
                         self.main_window.indexing_worker.deleteLater()
                     except RuntimeError:
                         pass
-                    self.logger.info("レガシーインデックス処理スレッドをクリーンアップしました")
+                    self.logger.info(
+                        "レガシーインデックス処理スレッドをクリーンアップしました"
+                    )
                 except Exception as cleanup_error:
-                    self.logger.debug(f"レガシーインデックス処理スレッドクリーンアップエラー: {cleanup_error}")
+                    self.logger.debug(
+                        f"レガシーインデックス処理スレッドクリーンアップエラー: {cleanup_error}"
+                    )
 
             # ワーカーを先にクリーンアップ
-            if hasattr(self.main_window, 'indexing_worker') and self.main_window.indexing_worker:
+            if (
+                hasattr(self.main_window, "indexing_worker")
+                and self.main_window.indexing_worker
+            ):
                 try:
                     self.main_window.indexing_worker.deleteLater()
                 except RuntimeError:
@@ -202,7 +250,10 @@ class CleanupManager(QObject, LoggerMixin):
                 self.main_window.indexing_worker = None
 
             # スレッドをクリーンアップ
-            if hasattr(self.main_window, 'indexing_thread') and self.main_window.indexing_thread:
+            if (
+                hasattr(self.main_window, "indexing_thread")
+                and self.main_window.indexing_thread
+            ):
                 try:
                     self.main_window.indexing_thread.deleteLater()
                 except RuntimeError:
@@ -222,25 +273,30 @@ class CleanupManager(QObject, LoggerMixin):
         データの一貫性を保持します。
         """
         try:
-            if hasattr(self.main_window, 'index_manager') and self.main_window.index_manager:
+            if (
+                hasattr(self.main_window, "index_manager")
+                and self.main_window.index_manager
+            ):
                 self.logger.info("部分的インデックスのクリーンアップを開始")
                 self.main_window.index_manager.clear_index()
 
                 # 検索結果をクリア
-                if hasattr(self.main_window, 'search_results_widget'):
+                if hasattr(self.main_window, "search_results_widget"):
                     self.main_window.search_results_widget.clear_results()
 
                 # プレビューをクリア
-                if hasattr(self.main_window, 'preview_widget'):
+                if hasattr(self.main_window, "preview_widget"):
                     self.main_window.preview_widget.clear_preview()
 
                 # 検索提案キャッシュをクリア
-                if hasattr(self.main_window, 'search_manager'):
+                if hasattr(self.main_window, "search_manager"):
                     self.main_window.search_manager.clear_suggestion_cache()
 
                 # システム情報を更新
-                if hasattr(self.main_window, 'system_info_label'):
-                    self.main_window.system_info_label.setText("インデックス: エラーによりクリア済み")
+                if hasattr(self.main_window, "system_info_label"):
+                    self.main_window.system_info_label.setText(
+                        "インデックス: エラーによりクリア済み"
+                    )
 
                 self.logger.info("部分的インデックスのクリーンアップが完了")
 
@@ -254,4 +310,6 @@ class CleanupManager(QObject, LoggerMixin):
         try:
             self.logger.info("クリーンアップ管理マネージャーをクリーンアップしました")
         except Exception as e:
-            self.logger.error(f"クリーンアップ管理マネージャーのクリーンアップでエラー: {e}")
+            self.logger.error(
+                f"クリーンアップ管理マネージャーのクリーンアップでエラー: {e}"
+            )

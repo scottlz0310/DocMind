@@ -4,7 +4,6 @@
 コンポーネントの状態管理、フォールバック処理、ヘルスチェック機能のテストを行います。
 """
 
-
 import pytest
 
 from src.utils.exceptions import SearchError
@@ -24,8 +23,7 @@ class TestComponentState:
     def test_component_state_initialization(self):
         """コンポーネント状態の初期化テスト"""
         state = ComponentState(
-            name="test_component",
-            capabilities={"feature1": True, "feature2": False}
+            name="test_component", capabilities={"feature1": True, "feature2": False}
         )
 
         assert state.name == "test_component"
@@ -73,6 +71,7 @@ class TestGracefulDegradationManager:
 
     def test_register_fallback_handler(self):
         """フォールバックハンドラー登録テスト"""
+
         def test_handler(error):
             return True
 
@@ -82,6 +81,7 @@ class TestGracefulDegradationManager:
 
     def test_register_health_checker(self):
         """ヘルスチェッカー登録テスト"""
+
         def test_checker():
             return True
 
@@ -91,13 +91,13 @@ class TestGracefulDegradationManager:
 
     def test_mark_component_failed(self):
         """コンポーネント失敗マークテスト"""
-        self.manager.register_component("test_component", {"feature1": True, "feature2": True})
+        self.manager.register_component(
+            "test_component", {"feature1": True, "feature2": True}
+        )
 
         test_error = SearchError("テストエラー")
         result = self.manager.mark_component_failed(
-            "test_component",
-            test_error,
-            disable_capabilities=["feature1"]
+            "test_component", test_error, disable_capabilities=["feature1"]
         )
 
         component = self.manager._components["test_component"]
@@ -121,18 +121,22 @@ class TestGracefulDegradationManager:
         result = self.manager.mark_component_failed("test_component", test_error)
 
         component = self.manager._components["test_component"]
-        assert component.status == ComponentStatus.DEGRADED  # フォールバック成功により劣化状態
+        assert (
+            component.status == ComponentStatus.DEGRADED
+        )  # フォールバック成功により劣化状態
         assert component.fallback_active is True
         assert result is True
 
     def test_mark_component_degraded(self):
         """コンポーネント劣化マークテスト"""
-        self.manager.register_component("test_component", {"feature1": True, "feature2": True})
+        self.manager.register_component(
+            "test_component", {"feature1": True, "feature2": True}
+        )
 
         self.manager.mark_component_degraded(
             "test_component",
             disable_capabilities=["feature1"],
-            error_message="部分的な機能停止"
+            error_message="部分的な機能停止",
         )
 
         component = self.manager._components["test_component"]
@@ -155,22 +159,28 @@ class TestGracefulDegradationManager:
 
     def test_is_capability_available(self):
         """機能可用性チェックテスト"""
-        self.manager.register_component("test_component", {
-            "feature1": True,
-            "feature2": True,
-            "feature3": True
-        })
+        self.manager.register_component(
+            "test_component", {"feature1": True, "feature2": True, "feature3": True}
+        )
 
         # 一部機能を無効化
         self.manager.mark_component_degraded(
-            "test_component",
-            disable_capabilities=["feature2"]
+            "test_component", disable_capabilities=["feature2"]
         )
 
-        assert self.manager.is_capability_available("test_component", "feature1") is True
-        assert self.manager.is_capability_available("test_component", "feature2") is False
-        assert self.manager.is_capability_available("test_component", "feature3") is True
-        assert self.manager.is_capability_available("test_component", "non_existent") is False
+        assert (
+            self.manager.is_capability_available("test_component", "feature1") is True
+        )
+        assert (
+            self.manager.is_capability_available("test_component", "feature2") is False
+        )
+        assert (
+            self.manager.is_capability_available("test_component", "feature3") is True
+        )
+        assert (
+            self.manager.is_capability_available("test_component", "non_existent")
+            is False
+        )
         assert self.manager.is_capability_available("non_existent", "feature1") is False
 
     def test_get_component_status(self):
@@ -214,6 +224,7 @@ class TestGracefulDegradationManager:
 
         # ヘルスチェッカーを登録
         health_check_called = False
+
         def health_checker():
             nonlocal health_check_called
             health_check_called = True
@@ -254,7 +265,9 @@ class TestGracefulDegradationManager:
         def failing_fallback_handler(error):
             raise RuntimeError("フォールバック失敗")
 
-        self.manager.register_fallback_handler("test_component", failing_fallback_handler)
+        self.manager.register_fallback_handler(
+            "test_component", failing_fallback_handler
+        )
 
         test_error = SearchError("テストエラー")
         result = self.manager.mark_component_failed("test_component", test_error)
@@ -272,13 +285,13 @@ class TestGracefulDegradationDecorator:
         """テスト前の設定"""
         self.manager = get_global_degradation_manager()
         # テスト用コンポーネントを登録
-        self.manager.register_component("test_component", {
-            "feature1": True,
-            "feature2": True
-        })
+        self.manager.register_component(
+            "test_component", {"feature1": True, "feature2": True}
+        )
 
     def test_decorator_normal_execution(self):
         """デコレータの正常実行テスト"""
+
         @with_graceful_degradation("test_component")
         def normal_function():
             return "success"
@@ -291,10 +304,11 @@ class TestGracefulDegradationDecorator:
 
     def test_decorator_with_exception(self):
         """デコレータの例外処理テスト"""
+
         @with_graceful_degradation(
             "test_component",
             disable_capabilities=["feature1"],
-            fallback_return="fallback_result"
+            fallback_return="fallback_result",
         )
         def failing_function():
             raise SearchError("テスト例外")
@@ -310,6 +324,7 @@ class TestGracefulDegradationDecorator:
 
     def test_decorator_with_successful_fallback(self):
         """デコレータの成功フォールバックテスト"""
+
         # フォールバックハンドラーを登録
         def fallback_handler(error):
             return True
@@ -319,7 +334,7 @@ class TestGracefulDegradationDecorator:
         @with_graceful_degradation(
             "test_component",
             disable_capabilities=["feature1"],
-            fallback_return="fallback_success"
+            fallback_return="fallback_success",
         )
         def failing_function():
             raise SearchError("フォールバックテスト")
@@ -341,6 +356,7 @@ class TestComponentMonitoring:
 
         # 元のグローバルマネージャーを一時的に置き換え
         import src.utils.graceful_degradation
+
         original_manager = src.utils.graceful_degradation._global_degradation_manager
         src.utils.graceful_degradation._global_degradation_manager = manager
 
@@ -354,7 +370,7 @@ class TestComponentMonitoring:
                 "embedding_manager",
                 "document_processor",
                 "file_watcher",
-                "database"
+                "database",
             ]
 
             for component_name in expected_components:
@@ -365,7 +381,9 @@ class TestComponentMonitoring:
 
         finally:
             # 元のマネージャーを復元
-            src.utils.graceful_degradation._global_degradation_manager = original_manager
+            src.utils.graceful_degradation._global_degradation_manager = (
+                original_manager
+            )
 
     def test_global_degradation_manager_singleton(self):
         """グローバル劣化マネージャーのシングルトンテスト"""
@@ -385,8 +403,12 @@ class TestIntegrationScenarios:
         """カスケード障害シナリオのテスト"""
         # 依存関係のあるコンポーネントを設定
         self.manager.register_component("database", {"storage": True, "query": True})
-        self.manager.register_component("index_manager", {"indexing": True, "search": True})
-        self.manager.register_component("search_manager", {"full_text": True, "semantic": True})
+        self.manager.register_component(
+            "index_manager", {"indexing": True, "search": True}
+        )
+        self.manager.register_component(
+            "search_manager", {"full_text": True, "semantic": True}
+        )
 
         # データベース障害をシミュレート
         self.manager.mark_component_failed("database", RuntimeError("DB接続失敗"))
@@ -395,14 +417,14 @@ class TestIntegrationScenarios:
         self.manager.mark_component_degraded(
             "index_manager",
             disable_capabilities=["indexing"],
-            error_message="データベース障害によりインデックス機能が制限されています"
+            error_message="データベース障害によりインデックス機能が制限されています",
         )
 
         # 検索マネージャーも影響を受ける
         self.manager.mark_component_degraded(
             "search_manager",
             disable_capabilities=["full_text"],
-            error_message="インデックス障害により全文検索が無効化されました"
+            error_message="インデックス障害により全文検索が無効化されました",
         )
 
         # システム健全性をチェック
@@ -412,15 +434,22 @@ class TestIntegrationScenarios:
         assert health["degraded"] == 2
 
         # 一部機能は依然として利用可能
-        assert self.manager.is_capability_available("search_manager", "semantic") is True
-        assert self.manager.is_capability_available("search_manager", "full_text") is False
+        assert (
+            self.manager.is_capability_available("search_manager", "semantic") is True
+        )
+        assert (
+            self.manager.is_capability_available("search_manager", "full_text") is False
+        )
 
     def test_recovery_scenario(self):
         """回復シナリオのテスト"""
-        self.manager.register_component("test_service", {"feature1": True, "feature2": True})
+        self.manager.register_component(
+            "test_service", {"feature1": True, "feature2": True}
+        )
 
         # ヘルスチェッカーを登録
         recovery_attempts = 0
+
         def health_checker():
             nonlocal recovery_attempts
             recovery_attempts += 1

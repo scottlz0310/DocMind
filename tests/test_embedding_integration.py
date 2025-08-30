@@ -27,8 +27,7 @@ class TestEmbeddingManagerIntegration:
 
         # テスト用のEmbeddingManagerインスタンスを作成
         self.embedding_manager = EmbeddingManager(
-            model_name="all-MiniLM-L6-v2",
-            embeddings_path=self.embeddings_path
+            model_name="all-MiniLM-L6-v2", embeddings_path=self.embeddings_path
         )
 
     def teardown_method(self):
@@ -58,7 +57,7 @@ class TestEmbeddingManagerIntegration:
             ("doc1", "犬は忠実な動物です。人間の最良の友と呼ばれています。"),
             ("doc2", "猫は独立心が強い動物です。自由を愛する性格です。"),
             ("doc3", "プログラミングはコンピューターに指示を与える技術です。"),
-            ("doc4", "機械学習は人工知能の一分野です。データから学習します。")
+            ("doc4", "機械学習は人工知能の一分野です。データから学習します。"),
         ]
 
         for doc_id, text in documents:

@@ -25,14 +25,16 @@ from validation_framework.validation_reporter import ValidationReporter
 
 def setup_logging():
     """ログ設定のセットアップ"""
-    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     logging.basicConfig(
         level=logging.INFO,
         format=log_format,
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler(f'document_processing_validation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
-        ]
+            logging.FileHandler(
+                f'document_processing_validation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+            ),
+        ],
     )
 
 
@@ -53,9 +55,9 @@ def main():
             enable_memory_monitoring=True,
             enable_error_injection=False,
             max_execution_time=300.0,  # 5分
-            max_memory_usage=2048.0,   # 2GB
+            max_memory_usage=2048.0,  # 2GB
             log_level="INFO",
-            output_directory="validation_results"
+            output_directory="validation_results",
         )
 
         logger.info("ドキュメント処理検証を開始します")
@@ -72,16 +74,16 @@ def main():
 
         # 実行するテストメソッドを指定
         test_methods = [
-            'test_pdf_processing_accuracy',
-            'test_word_processing_accuracy',
-            'test_excel_processing_accuracy',
-            'test_text_processing_accuracy',
-            'test_markdown_processing_accuracy',
-            'test_encoding_detection_accuracy',
-            'test_large_file_processing',
-            'test_error_handling_robustness',
-            'test_processing_performance_requirements',
-            'test_concurrent_processing_safety'
+            "test_pdf_processing_accuracy",
+            "test_word_processing_accuracy",
+            "test_excel_processing_accuracy",
+            "test_text_processing_accuracy",
+            "test_markdown_processing_accuracy",
+            "test_encoding_detection_accuracy",
+            "test_large_file_processing",
+            "test_error_handling_robustness",
+            "test_processing_performance_requirements",
+            "test_concurrent_processing_safety",
         ]
 
         # 検証実行
@@ -99,7 +101,11 @@ def main():
         print(f"総テスト数: {total_tests}")
         print(f"成功: {successful_tests}")
         print(f"失敗: {failed_tests}")
-        print(f"成功率: {(successful_tests/total_tests)*100:.1f}%" if total_tests > 0 else "N/A")
+        print(
+            f"成功率: {(successful_tests/total_tests)*100:.1f}%"
+            if total_tests > 0
+            else "N/A"
+        )
 
         # 詳細結果の表示
         print("\n詳細結果:")
@@ -126,16 +132,26 @@ def main():
         print(f"平均コンテンツ長: {processing_stats['average_content_length']:.0f}文字")
 
         # ファイル形式別統計
-        if processing_stats['overall_stats']['file_type_stats']:
+        if processing_stats["overall_stats"]["file_type_stats"]:
             print("\nファイル形式別統計:")
-            for file_type, stats in processing_stats['overall_stats']['file_type_stats'].items():
-                success_rate = (stats['successful'] / stats['processed']) * 100 if stats['processed'] > 0 else 0
-                print(f"  {file_type.upper()}: {stats['successful']}/{stats['processed']} ({success_rate:.1f}%)")
+            for file_type, stats in processing_stats["overall_stats"][
+                "file_type_stats"
+            ].items():
+                success_rate = (
+                    (stats["successful"] / stats["processed"]) * 100
+                    if stats["processed"] > 0
+                    else 0
+                )
+                print(
+                    f"  {file_type.upper()}: {stats['successful']}/{stats['processed']} ({success_rate:.1f}%)"
+                )
 
         # エラー統計
-        if processing_stats['overall_stats']['error_types']:
+        if processing_stats["overall_stats"]["error_types"]:
             print("\nエラー統計:")
-            for error_type, count in processing_stats['overall_stats']['error_types'].items():
+            for error_type, count in processing_stats["overall_stats"][
+                "error_types"
+            ].items():
                 print(f"  {error_type}: {count}件")
 
         # レポート生成
@@ -143,17 +159,19 @@ def main():
 
         reporter = ValidationReporter()
         report_data = {
-            'validation_type': 'document_processing',
-            'timestamp': datetime.now(),
-            'config': config.__dict__,
-            'results': results,
-            'statistics': processing_stats,
-            'summary': {
-                'total_tests': total_tests,
-                'successful_tests': successful_tests,
-                'failed_tests': failed_tests,
-                'success_rate': (successful_tests/total_tests) if total_tests > 0 else 0
-            }
+            "validation_type": "document_processing",
+            "timestamp": datetime.now(),
+            "config": config.__dict__,
+            "results": results,
+            "statistics": processing_stats,
+            "summary": {
+                "total_tests": total_tests,
+                "successful_tests": successful_tests,
+                "failed_tests": failed_tests,
+                "success_rate": (
+                    (successful_tests / total_tests) if total_tests > 0 else 0
+                ),
+            },
         }
 
         # レポートファイルの生成
@@ -162,14 +180,14 @@ def main():
         # HTMLレポート
         html_report_path = os.path.join(
             config.output_directory,
-            f"document_processing_validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+            f"document_processing_validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html",
         )
         reporter.generate_html_report(report_data, html_report_path)
 
         # JSONレポート
         json_report_path = os.path.join(
             config.output_directory,
-            f"document_processing_validation_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            f"document_processing_validation_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
         reporter.generate_json_report(report_data, json_report_path)
 
@@ -178,7 +196,7 @@ def main():
         print(f"  JSON: {json_report_path}")
 
         # 全体的な結果判定
-        overall_success = failed_tests == 0 and processing_stats['success_rate'] >= 0.8
+        overall_success = failed_tests == 0 and processing_stats["success_rate"] >= 0.8
 
         if overall_success:
             print("\n🎉 ドキュメント処理機能検証が正常に完了しました！")
@@ -197,7 +215,7 @@ def main():
     finally:
         # クリーンアップ
         try:
-            if 'validator' in locals():
+            if "validator" in locals():
                 validator.teardown_test_environment()
                 validator.cleanup()
         except Exception as e:

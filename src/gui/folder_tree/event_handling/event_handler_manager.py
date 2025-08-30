@@ -133,9 +133,16 @@ class EventHandlerManager:
         for path, item in self.tree_widget.item_map.items():
             if os.path.exists(path):
                 try:
-                    file_count = len([f for f in os.listdir(path)
-                                    if os.path.isfile(os.path.join(path, f))])
-                    indexed_count = file_count if path in self.tree_widget.indexed_paths else 0
+                    file_count = len(
+                        [
+                            f
+                            for f in os.listdir(path)
+                            if os.path.isfile(os.path.join(path, f))
+                        ]
+                    )
+                    indexed_count = (
+                        file_count if path in self.tree_widget.indexed_paths else 0
+                    )
                     item.update_statistics(file_count, indexed_count)
                 except (PermissionError, OSError):
                     item.update_statistics(0, 0)

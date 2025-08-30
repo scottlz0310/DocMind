@@ -19,16 +19,16 @@ from .toolbar_manager import ToolbarManager
 from .window_state_manager import WindowStateManager
 
 __all__ = [
-    'CleanupManager',
-    'LayoutManager',
-    'MenuManager',
-    'ProgressManager',
-    'RebuildHandlerManager',
-    'SearchHandlerManager',
-    'SettingsHandlerManager',
-    'SignalManager',
-    'StatusManager',
-    'ThreadHandlerManager',
-    'ToolbarManager',
-    'WindowStateManager'
+    "CleanupManager",
+    "LayoutManager",
+    "MenuManager",
+    "ProgressManager",
+    "RebuildHandlerManager",
+    "SearchHandlerManager",
+    "SettingsHandlerManager",
+    "SignalManager",
+    "StatusManager",
+    "ThreadHandlerManager",
+    "ToolbarManager",
+    "WindowStateManager",
 ]

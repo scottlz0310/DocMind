@@ -75,11 +75,21 @@ jobs:
         pip install -e .[dev,security]
         pip install pytest pytest-cov pytest-xvfb bandit safety
     
-    - name: コードフォーマットチェック
+    - name: コードフォーマット自動修正
       run: |
         pip install black isort flake8
-        black --check --diff src/ tests/
-        isort --check-only --diff src/ tests/
+        black src/ tests/
+        isort src/ tests/
+        
+    - name: フォーマット結果をコミット
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A
+        git diff --staged --quiet || git commit -m "style: 自動コードフォーマット適用"
+        
+    - name: コードスタイルチェック
+      run: |
         flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503
     
     - name: 型チェック

@@ -76,7 +76,8 @@ class SearchTypeSelector(QWidget):
         layout.addStretch()
 
         # スタイル設定
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QRadioButton {
                 font-size: 12px;
                 spacing: 5px;
@@ -95,7 +96,8 @@ class SearchTypeSelector(QWidget):
                 border-radius: 8px;
                 background-color: #4CAF50;
             }
-        """)
+        """
+        )
 
     def _setup_connections(self) -> None:
         """シグナル接続の設定"""

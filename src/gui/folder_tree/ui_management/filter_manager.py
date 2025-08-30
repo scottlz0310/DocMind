@@ -22,7 +22,7 @@ class FilterManager:
     フォルダ名による検索・フィルタリング、表示・非表示制御を担当します。
     """
 
-    def __init__(self, tree_widget: 'FolderTreeWidget'):
+    def __init__(self, tree_widget: "FolderTreeWidget"):
         """
         フィルターマネージャーの初期化
 
@@ -66,7 +66,9 @@ class FilterManager:
                 self._show_item_and_parents(item)
                 matched_count += 1
 
-        self.logger.debug(f"フィルタリング完了: '{self.current_filter}' - {matched_count}件マッチ")
+        self.logger.debug(
+            f"フィルタリング完了: '{self.current_filter}' - {matched_count}件マッチ"
+        )
 
     def clear_filter(self):
         """フィルターをクリアして全アイテムを表示します"""
@@ -120,9 +122,9 @@ class FilterManager:
             フィルター状態の辞書
         """
         return {
-            'current_filter': self.current_filter,
-            'is_filtering': self.is_filtering,
-            'visible_items': self._count_visible_items()
+            "current_filter": self.current_filter,
+            "is_filtering": self.is_filtering,
+            "visible_items": self._count_visible_items(),
         }
 
     def _count_visible_items(self) -> int:

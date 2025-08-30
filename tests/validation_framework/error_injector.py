@@ -20,6 +20,7 @@ from typing import Any
 @dataclass
 class ErrorInjectionConfig:
     """エラー注入設定を格納するデータクラス"""
+
     error_type: str
     probability: float = 1.0  # エラー発生確率（0.0-1.0）
     delay_seconds: float = 0.0  # エラー発生までの遅延
@@ -30,6 +31,7 @@ class ErrorInjectionConfig:
 @dataclass
 class InjectedError:
     """注入されたエラーの記録"""
+
     error_type: str
     timestamp: datetime
     success: bool
@@ -60,16 +62,16 @@ class ErrorInjector:
 
         # エラー注入メソッドのマッピング
         self.injection_methods = {
-            'file_not_found': self._inject_file_not_found,
-            'permission_denied': self._inject_permission_denied,
-            'disk_full': self._inject_disk_full,
-            'memory_error': self._inject_memory_error,
-            'network_timeout': self._inject_network_timeout,
-            'database_connection_error': self._inject_database_error,
-            'corrupted_file': self._inject_corrupted_file,
-            'process_killed': self._inject_process_killed,
-            'system_overload': self._inject_system_overload,
-            'encoding_error': self._inject_encoding_error
+            "file_not_found": self._inject_file_not_found,
+            "permission_denied": self._inject_permission_denied,
+            "disk_full": self._inject_disk_full,
+            "memory_error": self._inject_memory_error,
+            "network_timeout": self._inject_network_timeout,
+            "database_connection_error": self._inject_database_error,
+            "corrupted_file": self._inject_corrupted_file,
+            "process_killed": self._inject_process_killed,
+            "system_overload": self._inject_system_overload,
+            "encoding_error": self._inject_encoding_error,
         }
 
         self.logger.debug("エラー注入クラスを初期化しました")
@@ -91,15 +93,17 @@ class ErrorInjector:
 
         config = ErrorInjectionConfig(
             error_type=error_type,
-            probability=kwargs.get('probability', 1.0),
-            delay_seconds=kwargs.get('delay_seconds', 0.0),
-            duration_seconds=kwargs.get('duration_seconds', 0.0),
-            parameters=kwargs.get('parameters', {})
+            probability=kwargs.get("probability", 1.0),
+            delay_seconds=kwargs.get("delay_seconds", 0.0),
+            duration_seconds=kwargs.get("duration_seconds", 0.0),
+            parameters=kwargs.get("parameters", {}),
         )
 
         # 確率的エラー注入
         if random.random() > config.probability:
-            self.logger.debug(f"エラー注入をスキップしました（確率: {config.probability}）")
+            self.logger.debug(
+                f"エラー注入をスキップしました（確率: {config.probability}）"
+            )
             return False
 
         # 遅延実行
@@ -116,7 +120,7 @@ class ErrorInjector:
                 error_type=error_type,
                 timestamp=datetime.now(),
                 success=True,
-                parameters=config.parameters
+                parameters=config.parameters,
             )
             self.injected_errors.append(injected_error)
 
@@ -130,7 +134,7 @@ class ErrorInjector:
                 timestamp=datetime.now(),
                 success=False,
                 error_message=str(e),
-                parameters=config.parameters
+                parameters=config.parameters,
             )
             self.injected_errors.append(injected_error)
 
@@ -139,7 +143,7 @@ class ErrorInjector:
 
     def _inject_file_not_found(self, config: ErrorInjectionConfig) -> None:
         """ファイル不存在エラーの注入"""
-        target_file = config.parameters.get('target_file', 'nonexistent_file.txt')
+        target_file = config.parameters.get("target_file", "nonexistent_file.txt")
 
         # 存在するファイルを一時的に移動
         if os.path.exists(target_file):
@@ -149,6 +153,7 @@ class ErrorInjector:
 
             # 継続時間後に復元
             if config.duration_seconds > 0:
+
                 def restore_file():
                     time.sleep(config.duration_seconds)
                     if os.path.exists(backup_path):
@@ -163,7 +168,7 @@ class ErrorInjector:
 
     def _inject_permission_denied(self, config: ErrorInjectionConfig) -> None:
         """権限拒否エラーの注入"""
-        target_path = config.parameters.get('target_path', tempfile.gettempdir())
+        target_path = config.parameters.get("target_path", tempfile.gettempdir())
 
         if os.path.exists(target_path):
             # 権限を変更（読み取り専用に）
@@ -172,6 +177,7 @@ class ErrorInjector:
 
             # 継続時間後に権限を復元
             if config.duration_seconds > 0:
+
                 def restore_permissions():
                     time.sleep(config.duration_seconds)
                     if os.path.exists(target_path):
@@ -186,20 +192,21 @@ class ErrorInjector:
     def _inject_disk_full(self, config: ErrorInjectionConfig) -> None:
         """ディスク容量不足エラーの注入"""
         # 大きなダミーファイルを作成してディスク容量を消費
-        dummy_size_mb = config.parameters.get('size_mb', 100)
-        dummy_file = tempfile.mktemp(suffix='.dummy')
+        dummy_size_mb = config.parameters.get("size_mb", 100)
+        dummy_file = tempfile.mktemp(suffix=".dummy")
 
         try:
-            with open(dummy_file, 'wb') as f:
+            with open(dummy_file, "wb") as f:
                 # 指定サイズのダミーデータを書き込み
                 chunk_size = 1024 * 1024  # 1MB
                 for _ in range(dummy_size_mb):
-                    f.write(b'0' * chunk_size)
+                    f.write(b"0" * chunk_size)
 
             self.temp_resources.append(dummy_file)
 
             # 継続時間後にファイルを削除
             if config.duration_seconds > 0:
+
                 def cleanup_dummy_file():
                     time.sleep(config.duration_seconds)
                     if os.path.exists(dummy_file):
@@ -210,7 +217,9 @@ class ErrorInjector:
                 thread.start()
                 self.active_injections[f"disk_cleanup_{dummy_file}"] = thread
 
-            self.logger.debug(f"ディスク容量不足エラーを注入しました: {dummy_size_mb}MB")
+            self.logger.debug(
+                f"ディスク容量不足エラーを注入しました: {dummy_size_mb}MB"
+            )
 
         except Exception as e:
             self.logger.error(f"ディスク容量不足エラーの注入に失敗しました: {e}")
@@ -218,7 +227,7 @@ class ErrorInjector:
     def _inject_memory_error(self, config: ErrorInjectionConfig) -> None:
         """メモリ不足エラーの注入"""
         # 大量のメモリを消費するオブジェクトを作成
-        memory_mb = config.parameters.get('memory_mb', 100)
+        memory_mb = config.parameters.get("memory_mb", 100)
 
         # メモリ消費オブジェクトを作成
         memory_consumer = []
@@ -229,6 +238,7 @@ class ErrorInjector:
 
             # 継続時間後にメモリを解放
             if config.duration_seconds > 0:
+
                 def release_memory():
                     time.sleep(config.duration_seconds)
                     memory_consumer.clear()
@@ -245,9 +255,11 @@ class ErrorInjector:
     def _inject_network_timeout(self, config: ErrorInjectionConfig) -> None:
         """ネットワークタイムアウトエラーの注入"""
         # ネットワーク遅延をシミュレート
-        delay_seconds = config.parameters.get('timeout_seconds', 30.0)
+        delay_seconds = config.parameters.get("timeout_seconds", 30.0)
 
-        self.logger.debug(f"ネットワークタイムアウトエラーを注入しました: {delay_seconds}秒")
+        self.logger.debug(
+            f"ネットワークタイムアウトエラーを注入しました: {delay_seconds}秒"
+        )
 
         # 実際の遅延を発生
         time.sleep(delay_seconds)
@@ -255,7 +267,7 @@ class ErrorInjector:
     def _inject_database_error(self, config: ErrorInjectionConfig) -> None:
         """データベース接続エラーの注入"""
         # データベースファイルを一時的に移動またはロック
-        db_file = config.parameters.get('db_file', 'docmind_data/documents.db')
+        db_file = config.parameters.get("db_file", "docmind_data/documents.db")
 
         if os.path.exists(db_file):
             backup_path = f"{db_file}.backup_{int(time.time())}"
@@ -264,6 +276,7 @@ class ErrorInjector:
 
             # 継続時間後に復元
             if config.duration_seconds > 0:
+
                 def restore_database():
                     time.sleep(config.duration_seconds)
                     if os.path.exists(backup_path):
@@ -278,10 +291,10 @@ class ErrorInjector:
 
     def _inject_corrupted_file(self, config: ErrorInjectionConfig) -> None:
         """ファイル破損エラーの注入"""
-        target_file = config.parameters.get('target_file', 'test_corrupted.txt')
+        target_file = config.parameters.get("target_file", "test_corrupted.txt")
 
         # 破損ファイルを作成
-        with open(target_file, 'wb') as f:
+        with open(target_file, "wb") as f:
             # ランダムなバイナリデータを書き込み
             corrupted_data = bytes([random.randint(0, 255) for _ in range(1024)])
             f.write(corrupted_data)
@@ -293,7 +306,7 @@ class ErrorInjector:
     def _inject_process_killed(self, config: ErrorInjectionConfig) -> None:
         """プロセス強制終了エラーの注入"""
         # 実際のプロセス終了は危険なので、例外を発生させる
-        process_name = config.parameters.get('process_name', 'test_process')
+        process_name = config.parameters.get("process_name", "test_process")
 
         self.logger.debug(f"プロセス強制終了エラーを注入しました: {process_name}")
 
@@ -303,7 +316,7 @@ class ErrorInjector:
     def _inject_system_overload(self, config: ErrorInjectionConfig) -> None:
         """システム過負荷エラーの注入"""
         # CPU集約的な処理を実行
-        duration = config.parameters.get('duration_seconds', 5.0)
+        duration = config.parameters.get("duration_seconds", 5.0)
 
         def cpu_intensive_task():
             end_time = time.time() + duration
@@ -313,23 +326,25 @@ class ErrorInjector:
 
         # 複数スレッドでCPU負荷を生成
         threads = []
-        cpu_count = config.parameters.get('thread_count', 4)
+        cpu_count = config.parameters.get("thread_count", 4)
 
         for _ in range(cpu_count):
             thread = threading.Thread(target=cpu_intensive_task, daemon=True)
             thread.start()
             threads.append(thread)
 
-        self.logger.debug(f"システム過負荷エラーを注入しました: {cpu_count}スレッド, {duration}秒")
+        self.logger.debug(
+            f"システム過負荷エラーを注入しました: {cpu_count}スレッド, {duration}秒"
+        )
 
     def _inject_encoding_error(self, config: ErrorInjectionConfig) -> None:
         """文字エンコーディングエラーの注入"""
-        target_file = config.parameters.get('target_file', 'test_encoding_error.txt')
+        target_file = config.parameters.get("target_file", "test_encoding_error.txt")
 
         # 不正なエンコーディングのファイルを作成
-        with open(target_file, 'wb') as f:
+        with open(target_file, "wb") as f:
             # UTF-8として不正なバイト列を書き込み
-            invalid_utf8 = b'\xff\xfe\x00\x00invalid utf-8 sequence\x80\x81'
+            invalid_utf8 = b"\xff\xfe\x00\x00invalid utf-8 sequence\x80\x81"
             f.write(invalid_utf8)
 
         self.temp_resources.append(target_file)
@@ -356,18 +371,24 @@ class ErrorInjector:
             return {}
 
         total_injections = len(self.injected_errors)
-        successful_injections = sum(1 for error in self.injected_errors if error.success)
+        successful_injections = sum(
+            1 for error in self.injected_errors if error.success
+        )
 
         error_types = {}
         for error in self.injected_errors:
             error_types[error.error_type] = error_types.get(error.error_type, 0) + 1
 
         return {
-            'total_injections': total_injections,
-            'successful_injections': successful_injections,
-            'success_rate': successful_injections / total_injections if total_injections > 0 else 0.0,
-            'error_types': error_types,
-            'active_injections': len(self.active_injections)
+            "total_injections": total_injections,
+            "successful_injections": successful_injections,
+            "success_rate": (
+                successful_injections / total_injections
+                if total_injections > 0
+                else 0.0
+            ),
+            "error_types": error_types,
+            "active_injections": len(self.active_injections),
         }
 
     def cleanup(self) -> None:
@@ -392,7 +413,9 @@ class ErrorInjector:
                         shutil.rmtree(resource_path)
                     self.logger.debug(f"一時リソースを削除しました: {resource_path}")
             except Exception as e:
-                self.logger.warning(f"一時リソースの削除に失敗しました: {resource_path} - {e}")
+                self.logger.warning(
+                    f"一時リソースの削除に失敗しました: {resource_path} - {e}"
+                )
 
         self.temp_resources.clear()
         self.injected_errors.clear()

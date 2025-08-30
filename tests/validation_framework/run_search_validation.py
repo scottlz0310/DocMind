@@ -21,14 +21,16 @@ from .validation_reporter import ValidationReporter
 
 def setup_logging():
     """ログ設定のセットアップ"""
-    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    log_format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     logging.basicConfig(
         level=logging.INFO,
         format=log_format,
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler(f'search_validation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
-        ]
+            logging.FileHandler(
+                f'search_validation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+            ),
+        ],
     )
 
 
@@ -49,8 +51,8 @@ def main():
             enable_memory_monitoring=True,
             enable_error_injection=False,
             max_execution_time=300.0,  # 5分
-            max_memory_usage=2048.0,   # 2GB
-            log_level="INFO"
+            max_memory_usage=2048.0,  # 2GB
+            log_level="INFO",
         )
 
         # 検証クラスの初期化
@@ -67,14 +69,14 @@ def main():
 
             # 実行するテストメソッドを指定
             test_methods = [
-                'test_full_text_search_accuracy',
-                'test_semantic_search_accuracy',
-                'test_hybrid_search_accuracy',
-                'test_search_performance_requirements',
-                'test_large_dataset_scalability',
-                'test_search_filters',
-                'test_concurrent_search',
-                'test_search_suggestions'
+                "test_full_text_search_accuracy",
+                "test_semantic_search_accuracy",
+                "test_hybrid_search_accuracy",
+                "test_search_performance_requirements",
+                "test_large_dataset_scalability",
+                "test_search_filters",
+                "test_concurrent_search",
+                "test_search_suggestions",
             ]
 
             # 検証実行
@@ -113,18 +115,22 @@ def main():
                 print(f"総検索回数: {metrics_summary['total_searches']}")
                 print(f"平均実行時間: {metrics_summary['overall_avg_time']:.2f}秒")
                 print(f"最大実行時間: {metrics_summary['overall_max_time']:.2f}秒")
-                print(f"パフォーマンス要件達成: {'✓' if metrics_summary['performance_requirement_met'] else '✗'}")
-                print(f"メモリ要件達成: {'✓' if metrics_summary['memory_requirement_met'] else '✗'}")
+                print(
+                    f"パフォーマンス要件達成: {'✓' if metrics_summary['performance_requirement_met'] else '✗'}"
+                )
+                print(
+                    f"メモリ要件達成: {'✓' if metrics_summary['memory_requirement_met'] else '✗'}"
+                )
 
                 # 検索タイプ別統計
-                for search_type, stats in metrics_summary['by_type'].items():
+                for search_type, stats in metrics_summary["by_type"].items():
                     print(f"\n{search_type}検索:")
                     print(f"  検索回数: {stats['count']}")
                     print(f"  平均実行時間: {stats['avg_execution_time']:.2f}秒")
                     print(f"  平均結果数: {stats['avg_result_count']:.1f}")
-                    if stats['avg_precision'] is not None:
+                    if stats["avg_precision"] is not None:
                         print(f"  平均精度: {stats['avg_precision']:.2f}")
-                    if stats['avg_recall'] is not None:
+                    if stats["avg_recall"] is not None:
                         print(f"  平均再現率: {stats['avg_recall']:.2f}")
 
             # 統計情報の表示
@@ -138,7 +144,9 @@ def main():
             # レポート生成
             reporter = ValidationReporter()
             report_path = f"search_validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
-            reporter.generate_html_report(results, report_path, "検索機能包括検証レポート")
+            reporter.generate_html_report(
+                results, report_path, "検索機能包括検証レポート"
+            )
             print(f"\n詳細レポートが生成されました: {report_path}")
 
             # 全体的な成功/失敗の判定

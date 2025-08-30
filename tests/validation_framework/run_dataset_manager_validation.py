@@ -37,7 +37,9 @@ class DatasetManagerValidator:
 
         # 出力ディレクトリの設定
         if output_dir is None:
-            self.output_dir = os.path.join(tempfile.gettempdir(), "dataset_manager_validation")
+            self.output_dir = os.path.join(
+                tempfile.gettempdir(), "dataset_manager_validation"
+            )
         else:
             self.output_dir = output_dir
 
@@ -48,14 +50,14 @@ class DatasetManagerValidator:
 
         # 検証結果
         self.validation_results = {
-            'start_time': datetime.now(),
-            'tests': {},
-            'summary': {
-                'total_tests': 0,
-                'passed_tests': 0,
-                'failed_tests': 0,
-                'errors': []
-            }
+            "start_time": datetime.now(),
+            "tests": {},
+            "summary": {
+                "total_tests": 0,
+                "passed_tests": 0,
+                "failed_tests": 0,
+                "errors": [],
+            },
         }
 
         self.logger.info(f"TestDatasetManager検証を初期化しました: {self.output_dir}")
@@ -86,13 +88,14 @@ class DatasetManagerValidator:
 
         except Exception as e:
             self.logger.error(f"検証中に予期しないエラーが発生しました: {e}")
-            self.validation_results['summary']['errors'].append(str(e))
+            self.validation_results["summary"]["errors"].append(str(e))
 
         finally:
             # 最終処理
-            self.validation_results['end_time'] = datetime.now()
-            self.validation_results['duration_seconds'] = (
-                self.validation_results['end_time'] - self.validation_results['start_time']
+            self.validation_results["end_time"] = datetime.now()
+            self.validation_results["duration_seconds"] = (
+                self.validation_results["end_time"]
+                - self.validation_results["start_time"]
             ).total_seconds()
 
             # サマリーの計算
@@ -133,8 +136,7 @@ class DatasetManagerValidator:
 
             start_time = time.time()
             dataset_info = self.manager.create_standard_dataset(
-                name="test_standard",
-                file_count=file_count
+                name="test_standard", file_count=file_count
             )
             creation_time = time.time() - start_time
 
@@ -149,16 +151,21 @@ class DatasetManagerValidator:
 
             # パフォーマンス確認
             expected_max_time = 60 if self.quick_mode else 300  # 秒
-            assert creation_time < expected_max_time, f"作成時間が長すぎます: {creation_time:.2f}秒"
+            assert (
+                creation_time < expected_max_time
+            ), f"作成時間が長すぎます: {creation_time:.2f}秒"
 
             self._record_test_result(
-                test_name, True,
+                test_name,
+                True,
                 f"標準データセット作成成功: {dataset_info.metrics.total_files}ファイル, "
-                f"{creation_time:.2f}秒"
+                f"{creation_time:.2f}秒",
             )
 
         except Exception as e:
-            self._record_test_result(test_name, False, f"標準データセット作成テストでエラー: {e}")
+            self._record_test_result(
+                test_name, False, f"標準データセット作成テストでエラー: {e}"
+            )
 
     def _test_large_dataset_creation(self):
         """大規模データセット作成のテスト"""
@@ -171,8 +178,7 @@ class DatasetManagerValidator:
 
             start_time = time.time()
             dataset_info = self.manager.create_large_dataset(
-                name="test_large",
-                file_count=file_count
+                name="test_large", file_count=file_count
             )
             creation_time = time.time() - start_time
 
@@ -192,13 +198,16 @@ class DatasetManagerValidator:
             assert dataset_info.config.include_special_chars
 
             self._record_test_result(
-                test_name, True,
+                test_name,
+                True,
                 f"大規模データセット作成成功: {dataset_info.metrics.total_files}ファイル, "
-                f"{creation_time:.2f}秒"
+                f"{creation_time:.2f}秒",
             )
 
         except Exception as e:
-            self._record_test_result(test_name, False, f"大規模データセット作成テストでエラー: {e}")
+            self._record_test_result(
+                test_name, False, f"大規模データセット作成テストでエラー: {e}"
+            )
 
     def _test_edge_case_dataset_creation(self):
         """エッジケースデータセット作成のテスト"""
@@ -210,8 +219,7 @@ class DatasetManagerValidator:
 
             start_time = time.time()
             dataset_info = self.manager.create_edge_case_dataset(
-                name="test_edge_case",
-                file_count=file_count
+                name="test_edge_case", file_count=file_count
             )
             creation_time = time.time() - start_time
 
@@ -228,14 +236,17 @@ class DatasetManagerValidator:
             assert dataset_info.config.size_range_kb == (0, 10000)
 
             self._record_test_result(
-                test_name, True,
+                test_name,
+                True,
                 f"エッジケースデータセット作成成功: {dataset_info.metrics.total_files}ファイル, "
                 f"破損ファイル: {dataset_info.metrics.corrupted_files}, "
-                f"{creation_time:.2f}秒"
+                f"{creation_time:.2f}秒",
             )
 
         except Exception as e:
-            self._record_test_result(test_name, False, f"エッジケースデータセット作成テストでエラー: {e}")
+            self._record_test_result(
+                test_name, False, f"エッジケースデータセット作成テストでエラー: {e}"
+            )
 
     def _test_dataset_management(self):
         """データセット管理機能のテスト"""
@@ -260,20 +271,24 @@ class DatasetManagerValidator:
 
                 # 生成状況の確認
                 status = self.manager.get_generation_status(dataset_name)
-                assert status['status'] == 'ready'
-                assert status['name'] == dataset_name
+                assert status["status"] == "ready"
+                assert status["name"] == dataset_name
 
             # 存在しないデータセットの処理
             nonexistent_info = self.manager.get_dataset_info("nonexistent")
             assert nonexistent_info is None
 
             nonexistent_status = self.manager.get_generation_status("nonexistent")
-            assert nonexistent_status['status'] == 'not_found'
+            assert nonexistent_status["status"] == "not_found"
 
-            self._record_test_result(test_name, True, "データセット管理機能が正常に動作しています")
+            self._record_test_result(
+                test_name, True, "データセット管理機能が正常に動作しています"
+            )
 
         except Exception as e:
-            self._record_test_result(test_name, False, f"データセット管理テストでエラー: {e}")
+            self._record_test_result(
+                test_name, False, f"データセット管理テストでエラー: {e}"
+            )
 
     def _test_dataset_validation(self):
         """データセット検証機能のテスト"""
@@ -286,29 +301,35 @@ class DatasetManagerValidator:
                 validation_result = self.manager.validate_dataset(dataset_name)
 
                 assert isinstance(validation_result, dict)
-                assert 'valid' in validation_result
-                assert 'file_count' in validation_result
-                assert 'total_size_mb' in validation_result
-                assert 'errors' in validation_result
-                assert 'warnings' in validation_result
+                assert "valid" in validation_result
+                assert "file_count" in validation_result
+                assert "total_size_mb" in validation_result
+                assert "errors" in validation_result
+                assert "warnings" in validation_result
 
                 # 基本的な整合性確認
-                assert validation_result['file_count'] > 0
-                assert validation_result['total_size_mb'] > 0
+                assert validation_result["file_count"] > 0
+                assert validation_result["total_size_mb"] > 0
 
-                if not validation_result['valid']:
-                    self.logger.warning(f"データセット '{dataset_name}' の検証で問題が検出されました: "
-                                      f"{validation_result['errors']}")
+                if not validation_result["valid"]:
+                    self.logger.warning(
+                        f"データセット '{dataset_name}' の検証で問題が検出されました: "
+                        f"{validation_result['errors']}"
+                    )
 
             # 存在しないデータセットの検証
             invalid_result = self.manager.validate_dataset("nonexistent")
-            assert not invalid_result['valid']
-            assert 'データセットが見つかりません' in invalid_result['error']
+            assert not invalid_result["valid"]
+            assert "データセットが見つかりません" in invalid_result["error"]
 
-            self._record_test_result(test_name, True, "データセット検証機能が正常に動作しています")
+            self._record_test_result(
+                test_name, True, "データセット検証機能が正常に動作しています"
+            )
 
         except Exception as e:
-            self._record_test_result(test_name, False, f"データセット検証テストでエラー: {e}")
+            self._record_test_result(
+                test_name, False, f"データセット検証テストでエラー: {e}"
+            )
 
     def _test_comprehensive_suite_generation(self):
         """包括的テストスイート生成のテスト"""
@@ -325,13 +346,13 @@ class DatasetManagerValidator:
                 # 個別に小さなデータセットを作成
                 suite_datasets = {}
 
-                suite_datasets['standard'] = suite_manager.create_standard_dataset(
+                suite_datasets["standard"] = suite_manager.create_standard_dataset(
                     name="suite_standard", file_count=10
                 )
-                suite_datasets['large'] = suite_manager.create_large_dataset(
+                suite_datasets["large"] = suite_manager.create_large_dataset(
                     name="suite_large", file_count=15
                 )
-                suite_datasets['edge_case'] = suite_manager.create_edge_case_dataset(
+                suite_datasets["edge_case"] = suite_manager.create_edge_case_dataset(
                     name="suite_edge_case", file_count=10
                 )
             else:
@@ -340,23 +361,26 @@ class DatasetManagerValidator:
 
             # 結果検証
             assert len(suite_datasets) == 3
-            assert 'standard' in suite_datasets
-            assert 'large' in suite_datasets
-            assert 'edge_case' in suite_datasets
+            assert "standard" in suite_datasets
+            assert "large" in suite_datasets
+            assert "edge_case" in suite_datasets
 
             # 各データセットの詳細確認
             for suite_type, dataset_info in suite_datasets.items():
                 assert dataset_info.dataset_type == suite_type
-                assert dataset_info.status == 'ready'
+                assert dataset_info.status == "ready"
                 assert dataset_info.metrics.total_files > 0
 
             self._record_test_result(
-                test_name, True,
-                f"包括的テストスイート生成成功: {len(suite_datasets)}データセット"
+                test_name,
+                True,
+                f"包括的テストスイート生成成功: {len(suite_datasets)}データセット",
             )
 
         except Exception as e:
-            self._record_test_result(test_name, False, f"包括的テストスイート生成テストでエラー: {e}")
+            self._record_test_result(
+                test_name, False, f"包括的テストスイート生成テストでエラー: {e}"
+            )
 
     def _test_performance_characteristics(self):
         """パフォーマンス特性のテスト"""
@@ -369,34 +393,44 @@ class DatasetManagerValidator:
 
             start_time = time.time()
             perf_dataset = self.manager.create_standard_dataset(
-                name="perf_test",
-                file_count=file_count
+                name="perf_test", file_count=file_count
             )
             creation_time = time.time() - start_time
 
             # パフォーマンス基準の確認
             files_per_second = file_count / creation_time
-            assert files_per_second > 1, f"生成速度が遅すぎます: {files_per_second:.2f}ファイル/秒"
+            assert (
+                files_per_second > 1
+            ), f"生成速度が遅すぎます: {files_per_second:.2f}ファイル/秒"
 
             # メモリ効率の確認（概算）
-            avg_file_size_mb = perf_dataset.metrics.total_size_mb / perf_dataset.metrics.total_files
-            assert avg_file_size_mb < 10, f"平均ファイルサイズが大きすぎます: {avg_file_size_mb:.2f}MB"
+            avg_file_size_mb = (
+                perf_dataset.metrics.total_size_mb / perf_dataset.metrics.total_files
+            )
+            assert (
+                avg_file_size_mb < 10
+            ), f"平均ファイルサイズが大きすぎます: {avg_file_size_mb:.2f}MB"
 
             # 検証速度のテスト
             start_time = time.time()
             self.manager.validate_dataset("perf_test")
             validation_time = time.time() - start_time
 
-            assert validation_time < 30, f"検証時間が長すぎます: {validation_time:.2f}秒"
+            assert (
+                validation_time < 30
+            ), f"検証時間が長すぎます: {validation_time:.2f}秒"
 
             self._record_test_result(
-                test_name, True,
+                test_name,
+                True,
                 f"パフォーマンス特性良好: {files_per_second:.2f}ファイル/秒, "
-                f"検証時間: {validation_time:.2f}秒"
+                f"検証時間: {validation_time:.2f}秒",
             )
 
         except Exception as e:
-            self._record_test_result(test_name, False, f"パフォーマンステストでエラー: {e}")
+            self._record_test_result(
+                test_name, False, f"パフォーマンステストでエラー: {e}"
+            )
 
     def _test_error_handling(self):
         """エラーハンドリングのテスト"""
@@ -411,8 +445,7 @@ class DatasetManagerValidator:
             # 無効なパラメータでのデータセット作成
             try:
                 self.manager.create_standard_dataset(
-                    name="",  # 空の名前
-                    file_count=0  # 0ファイル
+                    name="", file_count=0  # 空の名前  # 0ファイル
                 )
                 # エラーが発生しない場合は警告
                 self.logger.warning("無効なパラメータでもデータセットが作成されました")
@@ -423,18 +456,21 @@ class DatasetManagerValidator:
             # 重複名でのデータセット作成
             try:
                 self.manager.create_standard_dataset(
-                    name="test_standard",  # 既存の名前
-                    file_count=10
+                    name="test_standard", file_count=10  # 既存の名前
                 )
                 # 重複が許可される場合は上書きされる
                 self.logger.info("重複名でのデータセット作成が許可されました（上書き）")
             except Exception as e:
                 self.logger.info(f"重複名でのデータセット作成が拒否されました: {e}")
 
-            self._record_test_result(test_name, True, "エラーハンドリングが適切に動作しています")
+            self._record_test_result(
+                test_name, True, "エラーハンドリングが適切に動作しています"
+            )
 
         except Exception as e:
-            self._record_test_result(test_name, False, f"エラーハンドリングテストでエラー: {e}")
+            self._record_test_result(
+                test_name, False, f"エラーハンドリングテストでエラー: {e}"
+            )
 
     def _test_concurrent_operations(self):
         """並行操作のテスト"""
@@ -470,31 +506,36 @@ class DatasetManagerValidator:
 
     def _record_test_result(self, test_name: str, success: bool, message: str):
         """テスト結果の記録"""
-        self.validation_results['tests'][test_name] = {
-            'success': success,
-            'message': message,
-            'timestamp': datetime.now().isoformat()
+        self.validation_results["tests"][test_name] = {
+            "success": success,
+            "message": message,
+            "timestamp": datetime.now().isoformat(),
         }
 
-        self.validation_results['summary']['total_tests'] += 1
+        self.validation_results["summary"]["total_tests"] += 1
         if success:
-            self.validation_results['summary']['passed_tests'] += 1
+            self.validation_results["summary"]["passed_tests"] += 1
             self.logger.info(f"✓ {test_name}: {message}")
         else:
-            self.validation_results['summary']['failed_tests'] += 1
-            self.validation_results['summary']['errors'].append(f"{test_name}: {message}")
+            self.validation_results["summary"]["failed_tests"] += 1
+            self.validation_results["summary"]["errors"].append(
+                f"{test_name}: {message}"
+            )
             self.logger.error(f"✗ {test_name}: {message}")
 
     def _calculate_summary(self):
         """サマリーの計算"""
-        summary = self.validation_results['summary']
-        summary['success_rate'] = (
-            summary['passed_tests'] / summary['total_tests'] * 100
-            if summary['total_tests'] > 0 else 0
+        summary = self.validation_results["summary"]
+        summary["success_rate"] = (
+            summary["passed_tests"] / summary["total_tests"] * 100
+            if summary["total_tests"] > 0
+            else 0
         )
 
-        self.logger.info(f"検証完了: {summary['passed_tests']}/{summary['total_tests']} "
-                        f"({summary['success_rate']:.1f}%) 成功")
+        self.logger.info(
+            f"検証完了: {summary['passed_tests']}/{summary['total_tests']} "
+            f"({summary['success_rate']:.1f}%) 成功"
+        )
 
     def _cleanup(self):
         """クリーンアップ"""
@@ -509,24 +550,26 @@ def setup_logging(log_level: str = "INFO"):
     """ログ設定"""
     numeric_level = getattr(logging, log_level.upper(), None)
     if not isinstance(numeric_level, int):
-        raise ValueError(f'Invalid log level: {log_level}')
+        raise ValueError(f"Invalid log level: {log_level}")
 
     logging.basicConfig(
         level=numeric_level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler('dataset_manager_validation.log', encoding='utf-8')
-        ]
+            logging.FileHandler("dataset_manager_validation.log", encoding="utf-8"),
+        ],
     )
 
 
 def main():
     """メイン関数"""
-    parser = argparse.ArgumentParser(description='TestDatasetManager検証スクリプト')
-    parser.add_argument('--output-dir', help='出力ディレクトリ')
-    parser.add_argument('--quick', action='store_true', help='クイックモード（高速実行）')
-    parser.add_argument('--log-level', default='INFO', help='ログレベル')
+    parser = argparse.ArgumentParser(description="TestDatasetManager検証スクリプト")
+    parser.add_argument("--output-dir", help="出力ディレクトリ")
+    parser.add_argument(
+        "--quick", action="store_true", help="クイックモード（高速実行）"
+    )
+    parser.add_argument("--log-level", default="INFO", help="ログレベル")
 
     args = parser.parse_args()
 
@@ -539,45 +582,45 @@ def main():
     try:
         # 検証実行
         validator = DatasetManagerValidator(
-            output_dir=args.output_dir,
-            quick_mode=args.quick
+            output_dir=args.output_dir, quick_mode=args.quick
         )
 
         results = validator.run_validation()
 
         # 結果の出力
         logger.info("=== 検証結果サマリー ===")
-        summary = results['summary']
+        summary = results["summary"]
         logger.info(f"総テスト数: {summary['total_tests']}")
         logger.info(f"成功: {summary['passed_tests']}")
         logger.info(f"失敗: {summary['failed_tests']}")
         logger.info(f"成功率: {summary['success_rate']:.1f}%")
         logger.info(f"実行時間: {results['duration_seconds']:.2f}秒")
 
-        if summary['errors']:
+        if summary["errors"]:
             logger.error("エラー一覧:")
-            for error in summary['errors']:
+            for error in summary["errors"]:
                 logger.error(f"  - {error}")
 
         # 結果ファイルの保存
         results_file = os.path.join(
             validator.output_dir if args.output_dir else tempfile.gettempdir(),
-            f"dataset_manager_validation_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            f"dataset_manager_validation_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
         )
 
         import json
-        with open(results_file, 'w', encoding='utf-8') as f:
+
+        with open(results_file, "w", encoding="utf-8") as f:
             # datetimeオブジェクトを文字列に変換
             results_copy = results.copy()
-            results_copy['start_time'] = results_copy['start_time'].isoformat()
-            results_copy['end_time'] = results_copy['end_time'].isoformat()
+            results_copy["start_time"] = results_copy["start_time"].isoformat()
+            results_copy["end_time"] = results_copy["end_time"].isoformat()
 
             json.dump(results_copy, f, ensure_ascii=False, indent=2)
 
         logger.info(f"検証結果を保存しました: {results_file}")
 
         # 終了コード
-        exit_code = 0 if summary['failed_tests'] == 0 else 1
+        exit_code = 0 if summary["failed_tests"] == 0 else 1
         sys.exit(exit_code)
 
     except Exception as e:

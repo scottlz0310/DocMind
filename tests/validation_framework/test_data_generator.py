@@ -20,6 +20,7 @@ try:
     import fitz  # PyMuPDF
     from docx import Document
     from openpyxl import Workbook
+
     HAS_DOCUMENT_LIBS = True
 except ImportError:
     HAS_DOCUMENT_LIBS = False
@@ -28,6 +29,7 @@ except ImportError:
 @dataclass
 class TestDatasetConfig:
     """テストデータセット設定"""
+
     dataset_name: str
     output_directory: str
     file_count: int = 100
@@ -59,26 +61,26 @@ class TestDataGenerator:
 
         # サンプルテキストデータ
         self.sample_texts = {
-            'ja': [
+            "ja": [
                 "これは日本語のサンプルテキストです。",
                 "DocMindアプリケーションのテスト用ドキュメントです。",
                 "検索機能の動作確認を行います。",
                 "全文検索とセマンティック検索の両方をテストします。",
-                "パフォーマンスと精度の検証が重要です。"
+                "パフォーマンスと精度の検証が重要です。",
             ],
-            'en': [
+            "en": [
                 "This is a sample text in English.",
                 "Test document for DocMind application.",
                 "We are testing the search functionality.",
                 "Both full-text and semantic search will be tested.",
-                "Performance and accuracy validation is important."
-            ]
+                "Performance and accuracy validation is important.",
+            ],
         }
 
         # サポートするファイル形式
-        self.supported_formats = ['txt', 'md', 'json', 'csv']
+        self.supported_formats = ["txt", "md", "json", "csv"]
         if HAS_DOCUMENT_LIBS:
-            self.supported_formats.extend(['docx', 'xlsx', 'pdf'])
+            self.supported_formats.extend(["docx", "xlsx", "pdf"])
 
         self.logger.debug("テストデータ生成クラスを初期化しました")
 
@@ -131,23 +133,21 @@ class TestDataGenerator:
         # DocMindのモデルをインポート
         import os
         import sys
-        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+        sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
         from src.data.models import Document
 
         for i in range(count):
             # 一時ファイルを作成
             temp_file = tempfile.NamedTemporaryFile(
-                mode='w',
-                suffix='.txt',
-                delete=False,
-                encoding='utf-8'
+                mode="w", suffix=".txt", delete=False, encoding="utf-8"
             )
 
             # テストコンテンツを生成
             content = self._generate_text_content(
                 1.0 if self.quick_mode else 5.0,  # クイックモードでは小さなファイル
-                'ja'
+                "ja",
             )
 
             temp_file.write(content)
@@ -173,7 +173,9 @@ class TestDataGenerator:
         Returns:
             生成結果の辞書
         """
-        self.logger.info(f"テストデータセット '{config.dataset_name}' の生成を開始します")
+        self.logger.info(
+            f"テストデータセット '{config.dataset_name}' の生成を開始します"
+        )
 
         # 出力ディレクトリの作成
         os.makedirs(config.output_directory, exist_ok=True)
@@ -184,12 +186,12 @@ class TestDataGenerator:
 
         generated_files = []
         generation_stats = {
-            'total_files': 0,
-            'by_type': {},
-            'total_size_mb': 0.0,
-            'corrupted_files': 0,
-            'large_files': 0,
-            'special_char_files': 0
+            "total_files": 0,
+            "by_type": {},
+            "total_size_mb": 0.0,
+            "corrupted_files": 0,
+            "large_files": 0,
+            "special_char_files": 0,
         }
 
         # ファイル生成
@@ -198,49 +200,48 @@ class TestDataGenerator:
 
             try:
                 file_path, file_info = self._generate_single_file(
-                    config.output_directory,
-                    file_type,
-                    config,
-                    i
+                    config.output_directory, file_type, config, i
                 )
 
                 generated_files.append(file_path)
                 self.generated_files.append(file_path)
 
                 # 統計更新
-                generation_stats['total_files'] += 1
-                generation_stats['by_type'][file_type] = generation_stats['by_type'].get(file_type, 0) + 1
-                generation_stats['total_size_mb'] += file_info['size_mb']
+                generation_stats["total_files"] += 1
+                generation_stats["by_type"][file_type] = (
+                    generation_stats["by_type"].get(file_type, 0) + 1
+                )
+                generation_stats["total_size_mb"] += file_info["size_mb"]
 
-                if file_info.get('is_corrupted'):
-                    generation_stats['corrupted_files'] += 1
-                if file_info.get('is_large'):
-                    generation_stats['large_files'] += 1
-                if file_info.get('has_special_chars'):
-                    generation_stats['special_char_files'] += 1
+                if file_info.get("is_corrupted"):
+                    generation_stats["corrupted_files"] += 1
+                if file_info.get("is_large"):
+                    generation_stats["large_files"] += 1
+                if file_info.get("has_special_chars"):
+                    generation_stats["special_char_files"] += 1
 
             except Exception as e:
                 self.logger.error(f"ファイル生成中にエラーが発生しました: {e}")
 
         # メタデータファイルの生成
-        metadata_path = os.path.join(config.output_directory, 'dataset_metadata.json')
+        metadata_path = os.path.join(config.output_directory, "dataset_metadata.json")
         metadata = {
-            'dataset_name': config.dataset_name,
-            'generation_time': datetime.now().isoformat(),
-            'config': {
-                'file_count': config.file_count,
-                'file_types': file_types,
-                'size_range_kb': config.size_range_kb,
-                'content_language': config.content_language,
-                'include_corrupted': config.include_corrupted,
-                'include_large_files': config.include_large_files,
-                'include_special_chars': config.include_special_chars
+            "dataset_name": config.dataset_name,
+            "generation_time": datetime.now().isoformat(),
+            "config": {
+                "file_count": config.file_count,
+                "file_types": file_types,
+                "size_range_kb": config.size_range_kb,
+                "content_language": config.content_language,
+                "include_corrupted": config.include_corrupted,
+                "include_large_files": config.include_large_files,
+                "include_special_chars": config.include_special_chars,
             },
-            'statistics': generation_stats,
-            'generated_files': generated_files
+            "statistics": generation_stats,
+            "generated_files": generated_files,
         }
 
-        with open(metadata_path, 'w', encoding='utf-8') as f:
+        with open(metadata_path, "w", encoding="utf-8") as f:
             json.dump(metadata, f, ensure_ascii=False, indent=2)
 
         self.generated_files.append(metadata_path)
@@ -251,17 +252,15 @@ class TestDataGenerator:
         )
 
         return {
-            'dataset_path': config.output_directory,
-            'metadata_path': metadata_path,
-            'statistics': generation_stats,
-            'generated_files': generated_files
+            "dataset_path": config.output_directory,
+            "metadata_path": metadata_path,
+            "statistics": generation_stats,
+            "generated_files": generated_files,
         }
 
-    def _generate_single_file(self,
-                            output_dir: str,
-                            file_type: str,
-                            config: TestDatasetConfig,
-                            index: int) -> tuple[str, dict[str, Any]]:
+    def _generate_single_file(
+        self, output_dir: str, file_type: str, config: TestDatasetConfig, index: int
+    ) -> tuple[str, dict[str, Any]]:
         """
         単一ファイルの生成
 
@@ -290,11 +289,15 @@ class TestDataGenerator:
         # クイックモードでは小さなファイルサイズに制限
         if self.quick_mode:
             max_size = min(max_size, 10)  # 最大10KB
-            min_size = min(min_size, 1)   # 最小1KB
+            min_size = min(min_size, 1)  # 最小1KB
 
-        if config.include_large_files and random.random() < 0.05:  # 5%の確率で大きなファイル
+        if (
+            config.include_large_files and random.random() < 0.05
+        ):  # 5%の確率で大きなファイル
             if self.quick_mode:
-                target_size_kb = random.randint(max_size, max_size * 2)  # クイックモードでは控えめに
+                target_size_kb = random.randint(
+                    max_size, max_size * 2
+                )  # クイックモードでは控えめに
             else:
                 target_size_kb = random.randint(max_size * 10, max_size * 100)
             is_large = True
@@ -307,25 +310,27 @@ class TestDataGenerator:
 
         # ファイル生成
         file_info = {
-            'size_mb': 0.0,
-            'is_corrupted': is_corrupted,
-            'is_large': is_large,
-            'has_special_chars': config.include_special_chars and "日本語" in base_name
+            "size_mb": 0.0,
+            "is_corrupted": is_corrupted,
+            "is_large": is_large,
+            "has_special_chars": config.include_special_chars and "日本語" in base_name,
         }
 
-        if file_type == 'txt':
+        if file_type == "txt":
             self._generate_text_file(file_path, target_size_kb, config, is_corrupted)
-        elif file_type == 'md':
-            self._generate_markdown_file(file_path, target_size_kb, config, is_corrupted)
-        elif file_type == 'json':
+        elif file_type == "md":
+            self._generate_markdown_file(
+                file_path, target_size_kb, config, is_corrupted
+            )
+        elif file_type == "json":
             self._generate_json_file(file_path, target_size_kb, config, is_corrupted)
-        elif file_type == 'csv':
+        elif file_type == "csv":
             self._generate_csv_file(file_path, target_size_kb, config, is_corrupted)
-        elif file_type == 'docx' and HAS_DOCUMENT_LIBS:
+        elif file_type == "docx" and HAS_DOCUMENT_LIBS:
             self._generate_docx_file(file_path, target_size_kb, config, is_corrupted)
-        elif file_type == 'xlsx' and HAS_DOCUMENT_LIBS:
+        elif file_type == "xlsx" and HAS_DOCUMENT_LIBS:
             self._generate_xlsx_file(file_path, target_size_kb, config, is_corrupted)
-        elif file_type == 'pdf' and HAS_DOCUMENT_LIBS:
+        elif file_type == "pdf" and HAS_DOCUMENT_LIBS:
             self._generate_pdf_file(file_path, target_size_kb, config, is_corrupted)
         else:
             # フォールバック: テキストファイルとして生成
@@ -333,65 +338,93 @@ class TestDataGenerator:
 
         # ファイルサイズの取得
         if os.path.exists(file_path):
-            file_info['size_mb'] = os.path.getsize(file_path) / (1024 * 1024)
+            file_info["size_mb"] = os.path.getsize(file_path) / (1024 * 1024)
 
         return file_path, file_info
 
-    def _generate_text_file(self, file_path: str, target_size_kb: int,
-                          config: TestDatasetConfig, is_corrupted: bool) -> None:
+    def _generate_text_file(
+        self,
+        file_path: str,
+        target_size_kb: int,
+        config: TestDatasetConfig,
+        is_corrupted: bool,
+    ) -> None:
         """テキストファイルの生成"""
         content = self._generate_text_content(target_size_kb, config.content_language)
 
         if is_corrupted:
             # 破損データの挿入
-            content = content[:len(content)//2] + "\x00\xFF\xFE" + content[len(content)//2:]
+            content = (
+                content[: len(content) // 2]
+                + "\x00\xff\xfe"
+                + content[len(content) // 2 :]
+            )
 
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
 
-    def _generate_markdown_file(self, file_path: str, target_size_kb: int,
-                              config: TestDatasetConfig, is_corrupted: bool) -> None:
+    def _generate_markdown_file(
+        self,
+        file_path: str,
+        target_size_kb: int,
+        config: TestDatasetConfig,
+        is_corrupted: bool,
+    ) -> None:
         """Markdownファイルの生成"""
         content = "# テストドキュメント\n\n"
         content += "## 概要\n\n"
-        content += self._generate_text_content(target_size_kb - 1, config.content_language)
+        content += self._generate_text_content(
+            target_size_kb - 1, config.content_language
+        )
         content += "\n\n## 詳細\n\n"
         content += "- リスト項目1\n- リスト項目2\n- リスト項目3\n"
 
         if is_corrupted:
             content = content.replace("##", "##\x00")
 
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
 
-    def _generate_json_file(self, file_path: str, target_size_kb: int,
-                          config: TestDatasetConfig, is_corrupted: bool) -> None:
+    def _generate_json_file(
+        self,
+        file_path: str,
+        target_size_kb: int,
+        config: TestDatasetConfig,
+        is_corrupted: bool,
+    ) -> None:
         """JSONファイルの生成"""
         data = {
             "title": "テストドキュメント",
-            "content": self._generate_text_content(target_size_kb - 1, config.content_language),
+            "content": self._generate_text_content(
+                target_size_kb - 1, config.content_language
+            ),
             "metadata": {
                 "created": datetime.now().isoformat(),
                 "language": config.content_language,
-                "type": "test_document"
-            }
+                "type": "test_document",
+            },
         }
 
         if is_corrupted:
             # 不正なJSONを生成
             json_str = json.dumps(data, ensure_ascii=False, indent=2)
             json_str = json_str[:-10] + "invalid_json"
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(json_str)
         else:
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
 
-    def _generate_csv_file(self, file_path: str, target_size_kb: int,
-                         config: TestDatasetConfig, is_corrupted: bool) -> None:
+    def _generate_csv_file(
+        self,
+        file_path: str,
+        target_size_kb: int,
+        config: TestDatasetConfig,
+        is_corrupted: bool,
+    ) -> None:
         """CSVファイルの生成"""
         rows = []
-        header = ['ID', 'タイトル', '内容', '作成日']
+        header = ["ID", "タイトル", "内容", "作成日"]
         rows.append(header)
 
         # 目標サイズに達するまで行を追加
@@ -401,31 +434,38 @@ class TestDataGenerator:
                 str(i),
                 f"テストタイトル{i}",
                 self._generate_text_content(0.1, config.content_language)[:100],
-                (datetime.now() - timedelta(days=random.randint(0, 365))).strftime('%Y-%m-%d')
+                (datetime.now() - timedelta(days=random.randint(0, 365))).strftime(
+                    "%Y-%m-%d"
+                ),
             ]
             rows.append(row)
 
-        with open(file_path, 'w', encoding='utf-8', newline='') as f:
+        with open(file_path, "w", encoding="utf-8", newline="") as f:
             writer = csv.writer(f)
             if is_corrupted:
                 # 不正なCSVを生成（カンマを削除）
-                for row in rows[:len(rows)//2]:
+                for row in rows[: len(rows) // 2]:
                     writer.writerow(row)
                 f.write("invalid,csv,data\nwithout,proper,structure")
             else:
                 writer.writerows(rows)
 
-    def _generate_docx_file(self, file_path: str, target_size_kb: int,
-                          config: TestDatasetConfig, is_corrupted: bool) -> None:
+    def _generate_docx_file(
+        self,
+        file_path: str,
+        target_size_kb: int,
+        config: TestDatasetConfig,
+        is_corrupted: bool,
+    ) -> None:
         """Word文書ファイルの生成"""
         if not HAS_DOCUMENT_LIBS:
             return
 
         doc = Document()
-        doc.add_heading('テストドキュメント', 0)
+        doc.add_heading("テストドキュメント", 0)
 
         content = self._generate_text_content(target_size_kb, config.content_language)
-        paragraphs = content.split('\n')
+        paragraphs = content.split("\n")
 
         for paragraph in paragraphs:
             if paragraph.strip():
@@ -434,14 +474,19 @@ class TestDataGenerator:
         if is_corrupted:
             # 破損ファイルの生成は困難なので、通常ファイルを生成後にバイナリ操作
             doc.save(file_path)
-            with open(file_path, 'r+b') as f:
+            with open(file_path, "r+b") as f:
                 f.seek(100)
-                f.write(b'\x00\xFF\xFE')
+                f.write(b"\x00\xff\xfe")
         else:
             doc.save(file_path)
 
-    def _generate_xlsx_file(self, file_path: str, target_size_kb: int,
-                          config: TestDatasetConfig, is_corrupted: bool) -> None:
+    def _generate_xlsx_file(
+        self,
+        file_path: str,
+        target_size_kb: int,
+        config: TestDatasetConfig,
+        is_corrupted: bool,
+    ) -> None:
         """Excelファイルの生成"""
         if not HAS_DOCUMENT_LIBS:
             return
@@ -451,7 +496,7 @@ class TestDataGenerator:
         ws.title = "テストデータ"
 
         # ヘッダー
-        headers = ['ID', 'タイトル', '内容', '数値', '日付']
+        headers = ["ID", "タイトル", "内容", "数値", "日付"]
         for col, header in enumerate(headers, 1):
             ws.cell(row=1, column=col, value=header)
 
@@ -460,21 +505,34 @@ class TestDataGenerator:
         for row in range(2, row_count + 2):
             ws.cell(row=row, column=1, value=row - 1)
             ws.cell(row=row, column=2, value=f"テストタイトル{row-1}")
-            ws.cell(row=row, column=3, value=self._generate_text_content(0.1, config.content_language)[:50])
+            ws.cell(
+                row=row,
+                column=3,
+                value=self._generate_text_content(0.1, config.content_language)[:50],
+            )
             ws.cell(row=row, column=4, value=random.randint(1, 1000))
-            ws.cell(row=row, column=5, value=datetime.now() - timedelta(days=random.randint(0, 365)))
+            ws.cell(
+                row=row,
+                column=5,
+                value=datetime.now() - timedelta(days=random.randint(0, 365)),
+            )
 
         if is_corrupted:
             wb.save(file_path)
             # バイナリ操作で破損
-            with open(file_path, 'r+b') as f:
+            with open(file_path, "r+b") as f:
                 f.seek(200)
-                f.write(b'\x00\xFF\xFE')
+                f.write(b"\x00\xff\xfe")
         else:
             wb.save(file_path)
 
-    def _generate_pdf_file(self, file_path: str, target_size_kb: int,
-                         config: TestDatasetConfig, is_corrupted: bool) -> None:
+    def _generate_pdf_file(
+        self,
+        file_path: str,
+        target_size_kb: int,
+        config: TestDatasetConfig,
+        is_corrupted: bool,
+    ) -> None:
         """PDFファイルの生成"""
         if not HAS_DOCUMENT_LIBS:
             return
@@ -493,16 +551,16 @@ class TestDataGenerator:
             doc.save(file_path)
             doc.close()
             # バイナリ操作で破損
-            with open(file_path, 'r+b') as f:
+            with open(file_path, "r+b") as f:
                 f.seek(50)
-                f.write(b'\x00\xFF\xFE')
+                f.write(b"\x00\xff\xfe")
         else:
             doc.save(file_path)
             doc.close()
 
     def _generate_text_content(self, target_size_kb: float, language: str) -> str:
         """指定サイズのテキストコンテンツを生成"""
-        sample_texts = self.sample_texts.get(language, self.sample_texts['ja'])
+        sample_texts = self.sample_texts.get(language, self.sample_texts["ja"])
 
         # 最小サイズを保証
         target_size_kb = max(0.1, target_size_kb)  # 最小100バイト
@@ -512,7 +570,10 @@ class TestDataGenerator:
         max_iterations = 1000  # 無限ループ防止
         iteration_count = 0
 
-        while len(content.encode('utf-8')) < target_size_bytes and iteration_count < max_iterations:
+        while (
+            len(content.encode("utf-8")) < target_size_bytes
+            and iteration_count < max_iterations
+        ):
             # ランダムにサンプルテキストを選択
             text = random.choice(sample_texts)
 
@@ -524,17 +585,17 @@ class TestDataGenerator:
             iteration_count += 1
 
         # 文字単位で適切にトリミング
-        content_bytes = content.encode('utf-8')
+        content_bytes = content.encode("utf-8")
         if len(content_bytes) > target_size_bytes:
             # バイト単位で切り詰めて、文字境界で調整
             truncated = content_bytes[:target_size_bytes]
             try:
-                content = truncated.decode('utf-8')
+                content = truncated.decode("utf-8")
             except UnicodeDecodeError:
                 # 文字境界で切れた場合は、安全な位置まで戻る
                 for i in range(len(truncated) - 1, max(0, len(truncated) - 4), -1):
                     try:
-                        content = truncated[:i].decode('utf-8')
+                        content = truncated[:i].decode("utf-8")
                         break
                     except UnicodeDecodeError:
                         continue
@@ -543,22 +604,50 @@ class TestDataGenerator:
 
     def _generate_random_words(self, language: str, count: int) -> list[str]:
         """ランダムな単語を生成"""
-        if language == 'ja':
+        if language == "ja":
             # 日本語の単語候補
             words = [
-                "検索", "ドキュメント", "テスト", "機能", "システム", "データ", "ファイル",
-                "処理", "結果", "情報", "管理", "設定", "画面", "操作", "確認"
+                "検索",
+                "ドキュメント",
+                "テスト",
+                "機能",
+                "システム",
+                "データ",
+                "ファイル",
+                "処理",
+                "結果",
+                "情報",
+                "管理",
+                "設定",
+                "画面",
+                "操作",
+                "確認",
             ]
         else:
             # 英語の単語候補
             words = [
-                "search", "document", "test", "function", "system", "data", "file",
-                "process", "result", "information", "management", "setting", "screen", "operation", "check"
+                "search",
+                "document",
+                "test",
+                "function",
+                "system",
+                "data",
+                "file",
+                "process",
+                "result",
+                "information",
+                "management",
+                "setting",
+                "screen",
+                "operation",
+                "check",
             ]
 
         return [random.choice(words) for _ in range(count)]
 
-    def generate_large_dataset(self, output_dir: str, document_count: int = 50000) -> dict[str, Any]:
+    def generate_large_dataset(
+        self, output_dir: str, document_count: int = 50000
+    ) -> dict[str, Any]:
         """
         大規模テストデータセットの生成
 
@@ -575,7 +664,7 @@ class TestDataGenerator:
             file_count=document_count,
             size_range_kb=(1, 100),
             include_large_files=True,
-            include_special_chars=True
+            include_special_chars=True,
         )
 
         return self.generate_dataset(config)
@@ -597,7 +686,7 @@ class TestDataGenerator:
             size_range_kb=(0, 10000),  # 0KBから10MBまで
             include_corrupted=True,
             include_large_files=True,
-            include_special_chars=True
+            include_special_chars=True,
         )
 
         return self.generate_dataset(config)

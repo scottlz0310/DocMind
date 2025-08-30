@@ -36,6 +36,7 @@ class TestErrorHandler:
     def teardown_method(self):
         """各テストメソッドの後に実行されるクリーンアップ"""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_error_handler_initialization(self):
@@ -46,6 +47,7 @@ class TestErrorHandler:
 
     def test_register_recovery_handler(self):
         """回復ハンドラーの登録テスト"""
+
         def test_handler(exc, error_info):
             return True
 
@@ -55,13 +57,15 @@ class TestErrorHandler:
 
     def test_handle_docmind_exception(self):
         """DocMind例外の処理テスト"""
-        test_error = SearchError("テスト検索エラー", query="test query", details="詳細情報")
+        test_error = SearchError(
+            "テスト検索エラー", query="test query", details="詳細情報"
+        )
 
         result = self.error_handler.handle_exception(
             test_error,
             context="テストコンテキスト",
             user_message="ユーザー向けメッセージ",
-            attempt_recovery=False
+            attempt_recovery=False,
         )
 
         assert result is False  # 回復処理を試行しないため
@@ -71,7 +75,7 @@ class TestErrorHandler:
         assert len(report_files) > 0
 
         # レポート内容をチェック
-        with open(report_files[0], encoding='utf-8') as f:
+        with open(report_files[0], encoding="utf-8") as f:
             report_data = json.load(f)
 
         assert report_data["exception_type"] == "SearchError"
@@ -85,9 +89,7 @@ class TestErrorHandler:
         test_error = ValueError("標準エラー")
 
         result = self.error_handler.handle_exception(
-            test_error,
-            context="標準例外テスト",
-            attempt_recovery=False
+            test_error, context="標準例外テスト", attempt_recovery=False
         )
 
         assert result is False
@@ -96,7 +98,7 @@ class TestErrorHandler:
         report_files = list(self.error_handler.error_reports_dir.glob("*.json"))
         assert len(report_files) > 0
 
-        with open(report_files[0], encoding='utf-8') as f:
+        with open(report_files[0], encoding="utf-8") as f:
             report_data = json.load(f)
 
         assert report_data["exception_type"] == "ValueError"
@@ -123,6 +125,7 @@ class TestErrorHandler:
         """デフォルト回復処理でディレクトリが作成されるテスト"""
         # データディレクトリを削除
         import shutil
+
         shutil.rmtree(self.temp_dir)
 
         test_error = ValueError("ディレクトリテスト")
@@ -131,8 +134,8 @@ class TestErrorHandler:
         assert result is True
         assert Path(self.temp_dir).exists()
 
-    @patch('psutil.virtual_memory')
-    @patch('psutil.Process')
+    @patch("psutil.virtual_memory")
+    @patch("psutil.Process")
     def test_system_info_collection(self, mock_process, mock_memory):
         """システム情報収集のテスト"""
         # モックの設定
@@ -154,9 +157,7 @@ class TestErrorHandler:
     def test_error_report_generation(self):
         """エラーレポート生成のテスト"""
         test_error = DocumentProcessingError(
-            "ドキュメント処理エラー",
-            file_path="/test/path.pdf",
-            file_type="pdf"
+            "ドキュメント処理エラー", file_path="/test/path.pdf", file_type="pdf"
         )
 
         self.error_handler.handle_exception(test_error, context="レポート生成テスト")
@@ -169,14 +170,17 @@ class TestErrorHandler:
         assert "DocumentProcessingError" in report_file.name
 
         # レポート内容の詳細チェック
-        with open(report_file, encoding='utf-8') as f:
+        with open(report_file, encoding="utf-8") as f:
             report_data = json.load(f)
 
         assert "timestamp" in report_data
         assert "traceback" in report_data
         assert "system_info" in report_data
         assert "application_state" in report_data
-        assert report_data["docmind_details"]["custom_attributes"]["file_path"] == "/test/path.pdf"
+        assert (
+            report_data["docmind_details"]["custom_attributes"]["file_path"]
+            == "/test/path.pdf"
+        )
 
 
 class TestHandleExceptionsDecorator:
@@ -184,11 +188,12 @@ class TestHandleExceptionsDecorator:
 
     def test_decorator_catches_exception(self):
         """デコレータが例外をキャッチするテスト"""
+
         @handle_exceptions(
             context="デコレータテスト",
             user_message="テストエラー",
             attempt_recovery=False,
-            reraise=False
+            reraise=False,
         )
         def failing_function():
             raise ValueError("テスト例外")
@@ -198,10 +203,8 @@ class TestHandleExceptionsDecorator:
 
     def test_decorator_reraises_exception(self):
         """デコレータが例外を再発生させるテスト"""
-        @handle_exceptions(
-            context="再発生テスト",
-            reraise=True
-        )
+
+        @handle_exceptions(context="再発生テスト", reraise=True)
         def failing_function():
             raise ValueError("再発生テスト例外")
 
@@ -218,11 +221,7 @@ class TestHandleExceptionsDecorator:
 
         error_handler.register_recovery_handler(ValueError, recovery_handler)
 
-        @handle_exceptions(
-            context="回復テスト",
-            attempt_recovery=True,
-            reraise=False
-        )
+        @handle_exceptions(context="回復テスト", attempt_recovery=True, reraise=False)
         def failing_function():
             raise ValueError("回復テスト例外")
 
@@ -231,6 +230,7 @@ class TestHandleExceptionsDecorator:
 
     def test_decorator_preserves_function_metadata(self):
         """デコレータが関数のメタデータを保持するテスト"""
+
         @handle_exceptions()
         def test_function():
             """テスト関数のドキュメント"""
@@ -253,13 +253,14 @@ class TestGlobalExceptionHandler:
         handler2 = get_global_error_handler()
         assert handler1 is handler2
 
-    @patch('sys.excepthook')
+    @patch("sys.excepthook")
     def test_setup_global_exception_handler(self, mock_excepthook):
         """グローバル例外ハンドラーの設定テスト"""
         setup_global_exception_handler()
 
         # sys.excepthookが設定されているかチェック
         import sys
+
         assert sys.excepthook != sys.__excepthook__
 
     def test_keyboard_interrupt_handling(self):
@@ -269,6 +270,7 @@ class TestGlobalExceptionHandler:
         # KeyboardInterruptは通常通り処理されることを確認
         # （実際のテストは困難なため、設定の確認のみ）
         import sys
+
         assert callable(sys.excepthook)
 
 
@@ -282,6 +284,7 @@ class TestErrorHandlerIntegration:
     def teardown_method(self):
         """テスト後のクリーンアップ"""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_multiple_error_handling(self):
@@ -293,7 +296,7 @@ class TestErrorHandlerIntegration:
             SearchError("検索エラー1"),
             IndexingError("インデックスエラー1"),
             DocumentProcessingError("処理エラー1"),
-            ValueError("標準エラー1")
+            ValueError("標準エラー1"),
         ]
 
         for error in errors:

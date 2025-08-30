@@ -15,10 +15,10 @@ from .models import (
 )
 
 __all__ = [
-    'Document',
-    'SearchResult',
-    'SearchQuery',
-    'SearchType',
-    'FileType',
-    'IndexStats'
+    "Document",
+    "SearchResult",
+    "SearchQuery",
+    "SearchType",
+    "FileType",
+    "IndexStats",
 ]

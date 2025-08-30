@@ -40,10 +40,7 @@ class TestEndToEndWorkflow:
         self.embedding_manager = EmbeddingManager()
         self.document_processor = DocumentProcessor()
 
-        self.search_manager = SearchManager(
-            self.index_manager,
-            self.embedding_manager
-        )
+        self.search_manager = SearchManager(self.index_manager, self.embedding_manager)
 
     def test_complete_document_indexing_workflow(self):
         """完全なドキュメントインデックス化ワークフロー"""
@@ -74,7 +71,7 @@ class TestEndToEndWorkflow:
             self.index_manager.add_document(doc)
 
         # 4. 埋め込みを生成（モック使用）
-        with patch.object(self.embedding_manager, 'generate_embedding') as mock_embed:
+        with patch.object(self.embedding_manager, "generate_embedding") as mock_embed:
             mock_embed.return_value = [0.1] * 384
 
             for doc in processed_docs:
@@ -82,9 +79,13 @@ class TestEndToEndWorkflow:
 
         # 5. インデックス化の確認
         db_docs = self.db_manager.get_all_documents()
-        assert len(db_docs) == len(processed_docs), "データベースのドキュメント数が一致しません"
+        assert len(db_docs) == len(
+            processed_docs
+        ), "データベースのドキュメント数が一致しません"
 
-        print(f"✓ {len(processed_docs)}個のドキュメントが正常にインデックス化されました")
+        print(
+            f"✓ {len(processed_docs)}個のドキュメントが正常にインデックス化されました"
+        )
 
     def test_complete_search_workflow(self):
         """完全な検索ワークフロー"""
@@ -96,14 +97,22 @@ class TestEndToEndWorkflow:
         assert isinstance(text_results, list), "検索結果がリストではありません"
 
         # 2. セマンティック検索テスト（モック使用）
-        with patch.object(self.embedding_manager, 'search_similar') as mock_search:
+        with patch.object(self.embedding_manager, "search_similar") as mock_search:
             mock_search.return_value = []
-            semantic_results = self.search_manager.search("技術文書", SearchType.SEMANTIC)
-            assert isinstance(semantic_results, list), "セマンティック検索結果がリストではありません"
+            semantic_results = self.search_manager.search(
+                "技術文書", SearchType.SEMANTIC
+            )
+            assert isinstance(
+                semantic_results, list
+            ), "セマンティック検索結果がリストではありません"
 
         # 3. ハイブリッド検索テスト
-        hybrid_results = self.search_manager.search("Python プログラミング", SearchType.HYBRID)
-        assert isinstance(hybrid_results, list), "ハイブリッド検索結果がリストではありません"
+        hybrid_results = self.search_manager.search(
+            "Python プログラミング", SearchType.HYBRID
+        )
+        assert isinstance(
+            hybrid_results, list
+        ), "ハイブリッド検索結果がリストではありません"
 
         print("✓ すべての検索タイプが正常に動作しました")
 
@@ -114,7 +123,9 @@ class TestEndToEndWorkflow:
 
         # 新しいドキュメントを追加
         new_file = Path(self.config.data_dir) / "new_document.txt"
-        new_file.write_text("これは新しく追加されたドキュメントです。", encoding='utf-8')
+        new_file.write_text(
+            "これは新しく追加されたドキュメントです。", encoding="utf-8"
+        )
 
         # ドキュメントを処理
         new_doc = self.document_processor.process_file(str(new_file))
@@ -124,7 +135,7 @@ class TestEndToEndWorkflow:
         self.db_manager.add_document(new_doc)
         self.index_manager.add_document(new_doc)
 
-        with patch.object(self.embedding_manager, 'generate_embedding') as mock_embed:
+        with patch.object(self.embedding_manager, "generate_embedding") as mock_embed:
             mock_embed.return_value = [0.2] * 384
             self.embedding_manager.add_document_embedding(new_doc.id, new_doc.content)
 
@@ -149,7 +160,7 @@ class TestEndToEndWorkflow:
             assert "ファイルが見つかりません" in str(e) or "No such file" in str(e)
 
         # データベース接続エラーのシミュレーション
-        with patch.object(self.db_manager, 'add_document') as mock_add:
+        with patch.object(self.db_manager, "add_document") as mock_add:
             mock_add.side_effect = Exception("データベース接続エラー")
 
             # エラーが適切に処理されることを確認
@@ -160,7 +171,7 @@ class TestEndToEndWorkflow:
                     title="テストドキュメント",
                     content="テスト内容",
                     file_type="text",
-                    size=100
+                    size=100,
                 )
                 self.db_manager.add_document(test_doc)
                 raise AssertionError("例外が発生するはずです")
@@ -204,7 +215,9 @@ class TestEndToEndWorkflow:
 
         assert search_time < 5, f"検索時間が長すぎます: {search_time:.2f}秒"
 
-        print(f"✓ 大規模データセット処理完了: {processed_count}ファイル, {processing_time:.2f}秒")
+        print(
+            f"✓ 大規模データセット処理完了: {processed_count}ファイル, {processing_time:.2f}秒"
+        )
         print(f"✓ 検索パフォーマンス: {search_time:.2f}秒")
 
 
@@ -224,10 +237,7 @@ class TestSystemIntegration:
         embedding_manager = EmbeddingManager()
         DocumentProcessor()
 
-        search_manager = SearchManager(
-            index_manager,
-            embedding_manager
-        )
+        search_manager = SearchManager(index_manager, embedding_manager)
 
         # 各コンポーネントが適切に連携することを確認
         assert search_manager.index_manager is index_manager
@@ -268,7 +278,7 @@ class TestSystemIntegration:
         # テストドキュメントを作成
         now = datetime.now()
         # 一時ファイルを作成
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
             f.write("これは統合テスト用のドキュメントです。")
             temp_file_path = f.name
 
@@ -281,7 +291,7 @@ class TestSystemIntegration:
             size=100,
             created_date=now,
             modified_date=now,
-            indexed_date=now
+            indexed_date=now,
         )
 
         # データベースの基本操作テスト
@@ -318,7 +328,9 @@ class TestSystemIntegration:
 class TestPerformanceIntegration:
     """パフォーマンス統合テスト"""
 
-    def test_search_performance_requirements(self, test_config, performance_timer, memory_monitor):
+    def test_search_performance_requirements(
+        self, test_config, performance_timer, memory_monitor
+    ):
         """検索パフォーマンス要件テスト"""
         # 要件: 最大50,000ドキュメントを5秒以内で検索
 
@@ -338,8 +350,12 @@ class TestPerformanceIntegration:
         temp_files = []
         for i in range(100):  # 実際のテストでは小規模
             # 一時ファイルを作成
-            with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-                f.write(f"これはパフォーマンステスト用のドキュメント {i} です。検索テスト用のキーワードを含みます。")
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".txt", delete=False
+            ) as f:
+                f.write(
+                    f"これはパフォーマンステスト用のドキュメント {i} です。検索テスト用のキーワードを含みます。"
+                )
                 temp_file_path = f.name
                 temp_files.append(temp_file_path)
 
@@ -352,7 +368,7 @@ class TestPerformanceIntegration:
                 size=100,
                 created_date=now,
                 modified_date=now,
-                indexed_date=now
+                indexed_date=now,
             )
             test_docs.append(doc)
             db_manager.add_document(doc)
@@ -371,7 +387,9 @@ class TestPerformanceIntegration:
         memory_increase = memory_monitor.get_memory_increase()
         assert memory_increase < 500, f"メモリ使用量が過大: {memory_increase:.2f}MB"
 
-        print(f"✓ 検索パフォーマンステスト完了: {search_time:.3f}秒, メモリ増加: {memory_increase:.2f}MB")
+        print(
+            f"✓ 検索パフォーマンステスト完了: {search_time:.3f}秒, メモリ増加: {memory_increase:.2f}MB"
+        )
 
     def test_startup_performance(self, test_config, performance_timer):
         """起動パフォーマンステスト"""
@@ -388,7 +406,7 @@ class TestPerformanceIntegration:
 
         embedding_manager = EmbeddingManager()
         # モデル読み込みをモック（実際の読み込みは時間がかかるため）
-        with patch.object(embedding_manager, 'load_model'):
+        with patch.object(embedding_manager, "load_model"):
             embedding_manager.load_model()
 
         SearchManager(index_manager, embedding_manager)

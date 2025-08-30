@@ -38,13 +38,15 @@ def test_config(test_data_dir):
     """
     config = Config()
     # 設定値を直接更新
-    config._config.update({
-        "data_directory": str(test_data_dir / "data"),
-        "whoosh_index_dir": str(test_data_dir / "index"),
-        "embeddings_file": str(test_data_dir / "embeddings.pkl"),
-        "database_file": str(test_data_dir / "test_documents.db"),
-        "log_file": str(test_data_dir / "logs" / "docmind.log")
-    })
+    config._config.update(
+        {
+            "data_directory": str(test_data_dir / "data"),
+            "whoosh_index_dir": str(test_data_dir / "index"),
+            "embeddings_file": str(test_data_dir / "embeddings.pkl"),
+            "database_file": str(test_data_dir / "test_documents.db"),
+            "log_file": str(test_data_dir / "logs" / "docmind.log"),
+        }
+    )
 
     # ディレクトリを作成
     (test_data_dir / "data").mkdir(parents=True, exist_ok=True)
@@ -70,11 +72,7 @@ def sample_documents(test_data_generator):
     サンプルドキュメントセット
     """
     return test_data_generator.create_comprehensive_test_dataset(
-        text_count=5,
-        markdown_count=3,
-        pdf_count=2,
-        word_count=2,
-        excel_count=1
+        text_count=5, markdown_count=3, pdf_count=2, word_count=2, excel_count=1
     )
 
 
@@ -84,11 +82,7 @@ def large_document_set(test_data_generator):
     パフォーマンステスト用の大きなドキュメントセット
     """
     return test_data_generator.create_comprehensive_test_dataset(
-        text_count=100,
-        markdown_count=75,
-        pdf_count=25,
-        word_count=25,
-        excel_count=10
+        text_count=100, markdown_count=75, pdf_count=25, word_count=25, excel_count=10
     )
 
 
@@ -97,7 +91,7 @@ def mock_database(test_config):
     """
     モックデータベースマネージャー
     """
-    with patch('src.data.database.DatabaseManager') as mock_db:
+    with patch("src.data.database.DatabaseManager") as mock_db:
         db_instance = Mock()
         mock_db.return_value = db_instance
 
@@ -117,7 +111,7 @@ def mock_index_manager(test_config):
     """
     モックインデックスマネージャー
     """
-    with patch('src.core.index_manager.IndexManager') as mock_index:
+    with patch("src.core.index_manager.IndexManager") as mock_index:
         index_instance = Mock()
         mock_index.return_value = index_instance
 
@@ -136,7 +130,7 @@ def mock_embedding_manager(test_config):
     """
     モック埋め込みマネージャー
     """
-    with patch('src.core.embedding_manager.EmbeddingManager') as mock_embedding:
+    with patch("src.core.embedding_manager.EmbeddingManager") as mock_embedding:
         embedding_instance = Mock()
         mock_embedding.return_value = embedding_instance
 
@@ -182,8 +176,8 @@ def setup_test_environment(test_config):
     original_env = os.environ.copy()
 
     # テスト用環境変数を設定
-    os.environ['DOCMIND_TEST_MODE'] = '1'
-    os.environ['DOCMIND_DATA_DIR'] = str(test_config.data_dir)
+    os.environ["DOCMIND_TEST_MODE"] = "1"
+    os.environ["DOCMIND_DATA_DIR"] = str(test_config.data_dir)
 
     yield
 
@@ -249,21 +243,11 @@ def memory_monitor():
 # テストマーカーの定義
 def pytest_configure(config):
     """pytest設定"""
-    config.addinivalue_line(
-        "markers", "slow: 実行時間が長いテスト"
-    )
-    config.addinivalue_line(
-        "markers", "integration: 統合テスト"
-    )
-    config.addinivalue_line(
-        "markers", "performance: パフォーマンステスト"
-    )
-    config.addinivalue_line(
-        "markers", "gui: GUIテスト"
-    )
-    config.addinivalue_line(
-        "markers", "unit: ユニットテスト"
-    )
+    config.addinivalue_line("markers", "slow: 実行時間が長いテスト")
+    config.addinivalue_line("markers", "integration: 統合テスト")
+    config.addinivalue_line("markers", "performance: パフォーマンステスト")
+    config.addinivalue_line("markers", "gui: GUIテスト")
+    config.addinivalue_line("markers", "unit: ユニットテスト")
 
 
 # テスト収集時のフィルタリング
@@ -292,11 +276,11 @@ def pytest_addoption(parser):
         "--fast",
         action="store_true",
         default=False,
-        help="高速テストモード（スローテストをスキップ）"
+        help="高速テストモード（スローテストをスキップ）",
     )
     parser.addoption(
         "--performance",
         action="store_true",
         default=False,
-        help="パフォーマンステストを実行"
+        help="パフォーマンステストを実行",
     )

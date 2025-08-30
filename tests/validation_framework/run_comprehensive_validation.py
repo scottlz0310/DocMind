@@ -71,8 +71,11 @@ class ComprehensiveValidationRunner:
         logger.setLevel(logging.INFO)
 
         # ログファイルハンドラー
-        log_file = self.output_dir / f"comprehensive_validation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        log_file = (
+            self.output_dir
+            / f"comprehensive_validation_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        )
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setLevel(logging.DEBUG)
 
         # コンソールハンドラー
@@ -81,7 +84,7 @@ class ComprehensiveValidationRunner:
 
         # フォーマッター
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
@@ -96,7 +99,7 @@ class ComprehensiveValidationRunner:
         validation_level: ValidationLevel = ValidationLevel.DAILY,
         enable_pipeline: bool = True,
         enable_quality_gates: bool = True,
-        timeout_minutes: int = 120
+        timeout_minutes: int = 120,
     ) -> dict[str, Any]:
         """完全な検証の実行
 
@@ -145,7 +148,7 @@ class ComprehensiveValidationRunner:
             validation_config = create_validation_config(
                 level=validation_level,
                 output_dir=self.output_dir / "validation_suite",
-                timeout_seconds=3600  # 1時間
+                timeout_seconds=3600,  # 1時間
             )
 
             # 検証スイートの実行
@@ -171,7 +174,7 @@ class ComprehensiveValidationRunner:
             pipeline_config = create_pipeline_config(
                 project_root=self.project_root,
                 output_dir=self.output_dir / "ci_cd_pipeline",
-                timeout_minutes=timeout_minutes
+                timeout_minutes=timeout_minutes,
             )
 
             # パイプラインの実行
@@ -227,23 +230,27 @@ class ComprehensiveValidationRunner:
         # カバレッジファイルの検索
         coverage_files = list(self.project_root.glob("coverage.xml"))
         if coverage_files:
-            gate_data['coverage_file'] = str(coverage_files[0])
+            gate_data["coverage_file"] = str(coverage_files[0])
 
         # セキュリティレポートの検索
         security_files = list(self.project_root.glob("security_report.json"))
         if security_files:
-            gate_data['security_report'] = str(security_files[0])
+            gate_data["security_report"] = str(security_files[0])
 
         # パフォーマンスメトリクスの検索
         performance_files = list(self.output_dir.glob("**/performance_*.json"))
         if performance_files:
             try:
-                with open(performance_files[0], encoding='utf-8') as f:
-                    gate_data['current_metrics'] = json.load(f)
+                with open(performance_files[0], encoding="utf-8") as f:
+                    gate_data["current_metrics"] = json.load(f)
 
-                gate_data['baseline_file'] = str(self.output_dir / "performance_baseline.json")
+                gate_data["baseline_file"] = str(
+                    self.output_dir / "performance_baseline.json"
+                )
             except Exception as e:
-                self.logger.warning(f"パフォーマンスメトリクスの読み込みに失敗しました: {e}")
+                self.logger.warning(
+                    f"パフォーマンスメトリクスの読み込みに失敗しました: {e}"
+                )
 
         return gate_data
 
@@ -268,17 +275,23 @@ class ComprehensiveValidationRunner:
 
         # 統合結果の作成
         result = {
-            'overall_success': overall_success,
-            'execution_time': execution_time,
-            'start_time': self.start_time.isoformat() if self.start_time else None,
-            'end_time': self.end_time.isoformat() if self.end_time else None,
-            'results': {
-                'validation_suite': self.validation_result.value if self.validation_result else None,
-                'ci_cd_pipeline': self.pipeline_result.value if self.pipeline_result else None,
-                'quality_gates': self.quality_gate_result.value if self.quality_gate_result else None
+            "overall_success": overall_success,
+            "execution_time": execution_time,
+            "start_time": self.start_time.isoformat() if self.start_time else None,
+            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "results": {
+                "validation_suite": (
+                    self.validation_result.value if self.validation_result else None
+                ),
+                "ci_cd_pipeline": (
+                    self.pipeline_result.value if self.pipeline_result else None
+                ),
+                "quality_gates": (
+                    self.quality_gate_result.value if self.quality_gate_result else None
+                ),
             },
-            'artifacts': [str(p) for p in self.artifacts],
-            'summary': self._create_summary()
+            "artifacts": [str(p) for p in self.artifacts],
+            "summary": self._create_summary(),
         }
 
         # 結果の保存
@@ -304,8 +317,11 @@ class ComprehensiveValidationRunner:
     async def _save_integrated_result(self, result: dict[str, Any]):
         """統合結果の保存"""
         try:
-            result_file = self.output_dir / f"integrated_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            with open(result_file, 'w', encoding='utf-8') as f:
+            result_file = (
+                self.output_dir
+                / f"integrated_result_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            )
+            with open(result_file, "w", encoding="utf-8") as f:
                 json.dump(result, f, indent=2, ensure_ascii=False)
 
             self.logger.info(f"統合結果を保存しました: {result_file}")
@@ -314,7 +330,9 @@ class ComprehensiveValidationRunner:
             self.logger.error(f"統合結果保存中にエラーが発生しました: {e}")
 
 
-async def run_validation_level(level: ValidationLevel, project_root: Path, output_dir: Path) -> bool:
+async def run_validation_level(
+    level: ValidationLevel, project_root: Path, output_dir: Path
+) -> bool:
     """指定されたレベルの検証を実行
 
     Args:
@@ -332,10 +350,10 @@ async def run_validation_level(level: ValidationLevel, project_root: Path, outpu
             validation_level=level,
             enable_pipeline=True,
             enable_quality_gates=True,
-            timeout_minutes=120
+            timeout_minutes=120,
         )
 
-        return result['overall_success']
+        return result["overall_success"]
 
     except Exception as e:
         logging.error(f"検証実行中にエラーが発生しました: {e}")
@@ -386,7 +404,7 @@ def main():
 
   # 特定のスケジュールを即座に実行
   python run_comprehensive_validation.py --execute daily
-        """
+        """,
     )
 
     # 基本オプション
@@ -394,13 +412,13 @@ def main():
         "--project-root",
         type=Path,
         default=Path("."),
-        help="プロジェクトルートディレクトリ (デフォルト: 現在のディレクトリ)"
+        help="プロジェクトルートディレクトリ (デフォルト: 現在のディレクトリ)",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
         default=Path("comprehensive_validation_results"),
-        help="出力ディレクトリ (デフォルト: comprehensive_validation_results)"
+        help="出力ディレクトリ (デフォルト: comprehensive_validation_results)",
     )
 
     # 実行モード
@@ -408,17 +426,15 @@ def main():
     mode_group.add_argument(
         "--level",
         choices=[level.value for level in ValidationLevel],
-        help="検証レベルを指定して実行"
+        help="検証レベルを指定して実行",
     )
     mode_group.add_argument(
-        "--scheduler",
-        action="store_true",
-        help="スケジューラーモードで実行"
+        "--scheduler", action="store_true", help="スケジューラーモードで実行"
     )
     mode_group.add_argument(
         "--execute",
         choices=[schedule.value for schedule in ScheduleType],
-        help="指定されたスケジュールを即座に実行"
+        help="指定されたスケジュールを即座に実行",
     )
 
     # 詳細オプション
@@ -426,23 +442,15 @@ def main():
         "--timeout",
         type=int,
         default=120,
-        help="タイムアウト時間（分） (デフォルト: 120)"
+        help="タイムアウト時間（分） (デフォルト: 120)",
     )
     parser.add_argument(
-        "--no-pipeline",
-        action="store_true",
-        help="CI/CDパイプラインを無効化"
+        "--no-pipeline", action="store_true", help="CI/CDパイプラインを無効化"
     )
     parser.add_argument(
-        "--no-quality-gates",
-        action="store_true",
-        help="品質ゲートを無効化"
+        "--no-quality-gates", action="store_true", help="品質ゲートを無効化"
     )
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="詳細ログを出力"
-    )
+    parser.add_argument("--verbose", action="store_true", help="詳細ログを出力")
 
     args = parser.parse_args()
 
@@ -465,7 +473,7 @@ def main():
                 validation_level=level,
                 enable_pipeline=not args.no_pipeline,
                 enable_quality_gates=not args.no_quality_gates,
-                timeout_minutes=args.timeout
+                timeout_minutes=args.timeout,
             )
 
             # 結果の出力
@@ -474,20 +482,20 @@ def main():
             print(f"実行時間: {result['execution_time']:.2f}秒")
             print(f"サマリー: {result['summary']}")
 
-            if result['results']['validation_suite']:
+            if result["results"]["validation_suite"]:
                 print(f"検証スイート: {result['results']['validation_suite']}")
 
-            if result['results']['ci_cd_pipeline']:
+            if result["results"]["ci_cd_pipeline"]:
                 print(f"CI/CDパイプライン: {result['results']['ci_cd_pipeline']}")
 
-            if result['results']['quality_gates']:
+            if result["results"]["quality_gates"]:
                 print(f"品質ゲート: {result['results']['quality_gates']}")
 
             print(f"\nアーティファクト数: {len(result['artifacts'])}")
             print(f"出力ディレクトリ: {args.output_dir}")
 
             # 終了コード
-            sys.exit(0 if result['overall_success'] else 1)
+            sys.exit(0 if result["overall_success"] else 1)
 
         elif args.scheduler:
             # スケジューラーモード
@@ -496,7 +504,9 @@ def main():
         elif args.execute:
             # 指定スケジュール実行
             schedule_type = ScheduleType(args.execute)
-            scheduler = ValidationScheduler(args.project_root, args.output_dir / "scheduler")
+            scheduler = ValidationScheduler(
+                args.project_root, args.output_dir / "scheduler"
+            )
 
             # デフォルトスケジュールの追加
             for schedule_config in create_default_schedules():

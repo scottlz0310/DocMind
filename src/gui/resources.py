@@ -13,6 +13,7 @@ def get_app_icon():
     else:
         return QIcon()
 
+
 def get_search_icon():
     """検索アイコンを取得"""
     app = QApplication.instance()
@@ -21,6 +22,7 @@ def get_search_icon():
         return style.standardIcon(style.StandardPixmap.SP_FileDialogDetailedView)
     else:
         return QIcon()
+
 
 def get_settings_icon():
     """設定アイコンを取得"""

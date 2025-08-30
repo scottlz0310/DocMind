@@ -52,7 +52,7 @@ class TestFileWatcher:
 
         # テスト用の実際のファイルを作成
         test_file_path = os.path.join(temp_dir, "test.txt")
-        with open(test_file_path, 'w') as f:
+        with open(test_file_path, "w") as f:
             f.write("Test content")
 
         # テスト用のDocumentオブジェクトを返すように設定
@@ -65,7 +65,7 @@ class TestFileWatcher:
             size=100,
             created_date=time.time(),
             modified_date=time.time(),
-            indexed_date=time.time()
+            indexed_date=time.time(),
         )
         mock.process_file.return_value = test_doc
         return mock
@@ -78,14 +78,19 @@ class TestFileWatcher:
         return mock
 
     @pytest.fixture
-    def file_watcher(self, mock_index_manager, mock_embedding_manager,
-                    mock_document_processor, mock_config):
+    def file_watcher(
+        self,
+        mock_index_manager,
+        mock_embedding_manager,
+        mock_document_processor,
+        mock_config,
+    ):
         """FileWatcherインスタンスを作成"""
         return FileWatcher(
             index_manager=mock_index_manager,
             embedding_manager=mock_embedding_manager,
             document_processor=mock_document_processor,
-            config=mock_config
+            config=mock_config,
         )
 
     def test_init(self, file_watcher):
@@ -110,7 +115,7 @@ class TestFileWatcher:
     def test_add_watch_path_file(self, file_watcher, temp_dir):
         """ファイルパスの監視追加テスト（エラーになるべき）"""
         test_file = os.path.join(temp_dir, "test.txt")
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("test")
 
         with pytest.raises(FileSystemError):
@@ -150,7 +155,7 @@ class TestFileWatcher:
         test_file = os.path.join(temp_dir, "test.txt")
         test_content = "This is test content"
 
-        with open(test_file, 'w', encoding='utf-8') as f:
+        with open(test_file, "w", encoding="utf-8") as f:
             f.write(test_content)
 
         hash1 = file_watcher._calculate_file_hash(test_file)
@@ -163,7 +168,7 @@ class TestFileWatcher:
     def test_is_file_actually_changed_new_file(self, file_watcher, temp_dir):
         """新しいファイルの変更検出テスト"""
         test_file = os.path.join(temp_dir, "test.txt")
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("test content")
 
         # 新しいファイルは変更ありと判定されるべき
@@ -172,7 +177,7 @@ class TestFileWatcher:
     def test_is_file_actually_changed_unchanged_file(self, file_watcher, temp_dir):
         """変更されていないファイルの検出テスト"""
         test_file = os.path.join(temp_dir, "test.txt")
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("test content")
 
         # 最初の呼び出し（キャッシュに追加）
@@ -186,7 +191,7 @@ class TestFileWatcher:
         test_file = os.path.join(temp_dir, "test.txt")
 
         # 最初のコンテンツ
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("original content")
 
         # 最初の呼び出し
@@ -194,7 +199,7 @@ class TestFileWatcher:
 
         # ファイルを変更
         time.sleep(0.1)  # ファイルシステムの時刻精度を考慮
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("modified content")
 
         # 変更ありと判定されるべき
@@ -202,31 +207,30 @@ class TestFileWatcher:
 
     def test_file_change_event_creation(self):
         """FileChangeEventの作成テスト"""
-        event = FileChangeEvent(
-            event_type='created',
-            file_path='/test/path.txt'
-        )
+        event = FileChangeEvent(event_type="created", file_path="/test/path.txt")
 
-        assert event.event_type == 'created'
-        assert event.file_path == '/test/path.txt'
+        assert event.event_type == "created"
+        assert event.file_path == "/test/path.txt"
         assert event.old_path is None
         assert event.timestamp is not None
 
     def test_file_hash_info_creation(self):
         """FileHashInfoの作成テスト"""
         hash_info = FileHashInfo(
-            file_path='/test/path.txt',
-            content_hash='abc123',
+            file_path="/test/path.txt",
+            content_hash="abc123",
             file_size=100,
             modified_time=time.time(),
-            last_processed=time.time()
+            last_processed=time.time(),
         )
 
-        assert hash_info.file_path == '/test/path.txt'
-        assert hash_info.content_hash == 'abc123'
+        assert hash_info.file_path == "/test/path.txt"
+        assert hash_info.content_hash == "abc123"
         assert hash_info.file_size == 100
 
-    def test_handle_file_deleted(self, file_watcher, mock_index_manager, mock_embedding_manager, temp_dir):
+    def test_handle_file_deleted(
+        self, file_watcher, mock_index_manager, mock_embedding_manager, temp_dir
+    ):
         """ファイル削除処理のテスト"""
         test_path = os.path.join(temp_dir, "test.txt")
 
@@ -242,14 +246,20 @@ class TestFileWatcher:
         mock_embedding_manager.remove_document_embedding.assert_called_once()
 
         # 統計が更新されることを確認
-        assert file_watcher.stats['files_deleted'] == 1
+        assert file_watcher.stats["files_deleted"] == 1
 
-    def test_handle_file_created_or_modified(self, file_watcher, mock_index_manager,
-                                           mock_embedding_manager, mock_document_processor, temp_dir):
+    def test_handle_file_created_or_modified(
+        self,
+        file_watcher,
+        mock_index_manager,
+        mock_embedding_manager,
+        mock_document_processor,
+        temp_dir,
+    ):
         """ファイル作成・変更処理のテスト"""
         test_path = os.path.join(temp_dir, "test.txt")
 
-        file_watcher._handle_file_created_or_modified(test_path, 'created')
+        file_watcher._handle_file_created_or_modified(test_path, "created")
 
         # ドキュメント処理が呼ばれることを確認
         mock_document_processor.process_file.assert_called_once_with(test_path)
@@ -261,7 +271,7 @@ class TestFileWatcher:
         mock_embedding_manager.add_document_embedding.assert_called_once()
 
         # 統計が更新されることを確認
-        assert file_watcher.stats['files_added'] == 1
+        assert file_watcher.stats["files_added"] == 1
 
     def test_handle_file_moved(self, file_watcher, temp_dir):
         """ファイル移動処理のテスト"""
@@ -269,8 +279,12 @@ class TestFileWatcher:
         new_path = os.path.join(temp_dir, "new_path.txt")
 
         # _handle_file_deletedと_handle_file_created_or_modifiedをモック
-        with patch.object(file_watcher, '_handle_file_deleted') as mock_delete, \
-             patch.object(file_watcher, '_handle_file_created_or_modified') as mock_create:
+        with (
+            patch.object(file_watcher, "_handle_file_deleted") as mock_delete,
+            patch.object(
+                file_watcher, "_handle_file_created_or_modified"
+            ) as mock_create,
+        ):
 
             file_watcher._handle_file_moved(old_path, new_path)
 
@@ -278,29 +292,25 @@ class TestFileWatcher:
             mock_delete.assert_called_once_with(old_path)
 
             # 作成処理が呼ばれることを確認
-            mock_create.assert_called_once_with(new_path, 'created')
+            mock_create.assert_called_once_with(new_path, "created")
 
     def test_process_file_event_created(self, file_watcher, temp_dir):
         """ファイル作成イベント処理のテスト"""
         test_path = os.path.join(temp_dir, "test.txt")
-        event = FileChangeEvent(
-            event_type='created',
-            file_path=test_path
-        )
+        event = FileChangeEvent(event_type="created", file_path=test_path)
 
-        with patch.object(file_watcher, '_handle_file_created_or_modified') as mock_handle:
+        with patch.object(
+            file_watcher, "_handle_file_created_or_modified"
+        ) as mock_handle:
             file_watcher._process_file_event(event)
-            mock_handle.assert_called_once_with(test_path, 'created')
+            mock_handle.assert_called_once_with(test_path, "created")
 
     def test_process_file_event_deleted(self, file_watcher, temp_dir):
         """ファイル削除イベント処理のテスト"""
         test_path = os.path.join(temp_dir, "test.txt")
-        event = FileChangeEvent(
-            event_type='deleted',
-            file_path=test_path
-        )
+        event = FileChangeEvent(event_type="deleted", file_path=test_path)
 
-        with patch.object(file_watcher, '_handle_file_deleted') as mock_handle:
+        with patch.object(file_watcher, "_handle_file_deleted") as mock_handle:
             file_watcher._process_file_event(event)
             mock_handle.assert_called_once_with(test_path)
 
@@ -309,12 +319,10 @@ class TestFileWatcher:
         old_path = os.path.join(temp_dir, "old_path.txt")
         new_path = os.path.join(temp_dir, "new_path.txt")
         event = FileChangeEvent(
-            event_type='moved',
-            file_path=new_path,
-            old_path=old_path
+            event_type="moved", file_path=new_path, old_path=old_path
         )
 
-        with patch.object(file_watcher, '_handle_file_moved') as mock_handle:
+        with patch.object(file_watcher, "_handle_file_moved") as mock_handle:
             file_watcher._process_file_event(event)
             mock_handle.assert_called_once_with(old_path, new_path)
 
@@ -324,22 +332,22 @@ class TestFileWatcher:
 
         stats = file_watcher.get_stats()
 
-        assert 'is_running' in stats
-        assert 'watched_paths' in stats
-        assert 'queue_size' in stats
-        assert 'cached_hashes' in stats
-        assert 'stats' in stats
+        assert "is_running" in stats
+        assert "watched_paths" in stats
+        assert "queue_size" in stats
+        assert "cached_hashes" in stats
+        assert "stats" in stats
 
-        assert stats['is_running'] is False
-        assert len(stats['watched_paths']) == 1
-        assert stats['queue_size'] == 0
-        assert stats['cached_hashes'] == 0
+        assert stats["is_running"] is False
+        assert len(stats["watched_paths"]) == 1
+        assert stats["queue_size"] == 0
+        assert stats["cached_hashes"] == 0
 
     def test_clear_hash_cache(self, file_watcher, temp_dir):
         """ハッシュキャッシュクリアのテスト"""
         # テストファイルを作成してハッシュキャッシュに追加
         test_file = os.path.join(temp_dir, "test.txt")
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("test content")
 
         file_watcher._is_file_actually_changed(test_file)
@@ -349,7 +357,7 @@ class TestFileWatcher:
         file_watcher.clear_hash_cache()
         assert len(file_watcher.file_hashes) == 0
 
-    @patch('src.core.file_watcher.Observer')
+    @patch("src.core.file_watcher.Observer")
     def test_start_watching_success(self, mock_observer_class, file_watcher, temp_dir):
         """監視開始成功のテスト"""
         mock_observer = Mock()
@@ -358,7 +366,7 @@ class TestFileWatcher:
         file_watcher.add_watch_path(temp_dir)
 
         # ワーカーループをモック
-        with patch.object(file_watcher, '_worker_loop'):
+        with patch.object(file_watcher, "_worker_loop"):
             file_watcher.start_watching()
 
         assert file_watcher.is_running is True
@@ -379,7 +387,7 @@ class TestFileWatcher:
         # 警告が出るが例外は発生しないはず
         file_watcher.start_watching()
 
-    @patch('src.core.file_watcher.Observer')
+    @patch("src.core.file_watcher.Observer")
     def test_stop_watching(self, mock_observer_class, file_watcher, temp_dir):
         """監視停止のテスト"""
         mock_observer = Mock()
@@ -388,11 +396,11 @@ class TestFileWatcher:
         file_watcher.add_watch_path(temp_dir)
 
         # 監視を開始
-        with patch.object(file_watcher, '_worker_loop'):
+        with patch.object(file_watcher, "_worker_loop"):
             file_watcher.start_watching()
 
         # 監視を停止
-        with patch.object(file_watcher, '_save_hash_cache'):
+        with patch.object(file_watcher, "_save_hash_cache"):
             file_watcher.stop_watching()
 
         assert file_watcher.is_running is False
@@ -403,7 +411,7 @@ class TestFileWatcher:
         """強制再スキャンのテスト"""
         # テストファイルを作成
         test_file = os.path.join(temp_dir, "test.txt")
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("test content")
 
         file_watcher.add_watch_path(temp_dir)
@@ -424,7 +432,7 @@ class TestFileWatcher:
         """キュー空待機タイムアウトのテスト"""
         # キューにアイテムを追加
         test_path = os.path.join(temp_dir, "test.txt")
-        event = FileChangeEvent('created', test_path)
+        event = FileChangeEvent("created", test_path)
         file_watcher.processing_queue.put(event)
 
         # タイムアウトするはず
@@ -455,7 +463,7 @@ class TestFileWatcherIntegration:
 
         # テスト用の実際のファイルを作成
         test_file_path = os.path.join(temp_dir, "test.txt")
-        with open(test_file_path, 'w') as f:
+        with open(test_file_path, "w") as f:
             f.write("Test content")
 
         # テスト用のDocumentオブジェクトを返すように設定
@@ -468,7 +476,7 @@ class TestFileWatcherIntegration:
             size=100,
             created_date=time.time(),
             modified_date=time.time(),
-            indexed_date=time.time()
+            indexed_date=time.time(),
         )
         mock_document_processor.process_file.return_value = test_doc
         mock_document_processor.is_supported_file.return_value = True
@@ -477,7 +485,7 @@ class TestFileWatcherIntegration:
             index_manager=mock_index_manager,
             embedding_manager=mock_embedding_manager,
             document_processor=mock_document_processor,
-            config=config
+            config=config,
         )
 
         # 監視対象パスを追加
@@ -485,11 +493,11 @@ class TestFileWatcherIntegration:
 
         # テストファイルを作成
         test_file = os.path.join(temp_dir, "test.txt")
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("test content")
 
         # ファイル変更イベントを手動で処理
-        event = FileChangeEvent('created', test_file)
+        event = FileChangeEvent("created", test_file)
         file_watcher._process_file_event(event)
 
         # 処理が呼ばれたことを確認

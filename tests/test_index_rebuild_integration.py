@@ -21,7 +21,7 @@ import pytest
 from PySide6.QtWidgets import QApplication, QMessageBox
 
 # プロジェクトルートをパスに追加
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.gui.main_window import MainWindow
 from src.utils.exceptions import DocMindException
@@ -47,16 +47,25 @@ class TestIndexRebuildSmallScale:
 
         # 小規模テストファイルを作成（5ファイル）
         test_files = [
-            ("document1.txt", "これは最初のテストドキュメントです。検索機能をテストします。"),
+            (
+                "document1.txt",
+                "これは最初のテストドキュメントです。検索機能をテストします。",
+            ),
             ("document2.txt", "二番目のドキュメントには異なる内容が含まれています。"),
-            ("document3.md", "# マークダウンファイル\n\nこれはマークダウン形式のドキュメントです。"),
-            ("document4.txt", "四番目のファイルには特別なキーワード「重要」が含まれています。"),
-            ("document5.txt", "最後のドキュメントは検索テストの完了を示します。")
+            (
+                "document3.md",
+                "# マークダウンファイル\n\nこれはマークダウン形式のドキュメントです。",
+            ),
+            (
+                "document4.txt",
+                "四番目のファイルには特別なキーワード「重要」が含まれています。",
+            ),
+            ("document5.txt", "最後のドキュメントは検索テストの完了を示します。"),
         ]
 
         for filename, content in test_files:
             file_path = os.path.join(temp_dir, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
         yield temp_dir
@@ -69,7 +78,7 @@ class TestIndexRebuildSmallScale:
     def main_window(self, app, temp_folder):
         """メインウィンドウのフィクスチャ"""
         # 一時的な設定でメインウィンドウを作成
-        with patch('src.utils.config.Config.get_data_dir') as mock_data_dir:
+        with patch("src.utils.config.Config.get_data_dir") as mock_data_dir:
             mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_data_test_")
 
             window = MainWindow()
@@ -92,7 +101,7 @@ class TestIndexRebuildSmallScale:
         assert main_window.folder_tree.get_current_folder() == temp_folder
 
         # モックを設定してダイアログの応答をシミュレート
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
             # 進捗表示のモック
             progress_messages = []
             original_show_progress = main_window.show_progress
@@ -123,7 +132,10 @@ class TestIndexRebuildSmallScale:
             start_time = time.time()
             while time.time() - start_time < timeout:
                 QApplication.processEvents()
-                if not hasattr(main_window, '_rebuild_state') or not main_window._rebuild_state.is_active:
+                if (
+                    not hasattr(main_window, "_rebuild_state")
+                    or not main_window._rebuild_state.is_active
+                ):
                     break
                 time.sleep(0.1)
 
@@ -131,8 +143,12 @@ class TestIndexRebuildSmallScale:
             assert len(progress_messages) > 0, "進捗メッセージが記録されていません"
 
             # 進捗表示の流れを確認
-            show_messages = [msg for msg in progress_messages if msg.startswith("show:")]
-            hide_messages = [msg for msg in progress_messages if msg.startswith("hide:")]
+            show_messages = [
+                msg for msg in progress_messages if msg.startswith("show:")
+            ]
+            hide_messages = [
+                msg for msg in progress_messages if msg.startswith("hide:")
+            ]
 
             assert len(show_messages) > 0, "show_progressが呼ばれていません"
             assert len(hide_messages) > 0, "hide_progressが呼ばれていません"
@@ -145,12 +161,15 @@ class TestIndexRebuildSmallScale:
     def test_small_scale_rebuild_cancellation(self, main_window, temp_folder):
         """小規模フォルダでの再構築キャンセルをテスト"""
         # キャンセルダイアログの応答をシミュレート
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.No):
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.No):
             # インデックス再構築を実行（キャンセル）
             main_window._rebuild_index()
 
             # キャンセルされたことを確認
-            assert not hasattr(main_window, '_rebuild_state') or not main_window._rebuild_state.is_active
+            assert (
+                not hasattr(main_window, "_rebuild_state")
+                or not main_window._rebuild_state.is_active
+            )
 
             # インデックスが変更されていないことを確認
             index_manager = main_window.index_manager
@@ -163,15 +182,17 @@ class TestIndexRebuildSmallScale:
 
         # 進捗更新をキャプチャ
         def capture_progress(current, total, message=""):
-            progress_updates.append({
-                'current': current,
-                'total': total,
-                'message': message,
-                'timestamp': time.time()
-            })
+            progress_updates.append(
+                {
+                    "current": current,
+                    "total": total,
+                    "message": message,
+                    "timestamp": time.time(),
+                }
+            )
 
         # モックを設定
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
             main_window.update_progress = capture_progress
 
             # インデックス再構築を実行
@@ -182,7 +203,10 @@ class TestIndexRebuildSmallScale:
             start_time = time.time()
             while time.time() - start_time < timeout:
                 QApplication.processEvents()
-                if not hasattr(main_window, '_rebuild_state') or not main_window._rebuild_state.is_active:
+                if (
+                    not hasattr(main_window, "_rebuild_state")
+                    or not main_window._rebuild_state.is_active
+                ):
                     break
                 time.sleep(0.1)
 
@@ -191,13 +215,17 @@ class TestIndexRebuildSmallScale:
 
             # 進捗が単調増加していることを確認
             for i in range(1, len(progress_updates)):
-                prev_update = progress_updates[i-1]
+                prev_update = progress_updates[i - 1]
                 curr_update = progress_updates[i]
 
                 # 同じtotalの場合、currentは増加または同じであるべき
-                if prev_update['total'] == curr_update['total'] and curr_update['total'] > 0:
-                    assert curr_update['current'] >= prev_update['current'], \
-                        f"進捗が後退しています: {prev_update} -> {curr_update}"
+                if (
+                    prev_update["total"] == curr_update["total"]
+                    and curr_update["total"] > 0
+                ):
+                    assert (
+                        curr_update["current"] >= prev_update["current"]
+                    ), f"進捗が後退しています: {prev_update} -> {curr_update}"
 
 
 class TestIndexRebuildLargeScale:
@@ -238,7 +266,7 @@ class TestIndexRebuildLargeScale:
             """
 
             file_path = os.path.join(temp_dir, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
         yield temp_dir
@@ -250,8 +278,10 @@ class TestIndexRebuildLargeScale:
     @pytest.fixture
     def main_window_large(self, app, large_temp_folder):
         """大規模テスト用メインウィンドウのフィクスチャ"""
-        with patch('src.utils.config.Config.get_data_dir') as mock_data_dir:
-            mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_data_large_test_")
+        with patch("src.utils.config.Config.get_data_dir") as mock_data_dir:
+            mock_data_dir.return_value = tempfile.mkdtemp(
+                prefix="docmind_data_large_test_"
+            )
 
             window = MainWindow()
             window.show()
@@ -267,33 +297,37 @@ class TestIndexRebuildLargeScale:
             if os.path.exists(data_dir):
                 shutil.rmtree(data_dir, ignore_errors=True)
 
-    def test_large_scale_rebuild_performance(self, main_window_large, large_temp_folder):
+    def test_large_scale_rebuild_performance(
+        self, main_window_large, large_temp_folder
+    ):
         """大規模フォルダでのパフォーマンステスト"""
         performance_metrics = {
-            'start_time': None,
-            'end_time': None,
-            'progress_updates': [],
-            'memory_usage': []
+            "start_time": None,
+            "end_time": None,
+            "progress_updates": [],
+            "memory_usage": [],
         }
 
         # パフォーマンス測定用のモック
         original_update_progress = main_window_large.update_progress
 
         def track_progress(current, total, message=""):
-            performance_metrics['progress_updates'].append({
-                'current': current,
-                'total': total,
-                'message': message,
-                'timestamp': time.time()
-            })
+            performance_metrics["progress_updates"].append(
+                {
+                    "current": current,
+                    "total": total,
+                    "message": message,
+                    "timestamp": time.time(),
+                }
+            )
             return original_update_progress(current, total, message)
 
         main_window_large.update_progress = track_progress
 
         # 開始時間を記録
-        performance_metrics['start_time'] = time.time()
+        performance_metrics["start_time"] = time.time()
 
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
             # インデックス再構築を実行
             main_window_large._rebuild_index()
 
@@ -302,15 +336,20 @@ class TestIndexRebuildLargeScale:
             start_time = time.time()
             while time.time() - start_time < timeout:
                 QApplication.processEvents()
-                if not hasattr(main_window_large, '_rebuild_state') or not main_window_large._rebuild_state.is_active:
+                if (
+                    not hasattr(main_window_large, "_rebuild_state")
+                    or not main_window_large._rebuild_state.is_active
+                ):
                     break
                 time.sleep(0.1)
 
             # 終了時間を記録
-            performance_metrics['end_time'] = time.time()
+            performance_metrics["end_time"] = time.time()
 
             # パフォーマンス検証
-            total_time = performance_metrics['end_time'] - performance_metrics['start_time']
+            total_time = (
+                performance_metrics["end_time"] - performance_metrics["start_time"]
+            )
 
             # 要件: 大規模ファイル処理でも合理的な時間内に完了すること
             assert total_time < 300, f"処理時間が長すぎます: {total_time:.2f}秒"
@@ -321,11 +360,15 @@ class TestIndexRebuildLargeScale:
             assert doc_count == 100, f"期待されるドキュメント数: 100, 実際: {doc_count}"
 
             # 進捗更新の頻度を確認
-            assert len(performance_metrics['progress_updates']) > 0, "進捗更新が記録されていません"
+            assert (
+                len(performance_metrics["progress_updates"]) > 0
+            ), "進捗更新が記録されていません"
 
             # 1秒あたりの処理ファイル数を計算
             files_per_second = 100 / total_time
-            assert files_per_second > 1, f"処理速度が遅すぎます: {files_per_second:.2f} files/sec"
+            assert (
+                files_per_second > 1
+            ), f"処理速度が遅すぎます: {files_per_second:.2f} files/sec"
 
             print("大規模テスト結果:")
             print(f"  - 処理時間: {total_time:.2f}秒")
@@ -341,7 +384,7 @@ class TestIndexRebuildLargeScale:
         process = psutil.Process(os.getpid())
         initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
             # インデックス再構築を実行
             main_window_large._rebuild_index()
 
@@ -355,7 +398,10 @@ class TestIndexRebuildLargeScale:
                 current_memory = process.memory_info().rss / 1024 / 1024  # MB
                 max_memory = max(max_memory, current_memory)
 
-                if not hasattr(main_window_large, '_rebuild_state') or not main_window_large._rebuild_state.is_active:
+                if (
+                    not hasattr(main_window_large, "_rebuild_state")
+                    or not main_window_large._rebuild_state.is_active
+                ):
                     break
                 time.sleep(0.5)
 
@@ -364,7 +410,9 @@ class TestIndexRebuildLargeScale:
 
             # メモリ使用量の検証
             # 要件: メモリリークを防ぐ
-            assert memory_increase < 500, f"メモリ使用量が過大です: {memory_increase:.2f}MB増加"
+            assert (
+                memory_increase < 500
+            ), f"メモリ使用量が過大です: {memory_increase:.2f}MB増加"
 
             print("メモリ使用量テスト結果:")
             print(f"  - 初期メモリ: {initial_memory:.2f}MB")
@@ -398,12 +446,12 @@ class TestIndexRebuildErrorConditions:
 
         for filename, content in normal_files:
             file_path = os.path.join(temp_dir, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
         # 読み取り専用ファイル（権限エラーをシミュレート）
         readonly_file = os.path.join(temp_dir, "readonly.txt")
-        with open(readonly_file, 'w', encoding='utf-8') as f:
+        with open(readonly_file, "w", encoding="utf-8") as f:
             f.write("読み取り専用ファイル")
 
         # ファイルを読み取り専用に設定
@@ -425,8 +473,10 @@ class TestIndexRebuildErrorConditions:
     @pytest.fixture
     def main_window_error(self, app, error_temp_folder):
         """エラーテスト用メインウィンドウのフィクスチャ"""
-        with patch('src.utils.config.Config.get_data_dir') as mock_data_dir:
-            mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_data_error_test_")
+        with patch("src.utils.config.Config.get_data_dir") as mock_data_dir:
+            mock_data_dir.return_value = tempfile.mkdtemp(
+                prefix="docmind_data_error_test_"
+            )
 
             window = MainWindow()
             window.show()
@@ -447,20 +497,24 @@ class TestIndexRebuildErrorConditions:
         error_messages = []
 
         # エラーメッセージをキャプチャ
-        original_on_rebuild_error = getattr(main_window_error, '_on_rebuild_error', None)
+        original_on_rebuild_error = getattr(
+            main_window_error, "_on_rebuild_error", None
+        )
 
         def capture_error(thread_id, error_message):
-            error_messages.append({
-                'thread_id': thread_id,
-                'error_message': error_message,
-                'timestamp': time.time()
-            })
+            error_messages.append(
+                {
+                    "thread_id": thread_id,
+                    "error_message": error_message,
+                    "timestamp": time.time(),
+                }
+            )
             if original_on_rebuild_error:
                 return original_on_rebuild_error(thread_id, error_message)
 
         main_window_error._on_rebuild_error = capture_error
 
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
             # インデックス再構築を実行
             main_window_error._rebuild_index()
 
@@ -469,7 +523,10 @@ class TestIndexRebuildErrorConditions:
             start_time = time.time()
             while time.time() - start_time < timeout:
                 QApplication.processEvents()
-                if not hasattr(main_window_error, '_rebuild_state') or not main_window_error._rebuild_state.is_active:
+                if (
+                    not hasattr(main_window_error, "_rebuild_state")
+                    or not main_window_error._rebuild_state.is_active
+                ):
                     break
                 time.sleep(0.1)
 
@@ -498,8 +555,8 @@ class TestIndexRebuildErrorConditions:
 
         main_window_error.index_manager.clear_index = mock_clear_index
 
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
-            with patch.object(QMessageBox, 'critical') as mock_error_dialog:
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
+            with patch.object(QMessageBox, "critical") as mock_error_dialog:
                 # インデックス再構築を実行
                 main_window_error._rebuild_index()
 
@@ -518,8 +575,8 @@ class TestIndexRebuildErrorConditions:
 
         main_window_error.thread_manager.start_indexing_thread = mock_start_thread
 
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
-            with patch.object(QMessageBox, 'critical') as mock_error_dialog:
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
+            with patch.object(QMessageBox, "critical") as mock_error_dialog:
                 # インデックス再構築を実行
                 main_window_error._rebuild_index()
 
@@ -527,7 +584,10 @@ class TestIndexRebuildErrorConditions:
                 assert mock_error_dialog.called, "エラーダイアログが表示されていません"
 
                 # 再構築状態がリセットされたことを確認
-                assert not hasattr(main_window_error, '_rebuild_state') or not main_window_error._rebuild_state.is_active
+                assert (
+                    not hasattr(main_window_error, "_rebuild_state")
+                    or not main_window_error._rebuild_state.is_active
+                )
 
 
 class TestIndexRebuildTimeout:
@@ -555,7 +615,7 @@ class TestIndexRebuildTimeout:
 
         for filename, content in test_files:
             file_path = os.path.join(temp_dir, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
         yield temp_dir
@@ -567,8 +627,10 @@ class TestIndexRebuildTimeout:
     @pytest.fixture
     def main_window_timeout(self, app, timeout_temp_folder):
         """タイムアウトテスト用メインウィンドウのフィクスチャ"""
-        with patch('src.utils.config.Config.get_data_dir') as mock_data_dir:
-            mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_data_timeout_test_")
+        with patch("src.utils.config.Config.get_data_dir") as mock_data_dir:
+            mock_data_dir.return_value = tempfile.mkdtemp(
+                prefix="docmind_data_timeout_test_"
+            )
 
             window = MainWindow()
             window.show()
@@ -589,7 +651,9 @@ class TestIndexRebuildTimeout:
         timeout_occurred = False
 
         # タイムアウトハンドラーをモック
-        original_handle_timeout = getattr(main_window_timeout, '_handle_rebuild_timeout', None)
+        original_handle_timeout = getattr(
+            main_window_timeout, "_handle_rebuild_timeout", None
+        )
 
         def mock_handle_timeout(thread_id):
             nonlocal timeout_occurred
@@ -600,15 +664,15 @@ class TestIndexRebuildTimeout:
         main_window_timeout._handle_rebuild_timeout = mock_handle_timeout
 
         # 短いタイムアウト時間を設定（テスト用）
-        if hasattr(main_window_timeout, 'timeout_manager'):
+        if hasattr(main_window_timeout, "timeout_manager"):
             main_window_timeout.timeout_manager.timeout_minutes = 0.1  # 6秒
 
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
             # IndexingWorkerを遅延させるモック
             original_process_folder = None
-            if hasattr(main_window_timeout.thread_manager, 'worker_class'):
+            if hasattr(main_window_timeout.thread_manager, "worker_class"):
                 worker_class = main_window_timeout.thread_manager.worker_class
-                if hasattr(worker_class, 'process_folder'):
+                if hasattr(worker_class, "process_folder"):
                     original_process_folder = worker_class.process_folder
 
                     def slow_process_folder(self, *args, **kwargs):
@@ -635,8 +699,10 @@ class TestIndexRebuildTimeout:
             assert timeout_occurred, "タイムアウトが検出されていません"
 
             # 処理が停止されたことを確認
-            if hasattr(main_window_timeout, '_rebuild_state'):
-                assert not main_window_timeout._rebuild_state.is_active, "処理が停止されていません"
+            if hasattr(main_window_timeout, "_rebuild_state"):
+                assert (
+                    not main_window_timeout._rebuild_state.is_active
+                ), "処理が停止されていません"
 
     def test_timeout_dialog_interaction(self, main_window_timeout):
         """タイムアウトダイアログの相互作用をテスト"""
@@ -648,10 +714,10 @@ class TestIndexRebuildTimeout:
             dialog_shown = True
             return QMessageBox.Yes  # 強制停止を選択
 
-        with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
-            with patch.object(QMessageBox, 'warning', side_effect=mock_timeout_dialog):
+        with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
+            with patch.object(QMessageBox, "warning", side_effect=mock_timeout_dialog):
                 # タイムアウトを直接トリガー
-                if hasattr(main_window_timeout, '_handle_rebuild_timeout'):
+                if hasattr(main_window_timeout, "_handle_rebuild_timeout"):
                     main_window_timeout._handle_rebuild_timeout("test_thread_id")
 
                     # ダイアログが表示されたことを確認
@@ -660,21 +726,23 @@ class TestIndexRebuildTimeout:
     def test_timeout_cleanup_and_recovery(self, main_window_timeout):
         """タイムアウト後のクリーンアップと復旧をテスト"""
         # タイムアウト状態をシミュレート
-        if hasattr(main_window_timeout, '_rebuild_state'):
+        if hasattr(main_window_timeout, "_rebuild_state"):
             main_window_timeout._rebuild_state.is_active = True
             main_window_timeout._rebuild_state.thread_id = "test_thread_id"
 
-        with patch.object(QMessageBox, 'warning', return_value=QMessageBox.Yes):
+        with patch.object(QMessageBox, "warning", return_value=QMessageBox.Yes):
             # タイムアウト処理を実行
-            if hasattr(main_window_timeout, '_handle_rebuild_timeout'):
+            if hasattr(main_window_timeout, "_handle_rebuild_timeout"):
                 main_window_timeout._handle_rebuild_timeout("test_thread_id")
 
             # 状態がリセットされたことを確認
-            if hasattr(main_window_timeout, '_rebuild_state'):
-                assert not main_window_timeout._rebuild_state.is_active, "再構築状態がリセットされていません"
+            if hasattr(main_window_timeout, "_rebuild_state"):
+                assert (
+                    not main_window_timeout._rebuild_state.is_active
+                ), "再構築状態がリセットされていません"
 
             # 再度再構築を実行できることを確認
-            with patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes):
+            with patch.object(QMessageBox, "question", return_value=QMessageBox.Yes):
                 try:
                     main_window_timeout._rebuild_index()
                     # エラーが発生しなければ成功

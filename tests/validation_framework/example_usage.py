@@ -45,7 +45,7 @@ class SampleValidator(BaseValidator):
         self.test_files = []
         for i in range(5):
             test_file = os.path.join(self.temp_dir, f"test_file_{i}.txt")
-            with open(test_file, 'w', encoding='utf-8') as f:
+            with open(test_file, "w", encoding="utf-8") as f:
                 f.write(f"これはテストファイル{i}の内容です。\n" * 10)
             self.test_files.append(test_file)
 
@@ -56,7 +56,7 @@ class SampleValidator(BaseValidator):
         self.logger.info("テスト環境をクリーンアップしています...")
 
         # 一時ディレクトリの削除
-        if hasattr(self, 'temp_dir') and os.path.exists(self.temp_dir):
+        if hasattr(self, "temp_dir") and os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
             self.logger.info("一時ディレクトリを削除しました")
 
@@ -68,19 +68,15 @@ class SampleValidator(BaseValidator):
         for test_file in self.test_files:
             # ファイル存在チェック
             self.assert_condition(
-                os.path.exists(test_file),
-                f"テストファイルが存在すること: {test_file}"
+                os.path.exists(test_file), f"テストファイルが存在すること: {test_file}"
             )
 
             # ファイル読み込み
-            with open(test_file, encoding='utf-8') as f:
+            with open(test_file, encoding="utf-8") as f:
                 content = f.read()
 
             # 内容チェック
-            self.assert_condition(
-                len(content) > 0,
-                "ファイル内容が空でないこと"
-            )
+            self.assert_condition(len(content) > 0, "ファイル内容が空でないこと")
 
             processed_count += 1
 
@@ -89,10 +85,12 @@ class SampleValidator(BaseValidator):
 
         self.assert_condition(
             processed_count == len(self.test_files),
-            f"すべてのファイルが処理されること（期待値: {len(self.test_files)}, 実際: {processed_count}）"
+            f"すべてのファイルが処理されること（期待値: {len(self.test_files)}, 実際: {processed_count}）",
         )
 
-        self.logger.info(f"ファイル処理テストが完了しました（処理ファイル数: {processed_count}）")
+        self.logger.info(
+            f"ファイル処理テストが完了しました（処理ファイル数: {processed_count}）"
+        )
 
     def test_performance_intensive_task(self):
         """パフォーマンス集約的なタスクのテスト"""
@@ -109,15 +107,14 @@ class SampleValidator(BaseValidator):
         # パフォーマンス要件の検証
         self.assert_condition(
             execution_time < 5.0,
-            f"処理が5秒以内に完了すること（実際: {execution_time:.2f}秒）"
+            f"処理が5秒以内に完了すること（実際: {execution_time:.2f}秒）",
         )
 
-        self.assert_condition(
-            result > 0,
-            "計算結果が正しいこと"
-        )
+        self.assert_condition(result > 0, "計算結果が正しいこと")
 
-        self.logger.info(f"パフォーマンステストが完了しました（実行時間: {execution_time:.2f}秒）")
+        self.logger.info(
+            f"パフォーマンステストが完了しました（実行時間: {execution_time:.2f}秒）"
+        )
 
     def test_memory_usage(self):
         """メモリ使用量のテスト"""
@@ -137,8 +134,7 @@ class SampleValidator(BaseValidator):
         current_memory = self.memory_monitor.get_current_memory_usage()
 
         self.assert_condition(
-            current_memory['rss_mb'] > 0,
-            "メモリが使用されていること"
+            current_memory["rss_mb"] > 0, "メモリが使用されていること"
         )
 
         # メモリの解放
@@ -158,7 +154,9 @@ class SampleValidator(BaseValidator):
                 f.read()
 
             # ここに到達したら失敗
-            self.assert_condition(False, "存在しないファイルでFileNotFoundErrorが発生すること")
+            self.assert_condition(
+                False, "存在しないファイルでFileNotFoundErrorが発生すること"
+            )
 
         except FileNotFoundError:
             # 期待される例外
@@ -176,14 +174,14 @@ class SampleValidator(BaseValidator):
 
         # テストファイルの作成
         test_file = os.path.join(self.temp_dir, "injection_test.txt")
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("テストデータ")
 
         # ファイル不存在エラーの注入
         self.inject_error(
-            'file_not_found',
-            parameters={'target_file': test_file},
-            duration_seconds=2.0
+            "file_not_found",
+            parameters={"target_file": test_file},
+            duration_seconds=2.0,
         )
 
         # エラー注入後の処理
@@ -219,7 +217,7 @@ def demonstrate_performance_monitoring():
 
     print("I/O集約的な処理を実行中...")
     temp_file = tempfile.mktemp()
-    with open(temp_file, 'w') as f:
+    with open(temp_file, "w") as f:
         for i in range(10000):
             f.write(f"Line {i}: This is a test line with some content.\n")
 
@@ -236,8 +234,7 @@ def demonstrate_performance_monitoring():
 
     # 閾値チェック
     thresholds = monitor.check_performance_thresholds(
-        max_cpu_percent=80.0,
-        max_memory_mb=2048.0
+        max_cpu_percent=80.0, max_memory_mb=2048.0
     )
     print(f"CPU閾値内: {thresholds['cpu_within_threshold']}")
     print(f"メモリ閾値内: {thresholds['memory_within_threshold']}")
@@ -262,10 +259,10 @@ def demonstrate_test_data_generation():
             dataset_name="demo_dataset",
             output_directory=temp_dir,
             file_count=20,
-            file_types=['txt', 'json', 'csv'],
+            file_types=["txt", "json", "csv"],
             size_range_kb=(1, 50),
             include_corrupted=True,
-            include_special_chars=True
+            include_special_chars=True,
         )
 
         result = generator.generate_dataset(config)
@@ -279,7 +276,7 @@ def demonstrate_test_data_generation():
 
         # 生成されたファイルの一覧表示
         print("\n生成されたファイル（最初の5個）:")
-        for i, file_path in enumerate(result['generated_files'][:5]):
+        for i, file_path in enumerate(result["generated_files"][:5]):
             file_size = os.path.getsize(file_path) / 1024  # KB
             print(f"  {i+1}. {os.path.basename(file_path)} ({file_size:.1f}KB)")
 
@@ -300,7 +297,7 @@ def demonstrate_error_injection():
     try:
         # テストファイルの作成
         test_file = os.path.join(temp_dir, "test_file.txt")
-        with open(test_file, 'w') as f:
+        with open(test_file, "w") as f:
             f.write("これはテストファイルです。")
 
         print(f"テストファイルを作成しました: {test_file}")
@@ -309,8 +306,7 @@ def demonstrate_error_injection():
         # ファイル不存在エラーの注入
         print("\nファイル不存在エラーを注入中...")
         success = injector.inject_error(
-            'file_not_found',
-            parameters={'target_file': test_file}
+            "file_not_found", parameters={"target_file": test_file}
         )
 
         print(f"エラー注入成功: {success}")
@@ -320,8 +316,7 @@ def demonstrate_error_injection():
         print("\n破損ファイルを生成中...")
         corrupted_file = os.path.join(temp_dir, "corrupted.txt")
         injector.inject_error(
-            'corrupted_file',
-            parameters={'target_file': corrupted_file}
+            "corrupted_file", parameters={"target_file": corrupted_file}
         )
 
         print(f"破損ファイル生成: {os.path.exists(corrupted_file)}")
@@ -352,7 +347,7 @@ def demonstrate_comprehensive_validation():
         enable_error_injection=True,
         max_execution_time=30.0,
         max_memory_usage=1024.0,
-        log_level="INFO"
+        log_level="INFO",
     )
 
     # 検証実行
@@ -393,10 +388,14 @@ def demonstrate_comprehensive_validation():
         # 統計情報の表示
         stats_summary = validator.get_statistics_summary()
         if stats_summary:
-            basic_stats = stats_summary.get('basic_statistics', {})
+            basic_stats = stats_summary.get("basic_statistics", {})
             print("\n統計情報:")
-            print(f"  - 平均実行時間: {basic_stats.get('execution_time_stats', {}).get('mean', 0):.3f}秒")
-            print(f"  - 最大メモリ使用量: {basic_stats.get('memory_usage_stats', {}).get('max_value', 0):.1f}MB")
+            print(
+                f"  - 平均実行時間: {basic_stats.get('execution_time_stats', {}).get('mean', 0):.3f}秒"
+            )
+            print(
+                f"  - 最大メモリ使用量: {basic_stats.get('memory_usage_stats', {}).get('max_value', 0):.1f}MB"
+            )
 
     finally:
         # 環境クリーンアップ
@@ -417,32 +416,36 @@ def demonstrate_report_generation():
             execution_time=0.1 + (i * 0.05),
             memory_usage=100.0 + (i * 20.0),
             error_message="サンプルエラー" if i % 3 == 0 else None,
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
         )
         validation_results.append(result)
 
     # サンプルパフォーマンスデータ
     performance_data = {
-        'monitoring_duration_seconds': 60.0,
-        'cpu_usage': {'peak_percent': 45.2, 'average_percent': 25.8},
-        'memory_usage': {'peak_mb': 512.3, 'peak_percent': 25.1},
-        'disk_io': {'read_mb': 15.2, 'write_mb': 8.7},
-        'network_io': {'sent_mb': 2.1, 'recv_mb': 1.8}
+        "monitoring_duration_seconds": 60.0,
+        "cpu_usage": {"peak_percent": 45.2, "average_percent": 25.8},
+        "memory_usage": {"peak_mb": 512.3, "peak_percent": 25.1},
+        "disk_io": {"read_mb": 15.2, "write_mb": 8.7},
+        "network_io": {"sent_mb": 2.1, "recv_mb": 1.8},
     }
 
     # サンプルメモリデータ
     memory_data = {
-        'monitoring_duration_seconds': 60.0,
-        'rss_memory': {'peak_mb': 512.3, 'average_mb': 387.1, 'growth_rate_mb_per_sec': 0.05},
-        'memory_leak_detected': False
+        "monitoring_duration_seconds": 60.0,
+        "rss_memory": {
+            "peak_mb": 512.3,
+            "average_mb": 387.1,
+            "growth_rate_mb_per_sec": 0.05,
+        },
+        "memory_leak_detected": False,
     }
 
     # サンプルエラー注入データ
     error_injection_data = {
-        'total_injections': 5,
-        'successful_injections': 4,
-        'success_rate': 0.8,
-        'error_types': {'file_not_found': 2, 'memory_error': 1, 'corrupted_file': 2}
+        "total_injections": 5,
+        "successful_injections": 4,
+        "success_rate": 0.8,
+        "error_types": {"file_not_found": 2, "memory_error": 1, "corrupted_file": 2},
     }
 
     # レポート生成
@@ -455,7 +458,7 @@ def demonstrate_report_generation():
             report_name="demo_report",
             include_charts=False,  # チャート生成をスキップ（依存関係の問題を回避）
             include_detailed_logs=True,
-            report_format="html"
+            report_format="html",
         )
 
         print("レポートを生成中...")
@@ -464,7 +467,7 @@ def demonstrate_report_generation():
             performance_data=performance_data,
             memory_data=memory_data,
             error_injection_data=error_injection_data,
-            config=config
+            config=config,
         )
 
         print("レポート生成完了:")
@@ -473,9 +476,9 @@ def demonstrate_report_generation():
             print(f"  - {report_type}: {file_path} ({file_size:.1f}KB)")
 
         # HTMLレポートの内容をプレビュー
-        if 'html_report' in report_files:
-            html_file = report_files['html_report']
-            with open(html_file, encoding='utf-8') as f:
+        if "html_report" in report_files:
+            html_file = report_files["html_report"]
+            with open(html_file, encoding="utf-8") as f:
                 content = f.read()
 
             print(f"\nHTMLレポートのサイズ: {len(content)}文字")
@@ -508,6 +511,7 @@ def main():
     except Exception as e:
         print(f"\nエラーが発生しました: {e}")
         import traceback
+
         traceback.print_exc()
 
 

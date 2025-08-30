@@ -10,7 +10,7 @@ import sys
 import unittest
 
 # テスト対象のインポート
-sys.path.append(os.path.join(os.path.dirname(__file__), 'validation_framework'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "validation_framework"))
 from base_validator import ValidationConfig
 from document_processing_validator import DocumentProcessingValidator
 
@@ -24,8 +24,8 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
             enable_performance_monitoring=True,
             enable_memory_monitoring=True,
             max_execution_time=30.0,  # 30秒でタイムアウト
-            max_memory_usage=512.0,   # 512MBでメモリ制限
-            log_level="INFO"
+            max_memory_usage=512.0,  # 512MBでメモリ制限
+            log_level="INFO",
         )
 
         self.validator = DocumentProcessingValidator(self.config)
@@ -35,7 +35,7 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
 
     def tearDown(self):
         """テストクリーンアップ"""
-        if hasattr(self.validator, 'teardown_test_environment'):
+        if hasattr(self.validator, "teardown_test_environment"):
             self.validator.teardown_test_environment()
 
     def _timeout_handler(self, signum, frame):
@@ -54,11 +54,11 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
 
             # 各検証メソッドを順次実行
             validation_methods = [
-                'test_text_processing_accuracy',
-                'test_markdown_processing_accuracy',
-                'test_encoding_detection_accuracy',
-                'test_large_file_processing',
-                'test_error_handling_robustness'
+                "test_text_processing_accuracy",
+                "test_markdown_processing_accuracy",
+                "test_encoding_detection_accuracy",
+                "test_large_file_processing",
+                "test_error_handling_robustness",
             ]
 
             results = {}
@@ -78,15 +78,18 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
                     print(f"? {method_name}: メソッドが見つかりません")
 
             # 結果の検証
-            successful_tests = sum(1 for result in results.values() if result == "SUCCESS")
+            successful_tests = sum(
+                1 for result in results.values() if result == "SUCCESS"
+            )
             total_tests = len(results)
 
             print(f"\n検証結果: {successful_tests}/{total_tests} 成功")
 
             # 少なくとも50%のテストが成功することを要求
             self.assertGreaterEqual(
-                successful_tests / total_tests, 0.5,
-                f"検証成功率が低すぎます: {successful_tests}/{total_tests}"
+                successful_tests / total_tests,
+                0.5,
+                f"検証成功率が低すぎます: {successful_tests}/{total_tests}",
             )
 
         finally:
@@ -104,7 +107,7 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
             self.validator.setup_test_environment()
 
             # パフォーマンステストの実行
-            if hasattr(self.validator, 'test_processing_performance_requirements'):
+            if hasattr(self.validator, "test_processing_performance_requirements"):
                 self.validator.test_processing_performance_requirements()
                 print("✓ パフォーマンス要件テスト: 成功")
             else:
@@ -125,7 +128,7 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
             self.validator.setup_test_environment()
 
             # 並行処理テストの実行
-            if hasattr(self.validator, 'test_concurrent_processing_safety'):
+            if hasattr(self.validator, "test_concurrent_processing_safety"):
                 self.validator.test_concurrent_processing_safety()
                 print("✓ 並行処理安全性テスト: 成功")
             else:
@@ -149,13 +152,13 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
         stats = self.validator.get_processing_statistics()
 
         # 統計情報の検証
-        self.assertIn('overall_stats', stats)
-        self.assertIn('success_rate', stats)
-        self.assertIn('average_processing_time', stats)
-        self.assertIn('average_content_length', stats)
+        self.assertIn("overall_stats", stats)
+        self.assertIn("success_rate", stats)
+        self.assertIn("average_processing_time", stats)
+        self.assertIn("average_content_length", stats)
 
         # 成功率の確認
-        self.assertAlmostEqual(stats['success_rate'], 2/3, places=2)
+        self.assertAlmostEqual(stats["success_rate"], 2 / 3, places=2)
 
         print(f"✓ 統計情報収集テスト: 成功率={stats['success_rate']:.2%}")
 
@@ -166,7 +169,7 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
 
         # メモリ監視機能のテスト
         try:
-            if hasattr(self.validator, 'memory_monitor'):
+            if hasattr(self.validator, "memory_monitor"):
                 current_memory = self.validator.memory_monitor.get_current_memory()
                 self.assertIsInstance(current_memory, (int, float))
                 self.assertGreater(current_memory, 0)
@@ -177,5 +180,5 @@ class TestDocumentProcessingIntegration(unittest.TestCase):
             print(f"? メモリ監視テスト: エラー - {e}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

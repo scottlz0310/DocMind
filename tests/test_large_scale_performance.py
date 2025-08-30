@@ -35,12 +35,12 @@ class TestLargeScalePerformance:
 
         # パフォーマンス測定用の変数
         self.performance_metrics = {
-            'start_time': 0,
-            'end_time': 0,
-            'memory_usage': [],
-            'cpu_usage': [],
-            'file_processing_times': [],
-            'batch_processing_times': []
+            "start_time": 0,
+            "end_time": 0,
+            "memory_usage": [],
+            "cpu_usage": [],
+            "file_processing_times": [],
+            "batch_processing_times": [],
         }
 
         # コンポーネント初期化
@@ -54,13 +54,13 @@ class TestLargeScalePerformance:
         if self.test_folder.exists():
             shutil.rmtree(self.test_folder)
 
-    def _generate_random_content(self, size_category='medium'):
+    def _generate_random_content(self, size_category="medium"):
         """ランダムなコンテンツを生成"""
-        if size_category == 'small':
+        if size_category == "small":
             lines = random.randint(5, 20)
-        elif size_category == 'medium':
+        elif size_category == "medium":
             lines = random.randint(50, 200)
-        elif size_category == 'large':
+        elif size_category == "large":
             lines = random.randint(500, 1000)
         else:
             lines = random.randint(10, 50)
@@ -69,9 +69,24 @@ class TestLargeScalePerformance:
         for _ in range(lines):
             # ランダムな日本語風テキストを生成
             words = [
-                "これは", "テスト", "ドキュメント", "です", "内容", "検索", "キーワード",
-                "システム", "処理", "データ", "ファイル", "情報", "管理", "機能",
-                "プログラム", "アプリケーション", "インデックス", "データベース"
+                "これは",
+                "テスト",
+                "ドキュメント",
+                "です",
+                "内容",
+                "検索",
+                "キーワード",
+                "システム",
+                "処理",
+                "データ",
+                "ファイル",
+                "情報",
+                "管理",
+                "機能",
+                "プログラム",
+                "アプリケーション",
+                "インデックス",
+                "データベース",
             ]
             line_words = random.sample(words, random.randint(3, 8))
             content_lines.append(" ".join(line_words) + "。")
@@ -90,38 +105,43 @@ class TestLargeScalePerformance:
             type_dir.mkdir()
 
             for i in range(count):
-                if file_type == 'small':
-                    content = self._generate_random_content('small')
+                if file_type == "small":
+                    content = self._generate_random_content("small")
                     file_path = type_dir / f"small_{i:04d}.txt"
-                elif file_type == 'medium':
-                    content = self._generate_random_content('medium')
+                elif file_type == "medium":
+                    content = self._generate_random_content("medium")
                     file_path = type_dir / f"medium_{i:04d}.txt"
-                elif file_type == 'large':
-                    content = self._generate_random_content('large')
+                elif file_type == "large":
+                    content = self._generate_random_content("large")
                     file_path = type_dir / f"large_{i:04d}.txt"
-                elif file_type == 'markdown':
-                    content = f"# ドキュメント {i}\n\n" + self._generate_random_content('medium')
+                elif file_type == "markdown":
+                    content = f"# ドキュメント {i}\n\n" + self._generate_random_content(
+                        "medium"
+                    )
                     file_path = type_dir / f"doc_{i:04d}.md"
                 else:
-                    content = self._generate_random_content('medium')
+                    content = self._generate_random_content("medium")
                     file_path = type_dir / f"file_{i:04d}.txt"
 
-                file_path.write_text(content, encoding='utf-8')
+                file_path.write_text(content, encoding="utf-8")
                 created_files += 1
 
                 # 進捗表示
                 if created_files % 100 == 0:
                     progress = (created_files / total_files) * 100
-                    print(f"  作成進捗: {created_files}/{total_files} ({progress:.1f}%)")
+                    print(
+                        f"  作成進捗: {created_files}/{total_files} ({progress:.1f}%)"
+                    )
 
         print(f"データセット作成完了: {created_files}ファイル")
         return created_files
 
     def _monitor_system_resources(self, worker, interval=1.0):
         """システムリソースを監視"""
+
         def monitor():
             process = psutil.Process()
-            while not getattr(worker, '_monitoring_stopped', False):
+            while not getattr(worker, "_monitoring_stopped", False):
                 try:
                     # CPU使用率
                     cpu_percent = process.cpu_percent()
@@ -130,8 +150,8 @@ class TestLargeScalePerformance:
                     memory_info = process.memory_info()
                     memory_mb = memory_info.rss / 1024 / 1024
 
-                    self.performance_metrics['cpu_usage'].append(cpu_percent)
-                    self.performance_metrics['memory_usage'].append(memory_mb)
+                    self.performance_metrics["cpu_usage"].append(cpu_percent)
+                    self.performance_metrics["memory_usage"].append(memory_mb)
 
                     time.sleep(interval)
                 except:
@@ -145,10 +165,10 @@ class TestLargeScalePerformance:
         """1000ファイルパフォーマンステスト"""
         # データセット作成
         file_counts = {
-            'small': 600,    # 小さいファイル
-            'medium': 300,   # 中サイズファイル
-            'large': 80,     # 大きいファイル
-            'markdown': 20   # Markdownファイル
+            "small": 600,  # 小さいファイル
+            "medium": 300,  # 中サイズファイル
+            "large": 80,  # 大きいファイル
+            "markdown": 20,  # Markdownファイル
         }
 
         total_files = self._create_large_dataset(file_counts)
@@ -161,7 +181,7 @@ class TestLargeScalePerformance:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         # システムリソース監視開始
@@ -179,9 +199,9 @@ class TestLargeScalePerformance:
         )
 
         # 処理実行
-        self.performance_metrics['start_time'] = time.time()
+        self.performance_metrics["start_time"] = time.time()
         worker.process_folder()
-        self.performance_metrics['end_time'] = time.time()
+        self.performance_metrics["end_time"] = time.time()
 
         # 監視停止
         worker._monitoring_stopped = True
@@ -197,9 +217,20 @@ class TestLargeScalePerformance:
         folder_path, stats = completion_signals[0]
 
         # パフォーマンス分析
-        files_per_second = stats['files_processed'] / processing_time if processing_time > 0 else 0
-        avg_memory = sum(self.performance_metrics['memory_usage']) / len(self.performance_metrics['memory_usage']) if self.performance_metrics['memory_usage'] else 0
-        max_cpu = max(self.performance_metrics['cpu_usage']) if self.performance_metrics['cpu_usage'] else 0
+        files_per_second = (
+            stats["files_processed"] / processing_time if processing_time > 0 else 0
+        )
+        avg_memory = (
+            sum(self.performance_metrics["memory_usage"])
+            / len(self.performance_metrics["memory_usage"])
+            if self.performance_metrics["memory_usage"]
+            else 0
+        )
+        max_cpu = (
+            max(self.performance_metrics["cpu_usage"])
+            if self.performance_metrics["cpu_usage"]
+            else 0
+        )
 
         print("\n=== 1000ファイルパフォーマンステスト結果 ===")
         print(f"総ファイル数: {total_files}")
@@ -212,9 +243,15 @@ class TestLargeScalePerformance:
         print(f"最大CPU使用率: {max_cpu:.1f}%")
 
         # パフォーマンス要件の確認
-        assert processing_time < 300, f"処理時間が長すぎます: {processing_time:.2f}秒 (要件: 300秒以内)"
-        assert files_per_second > 2, f"処理速度が遅すぎます: {files_per_second:.1f}ファイル/秒 (要件: 2ファイル/秒以上)"
-        assert peak_memory < 1000, f"メモリ使用量が多すぎます: {peak_memory:.2f}MB (要件: 1000MB以内)"
+        assert (
+            processing_time < 300
+        ), f"処理時間が長すぎます: {processing_time:.2f}秒 (要件: 300秒以内)"
+        assert (
+            files_per_second > 2
+        ), f"処理速度が遅すぎます: {files_per_second:.1f}ファイル/秒 (要件: 2ファイル/秒以上)"
+        assert (
+            peak_memory < 1000
+        ), f"メモリ使用量が多すぎます: {peak_memory:.2f}MB (要件: 1000MB以内)"
 
         print("✓ 1000ファイルパフォーマンステスト完了")
 
@@ -222,12 +259,7 @@ class TestLargeScalePerformance:
     def test_5000_files_stress_test(self, performance_timer, memory_monitor):
         """5000ファイルストレステスト"""
         # より大規模なデータセット
-        file_counts = {
-            'small': 3000,
-            'medium': 1500,
-            'large': 400,
-            'markdown': 100
-        }
+        file_counts = {"small": 3000, "medium": 1500, "large": 400, "markdown": 100}
 
         total_files = self._create_large_dataset(file_counts)
 
@@ -239,7 +271,7 @@ class TestLargeScalePerformance:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         monitor_thread = self._monitor_system_resources(worker, interval=2.0)
@@ -271,19 +303,19 @@ class TestLargeScalePerformance:
         print(f"ピークメモリ: {peak_memory:.2f}MB")
 
         # ストレステスト要件（より緩い要件）
-        assert processing_time < 1800, f"ストレステスト処理時間が長すぎます: {processing_time:.2f}秒"
-        assert peak_memory < 2000, f"ストレステストメモリ使用量が多すぎます: {peak_memory:.2f}MB"
+        assert (
+            processing_time < 1800
+        ), f"ストレステスト処理時間が長すぎます: {processing_time:.2f}秒"
+        assert (
+            peak_memory < 2000
+        ), f"ストレステストメモリ使用量が多すぎます: {peak_memory:.2f}MB"
 
         print("✓ 5000ファイルストレステスト完了")
 
     def test_memory_efficiency_under_load(self, memory_monitor):
         """負荷時のメモリ効率性テスト"""
         # 中規模データセット
-        file_counts = {
-            'small': 200,
-            'medium': 100,
-            'large': 50
-        }
+        file_counts = {"small": 200, "medium": 100, "large": 50}
 
         self._create_large_dataset(file_counts)
 
@@ -296,16 +328,18 @@ class TestLargeScalePerformance:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         def track_memory_progress(msg, current, total):
             memory_usage = memory_monitor.get_current_memory()
-            memory_snapshots.append({
-                'stage': msg,
-                'progress': current / total if total > 0 else 0,
-                'memory_mb': memory_usage
-            })
+            memory_snapshots.append(
+                {
+                    "stage": msg,
+                    "progress": current / total if total > 0 else 0,
+                    "memory_mb": memory_usage,
+                }
+            )
 
         worker.progress_updated.connect(track_memory_progress)
 
@@ -321,7 +355,9 @@ class TestLargeScalePerformance:
 
         # メモリ効率性分析
         memory_increase = final_memory - initial_memory
-        memory_efficiency = len(memory_snapshots) / peak_memory if peak_memory > 0 else 0
+        memory_efficiency = (
+            len(memory_snapshots) / peak_memory if peak_memory > 0 else 0
+        )
 
         print("\n=== メモリ効率性テスト結果 ===")
         print(f"初期メモリ: {initial_memory:.2f}MB")
@@ -331,7 +367,9 @@ class TestLargeScalePerformance:
         print(f"メモリ効率性: {memory_efficiency:.3f}")
 
         # メモリリークの確認
-        assert memory_increase < 200, f"メモリリークの可能性: {memory_increase:.2f}MB増加"
+        assert (
+            memory_increase < 200
+        ), f"メモリリークの可能性: {memory_increase:.2f}MB増加"
         assert peak_memory < 800, f"ピークメモリが高すぎます: {peak_memory:.2f}MB"
 
         print("✓ メモリ効率性テスト完了")
@@ -350,8 +388,9 @@ class TestLargeScalePerformance:
             # 各フォルダにファイルを作成
             for j in range(50):
                 (folder / f"file_{j:03d}.txt").write_text(
-                    f"並行処理テスト用ファイル {i}-{j}\n" + self._generate_random_content('small'),
-                    encoding='utf-8'
+                    f"並行処理テスト用ファイル {i}-{j}\n"
+                    + self._generate_random_content("small"),
+                    encoding="utf-8",
                 )
 
         # 並行処理実行
@@ -366,12 +405,14 @@ class TestLargeScalePerformance:
                 str(folder),
                 self.document_processor,
                 self.index_manager,
-                self.file_watcher
+                self.file_watcher,
             )
 
             worker_results = []
             worker.indexing_completed.connect(
-                lambda folder_path, stats, wr=worker_results: wr.append((folder_path, stats))
+                lambda folder_path, stats, wr=worker_results: wr.append(
+                    (folder_path, stats)
+                )
             )
 
             workers.append(worker)
@@ -393,9 +434,11 @@ class TestLargeScalePerformance:
         processing_time = performance_timer.stop()
 
         # 結果検証
-        completed_workers = sum(1 for worker_results in results if len(worker_results) > 0)
+        completed_workers = sum(
+            1 for worker_results in results if len(worker_results) > 0
+        )
         total_files_processed = sum(
-            worker_results[0][1]['files_processed']
+            worker_results[0][1]["files_processed"]
             for worker_results in results
             if len(worker_results) > 0
         )
@@ -406,8 +449,12 @@ class TestLargeScalePerformance:
         print(f"総処理ファイル数: {total_files_processed}")
         print(f"並行処理時間: {processing_time:.2f}秒")
 
-        assert completed_workers >= 2, f"十分なワーカーが完了していません: {completed_workers}/{folder_count}"
-        assert processing_time < 180, f"並行処理時間が長すぎます: {processing_time:.2f}秒"
+        assert (
+            completed_workers >= 2
+        ), f"十分なワーカーが完了していません: {completed_workers}/{folder_count}"
+        assert (
+            processing_time < 180
+        ), f"並行処理時間が長すぎます: {processing_time:.2f}秒"
 
         print("✓ 並行処理パフォーマンステスト完了")
 
@@ -427,8 +474,9 @@ class TestLargeScalePerformance:
             # ファイルを作成
             for i in range(size):
                 (size_folder / f"file_{i:03d}.txt").write_text(
-                    f"スケーラビリティテスト用ファイル {i}\n" + self._generate_random_content('small'),
-                    encoding='utf-8'
+                    f"スケーラビリティテスト用ファイル {i}\n"
+                    + self._generate_random_content("small"),
+                    encoding="utf-8",
                 )
 
             # パフォーマンス測定
@@ -438,7 +486,7 @@ class TestLargeScalePerformance:
                 str(size_folder),
                 self.document_processor,
                 self.index_manager,
-                self.file_watcher
+                self.file_watcher,
             )
 
             completion_signals = []
@@ -453,36 +501,48 @@ class TestLargeScalePerformance:
             # 結果記録
             if completion_signals:
                 folder_path, stats = completion_signals[0]
-                files_per_second = stats['files_processed'] / processing_time if processing_time > 0 else 0
+                files_per_second = (
+                    stats["files_processed"] / processing_time
+                    if processing_time > 0
+                    else 0
+                )
 
-                scalability_results.append({
-                    'file_count': size,
-                    'processing_time': processing_time,
-                    'files_per_second': files_per_second,
-                    'files_processed': stats['files_processed']
-                })
+                scalability_results.append(
+                    {
+                        "file_count": size,
+                        "processing_time": processing_time,
+                        "files_per_second": files_per_second,
+                        "files_processed": stats["files_processed"],
+                    }
+                )
 
         # スケーラビリティ分析
         print("\n=== スケーラビリティ分析結果 ===")
         for result in scalability_results:
-            print(f"ファイル数: {result['file_count']:3d}, "
-                  f"処理時間: {result['processing_time']:6.2f}秒, "
-                  f"処理速度: {result['files_per_second']:6.1f}ファイル/秒")
+            print(
+                f"ファイル数: {result['file_count']:3d}, "
+                f"処理時間: {result['processing_time']:6.2f}秒, "
+                f"処理速度: {result['files_per_second']:6.1f}ファイル/秒"
+            )
 
         # 線形スケーラビリティの確認
         if len(scalability_results) >= 2:
             first_result = scalability_results[0]
             last_result = scalability_results[-1]
 
-            size_ratio = last_result['file_count'] / first_result['file_count']
-            time_ratio = last_result['processing_time'] / first_result['processing_time']
+            size_ratio = last_result["file_count"] / first_result["file_count"]
+            time_ratio = (
+                last_result["processing_time"] / first_result["processing_time"]
+            )
 
             scalability_factor = time_ratio / size_ratio
 
             print(f"スケーラビリティ係数: {scalability_factor:.2f} (1.0に近いほど線形)")
 
             # スケーラビリティ要件（処理時間がファイル数に比例的に増加）
-            assert scalability_factor < 2.0, f"スケーラビリティが悪すぎます: {scalability_factor:.2f}"
+            assert (
+                scalability_factor < 2.0
+            ), f"スケーラビリティが悪すぎます: {scalability_factor:.2f}"
 
         print("✓ スケーラビリティ分析テスト完了")
 
@@ -515,7 +575,9 @@ class TestPerformanceRegression:
         # 一定のパフォーマンステスト用データセット
         for i in range(100):
             content = f"標準テストファイル {i}\n" + "テスト内容 " * 50
-            (self.test_folder / f"standard_{i:03d}.txt").write_text(content, encoding='utf-8')
+            (self.test_folder / f"standard_{i:03d}.txt").write_text(
+                content, encoding="utf-8"
+            )
 
     def test_baseline_performance(self, performance_timer, memory_monitor):
         """ベースラインパフォーマンステスト"""
@@ -527,7 +589,7 @@ class TestPerformanceRegression:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         completion_signals = []
@@ -546,10 +608,12 @@ class TestPerformanceRegression:
         folder_path, stats = completion_signals[0]
 
         baseline_metrics = {
-            'processing_time': processing_time,
-            'peak_memory': peak_memory,
-            'files_processed': stats['files_processed'],
-            'files_per_second': stats['files_processed'] / processing_time if processing_time > 0 else 0
+            "processing_time": processing_time,
+            "peak_memory": peak_memory,
+            "files_processed": stats["files_processed"],
+            "files_per_second": (
+                stats["files_processed"] / processing_time if processing_time > 0 else 0
+            ),
         }
 
         print("\n=== ベースラインパフォーマンス ===")
@@ -559,9 +623,15 @@ class TestPerformanceRegression:
         print(f"処理速度: {baseline_metrics['files_per_second']:.1f}ファイル/秒")
 
         # ベースライン要件
-        assert baseline_metrics['processing_time'] < 60, "ベースライン処理時間が長すぎます"
-        assert baseline_metrics['peak_memory'] < 500, "ベースラインメモリ使用量が多すぎます"
-        assert baseline_metrics['files_per_second'] > 1, "ベースライン処理速度が遅すぎます"
+        assert (
+            baseline_metrics["processing_time"] < 60
+        ), "ベースライン処理時間が長すぎます"
+        assert (
+            baseline_metrics["peak_memory"] < 500
+        ), "ベースラインメモリ使用量が多すぎます"
+        assert (
+            baseline_metrics["files_per_second"] > 1
+        ), "ベースライン処理速度が遅すぎます"
 
         print("✓ ベースラインパフォーマンステスト完了")
 
@@ -580,7 +650,7 @@ class TestPerformanceRegression:
                 str(self.test_folder),
                 self.document_processor,
                 self.index_manager,
-                self.file_watcher
+                self.file_watcher,
             )
 
             completion_signals = []
@@ -594,22 +664,26 @@ class TestPerformanceRegression:
 
             if completion_signals:
                 folder_path, stats = completion_signals[0]
-                results.append({
-                    'run': run + 1,
-                    'processing_time': processing_time,
-                    'files_processed': stats['files_processed']
-                })
+                results.append(
+                    {
+                        "run": run + 1,
+                        "processing_time": processing_time,
+                        "files_processed": stats["files_processed"],
+                    }
+                )
 
         # 一貫性分析
         if results:
-            processing_times = [r['processing_time'] for r in results]
+            processing_times = [r["processing_time"] for r in results]
             avg_time = sum(processing_times) / len(processing_times)
             min_time = min(processing_times)
             max_time = max(processing_times)
 
             # 標準偏差計算
-            variance = sum((t - avg_time) ** 2 for t in processing_times) / len(processing_times)
-            std_dev = variance ** 0.5
+            variance = sum((t - avg_time) ** 2 for t in processing_times) / len(
+                processing_times
+            )
+            std_dev = variance**0.5
 
             # 変動係数（CV）
             cv = (std_dev / avg_time) * 100 if avg_time > 0 else 0

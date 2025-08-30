@@ -46,7 +46,9 @@ class ErrorHandler:
         # システム情報キャッシュ
         self._system_info: dict[str, Any] | None = None
 
-    def register_recovery_handler(self, exception_type: type[Exception], handler: Callable) -> None:
+    def register_recovery_handler(
+        self, exception_type: type[Exception], handler: Callable
+    ) -> None:
         """
         特定の例外タイプに対する回復ハンドラーを登録
 
@@ -57,8 +59,13 @@ class ErrorHandler:
         self._recovery_handlers[exception_type] = handler
         self.logger.debug(f"回復ハンドラーを登録: {exception_type.__name__}")
 
-    def handle_exception(self, exc: Exception, context: str = "",
-                        user_message: str = None, attempt_recovery: bool = True) -> bool:
+    def handle_exception(
+        self,
+        exc: Exception,
+        context: str = "",
+        user_message: str = None,
+        attempt_recovery: bool = True,
+    ) -> bool:
         """
         例外を包括的に処理
 
@@ -109,7 +116,7 @@ class ErrorHandler:
             "context": context,
             "traceback": traceback.format_exc(),
             "system_info": self._get_system_info(),
-            "application_state": self._get_application_state()
+            "application_state": self._get_application_state(),
         }
 
         # DocMind固有の例外情報を追加
@@ -119,8 +126,9 @@ class ErrorHandler:
                 "custom_attributes": {
                     attr: getattr(exc, attr)
                     for attr in dir(exc)
-                    if not attr.startswith('_') and attr not in ['args', 'message', 'details']
-                }
+                    if not attr.startswith("_")
+                    and attr not in ["args", "message", "details"]
+                },
             }
 
         return error_info
@@ -140,11 +148,17 @@ class ErrorHandler:
                     "cpu_count": psutil.cpu_count(),
                     "memory_total": psutil.virtual_memory().total,
                     "disk_usage": {
-                        "total": psutil.disk_usage('/').total if platform.system() != 'Windows'
-                                else psutil.disk_usage('C:').total,
-                        "free": psutil.disk_usage('/').free if platform.system() != 'Windows'
-                               else psutil.disk_usage('C:').free
-                    }
+                        "total": (
+                            psutil.disk_usage("/").total
+                            if platform.system() != "Windows"
+                            else psutil.disk_usage("C:").total
+                        ),
+                        "free": (
+                            psutil.disk_usage("/").free
+                            if platform.system() != "Windows"
+                            else psutil.disk_usage("C:").free
+                        ),
+                    },
                 }
             except Exception as e:
                 self.logger.warning(f"システム情報の取得に失敗: {e}")
@@ -169,27 +183,30 @@ class ErrorHandler:
             data_dir_size = 0
             if data_dir_exists:
                 try:
-                    data_dir_size = sum(f.stat().st_size for f in self.data_dir.rglob('*') if f.is_file())
+                    data_dir_size = sum(
+                        f.stat().st_size
+                        for f in self.data_dir.rglob("*")
+                        if f.is_file()
+                    )
                 except Exception:
                     data_dir_size = -1
 
             return {
-                "memory_usage": {
-                    "rss": memory_info.rss,
-                    "vms": memory_info.vms
-                },
+                "memory_usage": {"rss": memory_info.rss, "vms": memory_info.vms},
                 "data_directory": {
                     "exists": data_dir_exists,
                     "size": data_dir_size,
-                    "path": str(self.data_dir)
+                    "path": str(self.data_dir),
                 },
-                "thread_count": process.num_threads()
+                "thread_count": process.num_threads(),
             }
         except Exception as e:
             self.logger.warning(f"アプリケーション状態の取得に失敗: {e}")
             return {"error": "アプリケーション状態取得失敗"}
 
-    def _log_error(self, exc: Exception, error_info: dict[str, Any], context: str) -> None:
+    def _log_error(
+        self, exc: Exception, error_info: dict[str, Any], context: str
+    ) -> None:
         """
         エラーをログに記録
 
@@ -201,19 +218,25 @@ class ErrorHandler:
         log_message = f"エラーが発生しました - コンテキスト: {context}"
 
         if isinstance(exc, DocMindException):
-            self.logger.error(log_message, exc_info=exc, extra={
-                "error_type": type(exc).__name__,
-                "context": context,
-                "details": exc.details
-            })
+            self.logger.error(
+                log_message,
+                exc_info=exc,
+                extra={
+                    "error_type": type(exc).__name__,
+                    "context": context,
+                    "details": exc.details,
+                },
+            )
         else:
-            self.logger.error(log_message, exc_info=exc, extra={
-                "error_type": type(exc).__name__,
-                "context": context
-            })
+            self.logger.error(
+                log_message,
+                exc_info=exc,
+                extra={"error_type": type(exc).__name__, "context": context},
+            )
 
-    def _generate_error_report(self, exc: Exception, error_info: dict[str, Any],
-                             context: str) -> Path:
+    def _generate_error_report(
+        self, exc: Exception, error_info: dict[str, Any], context: str
+    ) -> Path:
         """
         詳細なエラーレポートを生成
 
@@ -230,7 +253,7 @@ class ErrorHandler:
         report_path = self.error_reports_dir / report_filename
 
         try:
-            with open(report_path, 'w', encoding='utf-8') as f:
+            with open(report_path, "w", encoding="utf-8") as f:
                 json.dump(error_info, f, ensure_ascii=False, indent=2, default=str)
 
             self.logger.info(f"エラーレポートを生成: {report_path}")
@@ -308,8 +331,12 @@ class ErrorHandler:
         return False
 
 
-def handle_exceptions(context: str = "", user_message: str = None,
-                     attempt_recovery: bool = True, reraise: bool = False):
+def handle_exceptions(
+    context: str = "",
+    user_message: str = None,
+    attempt_recovery: bool = True,
+    reraise: bool = False,
+):
     """
     例外処理デコレータ
 
@@ -319,6 +346,7 @@ def handle_exceptions(context: str = "", user_message: str = None,
         attempt_recovery: 回復を試行するか
         reraise: 例外を再発生させるか
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -328,15 +356,19 @@ def handle_exceptions(context: str = "", user_message: str = None,
                 # グローバルエラーハンドラーを使用
                 error_handler = get_global_error_handler()
                 recovery_success = error_handler.handle_exception(
-                    e, context or f"{func.__module__}.{func.__name__}",
-                    user_message, attempt_recovery
+                    e,
+                    context or f"{func.__module__}.{func.__name__}",
+                    user_message,
+                    attempt_recovery,
                 )
 
                 if reraise or not recovery_success:
                     raise
 
                 return None
+
         return wrapper
+
     return decorator
 
 
@@ -361,6 +393,7 @@ def setup_global_exception_handler():
     """
     グローバル例外ハンドラーを設定
     """
+
     def handle_exception(exc_type, exc_value, exc_traceback):
         if issubclass(exc_type, KeyboardInterrupt):
             # Ctrl+Cは通常通り処理
@@ -372,7 +405,7 @@ def setup_global_exception_handler():
             exc_value,
             "未処理例外",
             "予期しないエラーが発生しました。アプリケーションを再起動してください。",
-            attempt_recovery=True
+            attempt_recovery=True,
         )
 
     sys.excepthook = handle_exception

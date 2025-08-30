@@ -116,7 +116,7 @@ class TestSettingsDialog(unittest.TestCase):
         self.assertEqual(self.dialog.folders_list.count(), 0)
 
         # フォルダを手動で追加（ダイアログをモック）
-        with patch('PySide6.QtWidgets.QFileDialog.getExistingDirectory') as mock_dialog:
+        with patch("PySide6.QtWidgets.QFileDialog.getExistingDirectory") as mock_dialog:
             mock_dialog.return_value = "/test/folder"
 
             # フォルダ追加ボタンをクリック
@@ -127,9 +127,9 @@ class TestSettingsDialog(unittest.TestCase):
             self.assertEqual(self.dialog.folders_list.item(0).text(), "/test/folder")
 
         # 同じフォルダを再度追加（重複チェック）
-        with patch('PySide6.QtWidgets.QFileDialog.getExistingDirectory') as mock_dialog:
+        with patch("PySide6.QtWidgets.QFileDialog.getExistingDirectory") as mock_dialog:
             mock_dialog.return_value = "/test/folder"
-            with patch('PySide6.QtWidgets.QMessageBox.information') as mock_msg:
+            with patch("PySide6.QtWidgets.QMessageBox.information") as mock_msg:
                 self.dialog._add_folder()
                 mock_msg.assert_called_once()
                 # フォルダ数は変わらない
@@ -137,7 +137,7 @@ class TestSettingsDialog(unittest.TestCase):
 
         # フォルダを選択して削除
         self.dialog.folders_list.setCurrentRow(0)
-        with patch('PySide6.QtWidgets.QMessageBox.question') as mock_question:
+        with patch("PySide6.QtWidgets.QMessageBox.question") as mock_question:
             mock_question.return_value = QMessageBox.Yes
 
             self.dialog._remove_folder()
@@ -160,17 +160,19 @@ class TestSettingsDialog(unittest.TestCase):
 
     def test_data_directory_browse(self):
         """データディレクトリ参照のテスト"""
-        with patch('PySide6.QtWidgets.QFileDialog.getExistingDirectory') as mock_dialog:
+        with patch("PySide6.QtWidgets.QFileDialog.getExistingDirectory") as mock_dialog:
             mock_dialog.return_value = "/new/data/directory"
 
             self.dialog._browse_data_directory()
 
             # データディレクトリが更新されたことを確認
-            self.assertEqual(self.dialog.data_directory_edit.text(), "/new/data/directory")
+            self.assertEqual(
+                self.dialog.data_directory_edit.text(), "/new/data/directory"
+            )
 
     def test_log_file_browse(self):
         """ログファイル参照のテスト"""
-        with patch('PySide6.QtWidgets.QFileDialog.getSaveFileName') as mock_dialog:
+        with patch("PySide6.QtWidgets.QFileDialog.getSaveFileName") as mock_dialog:
             mock_dialog.return_value = ("/new/log/file.log", "")
 
             self.dialog._browse_log_file()
@@ -185,14 +187,14 @@ class TestSettingsDialog(unittest.TestCase):
             "data_directory": self.temp_dir,
             "indexed_folders": [],
             "max_documents": 50000,
-            "search_timeout": 5.0
+            "search_timeout": 5.0,
         }
 
         self.assertTrue(self.dialog._validate_settings(settings))
 
         # 異常な設定値（最大ドキュメント数が少なすぎる）
         settings["max_documents"] = 500
-        with patch('PySide6.QtWidgets.QMessageBox.warning') as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             result = self.dialog._validate_settings(settings)
             self.assertFalse(result)
             mock_warning.assert_called_once()
@@ -200,7 +202,7 @@ class TestSettingsDialog(unittest.TestCase):
         # 異常な設定値（検索タイムアウトが短すぎる）
         settings["max_documents"] = 50000
         settings["search_timeout"] = 0.5
-        with patch('PySide6.QtWidgets.QMessageBox.warning') as mock_warning:
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             result = self.dialog._validate_settings(settings)
             self.assertFalse(result)
             mock_warning.assert_called_once()
@@ -223,7 +225,7 @@ class TestSettingsDialog(unittest.TestCase):
         self.dialog.settings_changed.connect(on_settings_changed)
 
         # 設定を適用
-        with patch('PySide6.QtWidgets.QMessageBox.information'):
+        with patch("PySide6.QtWidgets.QMessageBox.information"):
             self.dialog._apply_settings()
 
         # シグナルが発行されたことを確認
@@ -238,8 +240,8 @@ class TestSettingsDialog(unittest.TestCase):
         self.dialog.max_documents_spin.setValue(70000)
 
         # 設定保存のモック
-        with patch.object(self.config, 'save_config', return_value=True):
-            with patch.object(self.dialog, 'accept') as mock_accept:
+        with patch.object(self.config, "save_config", return_value=True):
+            with patch.object(self.dialog, "accept") as mock_accept:
                 self.dialog._save_and_close()
 
                 # 設定がConfigオブジェクトに適用されたことを確認
@@ -298,5 +300,5 @@ class TestSettingsDialog(unittest.TestCase):
         self.assertEqual(settings["font_size"], 12)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

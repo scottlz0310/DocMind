@@ -14,7 +14,7 @@ import time
 import unittest
 from datetime import datetime
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'validation_framework'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "validation_framework"))
 
 from base_validator import BaseValidator, ValidationConfig, ValidationResult
 from error_injector import ErrorInjector
@@ -55,7 +55,7 @@ class ValidationFrameworkTestCase(unittest.TestCase):
             enable_performance_monitoring=True,
             enable_memory_monitoring=True,
             enable_error_injection=False,
-            output_directory=self.temp_dir
+            output_directory=self.temp_dir,
         )
 
     def tearDown(self):
@@ -78,38 +78,42 @@ class ValidationFrameworkTestCase(unittest.TestCase):
         validator = TestBaseValidator(self.config)
 
         # 成功するテストの実行
-        results = validator.run_validation(['test_sample_validation'])
+        results = validator.run_validation(["test_sample_validation"])
 
         self.assertEqual(len(results), 1)
         self.assertTrue(results[0].success)
         self.assertGreater(results[0].execution_time, 0)
-        self.assertEqual(results[0].test_name, 'test_sample_validation')
+        self.assertEqual(results[0].test_name, "test_sample_validation")
 
     def test_validation_failure_handling(self):
         """検証失敗の処理テスト"""
         validator = TestBaseValidator(self.config)
 
         # 失敗するテストの実行
-        results = validator.run_validation(['test_failing_validation'])
+        results = validator.run_validation(["test_failing_validation"])
 
         self.assertEqual(len(results), 1)
         self.assertFalse(results[0].success)
         self.assertIsNotNone(results[0].error_message)
-        self.assertIn('意図的に失敗', results[0].error_message)
+        self.assertIn("意図的に失敗", results[0].error_message)
 
     def test_performance_requirements_validation(self):
         """パフォーマンス要件検証のテスト"""
         validator = TestBaseValidator(self.config)
 
         # 短時間で完了するテストを実行
-        validator.run_validation(['test_sample_validation'])
+        validator.run_validation(["test_sample_validation"])
 
         # パフォーマンス要件をチェック
-        is_valid = validator.validate_performance_requirements(max_time=1.0, max_memory=100.0)
+        is_valid = validator.validate_performance_requirements(
+            max_time=1.0, max_memory=100.0
+        )
         self.assertTrue(is_valid)
 
         # 厳しい要件でのチェック
-        is_valid_strict = validator.validate_performance_requirements(max_time=0.01, max_memory=1.0)
+        is_valid_strict = validator.validate_performance_requirements(
+            max_time=0.01, max_memory=1.0
+        )
         self.assertFalse(is_valid_strict)
 
 
@@ -143,9 +147,9 @@ class PerformanceMonitorTestCase(unittest.TestCase):
 
         # 統計情報の取得
         summary = monitor.get_performance_summary()
-        self.assertIn('monitoring_duration_seconds', summary)
-        self.assertIn('cpu_usage', summary)
-        self.assertIn('memory_usage', summary)
+        self.assertIn("monitoring_duration_seconds", summary)
+        self.assertIn("cpu_usage", summary)
+        self.assertIn("memory_usage", summary)
 
     def test_performance_thresholds(self):
         """パフォーマンス閾値チェックのテスト"""
@@ -156,12 +160,14 @@ class PerformanceMonitorTestCase(unittest.TestCase):
         monitor.stop_monitoring()
 
         # 閾値チェック
-        results = monitor.check_performance_thresholds(max_cpu_percent=100.0, max_memory_mb=4096.0)
+        results = monitor.check_performance_thresholds(
+            max_cpu_percent=100.0, max_memory_mb=4096.0
+        )
 
-        self.assertIn('cpu_within_threshold', results)
-        self.assertIn('memory_within_threshold', results)
-        self.assertIn('peak_cpu_percent', results)
-        self.assertIn('peak_memory_mb', results)
+        self.assertIn("cpu_within_threshold", results)
+        self.assertIn("memory_within_threshold", results)
+        self.assertIn("peak_cpu_percent", results)
+        self.assertIn("peak_memory_mb", results)
 
 
 class MemoryMonitorTestCase(unittest.TestCase):
@@ -194,8 +200,8 @@ class MemoryMonitorTestCase(unittest.TestCase):
 
         # 統計情報の取得
         stats = monitor.get_memory_statistics()
-        self.assertIn('monitoring_duration_seconds', stats)
-        self.assertIn('rss_memory', stats)
+        self.assertIn("monitoring_duration_seconds", stats)
+        self.assertIn("rss_memory", stats)
 
     def test_memory_leak_detection(self):
         """メモリリーク検出のテスト"""
@@ -228,22 +234,21 @@ class ErrorInjectorTestCase(unittest.TestCase):
         """エラー注入クラスの初期化テスト"""
         self.assertEqual(len(self.injector.injected_errors), 0)
         self.assertEqual(len(self.injector.active_injections), 0)
-        self.assertIn('file_not_found', self.injector.injection_methods)
+        self.assertIn("file_not_found", self.injector.injection_methods)
 
     def test_file_not_found_injection(self):
         """ファイル不存在エラー注入のテスト"""
-        test_file = os.path.join(self.temp_dir, 'test_file.txt')
+        test_file = os.path.join(self.temp_dir, "test_file.txt")
 
         # テストファイルを作成
-        with open(test_file, 'w') as f:
-            f.write('test content')
+        with open(test_file, "w") as f:
+            f.write("test content")
 
         self.assertTrue(os.path.exists(test_file))
 
         # エラー注入
         success = self.injector.inject_error(
-            'file_not_found',
-            parameters={'target_file': test_file}
+            "file_not_found", parameters={"target_file": test_file}
         )
 
         self.assertTrue(success)
@@ -252,35 +257,39 @@ class ErrorInjectorTestCase(unittest.TestCase):
         # 注入履歴の確認
         history = self.injector.get_injection_history()
         self.assertEqual(len(history), 1)
-        self.assertEqual(history[0].error_type, 'file_not_found')
+        self.assertEqual(history[0].error_type, "file_not_found")
 
     def test_corrupted_file_injection(self):
         """ファイル破損エラー注入のテスト"""
         success = self.injector.inject_error(
-            'corrupted_file',
-            parameters={'target_file': os.path.join(self.temp_dir, 'corrupted.txt')}
+            "corrupted_file",
+            parameters={"target_file": os.path.join(self.temp_dir, "corrupted.txt")},
         )
 
         self.assertTrue(success)
 
         # 破損ファイルが作成されていることを確認
-        corrupted_file = os.path.join(self.temp_dir, 'corrupted.txt')
+        corrupted_file = os.path.join(self.temp_dir, "corrupted.txt")
         self.assertTrue(os.path.exists(corrupted_file))
 
     def test_injection_statistics(self):
         """エラー注入統計のテスト"""
         # 複数のエラーを注入
-        self.injector.inject_error('corrupted_file', parameters={'target_file': 'test1.txt'})
-        self.injector.inject_error('encoding_error', parameters={'target_file': 'test2.txt'})
+        self.injector.inject_error(
+            "corrupted_file", parameters={"target_file": "test1.txt"}
+        )
+        self.injector.inject_error(
+            "encoding_error", parameters={"target_file": "test2.txt"}
+        )
 
         # 統計情報の取得
         stats = self.injector.get_injection_statistics()
 
-        self.assertEqual(stats['total_injections'], 2)
-        self.assertEqual(stats['successful_injections'], 2)
-        self.assertEqual(stats['success_rate'], 1.0)
-        self.assertIn('corrupted_file', stats['error_types'])
-        self.assertIn('encoding_error', stats['error_types'])
+        self.assertEqual(stats["total_injections"], 2)
+        self.assertEqual(stats["successful_injections"], 2)
+        self.assertEqual(stats["success_rate"], 1.0)
+        self.assertIn("corrupted_file", stats["error_types"])
+        self.assertIn("encoding_error", stats["error_types"])
 
 
 class TestDataGeneratorTestCase(unittest.TestCase):
@@ -300,8 +309,8 @@ class TestDataGeneratorTestCase(unittest.TestCase):
     def test_test_data_generator_initialization(self):
         """テストデータ生成クラスの初期化テスト"""
         self.assertEqual(len(self.generator.generated_files), 0)
-        self.assertIn('txt', self.generator.supported_formats)
-        self.assertIn('ja', self.generator.sample_texts)
+        self.assertIn("txt", self.generator.supported_formats)
+        self.assertIn("ja", self.generator.sample_texts)
 
     def test_small_dataset_generation(self):
         """小規模データセット生成のテスト"""
@@ -311,18 +320,18 @@ class TestDataGeneratorTestCase(unittest.TestCase):
             dataset_name="test_small",
             output_directory=self.temp_dir,
             file_count=5,
-            file_types=['txt', 'json'],
-            size_range_kb=(1, 10)
+            file_types=["txt", "json"],
+            size_range_kb=(1, 10),
         )
 
         result = self.generator.generate_dataset(config)
 
-        self.assertEqual(result['statistics']['total_files'], 5)
-        self.assertGreater(result['statistics']['total_size_mb'], 0)
-        self.assertTrue(os.path.exists(result['metadata_path']))
+        self.assertEqual(result["statistics"]["total_files"], 5)
+        self.assertGreater(result["statistics"]["total_size_mb"], 0)
+        self.assertTrue(os.path.exists(result["metadata_path"]))
 
         # 生成されたファイルの確認
-        generated_files = result['generated_files']
+        generated_files = result["generated_files"]
         self.assertEqual(len(generated_files), 5)
 
         for file_path in generated_files:
@@ -351,35 +360,35 @@ class StatisticsCollectorTestCase(unittest.TestCase):
                 success=i % 2 == 0,  # 偶数番号は成功
                 execution_time=0.1 + (i * 0.01),
                 memory_usage=100.0 + (i * 10.0),
-                timestamp=datetime.now()
+                timestamp=datetime.now(),
             )
             self.collector.add_result(result)
 
         # 統計情報の取得
         summary = self.collector.get_summary()
 
-        self.assertIn('basic_statistics', summary)
-        basic_stats = summary['basic_statistics']
+        self.assertIn("basic_statistics", summary)
+        basic_stats = summary["basic_statistics"]
 
-        self.assertEqual(basic_stats['total_tests'], 10)
-        self.assertEqual(basic_stats['successful_tests'], 5)
-        self.assertEqual(basic_stats['overall_success_rate'], 50.0)
+        self.assertEqual(basic_stats["total_tests"], 10)
+        self.assertEqual(basic_stats["successful_tests"], 5)
+        self.assertEqual(basic_stats["overall_success_rate"], 50.0)
 
     def test_performance_metrics_addition(self):
         """パフォーマンス指標追加のテスト"""
         metrics = {
-            'cpu_percent': 25.5,
-            'memory_percent': 45.2,
-            'disk_io_read_mb': 10.0,
-            'disk_io_write_mb': 5.0
+            "cpu_percent": 25.5,
+            "memory_percent": 45.2,
+            "disk_io_read_mb": 10.0,
+            "disk_io_write_mb": 5.0,
         }
 
         self.collector.add_performance_metrics(metrics)
 
         self.assertEqual(len(self.collector.performance_metrics), 1)
-        self.assertEqual(self.collector.performance_metrics[0]['cpu_percent'], 25.5)
+        self.assertEqual(self.collector.performance_metrics[0]["cpu_percent"], 25.5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # テストスイートの実行
     unittest.main(verbosity=2)

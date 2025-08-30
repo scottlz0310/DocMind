@@ -31,24 +31,24 @@ class TestErrorHandlingIntegration:
         self.degradation_manager = GracefulDegradationManager()
 
         # テスト用コンポーネントを設定
-        self.degradation_manager.register_component("test_search", {
-            "full_text": True,
-            "semantic": True
-        })
-        self.degradation_manager.register_component("test_index", {
-            "indexing": True,
-            "search": True
-        })
+        self.degradation_manager.register_component(
+            "test_search", {"full_text": True, "semantic": True}
+        )
+        self.degradation_manager.register_component(
+            "test_index", {"indexing": True, "search": True}
+        )
 
     def teardown_method(self):
         """テスト後のクリーンアップ"""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_error_with_degradation_flow(self):
         """エラー発生から劣化までの統合フロー"""
         # 回復ハンドラーを登録
         recovery_called = False
+
         def recovery_handler(exc, error_info):
             nonlocal recovery_called
             recovery_called = True
@@ -58,28 +58,27 @@ class TestErrorHandlingIntegration:
 
         # フォールバックハンドラーを登録
         fallback_called = False
+
         def fallback_handler(error):
             nonlocal fallback_called
             fallback_called = True
             return True  # フォールバック成功
 
-        self.degradation_manager.register_fallback_handler("test_search", fallback_handler)
+        self.degradation_manager.register_fallback_handler(
+            "test_search", fallback_handler
+        )
 
         # エラーを発生させる
         test_error = SearchError("統合テストエラー")
 
         # エラーハンドラーでエラーを処理
         self.error_handler.handle_exception(
-            test_error,
-            context="統合テスト",
-            attempt_recovery=True
+            test_error, context="統合テスト", attempt_recovery=True
         )
 
         # 劣化マネージャーでコンポーネントを失敗状態にマーク
         degradation_result = self.degradation_manager.mark_component_failed(
-            "test_search",
-            test_error,
-            disable_capabilities=["full_text"]
+            "test_search", test_error, disable_capabilities=["full_text"]
         )
 
         # 結果を検証
@@ -114,7 +113,7 @@ class TestErrorHandlingIntegration:
         self.degradation_manager.mark_component_degraded(
             "search_service",
             disable_capabilities=["search"],
-            error_message="データベース障害の影響"
+            error_message="データベース障害の影響",
         )
 
         # システム健全性を確認
@@ -127,6 +126,7 @@ class TestErrorHandlingIntegration:
         """障害後の回復テスト"""
         # ヘルスチェッカーを設定
         health_check_count = 0
+
         def health_checker():
             nonlocal health_check_count
             health_check_count += 1
@@ -149,8 +149,12 @@ class TestErrorHandlingIntegration:
         assert self.degradation_manager.is_component_healthy("test_search")
 
         # 全機能が復旧していることを確認
-        assert self.degradation_manager.is_capability_available("test_search", "full_text")
-        assert self.degradation_manager.is_capability_available("test_search", "semantic")
+        assert self.degradation_manager.is_capability_available(
+            "test_search", "full_text"
+        )
+        assert self.degradation_manager.is_capability_available(
+            "test_search", "semantic"
+        )
 
     def test_error_report_generation_with_system_state(self):
         """システム状態を含むエラーレポート生成テスト"""
@@ -159,9 +163,7 @@ class TestErrorHandlingIntegration:
 
         # エラーを発生させる
         test_error = DocumentProcessingError(
-            "ドキュメント処理失敗",
-            file_path="/test/document.pdf",
-            file_type="pdf"
+            "ドキュメント処理失敗", file_path="/test/document.pdf", file_type="pdf"
         )
 
         self.error_handler.handle_exception(test_error, "ドキュメント処理テスト")
@@ -170,14 +172,17 @@ class TestErrorHandlingIntegration:
         report_files = list(Path(self.temp_dir).glob("error_reports/*.json"))
         assert len(report_files) == 1
 
-        with open(report_files[0], encoding='utf-8') as f:
+        with open(report_files[0], encoding="utf-8") as f:
             report_data = json.load(f)
 
         # レポート内容を検証
         assert "system_info" in report_data
         assert "application_state" in report_data
         assert "docmind_details" in report_data
-        assert report_data["docmind_details"]["custom_attributes"]["file_path"] == "/test/document.pdf"
+        assert (
+            report_data["docmind_details"]["custom_attributes"]["file_path"]
+            == "/test/document.pdf"
+        )
 
 
 @pytest.mark.skipif(not pytest.importorskip("PySide6"), reason="PySide6 not available")
@@ -196,15 +201,12 @@ class TestGUIErrorHandling:
         notification_manager = UserNotificationManager()
 
         # エラー表示のテスト（実際のダイアログは表示しない）
-        with patch('src.gui.error_dialog.ErrorDialog') as mock_dialog:
+        with patch("src.gui.error_dialog.ErrorDialog") as mock_dialog:
             mock_dialog_instance = Mock()
             mock_dialog.return_value = mock_dialog_instance
 
             notification_manager.show_error(
-                "テストエラー",
-                "テストメッセージ",
-                "詳細情報",
-                ["提案1", "提案2"]
+                "テストエラー", "テストメッセージ", "詳細情報", ["提案1", "提案2"]
             )
 
             mock_dialog.assert_called_once()
@@ -215,28 +217,31 @@ class TestGUIErrorHandling:
         # モックの劣化マネージャーを設定
         mock_manager = Mock()
         mock_manager.get_system_health.return_value = {
-            'overall_health': 'healthy',
-            'total_components': 3,
-            'healthy': 3,
-            'degraded': 0,
-            'failed': 0,
-            'components': {
-                'test_component': {
-                    'status': 'healthy',
-                    'error_message': None,
-                    'fallback_active': False,
-                    'capabilities': {'feature1': True}
+            "overall_health": "healthy",
+            "total_components": 3,
+            "healthy": 3,
+            "degraded": 0,
+            "failed": 0,
+            "components": {
+                "test_component": {
+                    "status": "healthy",
+                    "error_message": None,
+                    "fallback_active": False,
+                    "capabilities": {"feature1": True},
                 }
-            }
+            },
         }
 
-        with patch('src.gui.error_dialog.get_global_degradation_manager', return_value=mock_manager):
+        with patch(
+            "src.gui.error_dialog.get_global_degradation_manager",
+            return_value=mock_manager,
+        ):
             dialog = SystemStatusDialog()
 
             # ダイアログが正常に作成されることを確認
             assert dialog.windowTitle() == "システム状態"
-            assert hasattr(dialog, 'overall_health_label')
-            assert hasattr(dialog, 'health_progress')
+            assert hasattr(dialog, "overall_health_label")
+            assert hasattr(dialog, "health_progress")
 
             # タイマーを停止
             dialog.update_timer.stop()
@@ -249,15 +254,18 @@ class TestGUIErrorHandling:
         # 劣化状態をシミュレート
         mock_manager = Mock()
         mock_manager.get_system_health.return_value = {
-            'overall_health': 'degraded',
-            'total_components': 3,
-            'healthy': 2,
-            'degraded': 1,
-            'failed': 0
+            "overall_health": "degraded",
+            "total_components": 3,
+            "healthy": 2,
+            "degraded": 1,
+            "failed": 0,
         }
 
-        with patch('src.gui.error_dialog.get_global_degradation_manager', return_value=mock_manager):
-            with patch('src.gui.error_dialog.ErrorDialog') as mock_dialog:
+        with patch(
+            "src.gui.error_dialog.get_global_degradation_manager",
+            return_value=mock_manager,
+        ):
+            with patch("src.gui.error_dialog.ErrorDialog") as mock_dialog:
                 mock_dialog_instance = Mock()
                 mock_dialog.return_value = mock_dialog_instance
 
@@ -280,6 +288,7 @@ class TestErrorHandlingScenarios:
     def teardown_method(self):
         """テスト後のクリーンアップ"""
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_file_system_error_scenario(self):
@@ -288,17 +297,16 @@ class TestErrorHandlingScenarios:
 
         # ファイルシステムエラーをシミュレート
         from src.utils.exceptions import FileSystemError
+
         fs_error = FileSystemError(
-            "ディスク容量不足",
-            path="/test/path",
-            operation="write"
+            "ディスク容量不足", path="/test/path", operation="write"
         )
 
         error_handler.handle_exception(
             fs_error,
             context="ファイル書き込み",
             user_message="ディスク容量が不足しています。",
-            attempt_recovery=True
+            attempt_recovery=True,
         )
 
         # エラーレポートが生成されることを確認
@@ -306,7 +314,7 @@ class TestErrorHandlingScenarios:
         assert len(report_files) > 0
 
         # レポート内容を確認
-        with open(report_files[0], encoding='utf-8') as f:
+        with open(report_files[0], encoding="utf-8") as f:
             report_data = json.load(f)
 
         assert report_data["exception_type"] == "FileSystemError"
@@ -325,7 +333,7 @@ class TestErrorHandlingScenarios:
         errors = [
             ("database", RuntimeError("DB接続失敗")),
             ("index", IndexingError("インデックス破損")),
-            ("search", SearchError("検索サービス停止"))
+            ("search", SearchError("検索サービス停止")),
         ]
 
         for comp_name, error in errors:
@@ -348,11 +356,9 @@ class TestErrorHandlingScenarios:
         degradation_manager = GracefulDegradationManager()
 
         # コンポーネントを設定
-        degradation_manager.register_component("partial_recovery", {
-            "feature1": True,
-            "feature2": True,
-            "feature3": True
-        })
+        degradation_manager.register_component(
+            "partial_recovery", {"feature1": True, "feature2": True, "feature3": True}
+        )
 
         # 部分的回復ハンドラーを設定
         def partial_recovery_handler(error):
@@ -363,22 +369,30 @@ class TestErrorHandlingScenarios:
             component.capabilities["feature3"] = False  # 回復失敗
             return True
 
-        degradation_manager.register_fallback_handler("partial_recovery", partial_recovery_handler)
+        degradation_manager.register_fallback_handler(
+            "partial_recovery", partial_recovery_handler
+        )
 
         # 障害を発生させる
         test_error = RuntimeError("部分的障害")
         result = degradation_manager.mark_component_failed(
             "partial_recovery",
             test_error,
-            disable_capabilities=["feature1", "feature2", "feature3"]
+            disable_capabilities=["feature1", "feature2", "feature3"],
         )
 
         assert result is True  # フォールバック成功
 
         # 部分的回復を確認
-        assert degradation_manager.is_capability_available("partial_recovery", "feature1")
-        assert not degradation_manager.is_capability_available("partial_recovery", "feature2")
-        assert not degradation_manager.is_capability_available("partial_recovery", "feature3")
+        assert degradation_manager.is_capability_available(
+            "partial_recovery", "feature1"
+        )
+        assert not degradation_manager.is_capability_available(
+            "partial_recovery", "feature2"
+        )
+        assert not degradation_manager.is_capability_available(
+            "partial_recovery", "feature3"
+        )
 
         component = degradation_manager.get_component_status("partial_recovery")
         assert component.status.value == "degraded"

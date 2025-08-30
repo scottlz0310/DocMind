@@ -22,11 +22,11 @@ def setup_logging():
     """ログ設定"""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler('dataset_manager_example.log', encoding='utf-8')
-        ]
+            logging.FileHandler("dataset_manager_example.log", encoding="utf-8"),
+        ],
     )
 
 
@@ -49,27 +49,33 @@ def main():
             # 1. 標準テストデータセットの作成
             logger.info("=== 標準テストデータセットの作成 ===")
             standard_dataset = manager.create_standard_dataset(
-                name="example_standard",
-                file_count=10  # 例のため小さな数値
+                name="example_standard", file_count=10  # 例のため小さな数値
             )
 
             logger.info("標準データセット作成完了:")
             logger.info(f"  - ファイル数: {standard_dataset.metrics.total_files}")
             logger.info(f"  - 総サイズ: {standard_dataset.metrics.total_size_mb:.2f}MB")
-            logger.info(f"  - 生成時間: {standard_dataset.metrics.generation_time_seconds:.2f}秒")
+            logger.info(
+                f"  - 生成時間: {standard_dataset.metrics.generation_time_seconds:.2f}秒"
+            )
 
             # 2. エッジケーステストデータセットの作成
             logger.info("=== エッジケーステストデータセットの作成 ===")
             edge_case_dataset = manager.create_edge_case_dataset(
-                name="example_edge_case",
-                file_count=8  # 例のため小さな数値
+                name="example_edge_case", file_count=8  # 例のため小さな数値
             )
 
             logger.info("エッジケースデータセット作成完了:")
             logger.info(f"  - ファイル数: {edge_case_dataset.metrics.total_files}")
-            logger.info(f"  - 破損ファイル数: {edge_case_dataset.metrics.corrupted_files}")
-            logger.info(f"  - 大容量ファイル数: {edge_case_dataset.metrics.large_files}")
-            logger.info(f"  - 特殊文字ファイル数: {edge_case_dataset.metrics.special_char_files}")
+            logger.info(
+                f"  - 破損ファイル数: {edge_case_dataset.metrics.corrupted_files}"
+            )
+            logger.info(
+                f"  - 大容量ファイル数: {edge_case_dataset.metrics.large_files}"
+            )
+            logger.info(
+                f"  - 特殊文字ファイル数: {edge_case_dataset.metrics.special_char_files}"
+            )
 
             # 3. データセット一覧の表示
             logger.info("=== データセット一覧 ===")
@@ -90,9 +96,9 @@ def main():
                 logger.info(f"  - ファイル数: {validation_result['file_count']}")
                 logger.info(f"  - 総サイズ: {validation_result['total_size_mb']:.2f}MB")
 
-                if validation_result['errors']:
+                if validation_result["errors"]:
                     logger.warning(f"  - エラー: {validation_result['errors']}")
-                if validation_result['warnings']:
+                if validation_result["warnings"]:
                     logger.warning(f"  - 警告: {validation_result['warnings']}")
 
             # 5. データセット内のファイル一覧取得
@@ -119,12 +125,14 @@ def main():
             logger.info("=== 小規模な大規模データセットの作成 ===")
             small_large_dataset = manager.create_large_dataset(
                 name="example_small_large",
-                file_count=15  # 実際は50,000だが例のため小さく
+                file_count=15,  # 実際は50,000だが例のため小さく
             )
 
             logger.info("小規模大規模データセット作成完了:")
             logger.info(f"  - ファイル数: {small_large_dataset.metrics.total_files}")
-            logger.info(f"  - 総サイズ: {small_large_dataset.metrics.total_size_mb:.2f}MB")
+            logger.info(
+                f"  - 総サイズ: {small_large_dataset.metrics.total_size_mb:.2f}MB"
+            )
             logger.info("  - ファイル形式別:")
             for file_type, count in small_large_dataset.metrics.file_types.items():
                 logger.info(f"    - {file_type}: {count}ファイル")
@@ -142,29 +150,32 @@ def main():
             # 個別に小さなデータセットを作成
             suite_datasets = {}
 
-            suite_datasets['standard'] = suite_manager.create_standard_dataset(
-                name="suite_standard",
-                file_count=5
+            suite_datasets["standard"] = suite_manager.create_standard_dataset(
+                name="suite_standard", file_count=5
             )
 
-            suite_datasets['edge_case'] = suite_manager.create_edge_case_dataset(
-                name="suite_edge_case",
-                file_count=5
+            suite_datasets["edge_case"] = suite_manager.create_edge_case_dataset(
+                name="suite_edge_case", file_count=5
             )
 
-            suite_datasets['large'] = suite_manager.create_large_dataset(
-                name="suite_large",
-                file_count=8  # 実際は10,000だが例のため小さく
+            suite_datasets["large"] = suite_manager.create_large_dataset(
+                name="suite_large", file_count=8  # 実際は10,000だが例のため小さく
             )
 
             logger.info("包括的テストスイート生成完了:")
             for suite_type, dataset in suite_datasets.items():
-                logger.info(f"  - {suite_type}: {dataset.metrics.total_files}ファイル, "
-                          f"{dataset.metrics.total_size_mb:.2f}MB")
+                logger.info(
+                    f"  - {suite_type}: {dataset.metrics.total_files}ファイル, "
+                    f"{dataset.metrics.total_size_mb:.2f}MB"
+                )
 
             # 9. データセットの削除
             logger.info("=== データセットの削除 ===")
-            datasets_to_delete = ["example_standard", "example_edge_case", "example_small_large"]
+            datasets_to_delete = [
+                "example_standard",
+                "example_edge_case",
+                "example_small_large",
+            ]
 
             for dataset_name in datasets_to_delete:
                 success = manager.delete_dataset(dataset_name)

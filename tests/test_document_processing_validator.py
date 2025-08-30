@@ -12,7 +12,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 # テスト対象のインポート
-sys.path.append(os.path.join(os.path.dirname(__file__), 'validation_framework'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "validation_framework"))
 from base_validator import ValidationConfig
 from document_processing_validator import DocumentProcessingValidator
 
@@ -27,7 +27,7 @@ class TestDocumentProcessingValidator(unittest.TestCase):
             enable_memory_monitoring=True,
             max_execution_time=60.0,
             max_memory_usage=1024.0,
-            log_level="DEBUG"
+            log_level="DEBUG",
         )
 
         self.validator = DocumentProcessingValidator(self.config)
@@ -35,7 +35,7 @@ class TestDocumentProcessingValidator(unittest.TestCase):
 
     def tearDown(self):
         """テストクリーンアップ"""
-        if hasattr(self.validator, 'teardown_test_environment'):
+        if hasattr(self.validator, "teardown_test_environment"):
             self.validator.teardown_test_environment()
 
         if os.path.exists(self.temp_dir):
@@ -46,7 +46,7 @@ class TestDocumentProcessingValidator(unittest.TestCase):
         self.assertIsNotNone(self.validator)
         self.assertIsNotNone(self.validator.document_processor)
         self.assertIsNotNone(self.validator.test_data_generator)
-        self.assertEqual(self.validator.processing_stats['files_processed'], 0)
+        self.assertEqual(self.validator.processing_stats["files_processed"], 0)
 
     def test_setup_test_environment(self):
         """テスト環境セットアップのテスト"""
@@ -57,10 +57,12 @@ class TestDocumentProcessingValidator(unittest.TestCase):
         self.assertTrue(os.path.exists(self.validator.test_data_dir))
 
         # サブディレクトリが作成されていることを確認
-        expected_subdirs = ['standard', 'encoding', 'large', 'error']
+        expected_subdirs = ["standard", "encoding", "large", "error"]
         for subdir in expected_subdirs:
             subdir_path = os.path.join(self.validator.test_data_dir, subdir)
-            self.assertTrue(os.path.exists(subdir_path), f"サブディレクトリが存在しません: {subdir}")
+            self.assertTrue(
+                os.path.exists(subdir_path), f"サブディレクトリが存在しません: {subdir}"
+            )
 
     def test_teardown_test_environment(self):
         """テスト環境クリーンアップのテスト"""
@@ -73,7 +75,7 @@ class TestDocumentProcessingValidator(unittest.TestCase):
         # ディレクトリが削除されていることを確認
         self.assertFalse(os.path.exists(test_dir))
 
-    @patch('document_processing_validator.DocumentProcessor')
+    @patch("document_processing_validator.DocumentProcessor")
     def test_pdf_processing_accuracy(self, mock_processor_class):
         """PDF処理精度テストのモック"""
         # モックの設定
@@ -100,7 +102,7 @@ class TestDocumentProcessingValidator(unittest.TestCase):
             # PDFファイルが見つからない場合は警告ログが出力される
             pass
 
-    @patch('document_processing_validator.DocumentProcessor')
+    @patch("document_processing_validator.DocumentProcessor")
     def test_text_processing_accuracy(self, mock_processor_class):
         """テキスト処理精度テストのモック"""
         # テスト用テキストファイルの作成
@@ -155,18 +157,18 @@ class TestDocumentProcessingValidator(unittest.TestCase):
         self.validator._update_processing_stats("txt", True, 100, 1.5)
 
         stats = self.validator.processing_stats
-        self.assertEqual(stats['files_processed'], 1)
-        self.assertEqual(stats['successful_extractions'], 1)
-        self.assertEqual(stats['total_characters_extracted'], 100)
-        self.assertEqual(len(stats['processing_times']), 1)
-        self.assertEqual(stats['processing_times'][0], 1.5)
+        self.assertEqual(stats["files_processed"], 1)
+        self.assertEqual(stats["successful_extractions"], 1)
+        self.assertEqual(stats["total_characters_extracted"], 100)
+        self.assertEqual(len(stats["processing_times"]), 1)
+        self.assertEqual(stats["processing_times"][0], 1.5)
 
         # 失敗ケース
         self.validator._update_processing_stats("pdf", False, 0, 0, "TestError")
 
-        self.assertEqual(stats['files_processed'], 2)
-        self.assertEqual(stats['failed_extractions'], 1)
-        self.assertIn("Unknown", stats['error_types'])
+        self.assertEqual(stats["files_processed"], 2)
+        self.assertEqual(stats["failed_extractions"], 1)
+        self.assertIn("Unknown", stats["error_types"])
 
     def test_get_processing_statistics(self):
         """処理統計取得テスト"""
@@ -178,19 +180,19 @@ class TestDocumentProcessingValidator(unittest.TestCase):
         # 統計情報の取得
         stats = self.validator.get_processing_statistics()
 
-        self.assertIn('overall_stats', stats)
-        self.assertIn('success_rate', stats)
-        self.assertIn('average_processing_time', stats)
-        self.assertIn('average_content_length', stats)
+        self.assertIn("overall_stats", stats)
+        self.assertIn("success_rate", stats)
+        self.assertIn("average_processing_time", stats)
+        self.assertIn("average_content_length", stats)
 
         # 成功率の確認
-        self.assertAlmostEqual(stats['success_rate'], 2/3, places=2)
+        self.assertAlmostEqual(stats["success_rate"], 2 / 3, places=2)
 
         # 平均処理時間の確認
-        self.assertAlmostEqual(stats['average_processing_time'], 1.5, places=1)
+        self.assertAlmostEqual(stats["average_processing_time"], 1.5, places=1)
 
         # 平均コンテンツ長の確認
-        self.assertAlmostEqual(stats['average_content_length'], 150.0, places=1)
+        self.assertAlmostEqual(stats["average_content_length"], 150.0, places=1)
 
     def test_create_empty_file(self):
         """空ファイル作成テスト"""
@@ -219,7 +221,9 @@ class TestDocumentProcessingValidator(unittest.TestCase):
                     content = f.read()
                     self.assertIn("日本語", content)
             except Exception as e:
-                self.fail(f"エンコーディングファイルの読み込みに失敗: {file_path} ({encoding}) - {e}")
+                self.fail(
+                    f"エンコーディングファイルの読み込みに失敗: {file_path} ({encoding}) - {e}"
+                )
 
     def test_get_large_test_files(self):
         """大容量ファイル取得テスト"""
@@ -246,8 +250,8 @@ class TestDocumentProcessingValidator(unittest.TestCase):
 
         # 破損ファイルの作成
         corrupted_file = os.path.join(error_dir, "corrupted.txt")
-        with open(corrupted_file, 'wb') as f:
-            f.write(b'\x00\xFF\xFE invalid content')
+        with open(corrupted_file, "wb") as f:
+            f.write(b"\x00\xff\xfe invalid content")
 
         self.validator.test_data_dir = self.temp_dir
 
@@ -264,14 +268,14 @@ class TestDocumentProcessingValidator(unittest.TestCase):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         if isinstance(content, str):
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
         else:
-            with open(file_path, 'wb') as f:
+            with open(file_path, "wb") as f:
                 f.write(content)
 
         return file_path
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

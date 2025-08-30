@@ -32,9 +32,13 @@ class TestStorageManager:
     def sample_document(self, tmp_path):
         """テスト用のサンプルドキュメントを作成"""
         test_file = tmp_path / "storage_test.txt"
-        test_file.write_text("StorageManagerテスト用のドキュメントです。", encoding='utf-8')
+        test_file.write_text(
+            "StorageManagerテスト用のドキュメントです。", encoding="utf-8"
+        )
 
-        return Document.create_from_file(str(test_file), "StorageManagerテスト用のコンテンツです。")
+        return Document.create_from_file(
+            str(test_file), "StorageManagerテスト用のコンテンツです。"
+        )
 
     def test_initialization(self, storage_manager, temp_data_dir):
         """StorageManagerの初期化をテスト"""
@@ -61,7 +65,9 @@ class TestStorageManager:
         assert loaded.title == sample_document.title
 
         # パスで読み込み
-        loaded_by_path = storage_manager.load_document_by_path(sample_document.file_path)
+        loaded_by_path = storage_manager.load_document_by_path(
+            sample_document.file_path
+        )
         assert loaded_by_path is not None
         assert loaded_by_path.id == sample_document.id
 
@@ -111,7 +117,7 @@ class TestStorageManager:
         documents = []
         for i in range(5):
             test_file = tmp_path / f"list_test_{i}.txt"
-            test_file.write_text(f"リストテスト{i}", encoding='utf-8')
+            test_file.write_text(f"リストテスト{i}", encoding="utf-8")
             doc = Document.create_from_file(str(test_file), f"コンテンツ{i}")
             documents.append(doc)
             storage_manager.save_document(doc)
@@ -128,11 +134,11 @@ class TestStorageManager:
         """ファイルタイプ別ドキュメント一覧をテスト"""
         # 異なるタイプのファイルを作成
         txt_file = tmp_path / "type_test.txt"
-        txt_file.write_text("テキストファイル", encoding='utf-8')
+        txt_file.write_text("テキストファイル", encoding="utf-8")
         txt_doc = Document.create_from_file(str(txt_file), "テキストコンテンツ")
 
         md_file = tmp_path / "type_test.md"
-        md_file.write_text("# マークダウンファイル", encoding='utf-8')
+        md_file.write_text("# マークダウンファイル", encoding="utf-8")
         md_doc = Document.create_from_file(str(md_file), "マークダウンコンテンツ")
 
         storage_manager.save_document(txt_doc)
@@ -155,7 +161,7 @@ class TestStorageManager:
 
         for title in titles:
             test_file = tmp_path / f"{title}.txt"
-            test_file.write_text(title, encoding='utf-8')
+            test_file.write_text(title, encoding="utf-8")
             doc = Document.create_from_file(str(test_file), title)
             doc.title = title
             storage_manager.save_document(doc)
@@ -175,7 +181,7 @@ class TestStorageManager:
         documents = []
         for i in range(10):
             test_file = tmp_path / f"bulk_save_{i}.txt"
-            test_file.write_text(f"一括保存テスト{i}", encoding='utf-8')
+            test_file.write_text(f"一括保存テスト{i}", encoding="utf-8")
             doc = Document.create_from_file(str(test_file), f"一括コンテンツ{i}")
             documents.append(doc)
 
@@ -194,7 +200,7 @@ class TestStorageManager:
         # ドキュメントを追加
         for i in range(3):
             test_file = tmp_path / f"count_test_{i}.txt"
-            test_file.write_text(f"カウントテスト{i}", encoding='utf-8')
+            test_file.write_text(f"カウントテスト{i}", encoding="utf-8")
             doc = Document.create_from_file(str(test_file), f"コンテンツ{i}")
             storage_manager.save_document(doc)
 
@@ -210,7 +216,7 @@ class TestStorageManager:
         # ドキュメントを追加
         test_file = tmp_path / "stats_test.txt"
         test_content = "統計テスト用のコンテンツです。"
-        test_file.write_text(test_content, encoding='utf-8')
+        test_file.write_text(test_content, encoding="utf-8")
 
         doc = Document.create_from_file(str(test_file), test_content)
         storage_manager.save_document(doc)
@@ -228,7 +234,7 @@ class TestStorageManager:
             query="テスト検索",
             search_type=SearchType.FULL_TEXT,
             result_count=5,
-            execution_time_ms=150
+            execution_time_ms=150,
         )
         assert result is True
 
@@ -238,7 +244,7 @@ class TestStorageManager:
         searches = [
             ("Python プログラミング", SearchType.FULL_TEXT, 10, 120),
             ("機械学習 入門", SearchType.SEMANTIC, 8, 200),
-            ("データベース 設計", SearchType.HYBRID, 15, 180)
+            ("データベース 設計", SearchType.HYBRID, 15, 180),
         ]
 
         for query, search_type, result_count, exec_time in searches:
@@ -249,8 +255,8 @@ class TestStorageManager:
         assert len(recent) == 3
 
         # 最新のものが最初に来ることを確認
-        assert recent[0]['query'] == "データベース 設計"
-        assert recent[0]['search_type'] == SearchType.HYBRID
+        assert recent[0]["query"] == "データベース 設計"
+        assert recent[0]["search_type"] == SearchType.HYBRID
 
     def test_get_popular_queries(self, storage_manager):
         """人気クエリ取得をテスト"""
@@ -266,17 +272,13 @@ class TestStorageManager:
         assert len(popular) >= 1
 
         # 最も人気のあるクエリが最初に来ることを確認
-        assert popular[0]['query'] == "人気クエリ"
-        assert popular[0]['search_count'] == 3
+        assert popular[0]["query"] == "人気クエリ"
+        assert popular[0]["search_count"] == 3
 
     def test_get_search_suggestions(self, storage_manager):
         """検索提案取得をテスト"""
         # 類似したクエリを記録
-        queries = [
-            "Python プログラミング基礎",
-            "Python 入門",
-            "Python データ分析"
-        ]
+        queries = ["Python プログラミング基礎", "Python 入門", "Python データ分析"]
 
         for query in queries:
             storage_manager.record_search(query, SearchType.FULL_TEXT, 5, 100)
@@ -299,10 +301,10 @@ class TestStorageManager:
         # 統計を取得
         stats = storage_manager.get_search_statistics(days=30)
 
-        assert stats['total_searches'] == 3
-        assert 'by_search_type' in stats
-        assert 'daily_counts' in stats
-        assert 'performance' in stats
+        assert stats["total_searches"] == 3
+        assert "by_search_type" in stats
+        assert "daily_counts" in stats
+        assert "performance" in stats
 
     def test_clear_old_search_history(self, storage_manager):
         """古い検索履歴削除をテスト"""
@@ -317,13 +319,13 @@ class TestStorageManager:
         # 検索履歴が残っていることを確認
         recent = storage_manager.get_recent_searches(limit=10)
         assert len(recent) == 1
-        assert recent[0]['query'] == "新しい検索"
+        assert recent[0]["query"] == "新しい検索"
 
     def test_get_system_stats(self, storage_manager, tmp_path):
         """システム統計取得をテスト"""
         # ドキュメントと検索履歴を追加
         test_file = tmp_path / "system_stats_test.txt"
-        test_file.write_text("システム統計テスト", encoding='utf-8')
+        test_file.write_text("システム統計テスト", encoding="utf-8")
         doc = Document.create_from_file(str(test_file), "システム統計テスト")
         storage_manager.save_document(doc)
 
@@ -332,24 +334,26 @@ class TestStorageManager:
         # システム統計を取得
         stats = storage_manager.get_system_stats()
 
-        assert 'database' in stats
-        assert 'index' in stats
-        assert 'search' in stats
-        assert 'storage_path' in stats
+        assert "database" in stats
+        assert "index" in stats
+        assert "search" in stats
+        assert "storage_path" in stats
 
         # インデックス統計を確認
-        assert stats['index']['total_documents'] == 1
-        assert stats['index']['total_size'] > 0
+        assert stats["index"]["total_documents"] == 1
+        assert stats["index"]["total_size"] > 0
 
         # 検索統計を確認
-        assert stats['search']['total_searches'] == 1
+        assert stats["search"]["total_searches"] == 1
 
     def test_optimize_database(self, storage_manager):
         """データベース最適化をテスト"""
         # 例外が発生しないことを確認
         storage_manager.optimize_database()
 
-    def test_backup_and_restore_database(self, storage_manager, sample_document, tmp_path):
+    def test_backup_and_restore_database(
+        self, storage_manager, sample_document, tmp_path
+    ):
         """データベースのバックアップとリストアをテスト"""
         # ドキュメントを保存
         storage_manager.save_document(sample_document)

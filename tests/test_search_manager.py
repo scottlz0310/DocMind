@@ -22,6 +22,7 @@ class TestSearchManager(unittest.TestCase):
         """テスト前の準備"""
         # 劣化管理マネージャーを初期化し、検索機能を有効化
         from src.utils.graceful_degradation import get_global_degradation_manager
+
         degradation_manager = get_global_degradation_manager()
         degradation_manager.mark_component_healthy("search_manager")
 
@@ -31,8 +32,7 @@ class TestSearchManager(unittest.TestCase):
 
         # SearchManagerインスタンスを作成
         self.search_manager = SearchManager(
-            self.mock_index_manager,
-            self.mock_embedding_manager
+            self.mock_index_manager, self.mock_embedding_manager
         )
 
         # テスト用のドキュメントを作成
@@ -45,8 +45,9 @@ class TestSearchManager(unittest.TestCase):
     def tearDown(self):
         """テスト後のクリーンアップ"""
         # 一時ファイルを削除
-        if hasattr(self, 'temp_files'):
+        if hasattr(self, "temp_files"):
             import os
+
             for temp_file in self.temp_files:
                 try:
                     os.unlink(temp_file)
@@ -65,25 +66,27 @@ class TestSearchManager(unittest.TestCase):
                 "id": "doc1",
                 "title": "Python プログラミング入門",
                 "content": "Pythonは初心者にも学びやすいプログラミング言語です。データ分析や機械学習にも使われます。",
-                "size": 1000
+                "size": 1000,
             },
             {
                 "id": "doc2",
                 "title": "機械学習の基礎",
                 "content": "機械学習は人工知能の一分野で、データからパターンを学習します。教師あり学習と教師なし学習があります。",
-                "size": 1200
+                "size": 1200,
             },
             {
                 "id": "doc3",
                 "title": "データ分析手法",
                 "content": "データ分析では統計学的手法を用いてデータの傾向を把握します。可視化も重要な要素です。",
-                "size": 800
-            }
+                "size": 800,
+            },
         ]
 
         for data in test_data:
             # 一時ファイルを作成
-            temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8')
+            temp_file = tempfile.NamedTemporaryFile(
+                mode="w", suffix=".txt", delete=False, encoding="utf-8"
+            )
             temp_file.write(data["content"])
             temp_file.close()
             temp_files.append(temp_file.name)
@@ -98,7 +101,7 @@ class TestSearchManager(unittest.TestCase):
                 size=data["size"],
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
-                indexed_date=datetime.now()
+                indexed_date=datetime.now(),
             )
             documents.append(document)
 
@@ -117,7 +120,7 @@ class TestSearchManager(unittest.TestCase):
                 snippet="Pythonは初心者にも学びやすいプログラミング言語です。",
                 highlighted_terms=["Python", "プログラミング"],
                 relevance_explanation="全文検索スコア: 0.80",
-                rank=1
+                rank=1,
             ),
             SearchResult(
                 document=self.test_documents[2],
@@ -126,8 +129,8 @@ class TestSearchManager(unittest.TestCase):
                 snippet="データ分析では統計学的手法を用いてデータの傾向を把握します。",
                 highlighted_terms=["データ", "分析"],
                 relevance_explanation="全文検索スコア: 0.60",
-                rank=2
-            )
+                rank=2,
+            ),
         ]
 
     def _create_test_semantic_results(self) -> list[SearchResult]:
@@ -140,7 +143,7 @@ class TestSearchManager(unittest.TestCase):
                 snippet="機械学習は人工知能の一分野で、データからパターンを学習します。",
                 highlighted_terms=["機械学習", "人工知能"],
                 relevance_explanation="セマンティック類似度: 0.70",
-                rank=1
+                rank=1,
             ),
             SearchResult(
                 document=self.test_documents[0],
@@ -149,8 +152,8 @@ class TestSearchManager(unittest.TestCase):
                 snippet="Pythonは初心者にも学びやすいプログラミング言語です。",
                 highlighted_terms=["Python", "プログラミング"],
                 relevance_explanation="セマンティック類似度: 0.50",
-                rank=2
-            )
+                rank=2,
+            ),
         ]
 
 
@@ -189,7 +192,7 @@ class TestSearchManagerMethods(TestSearchManager):
         query = SearchQuery(
             query_text="Python プログラミング",
             search_type=SearchType.FULL_TEXT,
-            limit=10
+            limit=10,
         )
 
         # 全文検索を実行
@@ -208,21 +211,19 @@ class TestSearchManagerMethods(TestSearchManager):
         # モックの設定
         self.mock_embedding_manager.search_similar.return_value = [
             ("doc1", 0.7),
-            ("doc2", 0.5)
+            ("doc2", 0.5),
         ]
 
         # _get_document_by_idメソッドをモック
-        with patch.object(self.search_manager, '_get_document_by_id') as mock_get_doc:
+        with patch.object(self.search_manager, "_get_document_by_id") as mock_get_doc:
             mock_get_doc.side_effect = lambda doc_id: {
                 "doc1": self.test_documents[0],
-                "doc2": self.test_documents[1]
+                "doc2": self.test_documents[1],
             }.get(doc_id)
 
             # 検索クエリを作成
             query = SearchQuery(
-                query_text="機械学習 AI",
-                search_type=SearchType.SEMANTIC,
-                limit=10
+                query_text="機械学習 AI", search_type=SearchType.SEMANTIC, limit=10
             )
 
             # セマンティック検索を実行
@@ -236,8 +237,10 @@ class TestSearchManagerMethods(TestSearchManager):
     def test_hybrid_search(self):
         """ハイブリッド検索のテスト"""
         # モックの設定
-        with patch.object(self.search_manager, '_full_text_search') as mock_ft_search, \
-             patch.object(self.search_manager, '_semantic_search') as mock_sem_search:
+        with (
+            patch.object(self.search_manager, "_full_text_search") as mock_ft_search,
+            patch.object(self.search_manager, "_semantic_search") as mock_sem_search,
+        ):
 
             mock_ft_search.return_value = self.test_full_text_results
             mock_sem_search.return_value = self.test_semantic_results
@@ -247,7 +250,7 @@ class TestSearchManagerMethods(TestSearchManager):
                 query_text="Python 機械学習",
                 search_type=SearchType.HYBRID,
                 limit=10,
-                weights={"full_text": 0.6, "semantic": 0.4}
+                weights={"full_text": 0.6, "semantic": 0.4},
             )
 
             # ハイブリッド検索を実行
@@ -267,9 +270,7 @@ class TestSearchManagerMethods(TestSearchManager):
 
         # 結果をマージ
         merged_results = self.search_manager._merge_search_results(
-            self.test_full_text_results,
-            self.test_semantic_results,
-            weights
+            self.test_full_text_results, self.test_semantic_results, weights
         )
 
         # 結果を検証
@@ -291,7 +292,9 @@ class TestSearchManagerMethods(TestSearchManager):
         # スニペットが生成されることを確認
         self.assertIsInstance(snippet, str)
         self.assertGreater(len(snippet), 0)
-        self.assertLessEqual(len(snippet), self.search_manager.snippet_max_length + 10)  # "..."を考慮
+        self.assertLessEqual(
+            len(snippet), self.search_manager.snippet_max_length + 10
+        )  # "..."を考慮
 
     def test_extract_query_terms(self):
         """クエリ用語抽出のテスト"""
@@ -309,7 +312,11 @@ class TestSearchManagerMethods(TestSearchManager):
         """検索提案のテスト"""
         # インデックス用語を設定
         self.search_manager._indexed_terms = {
-            "python", "プログラミング", "機械学習", "データ分析", "programming"
+            "python",
+            "プログラミング",
+            "機械学習",
+            "データ分析",
+            "programming",
         }
 
         # 検索提案を取得
@@ -326,11 +333,13 @@ class TestSearchManagerMethods(TestSearchManager):
         # 重複する結果を作成
         duplicate_results = [
             self.test_full_text_results[0],  # doc1
-            self.test_semantic_results[1],   # doc1 (重複)
+            self.test_semantic_results[1],  # doc1 (重複)
             self.test_full_text_results[1],  # doc3
         ]
 
-        unique_results = self.search_manager._remove_duplicate_results(duplicate_results)
+        unique_results = self.search_manager._remove_duplicate_results(
+            duplicate_results
+        )
 
         # 重複が除去されることを確認
         self.assertEqual(len(unique_results), 2)
@@ -341,10 +350,7 @@ class TestSearchManagerMethods(TestSearchManager):
         """無効な検索タイプでのエラーテスト"""
         # SearchQueryの検証でValueErrorが発生することを確認
         with self.assertRaises(ValueError):
-            SearchQuery(
-                query_text="test",
-                search_type="invalid_type"  # 無効なタイプ
-            )
+            SearchQuery(query_text="test", search_type="invalid_type")  # 無効なタイプ
 
     def test_empty_query_handling(self):
         """空のクエリの処理テスト"""
@@ -369,7 +375,7 @@ class TestSearchManagerIntegration(TestSearchManager):
         query = SearchQuery(
             query_text="Python プログラミング",
             search_type=SearchType.FULL_TEXT,
-            limit=10
+            limit=10,
         )
 
         # 検索を実行
@@ -407,19 +413,24 @@ class TestSearchManagerIntegration(TestSearchManager):
             full_text_weight=0.7,
             semantic_weight=0.3,
             min_semantic_similarity=0.2,
-            snippet_max_length=150
+            snippet_max_length=150,
         )
 
         # 設定が更新されることを確認
-        self.assertAlmostEqual(self.search_manager.default_weights.full_text, 0.7, places=2)
-        self.assertAlmostEqual(self.search_manager.default_weights.semantic, 0.3, places=2)
+        self.assertAlmostEqual(
+            self.search_manager.default_weights.full_text, 0.7, places=2
+        )
+        self.assertAlmostEqual(
+            self.search_manager.default_weights.semantic, 0.3, places=2
+        )
         self.assertEqual(self.search_manager.min_semantic_similarity, 0.2)
         self.assertEqual(self.search_manager.snippet_max_length, 150)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # ログレベルを設定してテスト実行時のノイズを減らす
     import logging
+
     logging.getLogger().setLevel(logging.WARNING)
 
     # テストスイートを実行

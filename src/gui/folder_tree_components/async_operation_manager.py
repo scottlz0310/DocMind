@@ -23,7 +23,7 @@ class AsyncOperationManager(QObject):
 
     # シグナル定義
     folder_loaded = Signal(str, list)  # path, subdirectories
-    load_error = Signal(str, str)      # path, error_message
+    load_error = Signal(str, str)  # path, error_message
     load_finished = Signal()
 
     def __init__(self, parent: QObject | None = None):
@@ -83,9 +83,7 @@ class AsyncOperationManager(QObject):
         self.load_worker.started.connect(
             self.folder_worker.do_work, Qt.QueuedConnection
         )
-        self.folder_worker.finished.connect(
-            self.load_worker.quit, Qt.QueuedConnection
-        )
+        self.folder_worker.finished.connect(self.load_worker.quit, Qt.QueuedConnection)
         self.folder_worker.finished.connect(
             self.folder_worker.deleteLater, Qt.QueuedConnection
         )
@@ -97,12 +95,8 @@ class AsyncOperationManager(QObject):
         self.folder_worker.folder_loaded.connect(
             self.folder_loaded.emit, Qt.QueuedConnection
         )
-        self.folder_worker.load_error.connect(
-            self.load_error.emit, Qt.QueuedConnection
-        )
-        self.folder_worker.finished.connect(
-            self._on_load_finished, Qt.QueuedConnection
-        )
+        self.folder_worker.load_error.connect(self.load_error.emit, Qt.QueuedConnection)
+        self.folder_worker.finished.connect(self._on_load_finished, Qt.QueuedConnection)
 
     def _on_load_finished(self):
         """読み込み完了時の処理"""
@@ -171,9 +165,11 @@ class AsyncOperationManager(QObject):
         Returns:
             読み込み中の場合True
         """
-        return (self.load_worker is not None and
-                self.load_worker.isRunning() and
-                self.folder_worker is not None)
+        return (
+            self.load_worker is not None
+            and self.load_worker.isRunning()
+            and self.folder_worker is not None
+        )
 
     def __del__(self):
         """デストラクタ"""

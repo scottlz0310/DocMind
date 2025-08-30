@@ -79,11 +79,11 @@ class EndToEndWorkflowValidator(BaseValidator):
 
         # ワークフロー実行状態
         self.workflow_state = {
-            'startup_completed': False,
-            'documents_processed': False,
-            'search_executed': False,
-            'results_displayed': False,
-            'background_processing': False
+            "startup_completed": False,
+            "documents_processed": False,
+            "search_executed": False,
+            "results_displayed": False,
+            "background_processing": False,
         }
 
         # パフォーマンス監視
@@ -116,7 +116,11 @@ class EndToEndWorkflowValidator(BaseValidator):
         self.test_config = TestConfig(self.temp_dir)
 
         # 必要なディレクトリを作成
-        for dir_path in [self.test_config.data_dir, self.test_config.index_dir, self.test_config.cache_dir]:
+        for dir_path in [
+            self.test_config.data_dir,
+            self.test_config.index_dir,
+            self.test_config.cache_dir,
+        ]:
             dir_path.mkdir(parents=True, exist_ok=True)
 
         # ベースラインメトリクスの取得
@@ -186,12 +190,14 @@ class EndToEndWorkflowValidator(BaseValidator):
         self._validate_workflow_completion()
 
         workflow_time = time.time() - self.workflow_start_time
-        self.logger.info(f"完全なワークフロー検証完了 (実行時間: {workflow_time:.2f}秒)")
+        self.logger.info(
+            f"完全なワークフロー検証完了 (実行時間: {workflow_time:.2f}秒)"
+        )
 
         # パフォーマンス要件の確認
         self.assert_condition(
             workflow_time < 60.0,
-            f"ワークフロー実行時間が要件を超過: {workflow_time:.2f}秒 > 60秒"
+            f"ワークフロー実行時間が要件を超過: {workflow_time:.2f}秒 > 60秒",
         )
 
     def test_hybrid_search_workflow(self) -> None:
@@ -203,7 +209,7 @@ class EndToEndWorkflowValidator(BaseValidator):
         self.logger.info("ハイブリッド検索ワークフローの検証を開始")
 
         # 前提条件: ドキュメントが処理済みであること
-        if not self.workflow_state['documents_processed']:
+        if not self.workflow_state["documents_processed"]:
             self._validate_document_processing()
 
         # テストクエリの準備
@@ -211,7 +217,7 @@ class EndToEndWorkflowValidator(BaseValidator):
             "Python プログラミング",
             "データベース 設計",
             "機械学習 アルゴリズム",
-            "ウェブ開発 フレームワーク"
+            "ウェブ開発 フレームワーク",
         ]
 
         for query in test_queries:
@@ -235,36 +241,38 @@ class EndToEndWorkflowValidator(BaseValidator):
             # 結果の検証
             self.assert_condition(
                 isinstance(fulltext_results, list),
-                f"全文検索結果がリストではありません: {type(fulltext_results)}"
+                f"全文検索結果がリストではありません: {type(fulltext_results)}",
             )
 
             self.assert_condition(
                 isinstance(semantic_results, list),
-                f"セマンティック検索結果がリストではありません: {type(semantic_results)}"
+                f"セマンティック検索結果がリストではありません: {type(semantic_results)}",
             )
 
             self.assert_condition(
                 isinstance(hybrid_results, list),
-                f"ハイブリッド検索結果がリストではありません: {type(hybrid_results)}"
+                f"ハイブリッド検索結果がリストではありません: {type(hybrid_results)}",
             )
 
             # パフォーマンス要件の確認（5秒以内）
             self.assert_condition(
                 fulltext_time < 5.0,
-                f"全文検索時間が要件を超過: {fulltext_time:.2f}秒 > 5秒"
+                f"全文検索時間が要件を超過: {fulltext_time:.2f}秒 > 5秒",
             )
 
             self.assert_condition(
                 semantic_time < 5.0,
-                f"セマンティック検索時間が要件を超過: {semantic_time:.2f}秒 > 5秒"
+                f"セマンティック検索時間が要件を超過: {semantic_time:.2f}秒 > 5秒",
             )
 
             self.assert_condition(
                 hybrid_time < 5.0,
-                f"ハイブリッド検索時間が要件を超過: {hybrid_time:.2f}秒 > 5秒"
+                f"ハイブリッド検索時間が要件を超過: {hybrid_time:.2f}秒 > 5秒",
             )
 
-            self.logger.info(f"検索完了 - 全文: {fulltext_time:.2f}s, セマンティック: {semantic_time:.2f}s, ハイブリッド: {hybrid_time:.2f}s")
+            self.logger.info(
+                f"検索完了 - 全文: {fulltext_time:.2f}s, セマンティック: {semantic_time:.2f}s, ハイブリッド: {hybrid_time:.2f}s"
+            )
 
         self.logger.info("ハイブリッド検索ワークフロー検証完了")
 
@@ -281,8 +289,7 @@ class EndToEndWorkflowValidator(BaseValidator):
 
         # バックグラウンド処理の開始
         background_thread = threading.Thread(
-            target=self._simulate_heavy_background_processing,
-            daemon=True
+            target=self._simulate_heavy_background_processing, daemon=True
         )
         background_thread.start()
 
@@ -305,7 +312,7 @@ class EndToEndWorkflowValidator(BaseValidator):
             # 応答時間の確認（100ms以内）
             self.assert_condition(
                 ui_response_time < 0.1,
-                f"UI応答時間が要件を超過: {ui_response_time:.3f}秒 > 0.1秒"
+                f"UI応答時間が要件を超過: {ui_response_time:.3f}秒 > 0.1秒",
             )
 
             time.sleep(0.5)  # 0.5秒間隔でテスト
@@ -317,17 +324,19 @@ class EndToEndWorkflowValidator(BaseValidator):
         avg_response_time = sum(responsiveness_results) / len(responsiveness_results)
         max_response_time = max(responsiveness_results)
 
-        self.logger.info(f"UI応答性統計 - 平均: {avg_response_time:.3f}s, 最大: {max_response_time:.3f}s")
+        self.logger.info(
+            f"UI応答性統計 - 平均: {avg_response_time:.3f}s, 最大: {max_response_time:.3f}s"
+        )
 
         # 応答性要件の確認
         self.assert_condition(
             avg_response_time < 0.05,
-            f"平均UI応答時間が要件を超過: {avg_response_time:.3f}秒 > 0.05秒"
+            f"平均UI応答時間が要件を超過: {avg_response_time:.3f}秒 > 0.05秒",
         )
 
         self.assert_condition(
             max_response_time < 0.1,
-            f"最大UI応答時間が要件を超過: {max_response_time:.3f}秒 > 0.1秒"
+            f"最大UI応答時間が要件を超過: {max_response_time:.3f}秒 > 0.1秒",
         )
 
         self.logger.info("バックグラウンド処理中の応答性検証完了")
@@ -342,18 +351,18 @@ class EndToEndWorkflowValidator(BaseValidator):
 
         # 初期設定の確認
         original_config = {
-            'search_timeout': 5.0,
-            'max_results': 100,
-            'enable_semantic_search': True,
-            'cache_size': 1000
+            "search_timeout": 5.0,
+            "max_results": 100,
+            "enable_semantic_search": True,
+            "cache_size": 1000,
         }
 
         # 設定変更のテスト
         new_config = {
-            'search_timeout': 10.0,
-            'max_results': 50,
-            'enable_semantic_search': False,
-            'cache_size': 500
+            "search_timeout": 10.0,
+            "max_results": 50,
+            "enable_semantic_search": False,
+            "cache_size": 500,
         }
 
         # 1. 初期設定での動作確認
@@ -371,13 +380,12 @@ class EndToEndWorkflowValidator(BaseValidator):
         # 設定変更時間の確認（1秒以内）
         self.assert_condition(
             config_change_time < 1.0,
-            f"設定変更時間が要件を超過: {config_change_time:.3f}秒 > 1秒"
+            f"設定変更時間が要件を超過: {config_change_time:.3f}秒 > 1秒",
         )
 
         # 設定反映の確認
         self.assert_condition(
-            initial_behavior != new_behavior,
-            "設定変更が反映されていません"
+            initial_behavior != new_behavior, "設定変更が反映されていません"
         )
 
         # 4. 設定の復元
@@ -385,8 +393,7 @@ class EndToEndWorkflowValidator(BaseValidator):
         restored_behavior = self._test_configuration_behavior()
 
         self.assert_condition(
-            initial_behavior == restored_behavior,
-            "設定の復元が正常に動作していません"
+            initial_behavior == restored_behavior, "設定の復元が正常に動作していません"
         )
 
         self.logger.info("設定変更の即座反映検証完了")
@@ -431,26 +438,40 @@ class EndToEndWorkflowValidator(BaseValidator):
         memory_growth = memory_samples[-1] - memory_samples[0]
         max_memory = max(memory_samples)
 
-        self.logger.info(f"メモリ使用量変化: {memory_growth:.2f}MB (最大: {max_memory:.2f}MB)")
+        self.logger.info(
+            f"メモリ使用量変化: {memory_growth:.2f}MB (最大: {max_memory:.2f}MB)"
+        )
 
         # メモリリーク要件の確認（100MB以下の増加）
         self.assert_condition(
             memory_growth < 100.0,
-            f"メモリリークが検出されました: {memory_growth:.2f}MB > 100MB"
+            f"メモリリークが検出されました: {memory_growth:.2f}MB > 100MB",
         )
 
         # 性能劣化の検証
-        early_performance = sum(performance_samples[:5]) / 5 if len(performance_samples) >= 5 else performance_samples[0]
-        late_performance = sum(performance_samples[-5:]) / 5 if len(performance_samples) >= 5 else performance_samples[-1]
+        early_performance = (
+            sum(performance_samples[:5]) / 5
+            if len(performance_samples) >= 5
+            else performance_samples[0]
+        )
+        late_performance = (
+            sum(performance_samples[-5:]) / 5
+            if len(performance_samples) >= 5
+            else performance_samples[-1]
+        )
 
-        performance_degradation = (late_performance - early_performance) / early_performance * 100
+        performance_degradation = (
+            (late_performance - early_performance) / early_performance * 100
+        )
 
-        self.logger.info(f"性能変化: {performance_degradation:.2f}% (初期: {early_performance:.3f}s, 後期: {late_performance:.3f}s)")
+        self.logger.info(
+            f"性能変化: {performance_degradation:.2f}% (初期: {early_performance:.3f}s, 後期: {late_performance:.3f}s)"
+        )
 
         # 性能劣化要件の確認（20%以下の劣化）
         self.assert_condition(
             performance_degradation < 20.0,
-            f"性能劣化が検出されました: {performance_degradation:.2f}% > 20%"
+            f"性能劣化が検出されました: {performance_degradation:.2f}% > 20%",
         )
 
         self.logger.info(f"長時間安定性検証完了 (反復回数: {iteration_count})")
@@ -471,20 +492,16 @@ class EndToEndWorkflowValidator(BaseValidator):
         self.embedding_manager = EmbeddingManager()
         self.document_processor = DocumentProcessor()
 
-        self.search_manager = SearchManager(
-            self.index_manager,
-            self.embedding_manager
-        )
+        self.search_manager = SearchManager(self.index_manager, self.embedding_manager)
 
         startup_time = time.time() - startup_start
 
         # 起動時間要件の確認（10秒以内）
         self.assert_condition(
-            startup_time < 10.0,
-            f"起動時間が要件を超過: {startup_time:.2f}秒 > 10秒"
+            startup_time < 10.0, f"起動時間が要件を超過: {startup_time:.2f}秒 > 10秒"
         )
 
-        self.workflow_state['startup_completed'] = True
+        self.workflow_state["startup_completed"] = True
         self.logger.info(f"アプリケーション起動完了 (時間: {startup_time:.2f}秒)")
 
     def _validate_document_processing(self) -> None:
@@ -493,8 +510,7 @@ class EndToEndWorkflowValidator(BaseValidator):
 
         # テストドキュメントの生成
         test_documents = self.test_data_generator.create_standard_dataset(
-            output_dir=self.test_config.data_dir,
-            num_files=10
+            output_dir=self.test_config.data_dir, num_files=10
         )
 
         processed_count = 0
@@ -515,18 +531,17 @@ class EndToEndWorkflowValidator(BaseValidator):
         processing_time = time.time() - processing_start
 
         # 処理要件の確認
-        self.assert_condition(
-            processed_count > 0,
-            "処理されたドキュメントがありません"
-        )
+        self.assert_condition(processed_count > 0, "処理されたドキュメントがありません")
 
         self.assert_condition(
             processing_time < 30.0,
-            f"ドキュメント処理時間が要件を超過: {processing_time:.2f}秒 > 30秒"
+            f"ドキュメント処理時間が要件を超過: {processing_time:.2f}秒 > 30秒",
         )
 
-        self.workflow_state['documents_processed'] = True
-        self.logger.info(f"ドキュメント処理完了 ({processed_count}件, 時間: {processing_time:.2f}秒)")
+        self.workflow_state["documents_processed"] = True
+        self.logger.info(
+            f"ドキュメント処理完了 ({processed_count}件, 時間: {processing_time:.2f}秒)"
+        )
 
     def _validate_indexing_process(self) -> None:
         """インデックス化プロセスの検証"""
@@ -536,8 +551,7 @@ class EndToEndWorkflowValidator(BaseValidator):
         doc_count = self.db_manager.get_document_count()
 
         self.assert_condition(
-            doc_count > 0,
-            "インデックス化されたドキュメントがありません"
+            doc_count > 0, "インデックス化されたドキュメントがありません"
         )
 
         self.logger.info(f"インデックス化完了 ({doc_count}件のドキュメント)")
@@ -555,17 +569,16 @@ class EndToEndWorkflowValidator(BaseValidator):
 
             # 検索時間要件の確認
             self.assert_condition(
-                search_time < 5.0,
-                f"検索時間が要件を超過: {search_time:.2f}秒 > 5秒"
+                search_time < 5.0, f"検索時間が要件を超過: {search_time:.2f}秒 > 5秒"
             )
 
             # 結果の確認
             self.assert_condition(
                 isinstance(results, list),
-                f"検索結果がリストではありません: {type(results)}"
+                f"検索結果がリストではありません: {type(results)}",
             )
 
-        self.workflow_state['search_executed'] = True
+        self.workflow_state["search_executed"] = True
         self.logger.info("検索実行検証完了")
 
     def _validate_result_display(self) -> None:
@@ -574,7 +587,7 @@ class EndToEndWorkflowValidator(BaseValidator):
 
         # テスト用ファイルの作成
         test_file = self.test_config.data_dir / "test1.txt"
-        test_file.write_text("これはテスト用のドキュメントです。", encoding='utf-8')
+        test_file.write_text("これはテスト用のドキュメントです。", encoding="utf-8")
 
         # モック結果の作成
         now = datetime.now()
@@ -590,34 +603,29 @@ class EndToEndWorkflowValidator(BaseValidator):
                     size=100,
                     created_date=now,
                     modified_date=now,
-                    indexed_date=now
+                    indexed_date=now,
                 ),
                 score=0.95,
                 search_type=SearchType.FULL_TEXT,
                 snippet="これはテスト用の...",
                 highlighted_terms=["テスト"],
-                relevance_explanation="キーワードマッチ"
+                relevance_explanation="キーワードマッチ",
             )
         ]
 
         # 結果表示の検証（実際のGUIは使用せず、データ構造のみ確認）
-        self.assert_condition(
-            len(mock_results) > 0,
-            "表示する検索結果がありません"
-        )
+        self.assert_condition(len(mock_results) > 0, "表示する検索結果がありません")
 
         for result in mock_results:
             self.assert_condition(
-                hasattr(result, 'document'),
-                "検索結果にドキュメント情報がありません"
+                hasattr(result, "document"), "検索結果にドキュメント情報がありません"
             )
 
             self.assert_condition(
-                hasattr(result, 'score'),
-                "検索結果にスコア情報がありません"
+                hasattr(result, "score"), "検索結果にスコア情報がありません"
             )
 
-        self.workflow_state['results_displayed'] = True
+        self.workflow_state["results_displayed"] = True
         self.logger.info("結果表示検証完了")
 
     def _validate_workflow_completion(self) -> None:
@@ -626,14 +634,13 @@ class EndToEndWorkflowValidator(BaseValidator):
 
         # すべてのワークフロー段階が完了していることを確認
         for stage, completed in self.workflow_state.items():
-            self.assert_condition(
-                completed,
-                f"ワークフロー段階が未完了: {stage}"
-            )
+            self.assert_condition(completed, f"ワークフロー段階が未完了: {stage}")
 
         self.logger.info("ワークフロー完了確認済み")
 
-    def _execute_search(self, query: str, search_type: SearchType) -> list[SearchResult]:
+    def _execute_search(
+        self, query: str, search_type: SearchType
+    ) -> list[SearchResult]:
         """検索の実行"""
         try:
             return self.search_manager.search(query, search_type)
@@ -657,7 +664,7 @@ class EndToEndWorkflowValidator(BaseValidator):
 
     def _simulate_heavy_background_processing(self) -> None:
         """重いバックグラウンド処理のシミュレーション"""
-        self.workflow_state['background_processing'] = True
+        self.workflow_state["background_processing"] = True
 
         # CPU集約的な処理のシミュレーション
         for _i in range(100):
@@ -665,7 +672,7 @@ class EndToEndWorkflowValidator(BaseValidator):
             sum(j * j for j in range(1000))
             time.sleep(0.01)  # 短い休憩
 
-        self.workflow_state['background_processing'] = False
+        self.workflow_state["background_processing"] = False
 
     def _simulate_ui_interaction(self) -> None:
         """UI操作のシミュレーション"""
@@ -685,9 +692,11 @@ class EndToEndWorkflowValidator(BaseValidator):
         """設定による動作の確認"""
         # 設定に基づく動作のテスト
         behavior = {
-            'search_timeout': getattr(self.test_config, 'search_timeout', 5.0),
-            'max_results': getattr(self.test_config, 'max_results', 100),
-            'enable_semantic_search': getattr(self.test_config, 'enable_semantic_search', True)
+            "search_timeout": getattr(self.test_config, "search_timeout", 5.0),
+            "max_results": getattr(self.test_config, "max_results", 100),
+            "enable_semantic_search": getattr(
+                self.test_config, "enable_semantic_search", True
+            ),
         }
         return behavior
 

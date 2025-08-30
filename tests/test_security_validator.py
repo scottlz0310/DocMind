@@ -37,7 +37,7 @@ class TestSecurityValidator(unittest.TestCase):
             enable_memory_monitoring=False,
             enable_error_injection=False,
             max_execution_time=60.0,
-            log_level="WARNING"
+            log_level="WARNING",
         )
 
         self.validator = SecurityValidator(self.config)
@@ -46,7 +46,7 @@ class TestSecurityValidator(unittest.TestCase):
     def tearDown(self):
         """テストクリーンアップ"""
         try:
-            if hasattr(self.validator, 'teardown_test_environment'):
+            if hasattr(self.validator, "teardown_test_environment"):
                 self.validator.teardown_test_environment()
             self.validator.cleanup()
         except:
@@ -60,17 +60,21 @@ class TestSecurityValidator(unittest.TestCase):
         self.assertIsInstance(self.validator, SecurityValidator)
         self.assertIsInstance(self.validator.thresholds, SecurityThresholds)
         self.assertIsInstance(self.validator.network_monitor, NetworkMonitor)
-        self.assertIsInstance(self.validator.file_permission_checker, FilePermissionChecker)
+        self.assertIsInstance(
+            self.validator.file_permission_checker, FilePermissionChecker
+        )
         self.assertIsInstance(self.validator.memory_scanner, MemoryScanner)
         self.assertEqual(len(self.validator.security_metrics), 0)
 
     def test_setup_test_environment(self):
         """テスト環境セットアップのテスト"""
         # DocMindコンポーネントのモック
-        with patch('tests.validation_framework.security_validator.IndexManager'), \
-             patch('tests.validation_framework.security_validator.EmbeddingManager'), \
-             patch('tests.validation_framework.security_validator.SearchManager'), \
-             patch('tests.validation_framework.security_validator.DocumentProcessor'):
+        with (
+            patch("tests.validation_framework.security_validator.IndexManager"),
+            patch("tests.validation_framework.security_validator.EmbeddingManager"),
+            patch("tests.validation_framework.security_validator.SearchManager"),
+            patch("tests.validation_framework.security_validator.DocumentProcessor"),
+        ):
 
             self.validator.setup_test_environment()
 
@@ -79,16 +83,18 @@ class TestSecurityValidator(unittest.TestCase):
             self.assertTrue(os.path.exists(self.validator.test_base_dir))
 
             # コンポーネントが初期化されていることを確認
-            self.assertIn('index_manager', self.validator.test_components)
-            self.assertIn('embedding_manager', self.validator.test_components)
-            self.assertIn('search_manager', self.validator.test_components)
-            self.assertIn('document_processor', self.validator.test_components)
+            self.assertIn("index_manager", self.validator.test_components)
+            self.assertIn("embedding_manager", self.validator.test_components)
+            self.assertIn("search_manager", self.validator.test_components)
+            self.assertIn("document_processor", self.validator.test_components)
 
-    @patch('tests.validation_framework.security_validator.IndexManager')
-    @patch('tests.validation_framework.security_validator.EmbeddingManager')
-    @patch('tests.validation_framework.security_validator.SearchManager')
-    @patch('tests.validation_framework.security_validator.DocumentProcessor')
-    def test_local_processing_verification(self, mock_doc_proc, mock_search, mock_embed, mock_index):
+    @patch("tests.validation_framework.security_validator.IndexManager")
+    @patch("tests.validation_framework.security_validator.EmbeddingManager")
+    @patch("tests.validation_framework.security_validator.SearchManager")
+    @patch("tests.validation_framework.security_validator.DocumentProcessor")
+    def test_local_processing_verification(
+        self, mock_doc_proc, mock_search, mock_embed, mock_index
+    ):
         """ローカル処理検証のテスト"""
         # テスト環境のセットアップ
         self.validator.setup_test_environment()
@@ -103,7 +109,9 @@ class TestSecurityValidator(unittest.TestCase):
         mock_doc_proc_instance.process_file.return_value = None
 
         # ネットワーク監視のモック（外部通信なし）
-        with patch.object(self.validator.network_monitor, 'get_external_connections', return_value=[]):
+        with patch.object(
+            self.validator.network_monitor, "get_external_connections", return_value=[]
+        ):
             # テスト実行
             self.validator.test_local_processing_verification()
 
@@ -128,11 +136,11 @@ class TestSecurityValidator(unittest.TestCase):
             permission_info = checker.check_file_permissions(temp_file_path)
 
             # 結果の確認
-            self.assertIn('file_path', permission_info)
-            self.assertIn('permissions', permission_info)
-            self.assertIn('security_level', permission_info)
-            self.assertIn('is_secure', permission_info)
-            self.assertEqual(permission_info['file_path'], temp_file_path)
+            self.assertIn("file_path", permission_info)
+            self.assertIn("permissions", permission_info)
+            self.assertIn("security_level", permission_info)
+            self.assertIn("is_secure", permission_info)
+            self.assertEqual(permission_info["file_path"], temp_file_path)
 
         finally:
             # クリーンアップ
@@ -157,6 +165,7 @@ class TestSecurityValidator(unittest.TestCase):
         # 短時間の監視
         monitor.start_monitoring()
         import time
+
         time.sleep(0.5)
         monitor.stop_monitoring()
 
@@ -167,11 +176,13 @@ class TestSecurityValidator(unittest.TestCase):
         self.assertIsInstance(connections, list)
         # 通常のテスト環境では外部接続は発生しないはず
 
-    @patch('tests.validation_framework.security_validator.IndexManager')
-    @patch('tests.validation_framework.security_validator.EmbeddingManager')
-    @patch('tests.validation_framework.security_validator.SearchManager')
-    @patch('tests.validation_framework.security_validator.DocumentProcessor')
-    def test_file_access_permissions_verification(self, mock_doc_proc, mock_search, mock_embed, mock_index):
+    @patch("tests.validation_framework.security_validator.IndexManager")
+    @patch("tests.validation_framework.security_validator.EmbeddingManager")
+    @patch("tests.validation_framework.security_validator.SearchManager")
+    @patch("tests.validation_framework.security_validator.DocumentProcessor")
+    def test_file_access_permissions_verification(
+        self, mock_doc_proc, mock_search, mock_embed, mock_index
+    ):
         """ファイルアクセス権限検証のテスト"""
         # テスト環境のセットアップ
         self.validator.setup_test_environment()
@@ -181,7 +192,9 @@ class TestSecurityValidator(unittest.TestCase):
             self.validator.test_file_access_permissions_verification()
 
         # エラーメッセージの確認
-        self.assertIn("セキュアでないファイル権限が検出されました", str(context.exception))
+        self.assertIn(
+            "セキュアでないファイル権限が検出されました", str(context.exception)
+        )
 
         # 結果の確認
         self.assertEqual(len(self.validator.security_metrics), 1)
@@ -189,11 +202,13 @@ class TestSecurityValidator(unittest.TestCase):
         self.assertEqual(metric.test_name, "file_access_permissions_verification")
         self.assertIn(metric.security_level, ["SECURE", "WARNING", "CRITICAL"])
 
-    @patch('tests.validation_framework.security_validator.IndexManager')
-    @patch('tests.validation_framework.security_validator.EmbeddingManager')
-    @patch('tests.validation_framework.security_validator.SearchManager')
-    @patch('tests.validation_framework.security_validator.DocumentProcessor')
-    def test_data_encryption_verification(self, mock_doc_proc, mock_search, mock_embed, mock_index):
+    @patch("tests.validation_framework.security_validator.IndexManager")
+    @patch("tests.validation_framework.security_validator.EmbeddingManager")
+    @patch("tests.validation_framework.security_validator.SearchManager")
+    @patch("tests.validation_framework.security_validator.DocumentProcessor")
+    def test_data_encryption_verification(
+        self, mock_doc_proc, mock_search, mock_embed, mock_index
+    ):
         """データ暗号化検証のテスト"""
         # テスト環境のセットアップ
         self.validator.setup_test_environment()
@@ -222,9 +237,7 @@ class TestSecurityValidator(unittest.TestCase):
     def test_security_metrics_creation(self):
         """SecurityMetricsの作成テスト"""
         metrics = SecurityMetrics(
-            test_name="test_security",
-            security_level="SECURE",
-            compliance_score=0.95
+            test_name="test_security", security_level="SECURE", compliance_score=0.95
         )
 
         self.assertEqual(metrics.test_name, "test_security")
@@ -233,11 +246,13 @@ class TestSecurityValidator(unittest.TestCase):
         self.assertEqual(len(metrics.external_connections), 0)
         self.assertEqual(len(metrics.vulnerabilities), 0)
 
-    @patch('tests.validation_framework.security_validator.IndexManager')
-    @patch('tests.validation_framework.security_validator.EmbeddingManager')
-    @patch('tests.validation_framework.security_validator.SearchManager')
-    @patch('tests.validation_framework.security_validator.DocumentProcessor')
-    def test_get_security_summary(self, mock_doc_proc, mock_search, mock_embed, mock_index):
+    @patch("tests.validation_framework.security_validator.IndexManager")
+    @patch("tests.validation_framework.security_validator.EmbeddingManager")
+    @patch("tests.validation_framework.security_validator.SearchManager")
+    @patch("tests.validation_framework.security_validator.DocumentProcessor")
+    def test_get_security_summary(
+        self, mock_doc_proc, mock_search, mock_embed, mock_index
+    ):
         """セキュリティサマリー取得のテスト"""
         # テスト環境のセットアップ
         self.validator.setup_test_environment()
@@ -247,7 +262,7 @@ class TestSecurityValidator(unittest.TestCase):
             test_name="test_security",
             security_level="SECURE",
             compliance_score=0.9,
-            vulnerabilities=[]
+            vulnerabilities=[],
         )
         self.validator.security_metrics.append(test_metric)
 
@@ -255,14 +270,16 @@ class TestSecurityValidator(unittest.TestCase):
         summary = self.validator.get_security_summary()
 
         # 結果の確認
-        self.assertIn('test_summary', summary)
-        self.assertIn('compliance_statistics', summary)
-        self.assertIn('vulnerability_analysis', summary)
-        self.assertIn('detailed_metrics', summary)
+        self.assertIn("test_summary", summary)
+        self.assertIn("compliance_statistics", summary)
+        self.assertIn("vulnerability_analysis", summary)
+        self.assertIn("detailed_metrics", summary)
 
-        self.assertEqual(summary['test_summary']['total_tests'], 1)
-        self.assertEqual(summary['test_summary']['secure_tests'], 1)
-        self.assertEqual(summary['compliance_statistics']['average_compliance_score'], 0.9)
+        self.assertEqual(summary["test_summary"]["total_tests"], 1)
+        self.assertEqual(summary["test_summary"]["secure_tests"], 1)
+        self.assertEqual(
+            summary["compliance_statistics"]["average_compliance_score"], 0.9
+        )
 
     def test_validation_config_integration(self):
         """ValidationConfigとの統合テスト"""
@@ -271,7 +288,7 @@ class TestSecurityValidator(unittest.TestCase):
             enable_memory_monitoring=True,
             max_execution_time=120.0,
             max_memory_usage=1024.0,
-            log_level="DEBUG"
+            log_level="DEBUG",
         )
 
         validator = SecurityValidator(custom_config)
@@ -293,14 +310,16 @@ class TestSecurityValidatorIntegration(unittest.TestCase):
             enable_performance_monitoring=False,
             enable_memory_monitoring=False,
             max_execution_time=30.0,
-            log_level="ERROR"  # ログを最小限に
+            log_level="ERROR",  # ログを最小限に
         )
 
-    @patch('tests.validation_framework.security_validator.IndexManager')
-    @patch('tests.validation_framework.security_validator.EmbeddingManager')
-    @patch('tests.validation_framework.security_validator.SearchManager')
-    @patch('tests.validation_framework.security_validator.DocumentProcessor')
-    def test_full_security_validation_workflow(self, mock_doc_proc, mock_search, mock_embed, mock_index):
+    @patch("tests.validation_framework.security_validator.IndexManager")
+    @patch("tests.validation_framework.security_validator.EmbeddingManager")
+    @patch("tests.validation_framework.security_validator.SearchManager")
+    @patch("tests.validation_framework.security_validator.DocumentProcessor")
+    def test_full_security_validation_workflow(
+        self, mock_doc_proc, mock_search, mock_embed, mock_index
+    ):
         """完全なセキュリティ検証ワークフローのテスト"""
         validator = SecurityValidator(self.config)
 
@@ -309,12 +328,12 @@ class TestSecurityValidatorIntegration(unittest.TestCase):
             validator.setup_test_environment()
 
             # ローカル処理検証のみ実行（ファイル権限テストは意図的に失敗するため除外）
-            test_methods = [
-                'test_local_processing_verification'
-            ]
+            test_methods = ["test_local_processing_verification"]
 
             # ネットワーク監視のモック
-            with patch.object(validator.network_monitor, 'get_external_connections', return_value=[]):
+            with patch.object(
+                validator.network_monitor, "get_external_connections", return_value=[]
+            ):
                 results = validator.run_validation(test_methods)
 
             # 結果の確認
@@ -326,7 +345,7 @@ class TestSecurityValidatorIntegration(unittest.TestCase):
 
             # サマリーの確認
             summary = validator.get_security_summary()
-            self.assertGreater(summary['test_summary']['total_tests'], 0)
+            self.assertGreater(summary["test_summary"]["total_tests"], 0)
 
         finally:
             # クリーンアップ
@@ -334,6 +353,6 @@ class TestSecurityValidatorIntegration(unittest.TestCase):
             validator.cleanup()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # テストの実行
     unittest.main(verbosity=2)

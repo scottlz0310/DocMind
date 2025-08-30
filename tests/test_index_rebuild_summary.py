@@ -24,7 +24,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 
 # プロジェクトルートをパスに追加
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.utils.exceptions import DocMindException
 
@@ -56,12 +56,12 @@ class TestIndexRebuildSummary:
             test_files = [
                 ("small_test1.txt", "小規模テスト用ドキュメント1"),
                 ("small_test2.txt", "小規模テスト用ドキュメント2"),
-                ("small_test3.md", "# 小規模テスト用マークダウン")
+                ("small_test3.md", "# 小規模テスト用マークダウン"),
             ]
 
             for filename, content in test_files:
                 file_path = os.path.join(temp_dir, filename)
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
             # ファイルが正しく作成されたことを確認
@@ -72,18 +72,30 @@ class TestIndexRebuildSummary:
             try:
                 from src.gui.main_window import MainWindow
 
-                with patch('src.utils.config.Config.get_data_directory') as mock_data_dir:
-                    mock_data_dir.return_value = tempfile.mkdtemp(prefix="docmind_data_small_")
+                with patch(
+                    "src.utils.config.Config.get_data_directory"
+                ) as mock_data_dir:
+                    mock_data_dir.return_value = tempfile.mkdtemp(
+                        prefix="docmind_data_small_"
+                    )
 
                     window = MainWindow()
 
                     # _rebuild_indexメソッドが存在することを確認
-                    assert hasattr(window, '_rebuild_index'), "小規模テスト: _rebuild_indexメソッドが存在しません"
+                    assert hasattr(
+                        window, "_rebuild_index"
+                    ), "小規模テスト: _rebuild_indexメソッドが存在しません"
 
                     # 進捗表示メソッドが存在することを確認
-                    assert hasattr(window, 'show_progress'), "小規模テスト: show_progressメソッドが存在しません"
-                    assert hasattr(window, 'update_progress'), "小規模テスト: update_progressメソッドが存在しません"
-                    assert hasattr(window, 'hide_progress'), "小規模テスト: hide_progressメソッドが存在しません"
+                    assert hasattr(
+                        window, "show_progress"
+                    ), "小規模テスト: show_progressメソッドが存在しません"
+                    assert hasattr(
+                        window, "update_progress"
+                    ), "小規模テスト: update_progressメソッドが存在しません"
+                    assert hasattr(
+                        window, "hide_progress"
+                    ), "小規模テスト: hide_progressメソッドが存在しません"
 
                     window.close()
 
@@ -132,12 +144,14 @@ class TestIndexRebuildSummary:
                 """
 
                 file_path = os.path.join(temp_dir, filename)
-                with open(file_path, 'w', encoding='utf-8') as f:
+                with open(file_path, "w", encoding="utf-8") as f:
                     f.write(content)
 
             # ファイルが正しく作成されたことを確認
             files = os.listdir(temp_dir)
-            assert len(files) == file_count, f"期待されるファイル数: {file_count}, 実際: {len(files)}"
+            assert (
+                len(files) == file_count
+            ), f"期待されるファイル数: {file_count}, 実際: {len(files)}"
 
             # パフォーマンス測定のシミュレーション
             start_time = time.time()
@@ -146,7 +160,7 @@ class TestIndexRebuildSummary:
             processed_files = 0
             for filename in files:
                 file_path = os.path.join(temp_dir, filename)
-                with open(file_path, encoding='utf-8') as f:
+                with open(file_path, encoding="utf-8") as f:
                     content = f.read()
                     if content:  # 内容があることを確認
                         processed_files += 1
@@ -155,11 +169,15 @@ class TestIndexRebuildSummary:
             duration = end_time - start_time
 
             # パフォーマンス検証
-            assert processed_files == file_count, f"処理されたファイル数が不正: {processed_files}/{file_count}"
+            assert (
+                processed_files == file_count
+            ), f"処理されたファイル数が不正: {processed_files}/{file_count}"
             assert duration < 10.0, f"処理時間が長すぎます: {duration:.2f}秒"
 
             files_per_second = file_count / duration if duration > 0 else 0
-            assert files_per_second > 5.0, f"処理速度が遅すぎます: {files_per_second:.2f} files/sec"
+            assert (
+                files_per_second > 5.0
+            ), f"処理速度が遅すぎます: {files_per_second:.2f} files/sec"
 
             print("✓ 大規模フォルダでのパフォーマンステスト: 成功")
             print(f"  - ファイル数: {file_count}")
@@ -184,18 +202,18 @@ class TestIndexRebuildSummary:
         try:
             # 正常なファイル
             normal_file = os.path.join(temp_dir, "normal.txt")
-            with open(normal_file, 'w', encoding='utf-8') as f:
+            with open(normal_file, "w", encoding="utf-8") as f:
                 f.write("正常なファイル")
 
             # 読み取り専用ファイル（権限エラーをシミュレート）
             readonly_file = os.path.join(temp_dir, "readonly.txt")
-            with open(readonly_file, 'w', encoding='utf-8') as f:
+            with open(readonly_file, "w", encoding="utf-8") as f:
                 f.write("読み取り専用ファイル")
             os.chmod(readonly_file, 0o444)
 
             # 空ファイル
             empty_file = os.path.join(temp_dir, "empty.txt")
-            with open(empty_file, 'w', encoding='utf-8') as f:
+            with open(empty_file, "w", encoding="utf-8") as f:
                 pass  # 空ファイル
 
             # ファイルが作成されたことを確認
@@ -209,7 +227,7 @@ class TestIndexRebuildSummary:
             for filename in files:
                 file_path = os.path.join(temp_dir, filename)
                 try:
-                    with open(file_path, encoding='utf-8') as f:
+                    with open(file_path, encoding="utf-8") as f:
                         f.read()
                         processed_count += 1
                 except Exception as e:
@@ -277,8 +295,12 @@ class TestIndexRebuildSummary:
         # タイムアウトが正しく発生したことを確認
         assert timeout_occurred, "タイムアウトが発生しませんでした"
         # タイムアウト時間の許容範囲を調整（システムの処理時間を考慮）
-        assert actual_duration >= timeout_duration - 0.1, f"タイムアウト時間が短すぎます: {actual_duration:.3f}秒"
-        assert actual_duration < timeout_duration + 1.0, f"タイムアウト時間が長すぎます: {actual_duration:.3f}秒"
+        assert (
+            actual_duration >= timeout_duration - 0.1
+        ), f"タイムアウト時間が短すぎます: {actual_duration:.3f}秒"
+        assert (
+            actual_duration < timeout_duration + 1.0
+        ), f"タイムアウト時間が長すぎます: {actual_duration:.3f}秒"
 
         # タイムアウト後の処理シミュレーション
         cleanup_completed = False
@@ -312,7 +334,7 @@ class TestIndexRebuildSummary:
             "タイムアウト処理のテスト": True,
             "基本機能テスト": True,
             "モック統合テスト": True,
-            "例外ハンドリングテスト": True
+            "例外ハンドリングテスト": True,
         }
 
         # 全ての機能が実装されていることを確認
@@ -326,7 +348,7 @@ class TestIndexRebuildSummary:
             "test_index_rebuild_functional.py",
             "test_index_rebuild_integration.py",
             "test_index_rebuild_helpers.py",
-            "test_index_rebuild_summary.py"
+            "test_index_rebuild_summary.py",
         ]
 
         tests_dir = Path(__file__).parent

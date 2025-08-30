@@ -53,9 +53,13 @@ class SearchUIManager(QObject):
         """
         search_input.update_suggestions(suggestions)
 
-    def update_search_history(self, history_widget, recent_searches: list[dict[str, Any]],
-                            popular_searches: list[dict[str, Any]],
-                            saved_searches: list[dict[str, Any]] | None = None) -> None:
+    def update_search_history(
+        self,
+        history_widget,
+        recent_searches: list[dict[str, Any]],
+        popular_searches: list[dict[str, Any]],
+        saved_searches: list[dict[str, Any]] | None = None,
+    ) -> None:
         """
         検索履歴を更新
 
@@ -71,8 +75,15 @@ class SearchUIManager(QObject):
         if saved_searches is not None:
             history_widget.update_saved_searches(saved_searches)
 
-    def set_interface_enabled(self, search_input, search_button, search_type_selector,
-                            advanced_options, enabled: bool, is_searching: bool = False) -> None:
+    def set_interface_enabled(
+        self,
+        search_input,
+        search_button,
+        search_type_selector,
+        advanced_options,
+        enabled: bool,
+        is_searching: bool = False,
+    ) -> None:
         """
         インターフェースの有効/無効を設定
 
@@ -89,7 +100,9 @@ class SearchUIManager(QObject):
         search_type_selector.setEnabled(enabled)
         advanced_options.setEnabled(enabled)
 
-    def clear_search_interface(self, search_input, advanced_options, progress_widget) -> None:
+    def clear_search_interface(
+        self, search_input, advanced_options, progress_widget
+    ) -> None:
         """
         検索インターフェースをクリア
 
@@ -105,7 +118,9 @@ class SearchUIManager(QObject):
 
         self.logger.info("検索インターフェースをクリアしました")
 
-    def handle_search_type_change(self, search_type: SearchType, advanced_options) -> None:
+    def handle_search_type_change(
+        self, search_type: SearchType, advanced_options
+    ) -> None:
         """
         検索タイプ変更時の処理
 
@@ -116,6 +131,8 @@ class SearchUIManager(QObject):
         self.logger.debug(f"検索タイプ変更: {search_type.value}")
 
         # ハイブリッド検索以外では重み設定を無効化
-        weights_group = advanced_options.findChild(QWidget, "ハイブリッド検索の重み設定")
+        weights_group = advanced_options.findChild(
+            QWidget, "ハイブリッド検索の重み設定"
+        )
         if weights_group:
             weights_group.setEnabled(search_type == SearchType.HYBRID)

@@ -63,13 +63,13 @@ class TestIndexingWorkerIntegration:
         (self.test_folder / "test1.txt").write_text(
             "これは最初のテストドキュメントです。\n"
             "検索テスト用のキーワードを含んでいます。",
-            encoding='utf-8'
+            encoding="utf-8",
         )
 
         (self.test_folder / "test2.txt").write_text(
             "これは2番目のテストドキュメントです。\n"
             "別の検索キーワードも含んでいます。",
-            encoding='utf-8'
+            encoding="utf-8",
         )
 
         # Markdownファイル
@@ -78,7 +78,7 @@ class TestIndexingWorkerIntegration:
             "これはMarkdown形式のテストファイルです。\n"
             "- リスト項目1\n"
             "- リスト項目2\n",
-            encoding='utf-8'
+            encoding="utf-8",
         )
 
         # サブディレクトリとファイル
@@ -87,25 +87,28 @@ class TestIndexingWorkerIntegration:
         (sub_dir / "nested.txt").write_text(
             "これはサブディレクトリ内のファイルです。\n"
             "ネストされたファイルのテストです。",
-            encoding='utf-8'
+            encoding="utf-8",
         )
 
         # サポートされていないファイル
         (self.test_folder / "unsupported.xyz").write_text(
-            "これはサポートされていない形式のファイルです。",
-            encoding='utf-8'
+            "これはサポートされていない形式のファイルです。", encoding="utf-8"
         )
 
         # 空のファイル
-        (self.test_folder / "empty.txt").write_text("", encoding='utf-8')
+        (self.test_folder / "empty.txt").write_text("", encoding="utf-8")
 
     def _connect_signals(self, worker):
         """ワーカーのシグナルを接続"""
         worker.progress_updated.connect(
-            lambda msg, current, total: self.progress_signals.append((msg, current, total))
+            lambda msg, current, total: self.progress_signals.append(
+                (msg, current, total)
+            )
         )
         worker.file_processed.connect(
-            lambda path, success, error: self.file_processed_signals.append((path, success, error))
+            lambda path, success, error: self.file_processed_signals.append(
+                (path, success, error)
+            )
         )
         worker.indexing_completed.connect(
             lambda folder, stats: self.completion_signals.append((folder, stats))
@@ -121,7 +124,7 @@ class TestIndexingWorkerIntegration:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         # シグナルを接続
@@ -138,16 +141,20 @@ class TestIndexingWorkerIntegration:
         assert isinstance(stats, dict)
 
         # 統計情報を検証
-        assert stats['total_files_found'] >= 4  # txt, md, nested.txt, empty.txt
-        assert stats['files_processed'] >= 3   # empty.txtは内容がないため除外される可能性
-        assert stats['documents_added'] >= 3
-        assert stats['processing_time'] > 0
+        assert stats["total_files_found"] >= 4  # txt, md, nested.txt, empty.txt
+        assert (
+            stats["files_processed"] >= 3
+        )  # empty.txtは内容がないため除外される可能性
+        assert stats["documents_added"] >= 3
+        assert stats["processing_time"] > 0
 
         # 進捗シグナルが発行されていることを確認
         assert len(self.progress_signals) > 0, "進捗シグナルが発行されていません"
 
         # ファイル処理シグナルが発行されていることを確認
-        assert len(self.file_processed_signals) > 0, "ファイル処理シグナルが発行されていません"
+        assert (
+            len(self.file_processed_signals) > 0
+        ), "ファイル処理シグナルが発行されていません"
 
         # FileWatcherが開始されていることを確認
         self.file_watcher.add_watch_path.assert_called_once_with(str(self.test_folder))
@@ -160,7 +167,7 @@ class TestIndexingWorkerIntegration:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         self._connect_signals(worker)
@@ -185,10 +192,11 @@ class TestIndexingWorkerIntegration:
         """処理中のエラーハンドリングテスト"""
         # エラーを発生させるファイルを作成
         error_file = self.test_folder / "error_file.txt"
-        error_file.write_text("エラーテスト用ファイル", encoding='utf-8')
+        error_file.write_text("エラーテスト用ファイル", encoding="utf-8")
 
         # DocumentProcessorをモックしてエラーを発生させる
-        with patch.object(self.document_processor, 'process_file') as mock_process:
+        with patch.object(self.document_processor, "process_file") as mock_process:
+
             def side_effect(file_path):
                 if "error_file.txt" in file_path:
                     raise DocumentProcessingError("テスト用エラー")
@@ -197,9 +205,9 @@ class TestIndexingWorkerIntegration:
                     id=f"test_{Path(file_path).stem}",
                     file_path=file_path,
                     title=Path(file_path).stem,
-                    content=Path(file_path).read_text(encoding='utf-8'),
+                    content=Path(file_path).read_text(encoding="utf-8"),
                     file_type=FileType.TEXT,
-                    size=Path(file_path).stat().st_size
+                    size=Path(file_path).stat().st_size,
                 )
 
             mock_process.side_effect = side_effect
@@ -208,18 +216,20 @@ class TestIndexingWorkerIntegration:
                 str(self.test_folder),
                 self.document_processor,
                 self.index_manager,
-                self.file_watcher
+                self.file_watcher,
             )
 
             self._connect_signals(worker)
             worker.process_folder()
 
         # エラーが適切に処理されていることを確認
-        assert len(self.completion_signals) == 1, "エラーがあっても処理が完了していません"
+        assert (
+            len(self.completion_signals) == 1
+        ), "エラーがあっても処理が完了していません"
 
         folder_path, stats = self.completion_signals[0]
-        assert stats['files_failed'] > 0, "失敗ファイル数が記録されていません"
-        assert len(stats['errors']) > 0, "エラー情報が記録されていません"
+        assert stats["files_failed"] > 0, "失敗ファイル数が記録されていません"
+        assert len(stats["errors"]) > 0, "エラー情報が記録されていません"
 
         # エラーファイルの処理失敗シグナルを確認
         failed_signals = [s for s in self.file_processed_signals if not s[1]]
@@ -236,14 +246,14 @@ class TestIndexingWorkerIntegration:
         for i in range(20):
             (large_folder / f"file_{i:03d}.txt").write_text(
                 f"これは大量ファイルテスト用のドキュメント {i} です。\n" * 10,
-                encoding='utf-8'
+                encoding="utf-8",
             )
 
         worker = IndexingWorker(
             str(large_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         self._connect_signals(worker)
@@ -270,12 +280,12 @@ class TestIndexingWorkerIntegration:
     def test_batch_processing_optimization(self):
         """バッチ処理最適化テスト"""
         # IndexManagerをモックしてバッチ処理を監視
-        with patch.object(self.index_manager, 'add_document') as mock_add:
+        with patch.object(self.index_manager, "add_document") as mock_add:
             worker = IndexingWorker(
                 str(self.test_folder),
                 self.document_processor,
                 self.index_manager,
-                self.file_watcher
+                self.file_watcher,
             )
 
             self._connect_signals(worker)
@@ -292,7 +302,7 @@ class TestIndexingWorkerIntegration:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         self._connect_signals(worker)
@@ -309,7 +319,7 @@ class TestIndexingWorkerIntegration:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         self._connect_signals(worker)
@@ -323,17 +333,26 @@ class TestIndexingWorkerIntegration:
         for root, _, files in os.walk(self.test_folder):
             for file in files:
                 file_path = Path(root) / file
-                if file_path.suffix.lower() in {'.txt', '.md', '.pdf', '.docx', '.doc', '.xlsx', '.xls'}:
+                if file_path.suffix.lower() in {
+                    ".txt",
+                    ".md",
+                    ".pdf",
+                    ".docx",
+                    ".doc",
+                    ".xlsx",
+                    ".xls",
+                }:
                     actual_supported_files.append(file_path)
 
-        assert stats['total_files_found'] == len(actual_supported_files), \
-            f"発見ファイル数が不正: 期待値={len(actual_supported_files)}, 実際={stats['total_files_found']}"
+        assert stats["total_files_found"] == len(
+            actual_supported_files
+        ), f"発見ファイル数が不正: 期待値={len(actual_supported_files)}, 実際={stats['total_files_found']}"
 
         # 処理時間が記録されていることを確認
-        assert stats['processing_time'] > 0, "処理時間が記録されていません"
+        assert stats["processing_time"] > 0, "処理時間が記録されていません"
 
         # エラー情報の形式を確認
-        assert isinstance(stats['errors'], list), "エラー情報がリスト形式ではありません"
+        assert isinstance(stats["errors"], list), "エラー情報がリスト形式ではありません"
 
         print(f"✓ 統計情報の正確性テスト完了: {stats}")
 
@@ -365,9 +384,9 @@ class TestIndexingWorkerPerformance:
         """パフォーマンステスト用ファイルを作成"""
         # 様々なサイズのファイルを作成
         sizes = [
-            (10, "small"),    # 小さいファイル 10個
-            (5, "medium"),    # 中サイズファイル 5個
-            (2, "large")      # 大きいファイル 2個
+            (10, "small"),  # 小さいファイル 10個
+            (5, "medium"),  # 中サイズファイル 5個
+            (2, "large"),  # 大きいファイル 2個
         ]
 
         for count, size_type in sizes:
@@ -382,16 +401,18 @@ class TestIndexingWorkerPerformance:
                 else:  # large
                     content = f"大きいテストファイル {i}\n" * 500
 
-                (size_dir / f"file_{i:03d}.txt").write_text(content, encoding='utf-8')
+                (size_dir / f"file_{i:03d}.txt").write_text(content, encoding="utf-8")
 
     @pytest.mark.slow
-    def test_large_folder_processing_performance(self, performance_timer, memory_monitor):
+    def test_large_folder_processing_performance(
+        self, performance_timer, memory_monitor
+    ):
         """大量ファイル処理パフォーマンステスト"""
         worker = IndexingWorker(
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         # シグナル受信用
@@ -417,7 +438,9 @@ class TestIndexingWorkerPerformance:
         folder_path, stats = completion_signals[0]
 
         # パフォーマンス要件の確認
-        files_per_second = stats['files_processed'] / processing_time if processing_time > 0 else 0
+        files_per_second = (
+            stats["files_processed"] / processing_time if processing_time > 0 else 0
+        )
 
         print("パフォーマンス結果:")
         print(f"  処理時間: {processing_time:.2f}秒")
@@ -427,7 +450,9 @@ class TestIndexingWorkerPerformance:
 
         # パフォーマンス要件（調整可能）
         assert processing_time < 30, f"処理時間が長すぎます: {processing_time:.2f}秒"
-        assert files_per_second > 0.5, f"処理速度が遅すぎます: {files_per_second:.1f}ファイル/秒"
+        assert (
+            files_per_second > 0.5
+        ), f"処理速度が遅すぎます: {files_per_second:.1f}ファイル/秒"
         assert memory_usage < 500, f"メモリ使用量が多すぎます: {memory_usage:.2f}MB"
 
         print("✓ 大量ファイル処理パフォーマンステスト完了")
@@ -440,7 +465,7 @@ class TestIndexingWorkerPerformance:
             str(self.test_folder),
             self.document_processor,
             self.index_manager,
-            self.file_watcher
+            self.file_watcher,
         )
 
         # 処理前のメモリ使用量
@@ -461,7 +486,9 @@ class TestIndexingWorkerPerformance:
         print(f"  メモリ増加: {memory_increase:.2f}MB")
 
         # メモリリークがないことを確認
-        assert memory_increase < 100, f"メモリ増加が大きすぎます: {memory_increase:.2f}MB"
+        assert (
+            memory_increase < 100
+        ), f"メモリ増加が大きすぎます: {memory_increase:.2f}MB"
 
         print("✓ メモリ効率性テスト完了")
 
@@ -479,15 +506,14 @@ class TestIndexingWorkerPerformance:
 
             for j in range(5):
                 (worker_folder / f"file_{j}.txt").write_text(
-                    f"ワーカー{i}のファイル{j}です。",
-                    encoding='utf-8'
+                    f"ワーカー{i}のファイル{j}です。", encoding="utf-8"
                 )
 
             worker = IndexingWorker(
                 str(worker_folder),
                 self.document_processor,
                 self.index_manager,
-                self.file_watcher
+                self.file_watcher,
             )
 
             # 結果収集用
@@ -516,7 +542,9 @@ class TestIndexingWorkerPerformance:
         for i, worker_results in enumerate(results):
             assert len(worker_results) == 1, f"ワーカー{i}が完了していません"
             folder_path, stats = worker_results[0]
-            assert stats['files_processed'] > 0, f"ワーカー{i}がファイルを処理していません"
+            assert (
+                stats["files_processed"] > 0
+            ), f"ワーカー{i}がファイルを処理していません"
 
         print("✓ 並行処理安全性テスト完了")
 

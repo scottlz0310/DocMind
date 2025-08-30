@@ -29,14 +29,14 @@ class TestApplicationStartupValidator:
             enable_memory_monitoring=True,
             enable_error_injection=False,  # 基本テストではエラー注入を無効
             max_execution_time=30.0,
-            max_memory_usage=1024.0
+            max_memory_usage=1024.0,
         )
         self.validator = ApplicationStartupValidator(self.config)
         self.validator.setup_test_environment()
 
     def teardown_method(self):
         """各テストメソッドの後に実行されるクリーンアップ処理"""
-        if hasattr(self, 'validator'):
+        if hasattr(self, "validator"):
             self.validator.teardown_test_environment()
             self.validator.cleanup()
 
@@ -51,7 +51,7 @@ class TestApplicationStartupValidator:
     def test_startup_time_requirement(self):
         """起動時間要件のテスト"""
         # テストを実行（BaseValidatorのrun_validationメソッドを使用）
-        results = self.validator.run_validation(['test_startup_time_requirement'])
+        results = self.validator.run_validation(["test_startup_time_requirement"])
 
         # 結果を確認
         assert len(results) > 0
@@ -63,7 +63,7 @@ class TestApplicationStartupValidator:
     def test_directory_creation(self):
         """ディレクトリ作成のテスト"""
         # テストを実行（BaseValidatorのrun_validationメソッドを使用）
-        results = self.validator.run_validation(['test_directory_creation'])
+        results = self.validator.run_validation(["test_directory_creation"])
 
         # 必要なディレクトリが作成されていることを確認
         for dir_name in self.validator.required_directories:
@@ -79,7 +79,7 @@ class TestApplicationStartupValidator:
     def test_config_initialization(self):
         """設定初期化のテスト"""
         # テストを実行（BaseValidatorのrun_validationメソッドを使用）
-        results = self.validator.run_validation(['test_config_initialization'])
+        results = self.validator.run_validation(["test_config_initialization"])
 
         # 設定ファイルが作成されていることを確認
         config_file = self.validator.test_data_dir / "config.json"
@@ -93,7 +93,7 @@ class TestApplicationStartupValidator:
     def test_logging_system_initialization(self):
         """ログシステム初期化のテスト"""
         # テストを実行（BaseValidatorのrun_validationメソッドを使用）
-        results = self.validator.run_validation(['test_logging_system_initialization'])
+        results = self.validator.run_validation(["test_logging_system_initialization"])
 
         # ログファイルが作成されていることを確認
         log_file = self.validator.test_data_dir / "logs" / "docmind.log"
@@ -107,7 +107,7 @@ class TestApplicationStartupValidator:
     def test_database_initialization(self):
         """データベース初期化のテスト"""
         # テストを実行（BaseValidatorのrun_validationメソッドを使用）
-        results = self.validator.run_validation(['test_database_initialization'])
+        results = self.validator.run_validation(["test_database_initialization"])
 
         # データベースファイルが作成されていることを確認
         db_file = self.validator.test_data_dir / "documents.db"
@@ -121,7 +121,7 @@ class TestApplicationStartupValidator:
     def test_startup_error_recovery(self):
         """起動時エラー回復機能のテスト"""
         # テストを実行（BaseValidatorのrun_validationメソッドを使用）
-        results = self.validator.run_validation(['test_startup_error_recovery'])
+        results = self.validator.run_validation(["test_startup_error_recovery"])
 
         # 結果を確認
         assert len(results) > 0
@@ -132,12 +132,12 @@ class TestApplicationStartupValidator:
         """完全な検証実行のテスト"""
         # すべてのテストメソッドを実行
         test_methods = [
-            'test_startup_time_requirement',
-            'test_directory_creation',
-            'test_config_initialization',
-            'test_logging_system_initialization',
-            'test_database_initialization',
-            'test_startup_error_recovery'
+            "test_startup_time_requirement",
+            "test_directory_creation",
+            "test_config_initialization",
+            "test_logging_system_initialization",
+            "test_database_initialization",
+            "test_startup_error_recovery",
         ]
 
         results = self.validator.run_validation(test_methods)
@@ -147,7 +147,9 @@ class TestApplicationStartupValidator:
 
         # すべてのテストが成功したことを確認
         for result in results:
-            assert result.success is True, f"テスト '{result.test_name}' が失敗しました: {result.error_message}"
+            assert (
+                result.success is True
+            ), f"テスト '{result.test_name}' が失敗しました: {result.error_message}"
 
         # パフォーマンス要件を確認
         for result in results:
@@ -160,7 +162,7 @@ class TestApplicationStartupValidator:
         error_injection_config = ValidationConfig(
             enable_error_injection=True,
             max_execution_time=60.0,
-            max_memory_usage=2048.0
+            max_memory_usage=2048.0,
         )
 
         error_validator = ApplicationStartupValidator(error_injection_config)
@@ -168,7 +170,7 @@ class TestApplicationStartupValidator:
 
         try:
             # エラー注入テストを実行
-            results = error_validator.run_validation(['test_startup_error_injection'])
+            results = error_validator.run_validation(["test_startup_error_injection"])
 
             # 結果を確認（エラー注入テストは警告レベルで失敗する可能性がある）
             assert len(results) > 0
@@ -180,12 +182,11 @@ class TestApplicationStartupValidator:
     def test_performance_monitoring(self):
         """パフォーマンス監視機能のテスト"""
         # パフォーマンス監視を有効にしてテスト実行
-        self.validator.run_validation(['test_startup_time_requirement'])
+        self.validator.run_validation(["test_startup_time_requirement"])
 
         # パフォーマンス要件の検証
         performance_ok = self.validator.validate_performance_requirements(
-            max_time=self.validator.max_startup_time,
-            max_memory=1024.0
+            max_time=self.validator.max_startup_time, max_memory=1024.0
         )
 
         assert performance_ok is True
@@ -193,17 +194,17 @@ class TestApplicationStartupValidator:
     def test_statistics_collection(self):
         """統計情報収集のテスト"""
         # いくつかのテストを実行
-        self.validator.run_validation(['test_directory_creation'])
-        self.validator.run_validation(['test_config_initialization'])
+        self.validator.run_validation(["test_directory_creation"])
+        self.validator.run_validation(["test_config_initialization"])
 
         # 統計情報を取得
         stats = self.validator.get_statistics_summary()
 
         assert stats is not None
-        assert 'total_tests' in stats
-        assert 'successful_tests' in stats
-        assert 'failed_tests' in stats
-        assert stats['total_tests'] >= 2
+        assert "total_tests" in stats
+        assert "successful_tests" in stats
+        assert "failed_tests" in stats
+        assert stats["total_tests"] >= 2
 
 
 if __name__ == "__main__":

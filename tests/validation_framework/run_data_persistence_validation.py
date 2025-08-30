@@ -32,53 +32,47 @@ def parse_arguments():
   python run_data_persistence_validation.py --quick           # 高速テスト実行
   python run_data_persistence_validation.py --test acid       # ACID特性のみテスト
   python run_data_persistence_validation.py --output report/  # 結果をreport/に出力
-        """
+        """,
     )
 
     parser.add_argument(
-        '--test',
-        choices=['acid', 'concurrent', 'index', 'embedding', 'backup', 'all'],
-        default='all',
-        help='実行するテストの種類 (デフォルト: all)'
+        "--test",
+        choices=["acid", "concurrent", "index", "embedding", "backup", "all"],
+        default="all",
+        help="実行するテストの種類 (デフォルト: all)",
     )
 
     parser.add_argument(
-        '--quick',
-        action='store_true',
-        help='高速テストモード（テストデータを削減）'
+        "--quick", action="store_true", help="高速テストモード（テストデータを削減）"
     )
 
     parser.add_argument(
-        '--output',
+        "--output",
         type=str,
-        default='validation_results/data_persistence',
-        help='結果出力ディレクトリ (デフォルト: validation_results/data_persistence)'
+        default="validation_results/data_persistence",
+        help="結果出力ディレクトリ (デフォルト: validation_results/data_persistence)",
     )
 
     parser.add_argument(
-        '--timeout',
+        "--timeout",
         type=int,
         default=600,
-        help='テストタイムアウト（秒） (デフォルト: 600)'
+        help="テストタイムアウト（秒） (デフォルト: 600)",
     )
 
     parser.add_argument(
-        '--memory-limit',
+        "--memory-limit",
         type=int,
         default=4096,
-        help='メモリ制限（MB） (デフォルト: 4096)'
+        help="メモリ制限（MB） (デフォルト: 4096)",
     )
 
-    parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='詳細ログ出力'
-    )
+    parser.add_argument("--verbose", action="store_true", help="詳細ログ出力")
 
     parser.add_argument(
-        '--no-cleanup',
-        action='store_true',
-        help='テスト後のクリーンアップをスキップ（デバッグ用）'
+        "--no-cleanup",
+        action="store_true",
+        help="テスト後のクリーンアップをスキップ（デバッグ用）",
     )
 
     return parser.parse_args()
@@ -93,19 +87,19 @@ def create_validation_config(args):
         max_execution_time=float(args.timeout),
         max_memory_usage=float(args.memory_limit),
         log_level="DEBUG" if args.verbose else "INFO",
-        output_directory=args.output
+        output_directory=args.output,
     )
 
 
 def get_test_methods(test_type):
     """テストタイプに応じた実行メソッドリストを取得"""
     test_mapping = {
-        'acid': ['test_database_acid_properties'],
-        'concurrent': ['test_concurrent_access_validation'],
-        'index': ['test_index_integrity_validation'],
-        'embedding': ['test_embedding_cache_validation'],
-        'backup': ['test_backup_recovery_validation'],
-        'all': None  # 全テストメソッドを実行
+        "acid": ["test_database_acid_properties"],
+        "concurrent": ["test_concurrent_access_validation"],
+        "index": ["test_index_integrity_validation"],
+        "embedding": ["test_embedding_cache_validation"],
+        "backup": ["test_backup_recovery_validation"],
+        "all": None,  # 全テストメソッドを実行
     }
 
     return test_mapping.get(test_type, None)
@@ -161,7 +155,11 @@ def run_validation(args):
         print(f"総テスト数: {total_tests}")
         print(f"成功: {passed_tests}")
         print(f"失敗: {failed_tests}")
-        print(f"成功率: {(passed_tests/total_tests)*100:.1f}%" if total_tests > 0 else "成功率: N/A")
+        print(
+            f"成功率: {(passed_tests/total_tests)*100:.1f}%"
+            if total_tests > 0
+            else "成功率: N/A"
+        )
 
         # パフォーマンス統計
         stats = validator.get_statistics_summary()
@@ -195,7 +193,7 @@ def run_validation(args):
                 validator_name="DataPersistenceValidator",
                 results=results,
                 statistics=stats,
-                config=config
+                config=config,
             )
 
             print("\n詳細レポートを生成しました:")
@@ -218,6 +216,7 @@ def run_validation(args):
     except Exception as e:
         print(f"\n❌ 検証実行中にエラーが発生しました: {e}")
         import traceback
+
         if args.verbose:
             print("\nスタックトレース:")
             traceback.print_exc()

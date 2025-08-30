@@ -22,14 +22,16 @@ class IntegrationTestRunner:
     """統合テスト実行クラス"""
 
     def __init__(self, output_dir=None):
-        self.output_dir = Path(output_dir) if output_dir else project_root / "test_reports"
+        self.output_dir = (
+            Path(output_dir) if output_dir else project_root / "test_reports"
+        )
         self.output_dir.mkdir(exist_ok=True)
 
         self.test_results = {
-            'start_time': datetime.now(),
-            'test_suites': {},
-            'summary': {},
-            'end_time': None
+            "start_time": datetime.now(),
+            "test_suites": {},
+            "summary": {},
+            "end_time": None,
         }
 
     def run_test_suite(self, test_file, suite_name, markers=None):
@@ -43,12 +45,14 @@ class IntegrationTestRunner:
 
         # pytestコマンドを構築
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             str(test_file),
             "-v",
             "--tb=short",
             "--json-report",
-            f"--json-report-file={self.output_dir / f'{suite_name}_report.json'}"
+            f"--json-report-file={self.output_dir / f'{suite_name}_report.json'}",
         ]
 
         # マーカーが指定されている場合は追加
@@ -59,37 +63,34 @@ class IntegrationTestRunner:
         try:
             # テスト実行
             result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                cwd=project_root
+                cmd, capture_output=True, text=True, cwd=project_root
             )
 
             execution_time = time.time() - start_time
 
             # 結果を記録
             suite_result = {
-                'suite_name': suite_name,
-                'test_file': str(test_file),
-                'execution_time': execution_time,
-                'return_code': result.returncode,
-                'stdout': result.stdout,
-                'stderr': result.stderr,
-                'success': result.returncode == 0,
-                'timestamp': datetime.now().isoformat()
+                "suite_name": suite_name,
+                "test_file": str(test_file),
+                "execution_time": execution_time,
+                "return_code": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "success": result.returncode == 0,
+                "timestamp": datetime.now().isoformat(),
             }
 
             # JSON レポートファイルが存在する場合は読み込み
-            json_report_file = self.output_dir / f'{suite_name}_report.json'
+            json_report_file = self.output_dir / f"{suite_name}_report.json"
             if json_report_file.exists():
                 try:
-                    with open(json_report_file, encoding='utf-8') as f:
+                    with open(json_report_file, encoding="utf-8") as f:
                         json_data = json.load(f)
-                        suite_result['detailed_results'] = json_data
+                        suite_result["detailed_results"] = json_data
                 except Exception as e:
-                    suite_result['json_parse_error'] = str(e)
+                    suite_result["json_parse_error"] = str(e)
 
-            self.test_results['test_suites'][suite_name] = suite_result
+            self.test_results["test_suites"][suite_name] = suite_result
 
             # 結果表示
             if result.returncode == 0:
@@ -102,15 +103,15 @@ class IntegrationTestRunner:
 
         except Exception as e:
             error_result = {
-                'suite_name': suite_name,
-                'test_file': str(test_file),
-                'execution_time': time.time() - start_time,
-                'error': str(e),
-                'success': False,
-                'timestamp': datetime.now().isoformat()
+                "suite_name": suite_name,
+                "test_file": str(test_file),
+                "execution_time": time.time() - start_time,
+                "error": str(e),
+                "success": False,
+                "timestamp": datetime.now().isoformat(),
             }
 
-            self.test_results['test_suites'][suite_name] = error_result
+            self.test_results["test_suites"][suite_name] = error_result
             print(f"✗ {suite_name} 実行エラー: {e}")
 
             return error_result
@@ -122,86 +123,94 @@ class IntegrationTestRunner:
         # テストスイート定義
         test_suites = [
             {
-                'file': 'tests/test_indexing_worker_integration.py',
-                'name': 'indexing_worker_integration',
-                'markers': ['integration']
+                "file": "tests/test_indexing_worker_integration.py",
+                "name": "indexing_worker_integration",
+                "markers": ["integration"],
             },
             {
-                'file': 'tests/test_error_cases_and_debugging.py',
-                'name': 'error_cases_and_debugging',
-                'markers': ['integration']
+                "file": "tests/test_error_cases_and_debugging.py",
+                "name": "error_cases_and_debugging",
+                "markers": ["integration"],
             },
             {
-                'file': 'tests/test_comprehensive_integration_suite.py',
-                'name': 'comprehensive_integration_suite',
-                'markers': ['integration']
+                "file": "tests/test_comprehensive_integration_suite.py",
+                "name": "comprehensive_integration_suite",
+                "markers": ["integration"],
             },
             {
-                'file': 'tests/test_end_to_end_integration.py',
-                'name': 'end_to_end_integration',
-                'markers': ['integration']
-            }
+                "file": "tests/test_end_to_end_integration.py",
+                "name": "end_to_end_integration",
+                "markers": ["integration"],
+            },
         ]
 
         # パフォーマンステストを含める場合
         if include_performance:
-            test_suites.append({
-                'file': 'tests/test_large_scale_performance.py',
-                'name': 'large_scale_performance',
-                'markers': ['performance']
-            })
+            test_suites.append(
+                {
+                    "file": "tests/test_large_scale_performance.py",
+                    "name": "large_scale_performance",
+                    "markers": ["performance"],
+                }
+            )
 
         # 低速テストを含める場合
         if include_slow:
             for suite in test_suites:
-                if 'slow' not in suite['markers']:
-                    suite['markers'].append('slow')
+                if "slow" not in suite["markers"]:
+                    suite["markers"].append("slow")
 
         # 各テストスイートを実行
         for suite_config in test_suites:
-            test_file = project_root / suite_config['file']
+            test_file = project_root / suite_config["file"]
 
             if test_file.exists():
                 self.run_test_suite(
-                    test_file,
-                    suite_config['name'],
-                    suite_config['markers']
+                    test_file, suite_config["name"], suite_config["markers"]
                 )
             else:
                 print(f"警告: テストファイルが見つかりません: {test_file}")
 
     def generate_summary_report(self):
         """サマリーレポートを生成"""
-        self.test_results['end_time'] = datetime.now()
+        self.test_results["end_time"] = datetime.now()
 
         # サマリー統計を計算
-        total_suites = len(self.test_results['test_suites'])
+        total_suites = len(self.test_results["test_suites"])
         successful_suites = sum(
-            1 for result in self.test_results['test_suites'].values()
-            if result.get('success', False)
+            1
+            for result in self.test_results["test_suites"].values()
+            if result.get("success", False)
         )
         failed_suites = total_suites - successful_suites
 
         total_execution_time = sum(
-            result.get('execution_time', 0)
-            for result in self.test_results['test_suites'].values()
+            result.get("execution_time", 0)
+            for result in self.test_results["test_suites"].values()
         )
 
-        self.test_results['summary'] = {
-            'total_suites': total_suites,
-            'successful_suites': successful_suites,
-            'failed_suites': failed_suites,
-            'success_rate': (successful_suites / total_suites * 100) if total_suites > 0 else 0,
-            'total_execution_time': total_execution_time,
-            'overall_success': failed_suites == 0
+        self.test_results["summary"] = {
+            "total_suites": total_suites,
+            "successful_suites": successful_suites,
+            "failed_suites": failed_suites,
+            "success_rate": (
+                (successful_suites / total_suites * 100) if total_suites > 0 else 0
+            ),
+            "total_execution_time": total_execution_time,
+            "overall_success": failed_suites == 0,
         }
 
         # レポートファイルに保存
-        report_file = self.output_dir / f"integration_test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        report_file = (
+            self.output_dir
+            / f"integration_test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
 
         try:
-            with open(report_file, 'w', encoding='utf-8') as f:
-                json.dump(self.test_results, f, ensure_ascii=False, indent=2, default=str)
+            with open(report_file, "w", encoding="utf-8") as f:
+                json.dump(
+                    self.test_results, f, ensure_ascii=False, indent=2, default=str
+                )
 
             print(f"\n{'='*60}")
             print("統合テスト実行完了")
@@ -223,13 +232,13 @@ class IntegrationTestRunner:
     def generate_html_report(self, json_report_file):
         """HTMLレポートを生成"""
         try:
-            with open(json_report_file, encoding='utf-8') as f:
+            with open(json_report_file, encoding="utf-8") as f:
                 data = json.load(f)
 
             html_content = self._create_html_report(data)
 
-            html_file = json_report_file.with_suffix('.html')
-            with open(html_file, 'w', encoding='utf-8') as f:
+            html_file = json_report_file.with_suffix(".html")
+            with open(html_file, "w", encoding="utf-8") as f:
                 f.write(html_content)
 
             print(f"HTMLレポート生成完了: {html_file}")
@@ -241,7 +250,7 @@ class IntegrationTestRunner:
 
     def _create_html_report(self, data):
         """HTMLレポートコンテンツを作成"""
-        summary = data.get('summary', {})
+        summary = data.get("summary", {})
 
         html = f"""
 <!DOCTYPE html>
@@ -302,10 +311,10 @@ class IntegrationTestRunner:
 """
 
         # 各テストスイートの詳細
-        for suite_name, suite_data in data.get('test_suites', {}).items():
-            success = suite_data.get('success', False)
-            status_class = 'success' if success else 'failure'
-            status_text = '成功' if success else '失敗'
+        for suite_name, suite_data in data.get("test_suites", {}).items():
+            success = suite_data.get("success", False)
+            status_class = "success" if success else "failure"
+            status_text = "成功" if success else "失敗"
 
             html += f"""
     <div class="test-suite">
@@ -318,7 +327,7 @@ class IntegrationTestRunner:
             <p><strong>タイムスタンプ:</strong> {suite_data.get('timestamp', 'N/A')}</p>
 """
 
-            if not success and 'stderr' in suite_data:
+            if not success and "stderr" in suite_data:
                 html += f"""
             <h4>エラー詳細:</h4>
             <pre style="background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto;">{suite_data['stderr']}</pre>
@@ -339,11 +348,18 @@ class IntegrationTestRunner:
 
 def main():
     """メイン関数"""
-    parser = argparse.ArgumentParser(description='DocMind 統合テスト実行スクリプト')
-    parser.add_argument('--output-dir', '-o', help='出力ディレクトリ')
-    parser.add_argument('--include-slow', '-s', action='store_true', help='低速テストを含める')
-    parser.add_argument('--include-performance', '-p', action='store_true', help='パフォーマンステストを含める')
-    parser.add_argument('--html', action='store_true', help='HTMLレポートを生成')
+    parser = argparse.ArgumentParser(description="DocMind 統合テスト実行スクリプト")
+    parser.add_argument("--output-dir", "-o", help="出力ディレクトリ")
+    parser.add_argument(
+        "--include-slow", "-s", action="store_true", help="低速テストを含める"
+    )
+    parser.add_argument(
+        "--include-performance",
+        "-p",
+        action="store_true",
+        help="パフォーマンステストを含める",
+    )
+    parser.add_argument("--html", action="store_true", help="HTMLレポートを生成")
 
     args = parser.parse_args()
 
@@ -353,8 +369,7 @@ def main():
     try:
         # 統合テストを実行
         runner.run_all_integration_tests(
-            include_slow=args.include_slow,
-            include_performance=args.include_performance
+            include_slow=args.include_slow, include_performance=args.include_performance
         )
 
         # レポートを生成
@@ -364,7 +379,7 @@ def main():
             runner.generate_html_report(json_report)
 
         # 終了コードを設定
-        overall_success = runner.test_results['summary'].get('overall_success', False)
+        overall_success = runner.test_results["summary"].get("overall_success", False)
         sys.exit(0 if overall_success else 1)
 
     except KeyboardInterrupt:

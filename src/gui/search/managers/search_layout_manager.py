@@ -74,7 +74,9 @@ class SearchLayoutManager(QObject):
 
         return search_input, search_button, clear_button
 
-    def create_search_components(self, layout: QVBoxLayout, main_frame: QFrame) -> tuple:
+    def create_search_components(
+        self, layout: QVBoxLayout, main_frame: QFrame
+    ) -> tuple:
         """検索コンポーネントを作成"""
         # 検索タイプ選択
         search_type_selector = SearchTypeSelector()

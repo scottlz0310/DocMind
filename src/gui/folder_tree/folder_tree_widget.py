@@ -38,10 +38,10 @@ class FolderTreeWidget(QTreeWidget):
     """
 
     # シグナル定義
-    folder_selected = Signal(str)           # フォルダが選択された時
-    folder_indexed = Signal(str)            # フォルダのインデックス要求
-    folder_excluded = Signal(str)           # フォルダの除外要求
-    refresh_requested = Signal()            # リフレッシュ要求
+    folder_selected = Signal(str)  # フォルダが選択された時
+    folder_indexed = Signal(str)  # フォルダのインデックス要求
+    folder_excluded = Signal(str)  # フォルダの除外要求
+    refresh_requested = Signal()  # リフレッシュ要求
 
     def __init__(self, parent: QWidget | None = None):
         """
@@ -55,13 +55,13 @@ class FolderTreeWidget(QTreeWidget):
         self.logger = logging.getLogger(__name__)
 
         # 内部状態
-        self.root_paths: list[str] = []                    # ルートパスのリスト
-        self.expanded_paths: set[str] | None = None     # 展開済みパスのセット
-        self.indexing_paths: set[str] | None = None     # インデックス処理中パスのセット
-        self.indexed_paths: set[str] | None = None      # インデックス済みパスのセット
-        self.excluded_paths: set[str] | None = None     # 除外パスのセット
-        self.error_paths: set[str] | None = None        # エラー状態パスのセット
-        self.item_map: dict[str, FolderTreeItem] = {}      # パス→アイテムのマッピング
+        self.root_paths: list[str] = []  # ルートパスのリスト
+        self.expanded_paths: set[str] | None = None  # 展開済みパスのセット
+        self.indexing_paths: set[str] | None = None  # インデックス処理中パスのセット
+        self.indexed_paths: set[str] | None = None  # インデックス済みパスのセット
+        self.excluded_paths: set[str] | None = None  # 除外パスのセット
+        self.error_paths: set[str] | None = None  # エラー状態パスのセット
+        self.item_map: dict[str, FolderTreeItem] = {}  # パス→アイテムのマッピング
 
         # パフォーマンス最適化コンポーネント
         self.path_optimizer = PathOptimizer()
@@ -121,9 +121,7 @@ class FolderTreeWidget(QTreeWidget):
             if not os.path.exists(root_path) or not os.path.isdir(root_path):
                 self.logger.error(f"無効なフォルダパス: {root_path}")
                 QMessageBox.warning(
-                    self,
-                    "エラー",
-                    f"指定されたフォルダが見つかりません:\n{root_path}"
+                    self, "エラー", f"指定されたフォルダが見つかりません:\n{root_path}"
                 )
                 return
 
@@ -155,9 +153,7 @@ class FolderTreeWidget(QTreeWidget):
         except Exception as e:
             self.logger.error(f"フォルダ構造の読み込み中にエラーが発生しました: {e}")
             QMessageBox.critical(
-                self,
-                "エラー",
-                f"フォルダ構造の読み込みに失敗しました:\n{str(e)}"
+                self, "エラー", f"フォルダ構造の読み込みに失敗しました:\n{str(e)}"
             )
             # エラーが発生した場合は、追加されたパスを削除
             if root_path in self.root_paths:
@@ -189,8 +185,9 @@ class FolderTreeWidget(QTreeWidget):
 
     def _remove_from_maps(self, root_path: str):
         """指定されたルートパス以下のアイテムを内部マップから削除します"""
-        paths_to_remove = [path for path in self.item_map.keys()
-                          if path.startswith(root_path)]
+        paths_to_remove = [
+            path for path in self.item_map.keys() if path.startswith(root_path)
+        ]
 
         self._ensure_path_sets()
         for path in paths_to_remove:
@@ -300,14 +297,20 @@ class FolderTreeWidget(QTreeWidget):
             item._update_icon()
 
             # 処理中の表示テキストを更新
-            folder_name = self.path_optimizer.get_basename(folder_path) if folder_path else "ルート"
+            folder_name = (
+                self.path_optimizer.get_basename(folder_path)
+                if folder_path
+                else "ルート"
+            )
             if not folder_name:
                 folder_name = folder_path
             item.setText(0, f"{folder_name} (処理中...)")
 
         self.logger.info(f"フォルダをインデックス処理中状態に設定: {folder_path}")
 
-    def set_folder_indexed(self, folder_path: str, file_count: int = 0, indexed_count: int = 0):
+    def set_folder_indexed(
+        self, folder_path: str, file_count: int = 0, indexed_count: int = 0
+    ):
         """
         フォルダをインデックス済み状態に設定します
 
@@ -330,7 +333,9 @@ class FolderTreeWidget(QTreeWidget):
             # 統計情報を更新
             item.update_statistics(file_count, indexed_count)
 
-        self.logger.info(f"フォルダをインデックス済み状態に設定: {folder_path} ({indexed_count}/{file_count})")
+        self.logger.info(
+            f"フォルダをインデックス済み状態に設定: {folder_path} ({indexed_count}/{file_count})"
+        )
 
     def set_folder_error(self, folder_path: str, error_message: str = ""):
         """
@@ -352,7 +357,11 @@ class FolderTreeWidget(QTreeWidget):
             item._update_icon()
 
             # エラー表示テキストを更新
-            folder_name = self.path_optimizer.get_basename(folder_path) if folder_path else "ルート"
+            folder_name = (
+                self.path_optimizer.get_basename(folder_path)
+                if folder_path
+                else "ルート"
+            )
             if not folder_name:
                 folder_name = folder_path
             item.setText(0, f"{folder_name} (エラー)")
@@ -361,7 +370,9 @@ class FolderTreeWidget(QTreeWidget):
             if error_message:
                 item.setToolTip(0, f"{folder_path}\nエラー: {error_message}")
 
-        self.logger.error(f"フォルダをエラー状態に設定: {folder_path} - {error_message}")
+        self.logger.error(
+            f"フォルダをエラー状態に設定: {folder_path} - {error_message}"
+        )
 
     def clear_folder_state(self, folder_path: str):
         """
@@ -382,7 +393,11 @@ class FolderTreeWidget(QTreeWidget):
             item._update_icon()
 
             # 表示テキストを通常に戻す
-            folder_name = self.path_optimizer.get_basename(folder_path) if folder_path else "ルート"
+            folder_name = (
+                self.path_optimizer.get_basename(folder_path)
+                if folder_path
+                else "ルート"
+            )
             if not folder_name:
                 folder_name = folder_path
             item.setText(0, folder_name)
@@ -424,27 +439,27 @@ class FolderTreeWidget(QTreeWidget):
         self._cleanup_workers()
 
         # パフォーマンス最適化コンポーネントのクリーンアップ
-        if hasattr(self, 'path_optimizer'):
+        if hasattr(self, "path_optimizer"):
             self.path_optimizer.clear_cache()
-        if hasattr(self, 'set_manager'):
+        if hasattr(self, "set_manager"):
             self.set_manager.cleanup()
-        if hasattr(self, 'batch_processor'):
+        if hasattr(self, "batch_processor"):
             self.batch_processor.cleanup()
 
         # UI管理コンポーネントのクリーンアップ
-        if hasattr(self, 'ui_setup_manager'):
+        if hasattr(self, "ui_setup_manager"):
             self.ui_setup_manager.cleanup()
-        if hasattr(self, 'filter_manager'):
+        if hasattr(self, "filter_manager"):
             self.filter_manager.cleanup()
-        if hasattr(self, 'context_menu_manager'):
+        if hasattr(self, "context_menu_manager"):
             self.context_menu_manager.cleanup()
 
         # イベント処理コンポーネントのクリーンアップ
-        if hasattr(self, 'event_handler_manager'):
+        if hasattr(self, "event_handler_manager"):
             self.event_handler_manager.cleanup()
-        if hasattr(self, 'signal_manager'):
+        if hasattr(self, "signal_manager"):
             self.signal_manager.cleanup()
-        if hasattr(self, 'action_manager'):
+        if hasattr(self, "action_manager"):
             self.action_manager.cleanup()
 
         super().closeEvent(event)
@@ -539,7 +554,9 @@ class FolderTreeContainer(QWidget):
     def _connect_signals(self):
         """シグナルを接続します"""
         # ボタンのシグナル
-        self.add_button.clicked.connect(self.tree_widget.context_menu_manager._add_folder)
+        self.add_button.clicked.connect(
+            self.tree_widget.context_menu_manager._add_folder
+        )
         self.clear_filter_button.clicked.connect(self._clear_filter)
 
         # フィルター入力のシグナル
@@ -559,12 +576,14 @@ class FolderTreeContainer(QWidget):
     def _on_filter_changed(self, text: str):
         """フィルター入力変更時の処理"""
         # 少し遅延させてパフォーマンスを向上
-        if hasattr(self, '_filter_timer'):
+        if hasattr(self, "_filter_timer"):
             self._filter_timer.stop()
 
         self._filter_timer = QTimer()
         self._filter_timer.setSingleShot(True)
-        self._filter_timer.timeout.connect(lambda: self.tree_widget.filter_folders(text))
+        self._filter_timer.timeout.connect(
+            lambda: self.tree_widget.filter_folders(text)
+        )
         self._filter_timer.start(300)  # 300ms遅延
 
     def _clear_filter(self):
@@ -626,7 +645,9 @@ class FolderTreeContainer(QWidget):
         self.tree_widget.set_folder_indexing(folder_path)
         self._update_stats()
 
-    def set_folder_indexed(self, folder_path: str, file_count: int = 0, indexed_count: int = 0):
+    def set_folder_indexed(
+        self, folder_path: str, file_count: int = 0, indexed_count: int = 0
+    ):
         """フォルダをインデックス済み状態に設定します"""
         self.tree_widget.set_folder_indexed(folder_path, file_count, indexed_count)
         self._update_stats()
@@ -655,6 +676,6 @@ class FolderTreeContainer(QWidget):
 
     def closeEvent(self, event):
         """ウィジェット終了時の処理"""
-        if hasattr(self, 'tree_widget') and self.tree_widget:
+        if hasattr(self, "tree_widget") and self.tree_widget:
             self.tree_widget._cleanup_workers()
         super().closeEvent(event)

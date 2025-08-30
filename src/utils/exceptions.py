@@ -38,7 +38,13 @@ class DocumentProcessingError(DocMindException):
     ドキュメント処理で問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, file_path: str = None, file_type: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        file_path: str = None,
+        file_type: str = None,
+        details: str = None,
+    ):
         """ドキュメント処理エラーを初期化
 
         Args:
@@ -59,7 +65,13 @@ class ThreadManagementError(DocMindException):
     スレッド管理処理で問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, thread_id: str = None, operation: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        thread_id: str = None,
+        operation: str = None,
+        details: str = None,
+    ):
         """スレッド管理エラーを初期化
 
         Args:
@@ -80,7 +92,13 @@ class IndexingError(DocMindException):
     問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, index_path: str = None, operation: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        index_path: str = None,
+        operation: str = None,
+        details: str = None,
+    ):
         """インデックスエラーを初期化
 
         Args:
@@ -101,7 +119,13 @@ class SearchError(DocMindException):
     検索操作で問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, query: str = None, search_type: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        query: str = None,
+        search_type: str = None,
+        details: str = None,
+    ):
         """検索エラーを初期化
 
         Args:
@@ -122,7 +146,13 @@ class EmbeddingError(DocMindException):
     類似度計算などで問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, model_name: str = None, operation: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        model_name: str = None,
+        operation: str = None,
+        details: str = None,
+    ):
         """埋め込みエラーを初期化
 
         Args:
@@ -143,7 +173,13 @@ class DatabaseError(DocMindException):
     問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, database_path: str = None, operation: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        database_path: str = None,
+        operation: str = None,
+        details: str = None,
+    ):
         """データベースエラーを初期化
 
         Args:
@@ -164,7 +200,13 @@ class ConfigurationError(DocMindException):
     問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, config_key: str = None, config_value: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        config_key: str = None,
+        config_value: str = None,
+        details: str = None,
+    ):
         """設定エラーを初期化
 
         Args:
@@ -185,7 +227,9 @@ class FileSystemError(DocMindException):
     問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, path: str = None, operation: str = None, details: str = None):
+    def __init__(
+        self, message: str, path: str = None, operation: str = None, details: str = None
+    ):
         """ファイルシステムエラーを初期化
 
         Args:
@@ -205,7 +249,13 @@ class DocumentNotFoundError(DocMindException):
     指定されたIDやパスのドキュメントがデータベースに存在しない場合に発生します。
     """
 
-    def __init__(self, message: str, document_id: str = None, file_path: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        document_id: str = None,
+        file_path: str = None,
+        details: str = None,
+    ):
         """ドキュメント未発見エラーを初期化
 
         Args:
@@ -221,16 +271,19 @@ class DocumentNotFoundError(DocMindException):
 
 class BackgroundProcessingError(DocMindException):
     """バックグラウンド処理エラー"""
+
     pass
 
 
 class CacheError(DocMindException):
     """キャッシュ操作エラー"""
+
     pass
 
 
 class MemoryError(DocMindException):
     """メモリ管理エラー"""
+
     pass
 
 
@@ -241,7 +294,13 @@ class UpdateError(DocMindException):
     問題が発生した場合に発生します。
     """
 
-    def __init__(self, message: str, update_version: str = None, operation: str = None, details: str = None):
+    def __init__(
+        self,
+        message: str,
+        update_version: str = None,
+        operation: str = None,
+        details: str = None,
+    ):
         """アップデートエラーを初期化
 
         Args:

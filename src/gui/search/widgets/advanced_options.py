@@ -146,7 +146,8 @@ class AdvancedSearchOptions(QGroupBox):
         layout.addWidget(weights_group)
 
         # スタイル設定
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QGroupBox {
                 font-weight: bold;
                 border: 1px solid #d0d0d0;
@@ -162,7 +163,8 @@ class AdvancedSearchOptions(QGroupBox):
             QCheckBox, QRadioButton {
                 font-weight: normal;
             }
-        """)
+        """
+        )
 
     def _setup_connections(self) -> None:
         """シグナル接続の設定"""
@@ -233,7 +235,8 @@ class AdvancedSearchOptions(QGroupBox):
         """現在の検索オプションを取得"""
         # 選択されたファイルタイプ
         selected_file_types = [
-            file_type for file_type, checkbox in self.file_type_checkboxes.items()
+            file_type
+            for file_type, checkbox in self.file_type_checkboxes.items()
             if checkbox.isChecked()
         ]
 
@@ -248,14 +251,14 @@ class AdvancedSearchOptions(QGroupBox):
             date_to = datetime.combine(date_to, datetime.max.time())
 
         return {
-            'file_types': selected_file_types,
-            'date_from': date_from,
-            'date_to': date_to,
-            'limit': self.result_limit.value(),
-            'weights': {
-                'full_text': self.full_text_weight.value() / 100.0,
-                'semantic': self.semantic_weight.value() / 100.0
-            }
+            "file_types": selected_file_types,
+            "date_from": date_from,
+            "date_to": date_to,
+            "limit": self.result_limit.value(),
+            "weights": {
+                "full_text": self.full_text_weight.value() / 100.0,
+                "semantic": self.semantic_weight.value() / 100.0,
+            },
         }
 
     def reset_to_defaults(self) -> None:

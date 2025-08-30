@@ -20,7 +20,7 @@ from typing import Any
 import psutil
 
 # DocMindコンポーネントのインポート
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 try:
     from .base_validator import BaseValidator, ValidationConfig, ValidationResult
@@ -45,17 +45,19 @@ from src.utils.config import Config
 @dataclass
 class PerformanceThresholds:
     """パフォーマンス閾値設定"""
-    search_time_seconds: float = 5.0          # 検索時間（秒）
-    indexing_time_seconds: float = 30.0       # インデックス化時間（秒、1000ドキュメント）
-    memory_usage_mb: float = 2048.0           # メモリ使用量（MB）
-    cpu_idle_percent: float = 10.0            # アイドル時CPU使用率（%）
-    startup_time_seconds: float = 10.0        # 起動時間（秒）
-    large_dataset_documents: int = 50000      # 大規模データセットのドキュメント数
+
+    search_time_seconds: float = 5.0  # 検索時間（秒）
+    indexing_time_seconds: float = 30.0  # インデックス化時間（秒、1000ドキュメント）
+    memory_usage_mb: float = 2048.0  # メモリ使用量（MB）
+    cpu_idle_percent: float = 10.0  # アイドル時CPU使用率（%）
+    startup_time_seconds: float = 10.0  # 起動時間（秒）
+    large_dataset_documents: int = 50000  # 大規模データセットのドキュメント数
 
 
 @dataclass
 class PerformanceMetrics:
     """パフォーマンス測定結果"""
+
     test_name: str
     execution_time: float
     memory_usage_mb: float
@@ -117,7 +119,7 @@ class PerformanceValidator(BaseValidator):
         self.data_generator.setup_test_environment(self.test_base_dir)
 
         # クイックモードの設定（CI環境など）
-        if os.getenv('QUICK_PERFORMANCE_TEST', 'false').lower() == 'true':
+        if os.getenv("QUICK_PERFORMANCE_TEST", "false").lower() == "true":
             self.quick_mode = True
             self.large_test_enabled = False
             self.data_generator.set_quick_mode(True)
@@ -136,23 +138,22 @@ class PerformanceValidator(BaseValidator):
 
             # インデックスマネージャーの初期化
             index_path = os.path.join(test_data_dir, "whoosh_index")
-            self.test_components['index_manager'] = IndexManager(index_path)
+            self.test_components["index_manager"] = IndexManager(index_path)
 
             # 埋め込みマネージャーの初期化
             embeddings_path = os.path.join(test_data_dir, "embeddings.pkl")
-            self.test_components['embedding_manager'] = EmbeddingManager(
-                model_name="all-MiniLM-L6-v2",
-                embeddings_path=embeddings_path
+            self.test_components["embedding_manager"] = EmbeddingManager(
+                model_name="all-MiniLM-L6-v2", embeddings_path=embeddings_path
             )
 
             # 検索マネージャーの初期化
-            self.test_components['search_manager'] = SearchManager(
-                self.test_components['index_manager'],
-                self.test_components['embedding_manager']
+            self.test_components["search_manager"] = SearchManager(
+                self.test_components["index_manager"],
+                self.test_components["embedding_manager"],
             )
 
             # ドキュメントプロセッサーの初期化
-            self.test_components['document_processor'] = DocumentProcessor()
+            self.test_components["document_processor"] = DocumentProcessor()
 
             self.logger.debug("DocMindコンポーネントの初期化が完了しました")
 
@@ -167,9 +168,9 @@ class PerformanceValidator(BaseValidator):
         try:
             # コンポーネントのクリーンアップ
             for _component_name, component in self.test_components.items():
-                if hasattr(component, 'close'):
+                if hasattr(component, "close"):
                     component.close()
-                elif hasattr(component, 'cleanup'):
+                elif hasattr(component, "cleanup"):
                     component.cleanup()
 
             # テストデータのクリーンアップ
@@ -178,7 +179,9 @@ class PerformanceValidator(BaseValidator):
             # 一時ディレクトリの削除
             if self.test_base_dir and os.path.exists(self.test_base_dir):
                 shutil.rmtree(self.test_base_dir)
-                self.logger.debug(f"テストディレクトリを削除しました: {self.test_base_dir}")
+                self.logger.debug(
+                    f"テストディレクトリを削除しました: {self.test_base_dir}"
+                )
 
             # メモリのクリーンアップ
             gc.collect()
@@ -202,10 +205,10 @@ class PerformanceValidator(BaseValidator):
             "ドキュメント 検索",
             "DocMind アプリケーション",
             "全文検索 セマンティック",
-            "パフォーマンス 測定"
+            "パフォーマンス 測定",
         ]
 
-        search_manager = self.test_components['search_manager']
+        search_manager = self.test_components["search_manager"]
 
         # パフォーマンステストでは全文検索のみテスト（セマンティック検索は時間がかかるため）
         for search_type in [SearchType.FULL_TEXT]:
@@ -218,7 +221,7 @@ class PerformanceValidator(BaseValidator):
                 self.assert_condition(
                     metrics.execution_time <= self.thresholds.search_time_seconds,
                     f"{search_type.value}検索が時間要件を満たしません: "
-                    f"{metrics.execution_time:.2f}秒 > {self.thresholds.search_time_seconds}秒"
+                    f"{metrics.execution_time:.2f}秒 > {self.thresholds.search_time_seconds}秒",
                 )
 
                 self.performance_metrics.append(metrics)
@@ -237,15 +240,13 @@ class PerformanceValidator(BaseValidator):
             dataset_name="indexing_performance_test",
             output_directory=test_data_path,
             file_count=document_count,
-            size_range_kb=(1, 50)
+            size_range_kb=(1, 50),
         )
 
         self.data_generator.generate_dataset(config)
 
         # インデックス化パフォーマンスの測定
-        metrics = self._measure_indexing_performance(
-            test_data_path, document_count
-        )
+        metrics = self._measure_indexing_performance(test_data_path, document_count)
 
         # 閾値チェック（1000ドキュメントあたりの時間に正規化）
         normalized_time = metrics.execution_time * (1000 / document_count)
@@ -254,7 +255,7 @@ class PerformanceValidator(BaseValidator):
             normalized_time <= self.thresholds.indexing_time_seconds,
             f"インデックス化が時間要件を満たしません: "
             f"{normalized_time:.2f}秒 > {self.thresholds.indexing_time_seconds}秒 "
-            f"(1000ドキュメントあたり)"
+            f"(1000ドキュメントあたり)",
         )
 
         self.performance_metrics.append(metrics)
@@ -281,12 +282,12 @@ class PerformanceValidator(BaseValidator):
             self._perform_memory_intensive_operations(test_documents)
 
             # 検索操作でメモリ使用量を測定
-            search_manager = self.test_components['search_manager']
+            search_manager = self.test_components["search_manager"]
             for i in range(10):
                 query = SearchQuery(
                     query_text=f"テストクエリ{i}",
                     search_type=SearchType.HYBRID,
-                    limit=100
+                    limit=100,
                 )
                 search_manager.search(query)
 
@@ -306,21 +307,23 @@ class PerformanceValidator(BaseValidator):
             cpu_usage_percent=0.0,
             disk_io_mb=0.0,
             additional_metrics={
-                'baseline_memory_mb': baseline_memory,
-                'memory_increase_mb': memory_increase,
-                'document_count': document_count
-            }
+                "baseline_memory_mb": baseline_memory,
+                "memory_increase_mb": memory_increase,
+                "document_count": document_count,
+            },
         )
 
         self.assert_condition(
             peak_memory <= self.thresholds.memory_usage_mb,
             f"メモリ使用量が要件を超過しました: "
-            f"{peak_memory:.1f}MB > {self.thresholds.memory_usage_mb}MB"
+            f"{peak_memory:.1f}MB > {self.thresholds.memory_usage_mb}MB",
         )
 
         self.performance_metrics.append(metrics)
 
-        self.logger.info(f"メモリ効率要件の検証が完了しました（ピーク: {peak_memory:.1f}MB）")
+        self.logger.info(
+            f"メモリ効率要件の検証が完了しました（ピーク: {peak_memory:.1f}MB）"
+        )
 
     def test_cpu_usage_requirements(self) -> None:
         """CPU使用率要件の検証（アイドル時10%以下）"""
@@ -336,12 +339,10 @@ class PerformanceValidator(BaseValidator):
             time.sleep(5.0)
 
             # 軽い処理での測定
-            search_manager = self.test_components['search_manager']
+            search_manager = self.test_components["search_manager"]
             for _i in range(3):
                 query = SearchQuery(
-                    query_text="軽量テスト",
-                    search_type=SearchType.FULL_TEXT,
-                    limit=10
+                    query_text="軽量テスト", search_type=SearchType.FULL_TEXT, limit=10
                 )
                 search_manager.search(query)
                 time.sleep(1.0)
@@ -351,30 +352,32 @@ class PerformanceValidator(BaseValidator):
 
         # CPU使用率の分析
         performance_summary = perf_monitor.get_performance_summary()
-        average_cpu = performance_summary['cpu_usage']['average_percent']
-        peak_cpu = performance_summary['cpu_usage']['peak_percent']
+        average_cpu = performance_summary["cpu_usage"]["average_percent"]
+        peak_cpu = performance_summary["cpu_usage"]["peak_percent"]
 
         metrics = PerformanceMetrics(
             test_name="cpu_usage_idle",
-            execution_time=performance_summary['monitoring_duration_seconds'],
+            execution_time=performance_summary["monitoring_duration_seconds"],
             memory_usage_mb=0.0,
             cpu_usage_percent=average_cpu,
             disk_io_mb=0.0,
             additional_metrics={
-                'peak_cpu_percent': peak_cpu,
-                'sample_count': performance_summary['sample_count']
-            }
+                "peak_cpu_percent": peak_cpu,
+                "sample_count": performance_summary["sample_count"],
+            },
         )
 
         self.assert_condition(
             average_cpu <= self.thresholds.cpu_idle_percent,
             f"アイドル時CPU使用率が要件を超過しました: "
-            f"{average_cpu:.1f}% > {self.thresholds.cpu_idle_percent}%"
+            f"{average_cpu:.1f}% > {self.thresholds.cpu_idle_percent}%",
         )
 
         self.performance_metrics.append(metrics)
 
-        self.logger.info(f"CPU使用率要件の検証が完了しました（平均: {average_cpu:.1f}%）")
+        self.logger.info(
+            f"CPU使用率要件の検証が完了しました（平均: {average_cpu:.1f}%）"
+        )
 
     def test_large_dataset_scalability(self) -> None:
         """大規模データセット（50,000ドキュメント）でのスケーラビリティ検証"""
@@ -397,7 +400,9 @@ class PerformanceValidator(BaseValidator):
             batch_end = min(batch_start + batch_size, document_count)
             batch_count = batch_end - batch_start
 
-            self.logger.info(f"バッチ処理中: {batch_start}-{batch_end} ({batch_count}ドキュメント)")
+            self.logger.info(
+                f"バッチ処理中: {batch_start}-{batch_end} ({batch_count}ドキュメント)"
+            )
 
             # バッチデータの生成
             batch_path = os.path.join(large_test_path, f"batch_{batch_start}")
@@ -405,7 +410,7 @@ class PerformanceValidator(BaseValidator):
                 dataset_name=f"large_batch_{batch_start}",
                 output_directory=batch_path,
                 file_count=batch_count,
-                size_range_kb=(1, 20)
+                size_range_kb=(1, 20),
             )
 
             self.data_generator.generate_dataset(config)
@@ -418,9 +423,9 @@ class PerformanceValidator(BaseValidator):
 
             # 検索パフォーマンスの測定
             search_metrics = self._measure_search_performance(
-                self.test_components['search_manager'],
+                self.test_components["search_manager"],
                 f"大規模テスト{batch_start}",
-                SearchType.HYBRID
+                SearchType.HYBRID,
             )
             total_search_times.append(search_metrics.execution_time)
 
@@ -436,23 +441,23 @@ class PerformanceValidator(BaseValidator):
             disk_io_mb=0.0,
             throughput_docs_per_sec=indexing_rate,
             additional_metrics={
-                'document_count': document_count,
-                'average_search_time': average_search_time,
-                'indexing_rate_docs_per_sec': indexing_rate,
-                'batch_count': len(total_search_times)
-            }
+                "document_count": document_count,
+                "average_search_time": average_search_time,
+                "indexing_rate_docs_per_sec": indexing_rate,
+                "batch_count": len(total_search_times),
+            },
         )
 
         # スケーラビリティ要件の検証
         self.assert_condition(
             average_search_time <= self.thresholds.search_time_seconds,
             f"大規模データセットでの検索時間が要件を超過: "
-            f"{average_search_time:.2f}秒 > {self.thresholds.search_time_seconds}秒"
+            f"{average_search_time:.2f}秒 > {self.thresholds.search_time_seconds}秒",
         )
 
         self.assert_condition(
             indexing_rate >= 10.0,  # 最低10ドキュメント/秒
-            f"インデックス化レートが低すぎます: {indexing_rate:.1f}ドキュメント/秒"
+            f"インデックス化レートが低すぎます: {indexing_rate:.1f}ドキュメント/秒",
         )
 
         self.performance_metrics.append(metrics)
@@ -470,8 +475,8 @@ class PerformanceValidator(BaseValidator):
         test_documents = self.data_generator.generate_test_documents(document_count)
 
         # インデックス化
-        index_manager = self.test_components['index_manager']
-        self.test_components['embedding_manager']
+        index_manager = self.test_components["index_manager"]
+        self.test_components["embedding_manager"]
 
         for doc in test_documents:
             index_manager.add_document(doc)
@@ -496,7 +501,7 @@ class PerformanceValidator(BaseValidator):
 
             # 一時ファイルを作成
             temp_file_path = os.path.join(self.test_base_dir, f"memory_test_{i}.txt")
-            with open(temp_file_path, 'w', encoding='utf-8') as f:
+            with open(temp_file_path, "w", encoding="utf-8") as f:
                 f.write(large_content)
 
             from src.data.models import Document
@@ -508,18 +513,19 @@ class PerformanceValidator(BaseValidator):
                 title=f"メモリテストドキュメント {i}",
                 content=large_content,
                 file_type=FileType.TEXT,
-                size=len(large_content.encode('utf-8')),
+                size=len(large_content.encode("utf-8")),
                 created_date=now,
                 modified_date=now,
-                indexed_date=now
+                indexed_date=now,
             )
             test_documents.append(doc)
 
         self.logger.debug("メモリテスト用データの準備が完了しました")
         return test_documents
 
-    def _measure_search_performance(self, search_manager, query_text: str,
-                                  search_type: SearchType) -> PerformanceMetrics:
+    def _measure_search_performance(
+        self, search_manager, query_text: str, search_type: SearchType
+    ) -> PerformanceMetrics:
         """検索パフォーマンスの測定"""
         # パフォーマンス監視開始
         perf_monitor = PerformanceMonitor(sampling_interval=0.1)
@@ -533,9 +539,7 @@ class PerformanceValidator(BaseValidator):
         try:
             # 検索実行
             query = SearchQuery(
-                query_text=query_text,
-                search_type=search_type,
-                limit=100
+                query_text=query_text, search_type=search_type, limit=100
             )
 
             results = search_manager.search(query)
@@ -562,20 +566,22 @@ class PerformanceValidator(BaseValidator):
             test_name=f"search_{search_type.value}",
             execution_time=execution_time,
             memory_usage_mb=peak_memory,
-            cpu_usage_percent=perf_summary['cpu_usage']['average_percent'],
-            disk_io_mb=perf_summary['disk_io']['read_mb'] + perf_summary['disk_io']['write_mb'],
+            cpu_usage_percent=perf_summary["cpu_usage"]["average_percent"],
+            disk_io_mb=perf_summary["disk_io"]["read_mb"]
+            + perf_summary["disk_io"]["write_mb"],
             success_rate=1.0 if success else 0.0,
             error_count=0 if success else 1,
             additional_metrics={
-                'query_text': query_text,
-                'search_type': search_type.value,
-                'result_count': len(results),
-                'peak_cpu_percent': perf_summary['cpu_usage']['peak_percent']
-            }
+                "query_text": query_text,
+                "search_type": search_type.value,
+                "result_count": len(results),
+                "peak_cpu_percent": perf_summary["cpu_usage"]["peak_percent"],
+            },
         )
 
-    def _measure_indexing_performance(self, data_path: str,
-                                    document_count: int) -> PerformanceMetrics:
+    def _measure_indexing_performance(
+        self, data_path: str, document_count: int
+    ) -> PerformanceMetrics:
         """インデックス化パフォーマンスの測定"""
         # パフォーマンス監視開始
         perf_monitor = PerformanceMonitor(sampling_interval=0.5)
@@ -588,16 +594,16 @@ class PerformanceValidator(BaseValidator):
 
         try:
             # ドキュメント処理とインデックス化
-            document_processor = self.test_components['document_processor']
-            index_manager = self.test_components['index_manager']
-            embedding_manager = self.test_components['embedding_manager']
+            document_processor = self.test_components["document_processor"]
+            index_manager = self.test_components["index_manager"]
+            embedding_manager = self.test_components["embedding_manager"]
 
             processed_count = 0
             error_count = 0
 
             # データディレクトリ内のファイルを処理
             for file_path in Path(data_path).rglob("*"):
-                if file_path.is_file() and not file_path.name.endswith('.json'):
+                if file_path.is_file() and not file_path.name.endswith(".json"):
                     try:
                         # ドキュメント処理
                         document = document_processor.process_file(str(file_path))
@@ -605,7 +611,9 @@ class PerformanceValidator(BaseValidator):
                         if document:
                             # インデックス化
                             index_manager.add_document(document)
-                            embedding_manager.add_document_embedding(document.id, document.content)
+                            embedding_manager.add_document_embedding(
+                                document.id, document.content
+                            )
                             processed_count += 1
 
                     except Exception as e:
@@ -638,22 +646,23 @@ class PerformanceValidator(BaseValidator):
             test_name="indexing_performance",
             execution_time=execution_time,
             memory_usage_mb=peak_memory,
-            cpu_usage_percent=perf_summary['cpu_usage']['average_percent'],
-            disk_io_mb=perf_summary['disk_io']['read_mb'] + perf_summary['disk_io']['write_mb'],
+            cpu_usage_percent=perf_summary["cpu_usage"]["average_percent"],
+            disk_io_mb=perf_summary["disk_io"]["read_mb"]
+            + perf_summary["disk_io"]["write_mb"],
             throughput_docs_per_sec=throughput,
             success_rate=success_rate,
             error_count=error_count,
             additional_metrics={
-                'processed_count': processed_count,
-                'target_count': document_count,
-                'peak_cpu_percent': perf_summary['cpu_usage']['peak_percent']
-            }
+                "processed_count": processed_count,
+                "target_count": document_count,
+                "peak_cpu_percent": perf_summary["cpu_usage"]["peak_percent"],
+            },
         )
 
     def _perform_memory_intensive_operations(self, test_documents: list) -> None:
         """メモリ集約的な操作を実行"""
-        index_manager = self.test_components['index_manager']
-        embedding_manager = self.test_components['embedding_manager']
+        index_manager = self.test_components["index_manager"]
+        embedding_manager = self.test_components["embedding_manager"]
 
         # 大量のドキュメントをインデックス化
         for doc in test_documents:
@@ -676,7 +685,9 @@ class PerformanceValidator(BaseValidator):
 
         # 統計計算
         total_tests = len(self.performance_metrics)
-        successful_tests = sum(1 for m in self.performance_metrics if m.success_rate > 0.8)
+        successful_tests = sum(
+            1 for m in self.performance_metrics if m.success_rate > 0.8
+        )
 
         execution_times = [m.execution_time for m in self.performance_metrics]
         memory_usages = [m.memory_usage_mb for m in self.performance_metrics]
@@ -686,30 +697,40 @@ class PerformanceValidator(BaseValidator):
             "test_summary": {
                 "total_tests": total_tests,
                 "successful_tests": successful_tests,
-                "success_rate": successful_tests / total_tests if total_tests > 0 else 0.0
+                "success_rate": (
+                    successful_tests / total_tests if total_tests > 0 else 0.0
+                ),
             },
             "performance_statistics": {
                 "execution_time": {
                     "min": min(execution_times) if execution_times else 0.0,
                     "max": max(execution_times) if execution_times else 0.0,
-                    "average": sum(execution_times) / len(execution_times) if execution_times else 0.0
+                    "average": (
+                        sum(execution_times) / len(execution_times)
+                        if execution_times
+                        else 0.0
+                    ),
                 },
                 "memory_usage_mb": {
                     "min": min(memory_usages) if memory_usages else 0.0,
                     "max": max(memory_usages) if memory_usages else 0.0,
-                    "average": sum(memory_usages) / len(memory_usages) if memory_usages else 0.0
+                    "average": (
+                        sum(memory_usages) / len(memory_usages)
+                        if memory_usages
+                        else 0.0
+                    ),
                 },
                 "cpu_usage_percent": {
                     "min": min(cpu_usages) if cpu_usages else 0.0,
                     "max": max(cpu_usages) if cpu_usages else 0.0,
-                    "average": sum(cpu_usages) / len(cpu_usages) if cpu_usages else 0.0
-                }
+                    "average": sum(cpu_usages) / len(cpu_usages) if cpu_usages else 0.0,
+                },
             },
             "threshold_compliance": {
                 "search_time": all(
                     m.execution_time <= self.thresholds.search_time_seconds
                     for m in self.performance_metrics
-                    if m.test_name.startswith('search_')
+                    if m.test_name.startswith("search_")
                 ),
                 "memory_usage": all(
                     m.memory_usage_mb <= self.thresholds.memory_usage_mb
@@ -718,8 +739,8 @@ class PerformanceValidator(BaseValidator):
                 "cpu_usage": all(
                     m.cpu_usage_percent <= self.thresholds.cpu_idle_percent
                     for m in self.performance_metrics
-                    if m.test_name == 'cpu_usage_idle'
-                )
+                    if m.test_name == "cpu_usage_idle"
+                ),
             },
             "detailed_metrics": [
                 {
@@ -728,8 +749,8 @@ class PerformanceValidator(BaseValidator):
                     "memory_usage_mb": m.memory_usage_mb,
                     "cpu_usage_percent": m.cpu_usage_percent,
                     "throughput_docs_per_sec": m.throughput_docs_per_sec,
-                    "success_rate": m.success_rate
+                    "success_rate": m.success_rate,
                 }
                 for m in self.performance_metrics
-            ]
+            ],
         }

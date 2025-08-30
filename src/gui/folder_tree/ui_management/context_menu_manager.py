@@ -27,7 +27,7 @@ class ContextMenuManager:
     右クリックメニューの表示、アクション処理、プロパティ表示を担当します。
     """
 
-    def __init__(self, tree_widget: 'FolderTreeWidget'):
+    def __init__(self, tree_widget: "FolderTreeWidget"):
         """
         コンテキストメニューマネージャーの初期化
 
@@ -46,32 +46,32 @@ class ContextMenuManager:
     def _create_actions(self):
         """コンテキストメニューアクションを作成します"""
         # フォルダ操作アクション
-        self.actions['add_folder'] = QAction("フォルダを追加...", self.tree_widget)
-        self.actions['add_folder'].triggered.connect(self._add_folder)
+        self.actions["add_folder"] = QAction("フォルダを追加...", self.tree_widget)
+        self.actions["add_folder"].triggered.connect(self._add_folder)
 
-        self.actions['remove_folder'] = QAction("フォルダを削除", self.tree_widget)
-        self.actions['remove_folder'].triggered.connect(self._remove_folder)
+        self.actions["remove_folder"] = QAction("フォルダを削除", self.tree_widget)
+        self.actions["remove_folder"].triggered.connect(self._remove_folder)
 
         # インデックス操作アクション
-        self.actions['index_folder'] = QAction("インデックスに追加", self.tree_widget)
-        self.actions['index_folder'].triggered.connect(self._index_folder)
+        self.actions["index_folder"] = QAction("インデックスに追加", self.tree_widget)
+        self.actions["index_folder"].triggered.connect(self._index_folder)
 
-        self.actions['exclude_folder'] = QAction("フォルダを除外", self.tree_widget)
-        self.actions['exclude_folder'].triggered.connect(self._exclude_folder)
+        self.actions["exclude_folder"] = QAction("フォルダを除外", self.tree_widget)
+        self.actions["exclude_folder"].triggered.connect(self._exclude_folder)
 
         # 表示操作アクション
-        self.actions['refresh'] = QAction("更新", self.tree_widget)
-        self.actions['refresh'].triggered.connect(self._refresh_folder)
+        self.actions["refresh"] = QAction("更新", self.tree_widget)
+        self.actions["refresh"].triggered.connect(self._refresh_folder)
 
-        self.actions['expand_all'] = QAction("すべて展開", self.tree_widget)
-        self.actions['expand_all'].triggered.connect(self.tree_widget.expandAll)
+        self.actions["expand_all"] = QAction("すべて展開", self.tree_widget)
+        self.actions["expand_all"].triggered.connect(self.tree_widget.expandAll)
 
-        self.actions['collapse_all'] = QAction("すべて折りたたみ", self.tree_widget)
-        self.actions['collapse_all'].triggered.connect(self.tree_widget.collapseAll)
+        self.actions["collapse_all"] = QAction("すべて折りたたみ", self.tree_widget)
+        self.actions["collapse_all"].triggered.connect(self.tree_widget.collapseAll)
 
         # 情報表示アクション
-        self.actions['properties'] = QAction("プロパティ...", self.tree_widget)
-        self.actions['properties'].triggered.connect(self._show_properties)
+        self.actions["properties"] = QAction("プロパティ...", self.tree_widget)
+        self.actions["properties"].triggered.connect(self._show_properties)
 
     def setup_context_menu(self):
         """コンテキストメニューを設定します"""
@@ -96,40 +96,40 @@ class ContextMenuManager:
         # メニューを表示
         menu.exec(self.tree_widget.mapToGlobal(position))
 
-    def _build_folder_menu(self, menu: QMenu, item: 'FolderTreeItem'):
+    def _build_folder_menu(self, menu: QMenu, item: "FolderTreeItem"):
         """フォルダアイテム用のメニューを構築します"""
         # インデックス操作
-        menu.addAction(self.actions['index_folder'])
-        menu.addAction(self.actions['exclude_folder'])
+        menu.addAction(self.actions["index_folder"])
+        menu.addAction(self.actions["exclude_folder"])
         menu.addSeparator()
 
         # フォルダ操作
-        menu.addAction(self.actions['remove_folder'])
+        menu.addAction(self.actions["remove_folder"])
         menu.addSeparator()
 
         # 表示操作
-        menu.addAction(self.actions['refresh'])
+        menu.addAction(self.actions["refresh"])
         menu.addSeparator()
-        menu.addAction(self.actions['expand_all'])
-        menu.addAction(self.actions['collapse_all'])
+        menu.addAction(self.actions["expand_all"])
+        menu.addAction(self.actions["collapse_all"])
         menu.addSeparator()
 
         # 情報表示
-        menu.addAction(self.actions['properties'])
+        menu.addAction(self.actions["properties"])
 
         # アクションの有効/無効を設定
         self._update_action_states(item)
 
     def _build_empty_menu(self, menu: QMenu):
         """空白部分用のメニューを構築します"""
-        menu.addAction(self.actions['add_folder'])
+        menu.addAction(self.actions["add_folder"])
         menu.addSeparator()
-        menu.addAction(self.actions['refresh'])
+        menu.addAction(self.actions["refresh"])
         menu.addSeparator()
-        menu.addAction(self.actions['expand_all'])
-        menu.addAction(self.actions['collapse_all'])
+        menu.addAction(self.actions["expand_all"])
+        menu.addAction(self.actions["collapse_all"])
 
-    def _update_action_states(self, item: 'FolderTreeItem'):
+    def _update_action_states(self, item: "FolderTreeItem"):
         """アクションの有効/無効状態を更新します"""
         folder_path = item.folder_path
 
@@ -140,9 +140,11 @@ class ContextMenuManager:
         is_root = folder_path in self.tree_widget.root_paths
 
         # アクション状態を設定
-        self.actions['index_folder'].setEnabled(not is_indexing and not is_indexed and not is_excluded)
-        self.actions['exclude_folder'].setEnabled(not is_indexing and not is_excluded)
-        self.actions['remove_folder'].setEnabled(is_root)
+        self.actions["index_folder"].setEnabled(
+            not is_indexing and not is_indexed and not is_excluded
+        )
+        self.actions["exclude_folder"].setEnabled(not is_indexing and not is_excluded)
+        self.actions["remove_folder"].setEnabled(is_root)
 
     # アクション実装メソッド
 
@@ -153,7 +155,7 @@ class ContextMenuManager:
                 self.tree_widget,
                 "追加するフォルダを選択",
                 str(Path.home()),
-                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks
+                QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
             )
 
             if folder_path:
@@ -162,9 +164,7 @@ class ContextMenuManager:
         except Exception as e:
             self.logger.error(f"フォルダ追加中にエラーが発生しました: {e}")
             QMessageBox.critical(
-                self.tree_widget,
-                "エラー",
-                f"フォルダの追加に失敗しました:\n{str(e)}"
+                self.tree_widget, "エラー", f"フォルダの追加に失敗しました:\n{str(e)}"
             )
 
     def _remove_folder(self):
@@ -178,9 +178,7 @@ class ContextMenuManager:
         folder_path = current_item.folder_path
         if folder_path not in self.tree_widget.root_paths:
             QMessageBox.information(
-                self.tree_widget,
-                "情報",
-                "ルートフォルダのみ削除できます。"
+                self.tree_widget, "情報", "ルートフォルダのみ削除できます。"
             )
             return
 
@@ -190,7 +188,7 @@ class ContextMenuManager:
             f"以下のフォルダをツリーから削除しますか?\n\n{folder_path}\n\n"
             "※ファイルシステムからは削除されません。",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
@@ -220,7 +218,7 @@ class ContextMenuManager:
             "インデックス追加",
             f"以下のフォルダをインデックスに追加しますか?\n\n{folder_path}",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.Yes
+            QMessageBox.Yes,
         )
 
         if reply == QMessageBox.Yes:
@@ -247,12 +245,14 @@ class ContextMenuManager:
             "フォルダ除外",
             f"以下のフォルダを検索対象から除外しますか?\n\n{folder_path}",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
             self.tree_widget.excluded_paths.add(folder_path)
-            self.tree_widget.indexed_paths.discard(folder_path)  # インデックスリストから削除
+            self.tree_widget.indexed_paths.discard(
+                folder_path
+            )  # インデックスリストから削除
 
             # アイテムの表示を更新
             current_item.item_type = FolderItemType.EXCLUDED
@@ -304,6 +304,7 @@ class ContextMenuManager:
                     return "0 B"
                 size_names = ["B", "KB", "MB", "GB", "TB"]
                 import math
+
                 i = int(math.floor(math.log(size_bytes, 1024)))
                 p = math.pow(1024, i)
                 s = round(size_bytes / p, 2)
@@ -328,16 +329,14 @@ class ContextMenuManager:
             """.strip()
 
             QMessageBox.information(
-                self.tree_widget,
-                "フォルダプロパティ",
-                properties_text
+                self.tree_widget, "フォルダプロパティ", properties_text
             )
 
         except Exception as e:
             QMessageBox.warning(
                 self.tree_widget,
                 "エラー",
-                f"フォルダ情報の取得に失敗しました:\n{str(e)}"
+                f"フォルダ情報の取得に失敗しました:\n{str(e)}",
             )
 
     def cleanup(self):

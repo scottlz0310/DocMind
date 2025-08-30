@@ -14,6 +14,7 @@ try:
     from PySide6.QtCore import Qt, QTimer, Signal
     from PySide6.QtTest import QTest
     from PySide6.QtWidgets import QApplication, QHBoxLayout, QVBoxLayout, QWidget
+
     GUI_AVAILABLE = True
 except ImportError:
     GUI_AVAILABLE = False
@@ -38,9 +39,11 @@ class TestMainWindowGUI:
         self.app = mock_qt_application
 
         # 依存関係をモック
-        with patch('src.gui.main_window.SearchManager') as mock_search_manager, \
-             patch('src.gui.main_window.DatabaseManager') as mock_db_manager, \
-             patch('src.gui.main_window.Config') as mock_config:
+        with (
+            patch("src.gui.main_window.SearchManager") as mock_search_manager,
+            patch("src.gui.main_window.DatabaseManager") as mock_db_manager,
+            patch("src.gui.main_window.Config") as mock_config,
+        ):
 
             self.mock_search_manager = Mock()
             mock_search_manager.return_value = self.mock_search_manager
@@ -56,7 +59,7 @@ class TestMainWindowGUI:
         yield
 
         # クリーンアップ
-        if hasattr(self, 'main_window'):
+        if hasattr(self, "main_window"):
             self.main_window.close()
 
     def test_main_window_initialization(self):
@@ -65,10 +68,10 @@ class TestMainWindowGUI:
         assert self.main_window.windowTitle() == "DocMind - ローカルドキュメント検索"
 
         # 基本的なウィジェットが存在することを確認
-        assert hasattr(self.main_window, 'folder_tree')
-        assert hasattr(self.main_window, 'search_results')
-        assert hasattr(self.main_window, 'preview_widget')
-        assert hasattr(self.main_window, 'search_interface')
+        assert hasattr(self.main_window, "folder_tree")
+        assert hasattr(self.main_window, "search_results")
+        assert hasattr(self.main_window, "preview_widget")
+        assert hasattr(self.main_window, "search_interface")
 
         print("✓ メインウィンドウ初期化テスト完了")
 
@@ -132,13 +135,13 @@ class TestMainWindowGUI:
                     title="テストドキュメント1",
                     content="これはテスト用のドキュメントです。",
                     file_type="text",
-                    size=100
+                    size=100,
                 ),
                 score=0.95,
                 search_type=SearchType.FULL_TEXT,
                 snippet="これはテスト用の...",
                 highlighted_terms=["テスト"],
-                relevance_explanation="キーワードマッチ"
+                relevance_explanation="キーワードマッチ",
             )
         ]
 
@@ -169,7 +172,7 @@ class TestFolderTreeGUI:
         yield
 
         # クリーンアップ
-        if hasattr(self, 'folder_tree'):
+        if hasattr(self, "folder_tree"):
             self.folder_tree.close()
 
     def test_folder_tree_initialization(self):
@@ -230,7 +233,7 @@ class TestSearchResultsGUI:
         yield
 
         # クリーンアップ
-        if hasattr(self, 'search_results'):
+        if hasattr(self, "search_results"):
             self.search_results.close()
 
     def test_search_results_initialization(self):
@@ -251,13 +254,13 @@ class TestSearchResultsGUI:
                     title="結果テストドキュメント1",
                     content="これは結果表示テスト用のドキュメントです。",
                     file_type="text",
-                    size=150
+                    size=150,
                 ),
                 score=0.9,
                 search_type=SearchType.FULL_TEXT,
                 snippet="これは結果表示テスト用の...",
                 highlighted_terms=["結果", "テスト"],
-                relevance_explanation="キーワードマッチ"
+                relevance_explanation="キーワードマッチ",
             ),
             SearchResult(
                 document=Document(
@@ -266,14 +269,14 @@ class TestSearchResultsGUI:
                     title="結果テストドキュメント2",
                     content="これは2番目のテストドキュメントです。",
                     file_type="text",
-                    size=120
+                    size=120,
                 ),
                 score=0.8,
                 search_type=SearchType.SEMANTIC,
                 snippet="これは2番目のテスト...",
                 highlighted_terms=["テスト"],
-                relevance_explanation="セマンティック類似度"
-            )
+                relevance_explanation="セマンティック類似度",
+            ),
         ]
 
         # 結果を表示
@@ -313,7 +316,7 @@ class TestPreviewWidgetGUI:
         yield
 
         # クリーンアップ
-        if hasattr(self, 'preview_widget'):
+        if hasattr(self, "preview_widget"):
             self.preview_widget.close()
 
     def test_preview_widget_initialization(self):
@@ -332,7 +335,7 @@ class TestPreviewWidgetGUI:
             title="プレビューテストドキュメント",
             content="これはプレビューテスト用のドキュメント内容です。\n複数行のテキストを含みます。",
             file_type="text",
-            size=200
+            size=200,
         )
 
         # ドキュメントを表示
@@ -369,7 +372,7 @@ class TestSearchInterfaceGUI:
         self.app = mock_qt_application
 
         # 依存関係をモック
-        with patch('src.gui.search_interface.SearchManager') as mock_search_manager:
+        with patch("src.gui.search_interface.SearchManager") as mock_search_manager:
             self.mock_search_manager = Mock()
             mock_search_manager.return_value = self.mock_search_manager
 
@@ -378,7 +381,7 @@ class TestSearchInterfaceGUI:
         yield
 
         # クリーンアップ
-        if hasattr(self, 'search_interface'):
+        if hasattr(self, "search_interface"):
             self.search_interface.close()
 
     def test_search_interface_initialization(self):
@@ -386,9 +389,9 @@ class TestSearchInterfaceGUI:
         assert self.search_interface is not None
 
         # 基本的なウィジェットが存在することを確認
-        assert hasattr(self.search_interface, 'search_input')
-        assert hasattr(self.search_interface, 'search_button')
-        assert hasattr(self.search_interface, 'search_type_combo')
+        assert hasattr(self.search_interface, "search_input")
+        assert hasattr(self.search_interface, "search_button")
+        assert hasattr(self.search_interface, "search_type_combo")
 
         print("✓ 検索インターフェース初期化テスト完了")
 
@@ -451,7 +454,7 @@ class TestSettingsDialogGUI:
         yield
 
         # クリーンアップ
-        if hasattr(self, 'settings_dialog'):
+        if hasattr(self, "settings_dialog"):
             self.settings_dialog.close()
 
     def test_settings_dialog_initialization(self):
@@ -496,9 +499,11 @@ class TestGUIIntegration:
         self.test_config = test_config
 
         # 統合テスト用のメインウィンドウを作成
-        with patch('src.gui.main_window.SearchManager') as mock_search_manager, \
-             patch('src.gui.main_window.DatabaseManager') as mock_db_manager, \
-             patch('src.gui.main_window.Config') as mock_config:
+        with (
+            patch("src.gui.main_window.SearchManager") as mock_search_manager,
+            patch("src.gui.main_window.DatabaseManager") as mock_db_manager,
+            patch("src.gui.main_window.Config") as mock_config,
+        ):
 
             self.mock_search_manager = Mock()
             mock_search_manager.return_value = self.mock_search_manager
@@ -514,7 +519,7 @@ class TestGUIIntegration:
         yield
 
         # クリーンアップ
-        if hasattr(self, 'main_window'):
+        if hasattr(self, "main_window"):
             self.main_window.close()
 
     def test_complete_gui_workflow(self):
@@ -535,13 +540,13 @@ class TestGUIIntegration:
                     title="GUIワークフローテスト",
                     content="これはGUIワークフローテスト用のドキュメントです。",
                     file_type="text",
-                    size=100
+                    size=100,
                 ),
                 score=0.95,
                 search_type=SearchType.FULL_TEXT,
                 snippet="これはGUIワークフロー...",
                 highlighted_terms=["GUI", "ワークフロー"],
-                relevance_explanation="キーワードマッチ"
+                relevance_explanation="キーワードマッチ",
             )
         ]
 

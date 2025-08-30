@@ -17,6 +17,7 @@ try:
     from reportlab.pdfbase import pdfmetrics
     from reportlab.pdfbase.cidfonts import UnicodeCIDFont
     from reportlab.pdfgen import canvas
+
     PDF_AVAILABLE = True
 except ImportError:
     PDF_AVAILABLE = False
@@ -24,6 +25,7 @@ except ImportError:
 # Wordテスト用
 try:
     from docx import Document
+
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
@@ -31,6 +33,7 @@ except ImportError:
 # Excelテスト用
 try:
     from openpyxl import Workbook
+
     EXCEL_AVAILABLE = True
 except ImportError:
     EXCEL_AVAILABLE = False
@@ -63,8 +66,16 @@ class TestDataGenerator:
 
         # ファイル名のサンプル
         self.sample_filenames = [
-            "技術仕様書", "設計書", "要件定義", "テスト計画", "ユーザーマニュアル",
-            "API仕様", "データベース設計", "システム構成", "運用手順", "障害対応"
+            "技術仕様書",
+            "設計書",
+            "要件定義",
+            "テスト計画",
+            "ユーザーマニュアル",
+            "API仕様",
+            "データベース設計",
+            "システム構成",
+            "運用手順",
+            "障害対応",
         ]
 
     def generate_text_content(self, length: int = 500) -> str:
@@ -102,7 +113,7 @@ class TestDataGenerator:
             file_path = text_dir / filename
 
             content = self.generate_text_content(random.randint(100, 2000))
-            file_path.write_text(content, encoding='utf-8')
+            file_path.write_text(content, encoding="utf-8")
             files.append(file_path)
 
         return files
@@ -134,7 +145,7 @@ class TestDataGenerator:
             content += f"- 項目2: {random.choice(self.sample_texts)}\n"
             content += f"- 項目3: {random.choice(self.sample_texts)}\n"
 
-            file_path.write_text(content, encoding='utf-8')
+            file_path.write_text(content, encoding="utf-8")
             files.append(file_path)
 
         return files
@@ -165,10 +176,10 @@ class TestDataGenerator:
 
             # 日本語フォントを設定（利用可能な場合）
             try:
-                pdfmetrics.registerFont(UnicodeCIDFont('HeiseiKakuGo-W5'))
-                c.setFont('HeiseiKakuGo-W5', 12)
+                pdfmetrics.registerFont(UnicodeCIDFont("HeiseiKakuGo-W5"))
+                c.setFont("HeiseiKakuGo-W5", 12)
             except:
-                c.setFont('Helvetica', 12)
+                c.setFont("Helvetica", 12)
 
             # コンテンツを追加
             y_position = 750
@@ -176,23 +187,23 @@ class TestDataGenerator:
             c.drawString(100, y_position, title)
 
             y_position -= 50
-            content_lines = self.generate_text_content(1000).split('\n')
+            content_lines = self.generate_text_content(1000).split("\n")
 
             for line in content_lines[:30]:  # 最大30行
                 if y_position < 100:
                     c.showPage()
                     y_position = 750
                     try:
-                        c.setFont('HeiseiKakuGo-W5', 12)
+                        c.setFont("HeiseiKakuGo-W5", 12)
                     except:
-                        c.setFont('Helvetica', 12)
+                        c.setFont("Helvetica", 12)
 
                 # 日本語文字を含む場合の処理
                 try:
                     c.drawString(100, y_position, line[:80])  # 80文字まで
                 except:
                     # ASCII文字のみの場合
-                    ascii_line = ''.join(c for c in line if ord(c) < 128)
+                    ascii_line = "".join(c for c in line if ord(c) < 128)
                     c.drawString(100, y_position, ascii_line[:80])
 
                 y_position -= 20
@@ -236,7 +247,7 @@ class TestDataGenerator:
                 doc.add_paragraph(paragraph_text)
 
             # サブヘッディングを追加
-            doc.add_heading('詳細情報', level=1)
+            doc.add_heading("詳細情報", level=1)
             for _ in range(random.randint(2, 5)):
                 paragraph_text = self.generate_text_content(random.randint(50, 200))
                 doc.add_paragraph(paragraph_text)
@@ -286,21 +297,27 @@ class TestDataGenerator:
                 # データ行を追加
                 for row in range(2, random.randint(10, 50)):
                     ws.cell(row=row, column=1, value=f"項目{row-1}")
-                    ws.cell(row=row, column=2, value=random.choice(self.sample_texts)[:50])
+                    ws.cell(
+                        row=row, column=2, value=random.choice(self.sample_texts)[:50]
+                    )
                     ws.cell(row=row, column=3, value=random.randint(1, 1000))
-                    ws.cell(row=row, column=4, value=random.choice(self.sample_texts)[:30])
+                    ws.cell(
+                        row=row, column=4, value=random.choice(self.sample_texts)[:30]
+                    )
 
             wb.save(str(file_path))
             files.append(file_path)
 
         return files
 
-    def create_comprehensive_test_dataset(self,
-                                        text_count: int = 20,
-                                        markdown_count: int = 15,
-                                        pdf_count: int = 10,
-                                        word_count: int = 10,
-                                        excel_count: int = 8) -> dict[str, list[Path]]:
+    def create_comprehensive_test_dataset(
+        self,
+        text_count: int = 20,
+        markdown_count: int = 15,
+        pdf_count: int = 10,
+        word_count: int = 10,
+        excel_count: int = 8,
+    ) -> dict[str, list[Path]]:
         """
         包括的なテストデータセットを作成
 
@@ -319,31 +336,33 @@ class TestDataGenerator:
         print("テストデータセットを生成中...")
 
         # 各タイプのファイルを生成
-        dataset['text'] = self.create_text_files(text_count)
+        dataset["text"] = self.create_text_files(text_count)
         print(f"テキストファイル {len(dataset['text'])} 個を生成")
 
-        dataset['markdown'] = self.create_markdown_files(markdown_count)
+        dataset["markdown"] = self.create_markdown_files(markdown_count)
         print(f"Markdownファイル {len(dataset['markdown'])} 個を生成")
 
-        dataset['pdf'] = self.create_pdf_files(pdf_count)
+        dataset["pdf"] = self.create_pdf_files(pdf_count)
         print(f"PDFファイル {len(dataset['pdf'])} 個を生成")
 
-        dataset['word'] = self.create_word_files(word_count)
+        dataset["word"] = self.create_word_files(word_count)
         print(f"Wordファイル {len(dataset['word'])} 個を生成")
 
-        dataset['excel'] = self.create_excel_files(excel_count)
+        dataset["excel"] = self.create_excel_files(excel_count)
         print(f"Excelファイル {len(dataset['excel'])} 個を生成")
 
         # メタデータファイルを作成
         metadata = {
-            'created_at': datetime.now().isoformat(),
-            'total_files': sum(len(files) for files in dataset.values()),
-            'file_counts': {k: len(v) for k, v in dataset.items()},
-            'base_directory': str(self.base_dir)
+            "created_at": datetime.now().isoformat(),
+            "total_files": sum(len(files) for files in dataset.values()),
+            "file_counts": {k: len(v) for k, v in dataset.items()},
+            "base_directory": str(self.base_dir),
         }
 
         metadata_path = self.base_dir / "dataset_metadata.json"
-        metadata_path.write_text(json.dumps(metadata, indent=2, ensure_ascii=False), encoding='utf-8')
+        metadata_path.write_text(
+            json.dumps(metadata, indent=2, ensure_ascii=False), encoding="utf-8"
+        )
 
         print(f"テストデータセット生成完了: 合計 {metadata['total_files']} ファイル")
         print(f"保存場所: {self.base_dir}")
@@ -373,22 +392,22 @@ def create_performance_test_dataset(size: str = "medium") -> TestDataGenerator:
             "markdown_count": 30,
             "pdf_count": 10,
             "word_count": 10,
-            "excel_count": 5
+            "excel_count": 5,
         },
         "medium": {
             "text_count": 200,
             "markdown_count": 150,
             "pdf_count": 50,
             "word_count": 50,
-            "excel_count": 25
+            "excel_count": 25,
         },
         "large": {
             "text_count": 1000,
             "markdown_count": 750,
             "pdf_count": 200,
             "word_count": 200,
-            "excel_count": 100
-        }
+            "excel_count": 100,
+        },
     }
 
     config = size_configs.get(size, size_configs["medium"])

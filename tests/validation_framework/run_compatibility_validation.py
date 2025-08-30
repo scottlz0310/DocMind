@@ -44,14 +44,14 @@ def setup_logging(log_level: str = "INFO") -> logging.Logger:
     """ログ設定のセットアップ"""
     logging.basicConfig(
         level=getattr(logging, log_level.upper()),
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(sys.stdout),
             logging.FileHandler(
                 f'compatibility_validation_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log',
-                encoding='utf-8'
-            )
-        ]
+                encoding="utf-8",
+            ),
+        ],
     )
     return logging.getLogger(__name__)
 
@@ -78,54 +78,50 @@ def parse_arguments() -> argparse.Namespace:
 
   # 詳細ログで実行
   python run_compatibility_validation.py --log-level DEBUG
-        """
+        """,
     )
 
     parser.add_argument(
-        '--output-dir',
+        "--output-dir",
         type=str,
-        default='validation_results/compatibility',
-        help='結果出力ディレクトリ（デフォルト: validation_results/compatibility）'
+        default="validation_results/compatibility",
+        help="結果出力ディレクトリ（デフォルト: validation_results/compatibility）",
     )
 
     parser.add_argument(
-        '--log-level',
+        "--log-level",
         type=str,
-        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
-        default='INFO',
-        help='ログレベル（デフォルト: INFO）'
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        default="INFO",
+        help="ログレベル（デフォルト: INFO）",
     )
 
     parser.add_argument(
-        '--enable-performance-monitoring',
-        action='store_true',
-        help='パフォーマンス監視を有効化'
+        "--enable-performance-monitoring",
+        action="store_true",
+        help="パフォーマンス監視を有効化",
     )
 
     parser.add_argument(
-        '--enable-memory-monitoring',
-        action='store_true',
-        help='メモリ監視を有効化'
+        "--enable-memory-monitoring", action="store_true", help="メモリ監視を有効化"
     )
 
     parser.add_argument(
-        '--test-methods',
-        type=str,
-        help='実行するテストメソッド（カンマ区切り）'
+        "--test-methods", type=str, help="実行するテストメソッド（カンマ区切り）"
     )
 
     parser.add_argument(
-        '--max-execution-time',
+        "--max-execution-time",
         type=float,
         default=600.0,
-        help='最大実行時間（秒、デフォルト: 600）'
+        help="最大実行時間（秒、デフォルト: 600）",
     )
 
     parser.add_argument(
-        '--max-memory-usage',
+        "--max-memory-usage",
         type=float,
         default=4096.0,
-        help='最大メモリ使用量（MB、デフォルト: 4096）'
+        help="最大メモリ使用量（MB、デフォルト: 4096）",
     )
 
     return parser.parse_args()
@@ -139,7 +135,7 @@ def create_validation_config(args: argparse.Namespace) -> ValidationConfig:
         max_execution_time=args.max_execution_time,
         max_memory_usage=args.max_memory_usage,
         log_level=args.log_level,
-        output_directory=args.output_dir
+        output_directory=args.output_dir,
     )
 
 
@@ -166,7 +162,7 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
         # 実行するテストメソッドの決定
         test_methods = None
         if args.test_methods:
-            test_methods = [method.strip() for method in args.test_methods.split(',')]
+            test_methods = [method.strip() for method in args.test_methods.split(",")]
             logger.info(f"指定されたテストメソッド: {test_methods}")
 
         # 検証の実行
@@ -185,7 +181,9 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
 
         logger.info("互換性検証が完了しました")
         logger.info(f"実行時間: {execution_time:.2f}秒")
-        logger.info(f"テスト結果: {successful_tests}/{total_tests} ({success_rate:.1f}%)")
+        logger.info(
+            f"テスト結果: {successful_tests}/{total_tests} ({success_rate:.1f}%)"
+        )
 
         # 互換性メトリクスの取得
         compatibility_metrics = validator.compatibility_metrics
@@ -196,11 +194,11 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
         # 統計情報をJSON serializable形式に変換
         statistics = {}
         for key, value in statistics_raw.items():
-            if hasattr(value, 'to_dict'):
+            if hasattr(value, "to_dict"):
                 statistics[key] = value.to_dict()
             elif isinstance(value, list | tuple):
                 statistics[key] = [
-                    item.to_dict() if hasattr(item, 'to_dict') else item
+                    item.to_dict() if hasattr(item, "to_dict") else item
                     for item in value
                 ]
             else:
@@ -211,54 +209,54 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
 
         # JSON形式での結果保存
         results_data = {
-            'timestamp': timestamp,
-            'execution_time_seconds': execution_time,
-            'test_summary': {
-                'total_tests': total_tests,
-                'successful_tests': successful_tests,
-                'success_rate': success_rate
+            "timestamp": timestamp,
+            "execution_time_seconds": execution_time,
+            "test_summary": {
+                "total_tests": total_tests,
+                "successful_tests": successful_tests,
+                "success_rate": success_rate,
             },
-            'validation_results': [
+            "validation_results": [
                 {
-                    'test_name': result.test_name,
-                    'success': result.success,
-                    'execution_time': result.execution_time,
-                    'memory_usage': result.memory_usage,
-                    'error_message': result.error_message,
-                    'details': result.details
+                    "test_name": result.test_name,
+                    "success": result.success,
+                    "execution_time": result.execution_time,
+                    "memory_usage": result.memory_usage,
+                    "error_message": result.error_message,
+                    "details": result.details,
                 }
                 for result in validation_results
             ],
-            'compatibility_metrics': [
+            "compatibility_metrics": [
                 {
-                    'test_name': metric.test_name,
-                    'compatibility_level': metric.compatibility_level,
-                    'os_version': metric.os_version,
-                    'python_version': metric.python_version,
-                    'memory_available_mb': metric.memory_available_mb,
-                    'disk_space_available_mb': metric.disk_space_available_mb,
-                    'screen_resolution': metric.screen_resolution,
-                    'filesystem_type': metric.filesystem_type,
-                    'encoding_support': metric.encoding_support,
-                    'feature_compatibility': metric.feature_compatibility,
-                    'performance_metrics': metric.performance_metrics,
-                    'limitations': metric.limitations,
-                    'recommendations': metric.recommendations,
-                    'additional_details': metric.additional_details
+                    "test_name": metric.test_name,
+                    "compatibility_level": metric.compatibility_level,
+                    "os_version": metric.os_version,
+                    "python_version": metric.python_version,
+                    "memory_available_mb": metric.memory_available_mb,
+                    "disk_space_available_mb": metric.disk_space_available_mb,
+                    "screen_resolution": metric.screen_resolution,
+                    "filesystem_type": metric.filesystem_type,
+                    "encoding_support": metric.encoding_support,
+                    "feature_compatibility": metric.feature_compatibility,
+                    "performance_metrics": metric.performance_metrics,
+                    "limitations": metric.limitations,
+                    "recommendations": metric.recommendations,
+                    "additional_details": metric.additional_details,
                 }
                 for metric in compatibility_metrics
             ],
-            'statistics': statistics,
-            'configuration': {
-                'performance_monitoring': config.enable_performance_monitoring,
-                'memory_monitoring': config.enable_memory_monitoring,
-                'max_execution_time': config.max_execution_time,
-                'max_memory_usage': config.max_memory_usage
-            }
+            "statistics": statistics,
+            "configuration": {
+                "performance_monitoring": config.enable_performance_monitoring,
+                "memory_monitoring": config.enable_memory_monitoring,
+                "max_execution_time": config.max_execution_time,
+                "max_memory_usage": config.max_memory_usage,
+            },
         }
 
         results_file = output_dir / f"compatibility_validation_results_{timestamp}.json"
-        with open(results_file, 'w', encoding='utf-8') as f:
+        with open(results_file, "w", encoding="utf-8") as f:
             json.dump(results_data, f, ensure_ascii=False, indent=2)
 
         logger.info(f"結果をJSONファイルに保存しました: {results_file}")
@@ -267,13 +265,11 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
         try:
             reporter = ValidationReporter()
             html_report = reporter.generate_compatibility_report(
-                validation_results,
-                compatibility_metrics,
-                statistics
+                validation_results, compatibility_metrics, statistics
             )
 
             report_file = output_dir / f"compatibility_report_{timestamp}.html"
-            with open(report_file, 'w', encoding='utf-8') as f:
+            with open(report_file, "w", encoding="utf-8") as f:
                 f.write(html_report)
 
             logger.info(f"HTMLレポートを生成しました: {report_file}")
@@ -295,12 +291,14 @@ def run_compatibility_validation(args: argparse.Namespace) -> bool:
             logger.error("❌ 互換性検証で問題が検出されました")
 
         # 互換性レベルの表示
-        compatibility_levels = [metric.compatibility_level for metric in compatibility_metrics]
+        compatibility_levels = [
+            metric.compatibility_level for metric in compatibility_metrics
+        ]
         if compatibility_levels:
             level_counts = {
-                'COMPATIBLE': compatibility_levels.count('COMPATIBLE'),
-                'LIMITED': compatibility_levels.count('LIMITED'),
-                'INCOMPATIBLE': compatibility_levels.count('INCOMPATIBLE')
+                "COMPATIBLE": compatibility_levels.count("COMPATIBLE"),
+                "LIMITED": compatibility_levels.count("LIMITED"),
+                "INCOMPATIBLE": compatibility_levels.count("INCOMPATIBLE"),
             }
 
             logger.info("互換性レベル分布:")

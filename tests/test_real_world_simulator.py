@@ -35,7 +35,7 @@ class TestRealWorldSimulator(unittest.TestCase):
             enable_error_injection=False,
             max_execution_time=60.0,
             max_memory_usage=1024.0,
-            log_level="INFO"
+            log_level="INFO",
         )
 
         self.simulator = RealWorldSimulator(self.config)
@@ -91,12 +91,14 @@ class TestRealWorldSimulator(unittest.TestCase):
         self.assertTrue(self.simulator.test_config.cache_dir.exists())
         self.assertTrue(self.simulator.test_config.logs_dir.exists())
 
-    @patch('tests.validation_framework.real_world_simulator.DatabaseManager')
-    @patch('tests.validation_framework.real_world_simulator.IndexManager')
-    @patch('tests.validation_framework.real_world_simulator.EmbeddingManager')
-    @patch('tests.validation_framework.real_world_simulator.DocumentProcessor')
-    @patch('tests.validation_framework.real_world_simulator.SearchManager')
-    def test_daily_usage_pattern(self, mock_search, mock_doc_proc, mock_embed, mock_index, mock_db):
+    @patch("tests.validation_framework.real_world_simulator.DatabaseManager")
+    @patch("tests.validation_framework.real_world_simulator.IndexManager")
+    @patch("tests.validation_framework.real_world_simulator.EmbeddingManager")
+    @patch("tests.validation_framework.real_world_simulator.DocumentProcessor")
+    @patch("tests.validation_framework.real_world_simulator.SearchManager")
+    def test_daily_usage_pattern(
+        self, mock_search, mock_doc_proc, mock_embed, mock_index, mock_db
+    ):
         """日次使用パターンテストのテスト"""
         # モックの設定
         mock_db.return_value = Mock()
@@ -122,12 +124,14 @@ class TestRealWorldSimulator(unittest.TestCase):
         except Exception as e:
             self.fail(f"予期しないエラーが発生: {e}")
 
-    @patch('tests.validation_framework.real_world_simulator.DatabaseManager')
-    @patch('tests.validation_framework.real_world_simulator.IndexManager')
-    @patch('tests.validation_framework.real_world_simulator.EmbeddingManager')
-    @patch('tests.validation_framework.real_world_simulator.DocumentProcessor')
-    @patch('tests.validation_framework.real_world_simulator.SearchManager')
-    def test_large_files_edge_case(self, mock_search, mock_doc_proc, mock_embed, mock_index, mock_db):
+    @patch("tests.validation_framework.real_world_simulator.DatabaseManager")
+    @patch("tests.validation_framework.real_world_simulator.IndexManager")
+    @patch("tests.validation_framework.real_world_simulator.EmbeddingManager")
+    @patch("tests.validation_framework.real_world_simulator.DocumentProcessor")
+    @patch("tests.validation_framework.real_world_simulator.SearchManager")
+    def test_large_files_edge_case(
+        self, mock_search, mock_doc_proc, mock_embed, mock_index, mock_db
+    ):
         """大容量ファイルエッジケーステストのテスト"""
         # モックの設定
         mock_db.return_value = Mock()
@@ -153,12 +157,14 @@ class TestRealWorldSimulator(unittest.TestCase):
         except Exception as e:
             self.fail(f"予期しないエラーが発生: {e}")
 
-    @patch('tests.validation_framework.real_world_simulator.DatabaseManager')
-    @patch('tests.validation_framework.real_world_simulator.IndexManager')
-    @patch('tests.validation_framework.real_world_simulator.EmbeddingManager')
-    @patch('tests.validation_framework.real_world_simulator.DocumentProcessor')
-    @patch('tests.validation_framework.real_world_simulator.SearchManager')
-    def test_new_user_scenario(self, mock_search, mock_doc_proc, mock_embed, mock_index, mock_db):
+    @patch("tests.validation_framework.real_world_simulator.DatabaseManager")
+    @patch("tests.validation_framework.real_world_simulator.IndexManager")
+    @patch("tests.validation_framework.real_world_simulator.EmbeddingManager")
+    @patch("tests.validation_framework.real_world_simulator.DocumentProcessor")
+    @patch("tests.validation_framework.real_world_simulator.SearchManager")
+    def test_new_user_scenario(
+        self, mock_search, mock_doc_proc, mock_embed, mock_index, mock_db
+    ):
         """新規ユーザーシナリオテストのテスト"""
         # モックの設定
         mock_db.return_value = Mock()
@@ -213,14 +219,14 @@ class TestRealWorldSimulator(unittest.TestCase):
 
         # 各エッジケースの内容確認
         large_files = edge_cases[EdgeCaseType.LARGE_FILES]
-        self.assertIn('name', large_files)
-        self.assertIn('file_sizes_mb', large_files)
-        self.assertIn('file_count', large_files)
+        self.assertIn("name", large_files)
+        self.assertIn("file_sizes_mb", large_files)
+        self.assertIn("file_count", large_files)
 
         many_files = edge_cases[EdgeCaseType.MANY_FILES]
-        self.assertIn('name', many_files)
-        self.assertIn('file_count', many_files)
-        self.assertIn('file_size_kb', many_files)
+        self.assertIn("name", many_files)
+        self.assertIn("file_count", many_files)
+        self.assertIn("file_size_kb", many_files)
 
     def test_user_scenario_definition(self):
         """ユーザーシナリオ定義のテスト"""
@@ -233,11 +239,11 @@ class TestRealWorldSimulator(unittest.TestCase):
 
         # 各シナリオの内容確認
         new_user = scenarios[UserScenarioType.NEW_USER]
-        self.assertIn('name', new_user)
-        self.assertIn('operations', new_user)
-        self.assertIn('expected_duration_minutes', new_user)
-        self.assertIsInstance(new_user['operations'], list)
-        self.assertGreater(len(new_user['operations']), 0)
+        self.assertIn("name", new_user)
+        self.assertIn("operations", new_user)
+        self.assertIn("expected_duration_minutes", new_user)
+        self.assertIsInstance(new_user["operations"], list)
+        self.assertGreater(len(new_user["operations"]), 0)
 
     def test_simulation_metrics(self):
         """シミュレーションメトリクスのテスト"""
@@ -258,6 +264,7 @@ class TestRealWorldSimulator(unittest.TestCase):
 
         # 終了時間の設定と期間計算
         from datetime import datetime, timedelta
+
         metrics.start_time = datetime.now() - timedelta(seconds=30)
         metrics.end_time = datetime.now()
 
@@ -298,9 +305,9 @@ class TestRealWorldSimulator(unittest.TestCase):
 
         # 生成されたファイルの確認
         for file_info in special_files:
-            self.assertIn('path', file_info)
-            self.assertIn('type', file_info)
-            self.assertTrue(Path(file_info['path']).exists())
+            self.assertIn("path", file_info)
+            self.assertIn("type", file_info)
+            self.assertTrue(Path(file_info["path"]).exists())
 
     def test_operation_execution_methods(self):
         """操作実行メソッドのテスト"""
@@ -351,16 +358,16 @@ class TestRealWorldSimulator(unittest.TestCase):
 
         # 各シナリオ操作のテスト
         operations = [
-            'startup',
-            'folder_selection',
-            'initial_indexing',
-            'first_search',
-            'search',
-            'add_document',
-            'search_again',
-            'bulk_add',
-            'bulk_index',
-            'performance_search'
+            "startup",
+            "folder_selection",
+            "initial_indexing",
+            "first_search",
+            "search",
+            "add_document",
+            "search_again",
+            "bulk_add",
+            "bulk_index",
+            "performance_search",
         ]
 
         for operation in operations:
@@ -368,7 +375,7 @@ class TestRealWorldSimulator(unittest.TestCase):
             self.assertIsInstance(result, bool)
 
         # 未知の操作のテスト
-        result = self.simulator._execute_scenario_operation('unknown_operation')
+        result = self.simulator._execute_scenario_operation("unknown_operation")
         self.assertFalse(result)
 
 
@@ -447,7 +454,7 @@ class TestUsagePattern(unittest.TestCase):
             search_frequency=0.7,
             document_add_frequency=0.2,
             concurrent_operations=2,
-            break_duration_seconds=1.0
+            break_duration_seconds=1.0,
         )
 
         # 値の確認
@@ -461,6 +468,6 @@ class TestUsagePattern(unittest.TestCase):
         self.assertEqual(pattern.break_duration_seconds, 1.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # テストスイートの実行
     unittest.main(verbosity=2)

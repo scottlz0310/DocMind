@@ -65,7 +65,7 @@ class TestLoggingConfig(unittest.TestCase):
         self.assertTrue(os.path.exists(self.log_file))
 
         # ログファイルの内容確認
-        with open(self.log_file, encoding='utf-8') as f:
+        with open(self.log_file, encoding="utf-8") as f:
             content = f.read()
             self.assertIn("テストメッセージ", content)
 
@@ -89,10 +89,7 @@ class TestLoggingConfig(unittest.TestCase):
     def test_setup_logging_console_only(self):
         """コンソールのみのログ設定テスト"""
         setup_logging(
-            level="INFO",
-            log_file=self.log_file,
-            enable_console=True,
-            enable_file=False
+            level="INFO", log_file=self.log_file, enable_console=True, enable_file=False
         )
 
         root_logger = logging.getLogger()
@@ -100,7 +97,9 @@ class TestLoggingConfig(unittest.TestCase):
         # コンソールハンドラーのみ存在することを確認
         self.assertEqual(len(root_logger.handlers), 1)
         self.assertIsInstance(root_logger.handlers[0], logging.StreamHandler)
-        self.assertFalse(isinstance(root_logger.handlers[0], logging.handlers.RotatingFileHandler))
+        self.assertFalse(
+            isinstance(root_logger.handlers[0], logging.handlers.RotatingFileHandler)
+        )
 
         # ログファイルが作成されないことを確認
         logger = logging.getLogger("test")
@@ -110,17 +109,16 @@ class TestLoggingConfig(unittest.TestCase):
     def test_setup_logging_file_only(self):
         """ファイルのみのログ設定テスト"""
         setup_logging(
-            level="INFO",
-            log_file=self.log_file,
-            enable_console=False,
-            enable_file=True
+            level="INFO", log_file=self.log_file, enable_console=False, enable_file=True
         )
 
         root_logger = logging.getLogger()
 
         # ファイルハンドラーのみ存在することを確認
         self.assertEqual(len(root_logger.handlers), 1)
-        self.assertIsInstance(root_logger.handlers[0], logging.handlers.RotatingFileHandler)
+        self.assertIsInstance(
+            root_logger.handlers[0], logging.handlers.RotatingFileHandler
+        )
 
         # ログファイルが作成されることを確認
         logger = logging.getLogger("test")
@@ -133,7 +131,7 @@ class TestLoggingConfig(unittest.TestCase):
             level="INFO",
             log_file=self.log_file,
             enable_console=False,
-            enable_file=False
+            enable_file=False,
         )
 
         root_logger = logging.getLogger()
@@ -194,10 +192,7 @@ class TestLoggingConfig(unittest.TestCase):
         """ログハンドラーの再設定テスト"""
         # 初期設定（コンソールとファイル両方）
         setup_logging(
-            level="INFO",
-            log_file=self.log_file,
-            enable_console=True,
-            enable_file=True
+            level="INFO", log_file=self.log_file, enable_console=True, enable_file=True
         )
         root_logger = logging.getLogger()
         self.assertEqual(len(root_logger.handlers), 2)
@@ -207,7 +202,9 @@ class TestLoggingConfig(unittest.TestCase):
 
         # ファイルハンドラーのみ残ることを確認
         self.assertEqual(len(root_logger.handlers), 1)
-        self.assertIsInstance(root_logger.handlers[0], logging.handlers.RotatingFileHandler)
+        self.assertIsInstance(
+            root_logger.handlers[0], logging.handlers.RotatingFileHandler
+        )
 
         # ファイルハンドラーも無効化
         reconfigure_logging(enable_file=False)
@@ -221,7 +218,9 @@ class TestLoggingConfig(unittest.TestCase):
         # コンソールハンドラーが追加されることを確認
         self.assertEqual(len(root_logger.handlers), 1)
         self.assertIsInstance(root_logger.handlers[0], logging.StreamHandler)
-        self.assertFalse(isinstance(root_logger.handlers[0], logging.handlers.RotatingFileHandler))
+        self.assertFalse(
+            isinstance(root_logger.handlers[0], logging.handlers.RotatingFileHandler)
+        )
 
     def test_get_logger(self):
         """ロガー取得のテスト"""
@@ -232,6 +231,7 @@ class TestLoggingConfig(unittest.TestCase):
 
     def test_logger_mixin(self):
         """LoggerMixinのテスト"""
+
         class TestClass(LoggerMixin):
             def test_method(self):
                 self.logger.info("テストメッセージ")
@@ -259,7 +259,7 @@ class TestLoggingConfig(unittest.TestCase):
             level="INFO",
             log_file=self.log_file,
             max_bytes=100,  # 100バイト
-            backup_count=2
+            backup_count=2,
         )
 
         logger = logging.getLogger("test")
@@ -290,10 +290,10 @@ class TestLoggingConfig(unittest.TestCase):
         logger.info(japanese_message)
 
         # ログファイルの内容確認
-        with open(self.log_file, encoding='utf-8') as f:
+        with open(self.log_file, encoding="utf-8") as f:
             content = f.read()
             self.assertIn(japanese_message, content)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -39,9 +39,11 @@ class FolderTreeItem(QTreeWidgetItem):
 
         # 状態フラグ
         self.is_expanded_once: bool = False  # 遅延読み込み用フラグ
-        self.is_accessible: bool = True      # アクセス可能かどうか
+        self.is_accessible: bool = True  # アクセス可能かどうか
 
-    def set_folder_data(self, path: str, item_type: FolderItemType = FolderItemType.FOLDER):
+    def set_folder_data(
+        self, path: str, item_type: FolderItemType = FolderItemType.FOLDER
+    ):
         """
         フォルダデータを設定します
 
@@ -97,7 +99,7 @@ class FolderTreeItem(QTreeWidgetItem):
             FolderItemType.INDEXED: style.StandardPixmap.SP_DirOpenIcon,
             FolderItemType.EXCLUDED: style.StandardPixmap.SP_DialogCancelButton,
             FolderItemType.ERROR: style.StandardPixmap.SP_MessageBoxCritical,
-            FolderItemType.FOLDER: style.StandardPixmap.SP_DirClosedIcon
+            FolderItemType.FOLDER: style.StandardPixmap.SP_DirClosedIcon,
         }
 
         pixmap = icon_map.get(self.item_type, style.StandardPixmap.SP_DirClosedIcon)
@@ -203,13 +205,13 @@ class FolderTreeItem(QTreeWidgetItem):
             状態情報の辞書
         """
         return {
-            'path': self.folder_path,
-            'type': self.item_type,
-            'file_count': self.file_count,
-            'indexed_count': self.indexed_count,
-            'is_accessible': self.is_accessible,
-            'is_expanded_once': self.is_expanded_once,
-            'display_name': self.text(0)
+            "path": self.folder_path,
+            "type": self.item_type,
+            "file_count": self.file_count,
+            "indexed_count": self.indexed_count,
+            "is_accessible": self.is_accessible,
+            "is_expanded_once": self.is_expanded_once,
+            "display_name": self.text(0),
         }
 
     def is_processing(self) -> bool:

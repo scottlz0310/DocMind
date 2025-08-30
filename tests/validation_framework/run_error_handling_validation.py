@@ -36,11 +36,11 @@ def setup_logging() -> logging.Logger:
     # ログ設定
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
-            logging.FileHandler(log_file, encoding='utf-8'),
-            logging.StreamHandler(sys.stdout)
-        ]
+            logging.FileHandler(log_file, encoding="utf-8"),
+            logging.StreamHandler(sys.stdout),
+        ],
     )
 
     logger = logging.getLogger(__name__)
@@ -56,9 +56,9 @@ def create_validation_config() -> ValidationConfig:
         enable_memory_monitoring=True,
         enable_error_injection=True,
         max_execution_time=600.0,  # 10分
-        max_memory_usage=2048.0,   # 2GB
+        max_memory_usage=2048.0,  # 2GB
         log_level="INFO",
-        output_directory="validation_results/error_handling"
+        output_directory="validation_results/error_handling",
     )
 
 
@@ -79,11 +79,11 @@ def run_error_handling_validation() -> dict[str, Any]:
             "memory_monitoring": config.enable_memory_monitoring,
             "error_injection": config.enable_error_injection,
             "max_execution_time": config.max_execution_time,
-            "max_memory_usage": config.max_memory_usage
+            "max_memory_usage": config.max_memory_usage,
         },
         "results": {},
         "summary": {},
-        "errors": []
+        "errors": [],
     }
 
     try:
@@ -111,11 +111,11 @@ def run_error_handling_validation() -> dict[str, Any]:
                     "execution_time": result.execution_time,
                     "memory_usage": result.memory_usage,
                     "error_message": result.error_message,
-                    "details": result.details
+                    "details": result.details,
                 }
                 for result in test_results
             ],
-            "detailed_summary": detailed_summary
+            "detailed_summary": detailed_summary,
         }
 
         # サマリーの作成
@@ -128,40 +128,50 @@ def run_error_handling_validation() -> dict[str, Any]:
             "successful_tests": successful_tests,
             "failed_tests": failed_tests,
             "success_rate": successful_tests / total_tests if total_tests > 0 else 0.0,
-            "average_execution_time": sum(r.execution_time for r in test_results) / total_tests if total_tests > 0 else 0.0,
-            "peak_memory_usage": max((r.memory_usage for r in test_results), default=0.0),
+            "average_execution_time": (
+                sum(r.execution_time for r in test_results) / total_tests
+                if total_tests > 0
+                else 0.0
+            ),
+            "peak_memory_usage": max(
+                (r.memory_usage for r in test_results), default=0.0
+            ),
             "exception_handling": detailed_summary.get("exception_handling", {}),
             "recovery_mechanisms": detailed_summary.get("recovery_mechanisms", {}),
             "graceful_degradation": detailed_summary.get("graceful_degradation", {}),
-            "system_health": detailed_summary.get("system_health", {})
+            "system_health": detailed_summary.get("system_health", {}),
         }
 
         # パフォーマンス要件の検証
         performance_issues = []
         for result in test_results:
             if result.execution_time > config.max_execution_time:
-                performance_issues.append({
-                    "test_name": result.test_name,
-                    "issue": "execution_time_exceeded",
-                    "actual": result.execution_time,
-                    "limit": config.max_execution_time
-                })
+                performance_issues.append(
+                    {
+                        "test_name": result.test_name,
+                        "issue": "execution_time_exceeded",
+                        "actual": result.execution_time,
+                        "limit": config.max_execution_time,
+                    }
+                )
 
             if result.memory_usage > config.max_memory_usage:
-                performance_issues.append({
-                    "test_name": result.test_name,
-                    "issue": "memory_usage_exceeded",
-                    "actual": result.memory_usage,
-                    "limit": config.max_memory_usage
-                })
+                performance_issues.append(
+                    {
+                        "test_name": result.test_name,
+                        "issue": "memory_usage_exceeded",
+                        "actual": result.memory_usage,
+                        "limit": config.max_memory_usage,
+                    }
+                )
 
         validation_results["performance_issues"] = performance_issues
 
         # 検証結果の評価
         overall_success = (
-            failed_tests == 0 and
-            len(performance_issues) == 0 and
-            validation_results["summary"]["success_rate"] >= 0.95
+            failed_tests == 0
+            and len(performance_issues) == 0
+            and validation_results["summary"]["success_rate"] >= 0.95
         )
 
         validation_results["overall_success"] = overall_success
@@ -172,26 +182,40 @@ def run_error_handling_validation() -> dict[str, Any]:
         logger.info(f"成功: {successful_tests}")
         logger.info(f"失敗: {failed_tests}")
         logger.info(f"成功率: {validation_results['summary']['success_rate']:.1%}")
-        logger.info(f"平均実行時間: {validation_results['summary']['average_execution_time']:.2f}秒")
-        logger.info(f"最大メモリ使用量: {validation_results['summary']['peak_memory_usage']:.2f}MB")
+        logger.info(
+            f"平均実行時間: {validation_results['summary']['average_execution_time']:.2f}秒"
+        )
+        logger.info(
+            f"最大メモリ使用量: {validation_results['summary']['peak_memory_usage']:.2f}MB"
+        )
 
         # 例外処理結果
         exception_summary = detailed_summary.get("exception_handling", {})
-        logger.info(f"例外処理テスト: {exception_summary.get('successful_handling', 0)}/{exception_summary.get('total_tests', 0)}")
+        logger.info(
+            f"例外処理テスト: {exception_summary.get('successful_handling', 0)}/{exception_summary.get('total_tests', 0)}"
+        )
 
         # 回復機能結果
         recovery_summary = detailed_summary.get("recovery_mechanisms", {})
-        logger.info(f"回復機能テスト: {recovery_summary.get('successful_recovery', 0)}/{recovery_summary.get('total_tests', 0)}")
+        logger.info(
+            f"回復機能テスト: {recovery_summary.get('successful_recovery', 0)}/{recovery_summary.get('total_tests', 0)}"
+        )
 
         # 劣化機能結果
         degradation_summary = detailed_summary.get("graceful_degradation", {})
-        logger.info(f"劣化機能テスト: {degradation_summary.get('successful_degradation', 0)}/{degradation_summary.get('total_tests', 0)}")
+        logger.info(
+            f"劣化機能テスト: {degradation_summary.get('successful_degradation', 0)}/{degradation_summary.get('total_tests', 0)}"
+        )
 
         # パフォーマンス問題の報告
         if performance_issues:
-            logger.warning(f"パフォーマンス問題が検出されました: {len(performance_issues)}件")
+            logger.warning(
+                f"パフォーマンス問題が検出されました: {len(performance_issues)}件"
+            )
             for issue in performance_issues:
-                logger.warning(f"  - {issue['test_name']}: {issue['issue']} (実際: {issue['actual']}, 制限: {issue['limit']})")
+                logger.warning(
+                    f"  - {issue['test_name']}: {issue['issue']} (実際: {issue['actual']}, 制限: {issue['limit']})"
+                )
 
         # 全体的な成功/失敗の判定
         if overall_success:
@@ -201,17 +225,19 @@ def run_error_handling_validation() -> dict[str, Any]:
 
     except Exception as e:
         logger.error(f"エラーハンドリング検証中にエラーが発生: {e}")
-        validation_results["errors"].append({
-            "error_type": type(e).__name__,
-            "error_message": str(e),
-            "timestamp": datetime.now().isoformat()
-        })
+        validation_results["errors"].append(
+            {
+                "error_type": type(e).__name__,
+                "error_message": str(e),
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
         validation_results["overall_success"] = False
 
     finally:
         # クリーンアップ
         try:
-            if 'validator' in locals():
+            if "validator" in locals():
                 validator.teardown_test_environment()
                 validator.cleanup()
         except Exception as cleanup_error:
@@ -234,7 +260,7 @@ def save_validation_results(results: dict[str, Any]) -> Path:
     results_file = results_dir / f"error_handling_validation_results_{timestamp}.json"
 
     # JSON形式で保存
-    with open(results_file, 'w', encoding='utf-8') as f:
+    with open(results_file, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2, default=str)
 
     return results_file

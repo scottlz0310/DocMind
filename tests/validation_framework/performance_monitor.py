@@ -17,6 +17,7 @@ import psutil
 @dataclass
 class PerformanceMetrics:
     """パフォーマンス指標を格納するデータクラス"""
+
     timestamp: datetime
     cpu_percent: float
     memory_percent: float
@@ -74,7 +75,9 @@ class PerformanceMonitor:
         self._initial_network_io = psutil.net_io_counters()
 
         # 監視スレッドの開始
-        self.monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        self.monitor_thread = threading.Thread(
+            target=self._monitoring_loop, daemon=True
+        )
         self.monitor_thread.start()
 
         self.logger.info("パフォーマンス監視を開始しました")
@@ -91,7 +94,9 @@ class PerformanceMonitor:
         if self.monitor_thread and self.monitor_thread.is_alive():
             self.monitor_thread.join(timeout=5.0)
 
-        self.logger.info(f"パフォーマンス監視を停止しました（測定データ数: {len(self.metrics_history)}）")
+        self.logger.info(
+            f"パフォーマンス監視を停止しました（測定データ数: {len(self.metrics_history)}）"
+        )
 
     def _monitoring_loop(self) -> None:
         """監視ループ（別スレッドで実行）"""
@@ -103,7 +108,9 @@ class PerformanceMonitor:
                 time.sleep(self.sampling_interval)
 
             except Exception as e:
-                self.logger.error(f"パフォーマンス指標の収集中にエラーが発生しました: {e}")
+                self.logger.error(
+                    f"パフォーマンス指標の収集中にエラーが発生しました: {e}"
+                )
                 time.sleep(self.sampling_interval)
 
     def _collect_metrics(self) -> PerformanceMetrics:
@@ -119,8 +126,12 @@ class PerformanceMonitor:
         # ディスクI/O
         current_disk_io = psutil.disk_io_counters()
         if current_disk_io and self._initial_disk_io:
-            disk_read_bytes = current_disk_io.read_bytes - self._initial_disk_io.read_bytes
-            disk_write_bytes = current_disk_io.write_bytes - self._initial_disk_io.write_bytes
+            disk_read_bytes = (
+                current_disk_io.read_bytes - self._initial_disk_io.read_bytes
+            )
+            disk_write_bytes = (
+                current_disk_io.write_bytes - self._initial_disk_io.write_bytes
+            )
             disk_io_read_mb = disk_read_bytes / (1024 * 1024)
             disk_io_write_mb = disk_write_bytes / (1024 * 1024)
         else:
@@ -130,8 +141,12 @@ class PerformanceMonitor:
         # ネットワークI/O
         current_network_io = psutil.net_io_counters()
         if current_network_io and self._initial_network_io:
-            network_sent_bytes = current_network_io.bytes_sent - self._initial_network_io.bytes_sent
-            network_recv_bytes = current_network_io.bytes_recv - self._initial_network_io.bytes_recv
+            network_sent_bytes = (
+                current_network_io.bytes_sent - self._initial_network_io.bytes_sent
+            )
+            network_recv_bytes = (
+                current_network_io.bytes_recv - self._initial_network_io.bytes_recv
+            )
             network_sent_mb = network_sent_bytes / (1024 * 1024)
             network_recv_mb = network_recv_bytes / (1024 * 1024)
         else:
@@ -146,7 +161,7 @@ class PerformanceMonitor:
             disk_io_read_mb=disk_io_read_mb,
             disk_io_write_mb=disk_io_write_mb,
             network_sent_mb=network_sent_mb,
-            network_recv_mb=network_recv_mb
+            network_recv_mb=network_recv_mb,
         )
 
     def get_current_metrics(self) -> PerformanceMetrics | None:
@@ -206,12 +221,12 @@ class PerformanceMonitor:
             {'read_mb': 読み込み量, 'write_mb': 書き込み量}
         """
         if not self.metrics_history:
-            return {'read_mb': 0.0, 'write_mb': 0.0}
+            return {"read_mb": 0.0, "write_mb": 0.0}
 
         latest_metrics = self.metrics_history[-1]
         return {
-            'read_mb': latest_metrics.disk_io_read_mb,
-            'write_mb': latest_metrics.disk_io_write_mb
+            "read_mb": latest_metrics.disk_io_read_mb,
+            "write_mb": latest_metrics.disk_io_write_mb,
         }
 
     def get_total_network_io(self) -> dict[str, float]:
@@ -222,12 +237,12 @@ class PerformanceMonitor:
             {'sent_mb': 送信量, 'recv_mb': 受信量}
         """
         if not self.metrics_history:
-            return {'sent_mb': 0.0, 'recv_mb': 0.0}
+            return {"sent_mb": 0.0, "recv_mb": 0.0}
 
         latest_metrics = self.metrics_history[-1]
         return {
-            'sent_mb': latest_metrics.network_sent_mb,
-            'recv_mb': latest_metrics.network_recv_mb
+            "sent_mb": latest_metrics.network_sent_mb,
+            "recv_mb": latest_metrics.network_recv_mb,
         }
 
     def get_performance_summary(self) -> dict[str, Any]:
@@ -243,23 +258,27 @@ class PerformanceMonitor:
         monitoring_duration = time.time() - (self.start_time or 0)
 
         return {
-            'monitoring_duration_seconds': monitoring_duration,
-            'sample_count': len(self.metrics_history),
-            'cpu_usage': {
-                'peak_percent': self.get_peak_cpu_usage(),
-                'average_percent': self.get_average_cpu_usage()
+            "monitoring_duration_seconds": monitoring_duration,
+            "sample_count": len(self.metrics_history),
+            "cpu_usage": {
+                "peak_percent": self.get_peak_cpu_usage(),
+                "average_percent": self.get_average_cpu_usage(),
             },
-            'memory_usage': {
-                'peak_mb': self.get_peak_memory_usage(),
-                'peak_percent': max(m.memory_percent for m in self.metrics_history) if self.metrics_history else 0.0
+            "memory_usage": {
+                "peak_mb": self.get_peak_memory_usage(),
+                "peak_percent": (
+                    max(m.memory_percent for m in self.metrics_history)
+                    if self.metrics_history
+                    else 0.0
+                ),
             },
-            'disk_io': self.get_total_disk_io(),
-            'network_io': self.get_total_network_io()
+            "disk_io": self.get_total_disk_io(),
+            "network_io": self.get_total_network_io(),
         }
 
-    def check_performance_thresholds(self,
-                                   max_cpu_percent: float = 80.0,
-                                   max_memory_mb: float = 2048.0) -> dict[str, bool]:
+    def check_performance_thresholds(
+        self, max_cpu_percent: float = 80.0, max_memory_mb: float = 2048.0
+    ) -> dict[str, bool]:
         """
         パフォーマンス閾値のチェック
 
@@ -274,17 +293,21 @@ class PerformanceMonitor:
         peak_memory = self.get_peak_memory_usage()
 
         results = {
-            'cpu_within_threshold': peak_cpu <= max_cpu_percent,
-            'memory_within_threshold': peak_memory <= max_memory_mb,
-            'peak_cpu_percent': peak_cpu,
-            'peak_memory_mb': peak_memory
+            "cpu_within_threshold": peak_cpu <= max_cpu_percent,
+            "memory_within_threshold": peak_memory <= max_memory_mb,
+            "peak_cpu_percent": peak_cpu,
+            "peak_memory_mb": peak_memory,
         }
 
-        if not results['cpu_within_threshold']:
-            self.logger.warning(f"CPU使用率が閾値を超過: {peak_cpu:.1f}% > {max_cpu_percent}%")
+        if not results["cpu_within_threshold"]:
+            self.logger.warning(
+                f"CPU使用率が閾値を超過: {peak_cpu:.1f}% > {max_cpu_percent}%"
+            )
 
-        if not results['memory_within_threshold']:
-            self.logger.warning(f"メモリ使用量が閾値を超過: {peak_memory:.1f}MB > {max_memory_mb}MB")
+        if not results["memory_within_threshold"]:
+            self.logger.warning(
+                f"メモリ使用量が閾値を超過: {peak_memory:.1f}MB > {max_memory_mb}MB"
+            )
 
         return results
 

@@ -61,39 +61,28 @@ class IndexManager:
         return fields.Schema(
             # ドキュメント識別子（主キー）
             id=fields.ID(stored=True, unique=True),
-
             # ファイルパス（検索可能、保存）
             file_path=fields.TEXT(stored=True, analyzer=self.analyzer),
-
             # ドキュメントタイトル（検索可能、保存、重み付け高）
             title=fields.TEXT(stored=True, analyzer=self.analyzer, field_boost=2.0),
-
             # メインコンテンツ（検索可能、保存）
             content=fields.TEXT(stored=True, analyzer=self.analyzer),
-
             # N-gram検索用コンテンツ（部分一致検索用）
             content_ngram=fields.TEXT(analyzer=self.ngram_analyzer),
-
             # ファイルタイプ（フィルタリング用）
             file_type=fields.KEYWORD(stored=True),
-
             # ファイルサイズ（数値検索用）
             size=fields.NUMERIC(stored=True),
-
             # 作成日時（日付範囲検索用）
             created_date=fields.DATETIME(stored=True),
-
             # 更新日時（日付範囲検索用）
             modified_date=fields.DATETIME(stored=True),
-
             # インデックス化日時（管理用）
             indexed_date=fields.DATETIME(stored=True),
-
             # コンテンツハッシュ（重複検出用）
             content_hash=fields.ID(stored=True),
-
             # メタデータ（JSON形式で保存）
-            metadata=fields.TEXT(stored=True)
+            metadata=fields.TEXT(stored=True),
         )
 
     def _initialize_index(self) -> None:
@@ -126,6 +115,7 @@ class IndexManager:
             # 既存のインデックスファイルを削除
             if self.index_path.exists():
                 import shutil
+
                 shutil.rmtree(self.index_path)
                 self.logger.info("既存のインデックスを削除しました")
 
@@ -165,7 +155,7 @@ class IndexManager:
                     modified_date=doc.modified_date,
                     indexed_date=doc.indexed_date,
                     content_hash=doc.content_hash,
-                    metadata=str(doc.metadata) if doc.metadata else ""
+                    metadata=str(doc.metadata) if doc.metadata else "",
                 )
                 writer.commit()
                 self.logger.debug(f"ドキュメントを追加しました: {doc.title}")
@@ -205,7 +195,7 @@ class IndexManager:
                     modified_date=doc.modified_date,
                     indexed_date=doc.indexed_date,
                     content_hash=doc.content_hash,
-                    metadata=str(doc.metadata) if doc.metadata else ""
+                    metadata=str(doc.metadata) if doc.metadata else "",
                 )
                 writer.commit()
                 self.logger.debug(f"ドキュメントを更新しました: {doc.title}")
@@ -265,6 +255,7 @@ class IndexManager:
 
                 # インデックスディレクトリを削除
                 import shutil
+
                 if self.index_path.exists():
                     shutil.rmtree(self.index_path)
 
@@ -284,7 +275,7 @@ class IndexManager:
             try:
                 # すべてのドキュメントIDを取得して削除
                 with self._index.searcher() as searcher:
-                    doc_ids = [hit['id'] for hit in searcher.documents()]
+                    doc_ids = [hit["id"] for hit in searcher.documents()]
 
                 # 各ドキュメントを個別に削除
                 for doc_id in doc_ids:
@@ -304,10 +295,14 @@ class IndexManager:
             self.logger.error(error_msg)
             raise IndexingError(error_msg) from e
 
-    def search_text(self, query_text: str, limit: int = 100,
-                   file_types: list[FileType] | None = None,
-                   date_from: datetime | None = None,
-                   date_to: datetime | None = None) -> list[SearchResult]:
+    def search_text(
+        self,
+        query_text: str,
+        limit: int = 100,
+        file_types: list[FileType] | None = None,
+        date_from: datetime | None = None,
+        date_to: datetime | None = None,
+    ) -> list[SearchResult]:
         """
         全文検索を実行
 
@@ -343,7 +338,9 @@ class IndexManager:
                     )
                     search_results.append(search_result)
 
-                self.logger.info(f"検索完了: クエリ='{query_text}', 結果数={len(search_results)}")
+                self.logger.info(
+                    f"検索完了: クエリ='{query_text}', 結果数={len(search_results)}"
+                )
                 return search_results
 
         except Exception as e:
@@ -351,10 +348,13 @@ class IndexManager:
             self.logger.error(error_msg)
             raise SearchError(error_msg) from e
 
-    def _build_search_query(self, query_text: str,
-                           file_types: list[FileType] | None = None,
-                           date_from: datetime | None = None,
-                           date_to: datetime | None = None) -> Query:
+    def _build_search_query(
+        self,
+        query_text: str,
+        file_types: list[FileType] | None = None,
+        date_from: datetime | None = None,
+        date_to: datetime | None = None,
+    ) -> Query:
         """
         検索クエリを構築
 
@@ -368,7 +368,9 @@ class IndexManager:
             Query: 構築されたクエリ
         """
         # メインの検索クエリ（タイトルとコンテンツを対象）
-        parser = MultifieldParser(["title", "content", "content_ngram"], self._index.schema)
+        parser = MultifieldParser(
+            ["title", "content", "content_ngram"], self._index.schema
+        )
         main_query = parser.parse(query_text)
 
         # フィルター条件を追加
@@ -396,7 +398,9 @@ class IndexManager:
 
         return main_query
 
-    def _create_search_result_from_hit(self, hit: Hit, query_text: str, rank: int) -> SearchResult:
+    def _create_search_result_from_hit(
+        self, hit: Hit, query_text: str, rank: int
+    ) -> SearchResult:
         """
         Whooshの検索結果からSearchResultオブジェクトを作成
 
@@ -419,7 +423,7 @@ class IndexManager:
             created_date=hit["created_date"],
             modified_date=hit["modified_date"],
             indexed_date=hit["indexed_date"],
-            content_hash=hit["content_hash"]
+            content_hash=hit["content_hash"],
         )
 
         # スニペットの生成
@@ -438,7 +442,7 @@ class IndexManager:
             snippet=snippet,
             highlighted_terms=highlighted_terms,
             relevance_explanation=f"全文検索スコア: {hit.score:.2f}",
-            rank=rank
+            rank=rank,
         )
 
     def _generate_snippet(self, hit: Hit, query_text: str, max_chars: int = 200) -> str:
@@ -463,6 +467,7 @@ class IndexManager:
             if content:
                 # クエリパーサーを使用してハイライト
                 from whoosh.qparser import QueryParser
+
                 parser = QueryParser("content", self._index.schema)
                 parser.parse(query_text)
 
@@ -471,13 +476,16 @@ class IndexManager:
                     [query_text],
                     analyzer=self.analyzer,
                     formatter=formatter,
-                    fragmenter=fragmenter
+                    fragmenter=fragmenter,
                 )
 
                 # HTMLタグを除去してプレーンテキストに変換
                 import re
-                snippet = re.sub(r'<[^>]+>', '', highlighted)
-                return snippet[:max_chars] + "..." if len(snippet) > max_chars else snippet
+
+                snippet = re.sub(r"<[^>]+>", "", highlighted)
+                return (
+                    snippet[:max_chars] + "..." if len(snippet) > max_chars else snippet
+                )
 
             # コンテンツがない場合はタイトルを使用
             return hit.get("title", "")[:max_chars]
@@ -502,7 +510,9 @@ class IndexManager:
         terms = []
         for term in query_text.split():
             # 特殊文字を除去
-            clean_term = ''.join(c for c in term if c.isalnum() or c in 'ひらがなカタカナ漢字')
+            clean_term = "".join(
+                c for c in term if c.isalnum() or c in "ひらがなカタカナ漢字"
+            )
             if clean_term and len(clean_term) > 1:
                 terms.append(clean_term)
 
@@ -516,7 +526,9 @@ class IndexManager:
             documents (List[Document]): インデックス化するドキュメントのリスト
         """
         try:
-            self.logger.info(f"インデックスの再構築を開始します: {len(documents)}件のドキュメント")
+            self.logger.info(
+                f"インデックスの再構築を開始します: {len(documents)}件のドキュメント"
+            )
 
             # 新しいインデックスを作成
             self.create_index()
@@ -524,9 +536,11 @@ class IndexManager:
             # バッチでドキュメントを追加
             batch_size = 100
             for i in range(0, len(documents), batch_size):
-                batch = documents[i:i + batch_size]
+                batch = documents[i : i + batch_size]
                 self._add_documents_batch(batch)
-                self.logger.info(f"進捗: {min(i + batch_size, len(documents))}/{len(documents)}")
+                self.logger.info(
+                    f"進捗: {min(i + batch_size, len(documents))}/{len(documents)}"
+                )
 
             # インデックスの最適化
             self.optimize_index()
@@ -563,7 +577,7 @@ class IndexManager:
                     modified_date=doc.modified_date,
                     indexed_date=doc.indexed_date,
                     content_hash=doc.content_hash,
-                    metadata=str(doc.metadata) if doc.metadata else ""
+                    metadata=str(doc.metadata) if doc.metadata else "",
                 )
             writer.commit()
 
@@ -643,7 +657,7 @@ class IndexManager:
                 "document_count": self.get_document_count(),
                 "index_size": self._get_index_size(),
                 "last_modified": self._get_index_last_modified(),
-                "schema_version": str(self._index.schema)
+                "schema_version": str(self._index.schema),
             }
 
             return stats

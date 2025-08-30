@@ -48,7 +48,8 @@ class SearchInputWidget(QLineEdit):
         self.setMaximumHeight(35)
 
         # スタイルシートを適用
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QLineEdit {
                 border: 2px solid #d0d0d0;
                 border-radius: 18px;
@@ -63,7 +64,8 @@ class SearchInputWidget(QLineEdit):
             QLineEdit:hover {
                 border-color: #a0a0a0;
             }
-        """)
+        """
+        )
 
         # アクセシビリティ設定
         self.setAccessibleName("検索入力フィールド")
@@ -79,7 +81,8 @@ class SearchInputWidget(QLineEdit):
 
         # コンプリーターのスタイル設定
         popup = self.completer.popup()
-        popup.setStyleSheet("""
+        popup.setStyleSheet(
+            """
             QListView {
                 border: 1px solid #d0d0d0;
                 border-radius: 4px;
@@ -94,7 +97,8 @@ class SearchInputWidget(QLineEdit):
             QListView::item:hover {
                 background-color: #f5f5f5;
             }
-        """)
+        """
+        )
 
         self.setCompleter(self.completer)
 

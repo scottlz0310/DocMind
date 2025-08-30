@@ -30,8 +30,7 @@ class TestEmbeddingManager:
 
         # テスト用のEmbeddingManagerインスタンスを作成
         self.embedding_manager = EmbeddingManager(
-            model_name="all-MiniLM-L6-v2",
-            embeddings_path=self.embeddings_path
+            model_name="all-MiniLM-L6-v2", embeddings_path=self.embeddings_path
         )
 
     def teardown_method(self):
@@ -40,7 +39,7 @@ class TestEmbeddingManager:
         if os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_load_model_success(self, mock_sentence_transformer):
         """モデルの正常な読み込みをテスト"""
         # モックの設定
@@ -54,7 +53,7 @@ class TestEmbeddingManager:
         assert self.embedding_manager.model == mock_model
         mock_sentence_transformer.assert_called_once_with("all-MiniLM-L6-v2")
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_load_model_failure(self, mock_sentence_transformer):
         """モデル読み込み失敗時の例外処理をテスト"""
         # モックの設定（例外を発生させる）
@@ -66,7 +65,7 @@ class TestEmbeddingManager:
 
         assert "モデルの読み込みに失敗しました" in str(exc_info.value)
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_generate_embedding_success(self, mock_sentence_transformer):
         """埋め込み生成の正常動作をテスト"""
         # モックの設定
@@ -81,9 +80,11 @@ class TestEmbeddingManager:
 
         # 検証
         np.testing.assert_array_equal(result, mock_embedding)
-        mock_model.encode.assert_called_once_with("テストテキスト", convert_to_numpy=True)
+        mock_model.encode.assert_called_once_with(
+            "テストテキスト", convert_to_numpy=True
+        )
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_generate_embedding_empty_text(self, mock_sentence_transformer):
         """空のテキストに対する埋め込み生成をテスト"""
         # モックの設定
@@ -98,7 +99,7 @@ class TestEmbeddingManager:
         expected = np.zeros(4)
         np.testing.assert_array_equal(result, expected)
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_add_document_embedding(self, mock_sentence_transformer):
         """ドキュメント埋め込みの追加をテスト"""
         # モックの設定
@@ -120,7 +121,7 @@ class TestEmbeddingManager:
         np.testing.assert_array_equal(doc_embedding.embedding, mock_embedding)
         assert doc_embedding.text_hash == str(hash(text))
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_add_document_embedding_duplicate_skip(self, mock_sentence_transformer):
         """同じテキストの重複埋め込み追加をスキップすることをテスト"""
         # モックの設定
@@ -149,7 +150,7 @@ class TestEmbeddingManager:
             doc_id=doc_id,
             embedding=np.array([0.1, 0.2, 0.3]),
             text_hash="test_hash",
-            created_at=1234567890.0
+            created_at=1234567890.0,
         )
         self.embedding_manager.embeddings[doc_id] = embedding
 
@@ -159,8 +160,8 @@ class TestEmbeddingManager:
         # 削除されたことを確認
         assert doc_id not in self.embedding_manager.embeddings
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
-    @patch('src.core.embedding_manager.cosine_similarity')
+    @patch("src.core.embedding_manager.SentenceTransformer")
+    @patch("src.core.embedding_manager.cosine_similarity")
     def test_search_similar(self, mock_cosine_similarity, mock_sentence_transformer):
         """類似度検索をテスト"""
         # モックの設定
@@ -173,14 +174,14 @@ class TestEmbeddingManager:
         mock_cosine_similarity.side_effect = [
             np.array([[0.8]]),  # doc1との類似度
             np.array([[0.6]]),  # doc2との類似度
-            np.array([[0.9]])   # doc3との類似度
+            np.array([[0.9]]),  # doc3との類似度
         ]
 
         # テスト用の埋め込みを追加
         embeddings_data = [
             ("doc1", np.array([0.1, 0.2, 0.3, 0.4])),
             ("doc2", np.array([0.2, 0.3, 0.4, 0.5])),
-            ("doc3", np.array([0.4, 0.5, 0.6, 0.7]))
+            ("doc3", np.array([0.4, 0.5, 0.6, 0.7])),
         ]
 
         for doc_id, embedding in embeddings_data:
@@ -188,7 +189,7 @@ class TestEmbeddingManager:
                 doc_id=doc_id,
                 embedding=embedding,
                 text_hash="test_hash",
-                created_at=1234567890.0
+                created_at=1234567890.0,
             )
 
         # 類似度検索を実行
@@ -200,7 +201,7 @@ class TestEmbeddingManager:
         assert results[1] == ("doc1", 0.8)
         assert results[2] == ("doc2", 0.6)
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_search_similar_empty_cache(self, mock_sentence_transformer):
         """空のキャッシュでの類似度検索をテスト"""
         # モックの設定
@@ -213,9 +214,11 @@ class TestEmbeddingManager:
         # 空の結果が返されることを確認
         assert results == []
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
-    @patch('src.core.embedding_manager.cosine_similarity')
-    def test_search_similar_with_min_similarity(self, mock_cosine_similarity, mock_sentence_transformer):
+    @patch("src.core.embedding_manager.SentenceTransformer")
+    @patch("src.core.embedding_manager.cosine_similarity")
+    def test_search_similar_with_min_similarity(
+        self, mock_cosine_similarity, mock_sentence_transformer
+    ):
         """最小類似度フィルターでの類似度検索をテスト"""
         # モックの設定
         mock_model = Mock()
@@ -226,13 +229,13 @@ class TestEmbeddingManager:
         # コサイン類似度のモック設定（一つは閾値以下）
         mock_cosine_similarity.side_effect = [
             np.array([[0.8]]),  # doc1との類似度（閾値以上）
-            np.array([[0.3]])   # doc2との類似度（閾値以下）
+            np.array([[0.3]]),  # doc2との類似度（閾値以下）
         ]
 
         # テスト用の埋め込みを追加
         embeddings_data = [
             ("doc1", np.array([0.1, 0.2, 0.3, 0.4])),
-            ("doc2", np.array([0.2, 0.3, 0.4, 0.5]))
+            ("doc2", np.array([0.2, 0.3, 0.4, 0.5])),
         ]
 
         for doc_id, embedding in embeddings_data:
@@ -240,11 +243,13 @@ class TestEmbeddingManager:
                 doc_id=doc_id,
                 embedding=embedding,
                 text_hash="test_hash",
-                created_at=1234567890.0
+                created_at=1234567890.0,
             )
 
         # 最小類似度0.5で検索
-        results = self.embedding_manager.search_similar("テストクエリ", min_similarity=0.5)
+        results = self.embedding_manager.search_similar(
+            "テストクエリ", min_similarity=0.5
+        )
 
         # 閾値以上の結果のみ返されることを確認
         assert len(results) == 1
@@ -257,7 +262,7 @@ class TestEmbeddingManager:
             doc_id="test_doc",
             embedding=np.array([0.1, 0.2, 0.3]),
             text_hash="test_hash",
-            created_at=1234567890.0
+            created_at=1234567890.0,
         )
         self.embedding_manager.embeddings["test_doc"] = doc_embedding
 
@@ -268,13 +273,15 @@ class TestEmbeddingManager:
         assert os.path.exists(self.embeddings_path)
 
         # ファイルの内容を確認
-        with open(self.embeddings_path, 'rb') as f:
+        with open(self.embeddings_path, "rb") as f:
             loaded_embeddings = pickle.load(f)
 
         assert "test_doc" in loaded_embeddings
         loaded_embedding = loaded_embeddings["test_doc"]
         assert loaded_embedding.doc_id == "test_doc"
-        np.testing.assert_array_equal(loaded_embedding.embedding, np.array([0.1, 0.2, 0.3]))
+        np.testing.assert_array_equal(
+            loaded_embedding.embedding, np.array([0.1, 0.2, 0.3])
+        )
 
     def test_load_embeddings_existing_file(self):
         """既存ファイルからの埋め込み読み込みをテスト"""
@@ -284,12 +291,12 @@ class TestEmbeddingManager:
                 doc_id="test_doc",
                 embedding=np.array([0.1, 0.2, 0.3]),
                 text_hash="test_hash",
-                created_at=1234567890.0
+                created_at=1234567890.0,
             )
         }
 
         # ファイルに保存
-        with open(self.embeddings_path, 'wb') as f:
+        with open(self.embeddings_path, "wb") as f:
             pickle.dump(test_embeddings, f)
 
         # 新しいEmbeddingManagerインスタンスを作成（読み込みが実行される）
@@ -299,7 +306,9 @@ class TestEmbeddingManager:
         assert "test_doc" in new_manager.embeddings
         loaded_embedding = new_manager.embeddings["test_doc"]
         assert loaded_embedding.doc_id == "test_doc"
-        np.testing.assert_array_equal(loaded_embedding.embedding, np.array([0.1, 0.2, 0.3]))
+        np.testing.assert_array_equal(
+            loaded_embedding.embedding, np.array([0.1, 0.2, 0.3])
+        )
 
     def test_load_embeddings_no_file(self):
         """ファイルが存在しない場合の読み込みをテスト"""
@@ -317,7 +326,7 @@ class TestEmbeddingManager:
             doc_id="test_doc",
             embedding=np.array([0.1, 0.2, 0.3]),
             text_hash="test_hash",
-            created_at=1234567890.0
+            created_at=1234567890.0,
         )
         self.embedding_manager.embeddings["test_doc"] = doc_embedding
 
@@ -341,7 +350,7 @@ class TestEmbeddingManager:
             doc_id="test_doc",
             embedding=np.array([0.1, 0.2, 0.3]),
             text_hash="test_hash",
-            created_at=1234567890.0
+            created_at=1234567890.0,
         )
         self.embedding_manager.embeddings["test_doc"] = doc_embedding
 
@@ -355,8 +364,8 @@ class TestEmbeddingManager:
         assert self.embedding_manager.embeddings == {}
         assert not os.path.exists(self.embeddings_path)
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
-    @patch('os.path.exists')
+    @patch("src.core.embedding_manager.SentenceTransformer")
+    @patch("os.path.exists")
     def test_rebuild_embeddings(self, mock_exists, mock_sentence_transformer):
         """埋め込み再構築をテスト"""
         # ファイル存在チェックをモック
@@ -364,10 +373,7 @@ class TestEmbeddingManager:
 
         # モックの設定
         mock_model = Mock()
-        mock_embeddings = [
-            np.array([0.1, 0.2, 0.3]),
-            np.array([0.4, 0.5, 0.6])
-        ]
+        mock_embeddings = [np.array([0.1, 0.2, 0.3]), np.array([0.4, 0.5, 0.6])]
         mock_model.encode.side_effect = mock_embeddings
         mock_sentence_transformer.return_value = mock_model
 
@@ -375,6 +381,7 @@ class TestEmbeddingManager:
         from datetime import datetime
 
         from src.data.models import FileType
+
         documents = [
             Document(
                 id="doc1",
@@ -386,7 +393,7 @@ class TestEmbeddingManager:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                metadata={}
+                metadata={},
             ),
             Document(
                 id="doc2",
@@ -398,8 +405,8 @@ class TestEmbeddingManager:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                metadata={}
-            )
+                metadata={},
+            ),
         ]
 
         # 埋め込みを再構築
@@ -413,7 +420,7 @@ class TestEmbeddingManager:
         # モデルが正しく呼ばれたことを確認
         assert mock_model.encode.call_count == 2
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_ensure_model_loaded(self, mock_sentence_transformer):
         """モデルの自動読み込みをテスト"""
         # モックの設定

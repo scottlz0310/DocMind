@@ -66,7 +66,8 @@ class SearchProgressWidget(QWidget):
         self.cancel_button = QPushButton("キャンセル")
         self.cancel_button.setMaximumWidth(80)
         self.cancel_button.setMaximumHeight(25)
-        self.cancel_button.setStyleSheet("""
+        self.cancel_button.setStyleSheet(
+            """
             QPushButton {
                 background-color: #f44336;
                 color: white;
@@ -80,17 +81,20 @@ class SearchProgressWidget(QWidget):
             QPushButton:pressed {
                 background-color: #b71c1c;
             }
-        """)
+        """
+        )
         layout.addWidget(self.cancel_button)
 
         # 全体のスタイル
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QWidget {
                 background-color: #fff3cd;
                 border: 1px solid #ffeaa7;
                 border-radius: 4px;
             }
-        """)
+        """
+        )
 
     def _setup_connections(self) -> None:
         """シグナル接続の設定"""

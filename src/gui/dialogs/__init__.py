@@ -7,6 +7,4 @@ main_window.pyから分離されたダイアログ表示・管理機能を提供
 
 from .dialog_manager import DialogManager
 
-__all__ = [
-    'DialogManager'
-]
+__all__ = ["DialogManager"]

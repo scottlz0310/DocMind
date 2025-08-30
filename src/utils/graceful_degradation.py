@@ -16,15 +16,17 @@ from .logging_config import get_logger
 
 class ComponentStatus(Enum):
     """コンポーネントの状態"""
-    HEALTHY = "healthy"          # 正常動作
-    DEGRADED = "degraded"        # 機能制限あり
-    FAILED = "failed"            # 完全に失敗
-    DISABLED = "disabled"        # 無効化
+
+    HEALTHY = "healthy"  # 正常動作
+    DEGRADED = "degraded"  # 機能制限あり
+    FAILED = "failed"  # 完全に失敗
+    DISABLED = "disabled"  # 無効化
 
 
 @dataclass
 class ComponentState:
     """コンポーネントの状態情報"""
+
     name: str
     status: ComponentStatus = ComponentStatus.HEALTHY
     error_message: str | None = None
@@ -49,8 +51,9 @@ class GracefulDegradationManager:
         self._fallback_handlers: dict[str, Callable] = {}
         self._health_checkers: dict[str, Callable] = {}
 
-    def register_component(self, name: str, capabilities: dict[str, bool] = None,
-                          max_retries: int = 3) -> None:
+    def register_component(
+        self, name: str, capabilities: dict[str, bool] = None, max_retries: int = 3
+    ) -> None:
         """
         コンポーネントを登録
 
@@ -60,9 +63,7 @@ class GracefulDegradationManager:
             max_retries: 最大リトライ回数
         """
         self._components[name] = ComponentState(
-            name=name,
-            capabilities=capabilities or {},
-            max_retries=max_retries
+            name=name, capabilities=capabilities or {}, max_retries=max_retries
         )
         self.logger.debug(f"コンポーネントを登録: {name}")
 
@@ -88,8 +89,12 @@ class GracefulDegradationManager:
         self._health_checkers[component_name] = checker
         self.logger.debug(f"ヘルスチェッカーを登録: {component_name}")
 
-    def mark_component_failed(self, component_name: str, error: Exception,
-                            disable_capabilities: list[str] = None) -> bool:
+    def mark_component_failed(
+        self,
+        component_name: str,
+        error: Exception,
+        disable_capabilities: list[str] = None,
+    ) -> bool:
         """
         コンポーネントを失敗状態にマーク
 
@@ -121,9 +126,12 @@ class GracefulDegradationManager:
         # フォールバック処理を試行
         return self._attempt_fallback(component_name, error)
 
-    def mark_component_degraded(self, component_name: str,
-                              disable_capabilities: list[str] = None,
-                              error_message: str = None) -> None:
+    def mark_component_degraded(
+        self,
+        component_name: str,
+        disable_capabilities: list[str] = None,
+        error_message: str = None,
+    ) -> None:
         """
         コンポーネントを劣化状態にマーク
 
@@ -226,27 +234,35 @@ class GracefulDegradationManager:
             システム健全性の情報
         """
         total_components = len(self._components)
-        healthy_count = sum(1 for c in self._components.values()
-                          if c.status == ComponentStatus.HEALTHY)
-        degraded_count = sum(1 for c in self._components.values()
-                           if c.status == ComponentStatus.DEGRADED)
-        failed_count = sum(1 for c in self._components.values()
-                         if c.status == ComponentStatus.FAILED)
+        healthy_count = sum(
+            1 for c in self._components.values() if c.status == ComponentStatus.HEALTHY
+        )
+        degraded_count = sum(
+            1 for c in self._components.values() if c.status == ComponentStatus.DEGRADED
+        )
+        failed_count = sum(
+            1 for c in self._components.values() if c.status == ComponentStatus.FAILED
+        )
 
         return {
             "total_components": total_components,
             "healthy": healthy_count,
             "degraded": degraded_count,
             "failed": failed_count,
-            "overall_health": "healthy" if failed_count == 0 and degraded_count == 0
-                            else "degraded" if failed_count == 0
-                            else "critical",
-            "components": {name: {
-                "status": state.status.value,
-                "error_message": state.error_message,
-                "fallback_active": state.fallback_active,
-                "capabilities": state.capabilities
-            } for name, state in self._components.items()}
+            "overall_health": (
+                "healthy"
+                if failed_count == 0 and degraded_count == 0
+                else "degraded" if failed_count == 0 else "critical"
+            ),
+            "components": {
+                name: {
+                    "status": state.status.value,
+                    "error_message": state.error_message,
+                    "fallback_active": state.fallback_active,
+                    "capabilities": state.capabilities,
+                }
+                for name, state in self._components.items()
+            },
         }
 
     def attempt_recovery(self, component_name: str) -> bool:
@@ -313,14 +329,16 @@ class GracefulDegradationManager:
                 self.logger.info(f"フォールバック処理成功: {component_name}")
                 return True
         except Exception as fallback_error:
-            self.logger.error(f"フォールバック処理失敗: {component_name} - {fallback_error}")
+            self.logger.error(
+                f"フォールバック処理失敗: {component_name} - {fallback_error}"
+            )
 
         return False
 
 
-def with_graceful_degradation(component_name: str,
-                            disable_capabilities: list[str] = None,
-                            fallback_return=None):
+def with_graceful_degradation(
+    component_name: str, disable_capabilities: list[str] = None, fallback_return=None
+):
     """
     優雅な劣化デコレータ
 
@@ -329,6 +347,7 @@ def with_graceful_degradation(component_name: str,
         disable_capabilities: エラー時に無効化する機能
         fallback_return: フォールバック時の戻り値
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -346,7 +365,9 @@ def with_graceful_degradation(component_name: str,
                     return fallback_return
                 else:
                     raise
+
         return wrapper
+
     return decorator
 
 
@@ -376,44 +397,51 @@ def setup_component_monitoring():
     manager = get_global_degradation_manager()
 
     # 主要コンポーネントを登録（デフォルトで健全状態）
-    manager.register_component("search_manager", {
-        "full_text_search": True,
-        "semantic_search": True,
-        "hybrid_search": True
-    })
+    manager.register_component(
+        "search_manager",
+        {"full_text_search": True, "semantic_search": True, "hybrid_search": True},
+    )
 
-    manager.register_component("index_manager", {
-        "indexing": True,
-        "incremental_update": True,
-        "search": True
-    })
+    manager.register_component(
+        "index_manager", {"indexing": True, "incremental_update": True, "search": True}
+    )
 
-    manager.register_component("embedding_manager", {
-        "embedding_generation": True,
-        "similarity_search": True,
-        "model_loading": True
-    })
+    manager.register_component(
+        "embedding_manager",
+        {
+            "embedding_generation": True,
+            "similarity_search": True,
+            "model_loading": True,
+        },
+    )
 
-    manager.register_component("document_processor", {
-        "pdf_processing": True,
-        "word_processing": True,
-        "excel_processing": True,
-        "markdown_processing": True,
-        "text_processing": True
-    })
+    manager.register_component(
+        "document_processor",
+        {
+            "pdf_processing": True,
+            "word_processing": True,
+            "excel_processing": True,
+            "markdown_processing": True,
+            "text_processing": True,
+        },
+    )
 
-    manager.register_component("file_watcher", {
-        "file_monitoring": True,
-        "incremental_indexing": True
-    })
+    manager.register_component(
+        "file_watcher", {"file_monitoring": True, "incremental_indexing": True}
+    )
 
-    manager.register_component("database", {
-        "metadata_storage": True,
-        "search_history": True,
-        "document_management": True
-    })
+    manager.register_component(
+        "database",
+        {"metadata_storage": True, "search_history": True, "document_management": True},
+    )
 
     # 全コンポーネントを健全状態に設定
-    for component_name in ["search_manager", "index_manager", "embedding_manager",
-                          "document_processor", "file_watcher", "database"]:
+    for component_name in [
+        "search_manager",
+        "index_manager",
+        "embedding_manager",
+        "document_processor",
+        "file_watcher",
+        "database",
+    ]:
         manager.mark_component_healthy(component_name)

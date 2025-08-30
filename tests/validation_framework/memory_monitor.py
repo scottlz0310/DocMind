@@ -20,6 +20,7 @@ import psutil
 @dataclass
 class MemorySnapshot:
     """メモリスナップショットを格納するデータクラス"""
+
     timestamp: datetime
     rss_mb: float  # Resident Set Size (物理メモリ使用量)
     vms_mb: float  # Virtual Memory Size (仮想メモリ使用量)
@@ -77,7 +78,9 @@ class MemoryMonitor:
         self.memory_snapshots.clear()
 
         # 監視スレッドの開始
-        self.monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        self.monitor_thread = threading.Thread(
+            target=self._monitoring_loop, daemon=True
+        )
         self.monitor_thread.start()
 
         self.logger.info("メモリ監視を開始しました")
@@ -94,7 +97,9 @@ class MemoryMonitor:
         if self.monitor_thread and self.monitor_thread.is_alive():
             self.monitor_thread.join(timeout=5.0)
 
-        self.logger.info(f"メモリ監視を停止しました（スナップショット数: {len(self.memory_snapshots)}）")
+        self.logger.info(
+            f"メモリ監視を停止しました（スナップショット数: {len(self.memory_snapshots)}）"
+        )
 
     def _monitoring_loop(self) -> None:
         """監視ループ（別スレッドで実行）"""
@@ -106,7 +111,9 @@ class MemoryMonitor:
                 time.sleep(self.sampling_interval)
 
             except Exception as e:
-                self.logger.error(f"メモリスナップショットの取得中にエラーが発生しました: {e}")
+                self.logger.error(
+                    f"メモリスナップショットの取得中にエラーが発生しました: {e}"
+                )
                 time.sleep(self.sampling_interval)
 
     def _take_memory_snapshot(self) -> MemorySnapshot:
@@ -125,7 +132,7 @@ class MemoryMonitor:
 
         # ガベージコレクション統計
         gc_stats = gc.get_stats()
-        gc_collections = {i: stats['collections'] for i, stats in enumerate(gc_stats)}
+        gc_collections = {i: stats["collections"] for i, stats in enumerate(gc_stats)}
 
         return MemorySnapshot(
             timestamp=datetime.now(),
@@ -133,7 +140,7 @@ class MemoryMonitor:
             vms_mb=vms_mb,
             percent=memory_percent,
             python_objects=python_objects,
-            gc_collections=gc_collections
+            gc_collections=gc_collections,
         )
 
     def get_current_memory_usage(self) -> dict[str, float]:
@@ -146,10 +153,10 @@ class MemoryMonitor:
         snapshot = self._take_memory_snapshot()
 
         return {
-            'rss_mb': snapshot.rss_mb,
-            'vms_mb': snapshot.vms_mb,
-            'percent': snapshot.percent,
-            'python_objects': snapshot.python_objects
+            "rss_mb": snapshot.rss_mb,
+            "vms_mb": snapshot.vms_mb,
+            "percent": snapshot.percent,
+            "python_objects": snapshot.python_objects,
         }
 
     def get_peak_memory(self) -> float:
@@ -226,25 +233,25 @@ class MemoryMonitor:
         monitoring_duration = time.time() - (self.start_time or 0)
 
         return {
-            'monitoring_duration_seconds': monitoring_duration,
-            'snapshot_count': len(self.memory_snapshots),
-            'rss_memory': {
-                'peak_mb': max(rss_values),
-                'average_mb': sum(rss_values) / len(rss_values),
-                'min_mb': min(rss_values),
-                'growth_rate_mb_per_sec': self.get_memory_growth_rate()
+            "monitoring_duration_seconds": monitoring_duration,
+            "snapshot_count": len(self.memory_snapshots),
+            "rss_memory": {
+                "peak_mb": max(rss_values),
+                "average_mb": sum(rss_values) / len(rss_values),
+                "min_mb": min(rss_values),
+                "growth_rate_mb_per_sec": self.get_memory_growth_rate(),
             },
-            'virtual_memory': {
-                'peak_mb': max(vms_values),
-                'average_mb': sum(vms_values) / len(vms_values),
-                'min_mb': min(vms_values)
+            "virtual_memory": {
+                "peak_mb": max(vms_values),
+                "average_mb": sum(vms_values) / len(vms_values),
+                "min_mb": min(vms_values),
             },
-            'python_objects': {
-                'peak_count': max(object_counts),
-                'average_count': sum(object_counts) / len(object_counts),
-                'min_count': min(object_counts)
+            "python_objects": {
+                "peak_count": max(object_counts),
+                "average_count": sum(object_counts) / len(object_counts),
+                "min_count": min(object_counts),
             },
-            'memory_leak_detected': self.detect_memory_leak()
+            "memory_leak_detected": self.detect_memory_leak(),
         }
 
     def get_top_memory_consumers(self, limit: int = 10) -> list[tuple[str, int, float]]:
@@ -258,12 +265,14 @@ class MemoryMonitor:
             (ファイル名, 行番号, サイズMB)のタプルのリスト
         """
         if not self.enable_tracemalloc or not tracemalloc.is_tracing():
-            self.logger.warning("tracemalloc が有効でないため、詳細なメモリ分析はできません")
+            self.logger.warning(
+                "tracemalloc が有効でないため、詳細なメモリ分析はできません"
+            )
             return []
 
         try:
             snapshot = tracemalloc.take_snapshot()
-            top_stats = snapshot.statistics('lineno')
+            top_stats = snapshot.statistics("lineno")
 
             result = []
             for stat in top_stats[:limit]:
@@ -288,16 +297,18 @@ class MemoryMonitor:
         # 各世代のガベージコレクションを実行
         collected = {}
         for generation in range(3):
-            collected[f'generation_{generation}'] = gc.collect(generation)
+            collected[f"generation_{generation}"] = gc.collect(generation)
 
         total_collected = sum(collected.values())
-        self.logger.info(f"ガベージコレクションで {total_collected} オブジェクトを回収しました")
+        self.logger.info(
+            f"ガベージコレクションで {total_collected} オブジェクトを回収しました"
+        )
 
         return collected
 
-    def check_memory_thresholds(self,
-                              max_rss_mb: float = 2048.0,
-                              max_growth_rate_mb_per_min: float = 50.0) -> dict[str, bool]:
+    def check_memory_thresholds(
+        self, max_rss_mb: float = 2048.0, max_growth_rate_mb_per_min: float = 50.0
+    ) -> dict[str, bool]:
         """
         メモリ使用量の閾値チェック
 
@@ -312,17 +323,21 @@ class MemoryMonitor:
         growth_rate = self.get_memory_growth_rate() * 60  # 分単位に変換
 
         results = {
-            'memory_within_threshold': peak_memory <= max_rss_mb,
-            'growth_rate_within_threshold': growth_rate <= max_growth_rate_mb_per_min,
-            'peak_memory_mb': peak_memory,
-            'growth_rate_mb_per_min': growth_rate
+            "memory_within_threshold": peak_memory <= max_rss_mb,
+            "growth_rate_within_threshold": growth_rate <= max_growth_rate_mb_per_min,
+            "peak_memory_mb": peak_memory,
+            "growth_rate_mb_per_min": growth_rate,
         }
 
-        if not results['memory_within_threshold']:
-            self.logger.warning(f"メモリ使用量が閾値を超過: {peak_memory:.1f}MB > {max_rss_mb}MB")
+        if not results["memory_within_threshold"]:
+            self.logger.warning(
+                f"メモリ使用量が閾値を超過: {peak_memory:.1f}MB > {max_rss_mb}MB"
+            )
 
-        if not results['growth_rate_within_threshold']:
-            self.logger.warning(f"メモリ増加率が閾値を超過: {growth_rate:.1f}MB/分 > {max_growth_rate_mb_per_min}MB/分")
+        if not results["growth_rate_within_threshold"]:
+            self.logger.warning(
+                f"メモリ増加率が閾値を超過: {growth_rate:.1f}MB/分 > {max_growth_rate_mb_per_min}MB/分"
+            )
 
         return results
 

@@ -18,13 +18,14 @@ import numpy as np
 from matplotlib import rcParams
 
 # 日本語フォント設定
-rcParams['font.family'] = 'DejaVu Sans'
-plt.rcParams['axes.unicode_minus'] = False
+rcParams["font.family"] = "DejaVu Sans"
+plt.rcParams["axes.unicode_minus"] = False
 
 
 @dataclass
 class ReportGenerationConfig:
     """レポート生成設定"""
+
     output_directory: str
     report_name: str = "validation_report"
     include_charts: bool = True
@@ -43,6 +44,7 @@ class ReportGenerationConfig:
 @dataclass
 class ValidationMetrics:
     """検証メトリクス"""
+
     test_name: str
     success: bool
     execution_time: float
@@ -60,6 +62,7 @@ class ValidationMetrics:
 @dataclass
 class PerformanceMetrics:
     """パフォーマンスメトリクス"""
+
     peak_cpu_percent: float
     average_cpu_percent: float
     peak_memory_mb: float
@@ -74,6 +77,7 @@ class PerformanceMetrics:
 @dataclass
 class QualityIndicators:
     """品質指標"""
+
     success_rate: float
     average_execution_time: float
     memory_efficiency: float
@@ -110,14 +114,20 @@ class ValidationReportGenerator:
         self.generated_files: list[str] = []
 
         # 履歴データストレージ
-        self.history_file = os.path.join(self.config.output_directory, "validation_history.json")
+        self.history_file = os.path.join(
+            self.config.output_directory, "validation_history.json"
+        )
 
-        self.logger.info(f"ValidationReportGenerator を初期化しました: {self.config.output_directory}")
+        self.logger.info(
+            f"ValidationReportGenerator を初期化しました: {self.config.output_directory}"
+        )
 
-    def generate_comprehensive_report(self,
-                                    validation_results: list[ValidationMetrics],
-                                    performance_data: PerformanceMetrics | None = None,
-                                    additional_data: dict[str, Any] | None = None) -> dict[str, str]:
+    def generate_comprehensive_report(
+        self,
+        validation_results: list[ValidationMetrics],
+        performance_data: PerformanceMetrics | None = None,
+        additional_data: dict[str, Any] | None = None,
+    ) -> dict[str, str]:
         """
         包括的検証レポートの生成
 
@@ -132,11 +142,15 @@ class ValidationReportGenerator:
         self.logger.info("包括的検証レポートの生成を開始します")
 
         # データの分析
-        analysis_results = self._analyze_validation_data(validation_results, performance_data, additional_data)
+        analysis_results = self._analyze_validation_data(
+            validation_results, performance_data, additional_data
+        )
 
         # 品質指標の計算
-        quality_indicators = self._calculate_quality_indicators(validation_results, performance_data)
-        analysis_results['quality_indicators'] = asdict(quality_indicators)
+        quality_indicators = self._calculate_quality_indicators(
+            validation_results, performance_data
+        )
+        analysis_results["quality_indicators"] = asdict(quality_indicators)
 
         # 履歴データの保存
         self._save_to_history(analysis_results)
@@ -145,24 +159,24 @@ class ValidationReportGenerator:
 
         # サマリーレポートの生成
         summary_file = self._generate_summary_report(analysis_results)
-        generated_files['summary_report'] = summary_file
+        generated_files["summary_report"] = summary_file
 
         # 詳細レポートの生成
         for format_type in self.config.report_formats:
             if format_type == "html":
                 detail_file = self._generate_detailed_html_report(analysis_results)
-                generated_files['detailed_html_report'] = detail_file
+                generated_files["detailed_html_report"] = detail_file
             elif format_type == "markdown":
                 detail_file = self._generate_detailed_markdown_report(analysis_results)
-                generated_files['detailed_markdown_report'] = detail_file
+                generated_files["detailed_markdown_report"] = detail_file
             elif format_type == "json":
                 detail_file = self._generate_detailed_json_report(analysis_results)
-                generated_files['detailed_json_report'] = detail_file
+                generated_files["detailed_json_report"] = detail_file
 
         # トレンド分析レポートの生成
         if self.config.include_trend_analysis:
             trend_file = self._generate_trend_analysis_report(analysis_results)
-            generated_files['trend_analysis_report'] = trend_file
+            generated_files["trend_analysis_report"] = trend_file
 
         # パフォーマンスグラフの生成
         if self.config.include_performance_graphs:
@@ -172,34 +186,36 @@ class ValidationReportGenerator:
         # エラーログ分析レポートの生成
         if self.config.include_error_analysis:
             error_file = self._generate_error_analysis_report(analysis_results)
-            generated_files['error_analysis_report'] = error_file
+            generated_files["error_analysis_report"] = error_file
 
         # 品質指標可視化の生成
         quality_file = self._generate_quality_indicators_visualization(analysis_results)
-        generated_files['quality_indicators_report'] = quality_file
+        generated_files["quality_indicators_report"] = quality_file
 
         self.generated_files.extend(generated_files.values())
 
         self.logger.info(f"包括的レポート生成完了: {len(generated_files)}ファイル")
         return generated_files
 
-    def _analyze_validation_data(self,
-                               validation_results: list[ValidationMetrics],
-                               performance_data: PerformanceMetrics | None,
-                               additional_data: dict[str, Any] | None) -> dict[str, Any]:
+    def _analyze_validation_data(
+        self,
+        validation_results: list[ValidationMetrics],
+        performance_data: PerformanceMetrics | None,
+        additional_data: dict[str, Any] | None,
+    ) -> dict[str, Any]:
         """検証データの詳細分析"""
         analysis = {
-            'metadata': {
-                'generation_time': datetime.now().isoformat(),
-                'total_tests': len(validation_results),
-                'report_name': self.config.report_name
+            "metadata": {
+                "generation_time": datetime.now().isoformat(),
+                "total_tests": len(validation_results),
+                "report_name": self.config.report_name,
             },
-            'summary': {},
-            'test_results': {},
-            'performance_analysis': {},
-            'error_analysis': {},
-            'category_analysis': {},
-            'time_series_analysis': {}
+            "summary": {},
+            "test_results": {},
+            "performance_analysis": {},
+            "error_analysis": {},
+            "category_analysis": {},
+            "time_series_analysis": {},
         }
 
         if not validation_results:
@@ -211,23 +227,39 @@ class ValidationReportGenerator:
         passed_tests = sum(1 for result in validation_results if result.success)
         failed_tests = total_tests - passed_tests
 
-        total_execution_time = sum(result.execution_time for result in validation_results)
-        average_execution_time = total_execution_time / total_tests if total_tests > 0 else 0
+        total_execution_time = sum(
+            result.execution_time for result in validation_results
+        )
+        average_execution_time = (
+            total_execution_time / total_tests if total_tests > 0 else 0
+        )
 
         total_memory_usage = sum(result.memory_usage for result in validation_results)
-        average_memory_usage = total_memory_usage / total_tests if total_tests > 0 else 0
+        average_memory_usage = (
+            total_memory_usage / total_tests if total_tests > 0 else 0
+        )
 
-        analysis['summary'] = {
-            'total_tests': total_tests,
-            'passed_tests': passed_tests,
-            'failed_tests': failed_tests,
-            'success_rate': (passed_tests / total_tests * 100) if total_tests > 0 else 0,
-            'total_execution_time': total_execution_time,
-            'average_execution_time': average_execution_time,
-            'total_memory_usage': total_memory_usage,
-            'average_memory_usage': average_memory_usage,
-            'peak_memory_usage': max(result.memory_usage for result in validation_results) if validation_results else 0,
-            'peak_cpu_usage': max(result.cpu_usage for result in validation_results) if validation_results else 0
+        analysis["summary"] = {
+            "total_tests": total_tests,
+            "passed_tests": passed_tests,
+            "failed_tests": failed_tests,
+            "success_rate": (
+                (passed_tests / total_tests * 100) if total_tests > 0 else 0
+            ),
+            "total_execution_time": total_execution_time,
+            "average_execution_time": average_execution_time,
+            "total_memory_usage": total_memory_usage,
+            "average_memory_usage": average_memory_usage,
+            "peak_memory_usage": (
+                max(result.memory_usage for result in validation_results)
+                if validation_results
+                else 0
+            ),
+            "peak_cpu_usage": (
+                max(result.cpu_usage for result in validation_results)
+                if validation_results
+                else 0
+            ),
         }
 
         # カテゴリ別分析
@@ -236,73 +268,88 @@ class ValidationReportGenerator:
             category = result.category
             if category not in category_stats:
                 category_stats[category] = {
-                    'total': 0, 'passed': 0, 'failed': 0,
-                    'total_time': 0, 'total_memory': 0
+                    "total": 0,
+                    "passed": 0,
+                    "failed": 0,
+                    "total_time": 0,
+                    "total_memory": 0,
                 }
 
-            category_stats[category]['total'] += 1
+            category_stats[category]["total"] += 1
             if result.success:
-                category_stats[category]['passed'] += 1
+                category_stats[category]["passed"] += 1
             else:
-                category_stats[category]['failed'] += 1
+                category_stats[category]["failed"] += 1
 
-            category_stats[category]['total_time'] += result.execution_time
-            category_stats[category]['total_memory'] += result.memory_usage
+            category_stats[category]["total_time"] += result.execution_time
+            category_stats[category]["total_memory"] += result.memory_usage
 
         # カテゴリ別平均値の計算
         for category, stats in category_stats.items():
-            if stats['total'] > 0:
-                stats['success_rate'] = (stats['passed'] / stats['total']) * 100
-                stats['average_time'] = stats['total_time'] / stats['total']
-                stats['average_memory'] = stats['total_memory'] / stats['total']
+            if stats["total"] > 0:
+                stats["success_rate"] = (stats["passed"] / stats["total"]) * 100
+                stats["average_time"] = stats["total_time"] / stats["total"]
+                stats["average_memory"] = stats["total_memory"] / stats["total"]
 
-        analysis['category_analysis'] = category_stats
+        analysis["category_analysis"] = category_stats
 
         # 失敗したテストの詳細分析
         failed_tests_details = []
         for result in validation_results:
             if not result.success:
-                failed_tests_details.append({
-                    'test_name': result.test_name,
-                    'category': result.category,
-                    'error_message': result.error_message,
-                    'execution_time': result.execution_time,
-                    'memory_usage': result.memory_usage,
-                    'timestamp': result.timestamp.isoformat()
-                })
+                failed_tests_details.append(
+                    {
+                        "test_name": result.test_name,
+                        "category": result.category,
+                        "error_message": result.error_message,
+                        "execution_time": result.execution_time,
+                        "memory_usage": result.memory_usage,
+                        "timestamp": result.timestamp.isoformat(),
+                    }
+                )
 
-        analysis['test_results'] = {
-            'failed_tests': failed_tests_details,
-            'failure_rate_by_category': {
-                cat: (stats['failed'] / stats['total'] * 100) if stats['total'] > 0 else 0
+        analysis["test_results"] = {
+            "failed_tests": failed_tests_details,
+            "failure_rate_by_category": {
+                cat: (
+                    (stats["failed"] / stats["total"] * 100)
+                    if stats["total"] > 0
+                    else 0
+                )
                 for cat, stats in category_stats.items()
-            }
+            },
         }
 
         # パフォーマンス分析
         if performance_data:
-            analysis['performance_analysis'] = {
-                'cpu_usage': {
-                    'peak_percent': performance_data.peak_cpu_percent,
-                    'average_percent': performance_data.average_cpu_percent,
-                    'efficiency': self._calculate_cpu_efficiency(performance_data.average_cpu_percent)
+            analysis["performance_analysis"] = {
+                "cpu_usage": {
+                    "peak_percent": performance_data.peak_cpu_percent,
+                    "average_percent": performance_data.average_cpu_percent,
+                    "efficiency": self._calculate_cpu_efficiency(
+                        performance_data.average_cpu_percent
+                    ),
                 },
-                'memory_usage': {
-                    'peak_mb': performance_data.peak_memory_mb,
-                    'average_mb': performance_data.average_memory_mb,
-                    'efficiency': self._calculate_memory_efficiency(performance_data.peak_memory_mb)
+                "memory_usage": {
+                    "peak_mb": performance_data.peak_memory_mb,
+                    "average_mb": performance_data.average_memory_mb,
+                    "efficiency": self._calculate_memory_efficiency(
+                        performance_data.peak_memory_mb
+                    ),
                 },
-                'disk_io': {
-                    'read_mb': performance_data.disk_read_mb,
-                    'write_mb': performance_data.disk_write_mb,
-                    'total_mb': performance_data.disk_read_mb + performance_data.disk_write_mb
+                "disk_io": {
+                    "read_mb": performance_data.disk_read_mb,
+                    "write_mb": performance_data.disk_write_mb,
+                    "total_mb": performance_data.disk_read_mb
+                    + performance_data.disk_write_mb,
                 },
-                'network_io': {
-                    'sent_mb': performance_data.network_sent_mb,
-                    'received_mb': performance_data.network_received_mb,
-                    'total_mb': performance_data.network_sent_mb + performance_data.network_received_mb
+                "network_io": {
+                    "sent_mb": performance_data.network_sent_mb,
+                    "received_mb": performance_data.network_received_mb,
+                    "total_mb": performance_data.network_sent_mb
+                    + performance_data.network_received_mb,
                 },
-                'monitoring_duration': performance_data.monitoring_duration_seconds
+                "monitoring_duration": performance_data.monitoring_duration_seconds,
             }
 
         # エラー分析
@@ -315,22 +362,28 @@ class ValidationReportGenerator:
                     error_patterns[error_type] = 0
                 error_patterns[error_type] += 1
 
-        analysis['error_analysis'] = {
-            'error_patterns': error_patterns,
-            'total_errors': len(failed_tests_details),
-            'error_rate': (len(failed_tests_details) / total_tests * 100) if total_tests > 0 else 0
+        analysis["error_analysis"] = {
+            "error_patterns": error_patterns,
+            "total_errors": len(failed_tests_details),
+            "error_rate": (
+                (len(failed_tests_details) / total_tests * 100)
+                if total_tests > 0
+                else 0
+            ),
         }
 
         # 時系列分析
         if len(validation_results) > 1:
             time_series = self._analyze_time_series(validation_results)
-            analysis['time_series_analysis'] = time_series
+            analysis["time_series_analysis"] = time_series
 
         return analysis
 
-    def _calculate_quality_indicators(self,
-                                    validation_results: list[ValidationMetrics],
-                                    performance_data: PerformanceMetrics | None) -> QualityIndicators:
+    def _calculate_quality_indicators(
+        self,
+        validation_results: list[ValidationMetrics],
+        performance_data: PerformanceMetrics | None,
+    ) -> QualityIndicators:
         """品質指標の計算"""
         if not validation_results:
             return QualityIndicators(0, 0, 0, 0, 0, 0, 0, 0)
@@ -340,22 +393,32 @@ class ValidationReportGenerator:
         passed_tests = sum(1 for result in validation_results if result.success)
         success_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
 
-        average_execution_time = sum(result.execution_time for result in validation_results) / total_tests
+        average_execution_time = (
+            sum(result.execution_time for result in validation_results) / total_tests
+        )
         error_rate = 100 - success_rate
 
         # 効率性指標
         memory_efficiency = self._calculate_memory_efficiency(
-            max(result.memory_usage for result in validation_results) if validation_results else 0
+            max(result.memory_usage for result in validation_results)
+            if validation_results
+            else 0
         )
 
         cpu_efficiency = self._calculate_cpu_efficiency(
-            sum(result.cpu_usage for result in validation_results) / total_tests if validation_results else 0
+            sum(result.cpu_usage for result in validation_results) / total_tests
+            if validation_results
+            else 0
         )
 
         # 安定性スコア（実行時間の標準偏差から計算）
         execution_times = [result.execution_time for result in validation_results]
         time_std = np.std(execution_times) if len(execution_times) > 1 else 0
-        stability_score = max(0, 100 - (time_std / average_execution_time * 100)) if average_execution_time > 0 else 100
+        stability_score = (
+            max(0, 100 - (time_std / average_execution_time * 100))
+            if average_execution_time > 0
+            else 100
+        )
 
         # パフォーマンススコア
         performance_score = self._calculate_performance_score(
@@ -364,10 +427,10 @@ class ValidationReportGenerator:
 
         # 総合品質スコア
         overall_quality_score = (
-            success_rate * 0.4 +  # 成功率の重み: 40%
-            stability_score * 0.2 +  # 安定性の重み: 20%
-            performance_score * 0.2 +  # パフォーマンスの重み: 20%
-            (memory_efficiency + cpu_efficiency) / 2 * 0.2  # 効率性の重み: 20%
+            success_rate * 0.4  # 成功率の重み: 40%
+            + stability_score * 0.2  # 安定性の重み: 20%
+            + performance_score * 0.2  # パフォーマンスの重み: 20%
+            + (memory_efficiency + cpu_efficiency) / 2 * 0.2  # 効率性の重み: 20%
         )
 
         return QualityIndicators(
@@ -378,7 +441,7 @@ class ValidationReportGenerator:
             error_rate=error_rate,
             stability_score=stability_score,
             performance_score=performance_score,
-            overall_quality_score=overall_quality_score
+            overall_quality_score=overall_quality_score,
         )
 
     def _calculate_cpu_efficiency(self, cpu_usage_percent: float) -> float:
@@ -403,7 +466,9 @@ class ValidationReportGenerator:
         else:
             return max(0, 30 - (memory_usage_mb - 2048) / 1024 * 30)
 
-    def _calculate_performance_score(self, avg_time: float, memory_eff: float, cpu_eff: float) -> float:
+    def _calculate_performance_score(
+        self, avg_time: float, memory_eff: float, cpu_eff: float
+    ) -> float:
         """パフォーマンススコアの計算"""
         # 実行時間スコア
         if avg_time <= 5:
@@ -416,7 +481,7 @@ class ValidationReportGenerator:
             time_score = max(0, 20 - (avg_time - 30) * 0.5)
 
         # 総合パフォーマンススコア
-        return (time_score * 0.5 + memory_eff * 0.25 + cpu_eff * 0.25)
+        return time_score * 0.5 + memory_eff * 0.25 + cpu_eff * 0.25
 
     def _classify_error_type(self, error_message: str) -> str:
         """エラーメッセージの分類"""
@@ -435,12 +500,16 @@ class ValidationReportGenerator:
             return "File"
         elif "permission" in error_message_lower or "権限" in error_message_lower:
             return "Permission"
-        elif "assertion" in error_message_lower or "アサーション" in error_message_lower:
+        elif (
+            "assertion" in error_message_lower or "アサーション" in error_message_lower
+        ):
             return "Assertion"
         else:
             return "Other"
 
-    def _analyze_time_series(self, validation_results: list[ValidationMetrics]) -> dict[str, Any]:
+    def _analyze_time_series(
+        self, validation_results: list[ValidationMetrics]
+    ) -> dict[str, Any]:
         """時系列分析"""
         # タイムスタンプでソート
         sorted_results = sorted(validation_results, key=lambda x: x.timestamp)
@@ -457,11 +526,15 @@ class ValidationReportGenerator:
         success_trend = self._calculate_trend(success_flags)
 
         return {
-            'execution_time_trend': time_trend,
-            'memory_usage_trend': memory_trend,
-            'success_rate_trend': success_trend,
-            'data_points': len(sorted_results),
-            'time_span_minutes': (timestamps[-1] - timestamps[0]).total_seconds() / 60 if len(timestamps) > 1 else 0
+            "execution_time_trend": time_trend,
+            "memory_usage_trend": memory_trend,
+            "success_rate_trend": success_trend,
+            "data_points": len(sorted_results),
+            "time_span_minutes": (
+                (timestamps[-1] - timestamps[0]).total_seconds() / 60
+                if len(timestamps) > 1
+                else 0
+            ),
         }
 
     def _calculate_trend(self, values: list[float]) -> str:
@@ -486,16 +559,16 @@ class ValidationReportGenerator:
             # 既存の履歴データを読み込み
             history_data = []
             if os.path.exists(self.history_file):
-                with open(self.history_file, encoding='utf-8') as f:
+                with open(self.history_file, encoding="utf-8") as f:
                     history_data = json.load(f)
 
             # 新しいデータを追加
             history_entry = {
-                'timestamp': analysis_results['metadata']['generation_time'],
-                'summary': analysis_results['summary'],
-                'quality_indicators': analysis_results.get('quality_indicators', {}),
-                'category_analysis': analysis_results.get('category_analysis', {}),
-                'error_analysis': analysis_results.get('error_analysis', {})
+                "timestamp": analysis_results["metadata"]["generation_time"],
+                "summary": analysis_results["summary"],
+                "quality_indicators": analysis_results.get("quality_indicators", {}),
+                "category_analysis": analysis_results.get("category_analysis", {}),
+                "error_analysis": analysis_results.get("error_analysis", {}),
             }
 
             history_data.append(history_entry)
@@ -505,7 +578,7 @@ class ValidationReportGenerator:
                 history_data = history_data[-100:]
 
             # 履歴データを保存
-            with open(self.history_file, 'w', encoding='utf-8') as f:
+            with open(self.history_file, "w", encoding="utf-8") as f:
                 json.dump(history_data, f, ensure_ascii=False, indent=2)
 
             self.logger.debug(f"履歴データを保存しました: {len(history_data)}件")
@@ -515,8 +588,8 @@ class ValidationReportGenerator:
 
     def _generate_summary_report(self, analysis_results: dict[str, Any]) -> str:
         """サマリーレポートの生成"""
-        summary = analysis_results.get('summary', {})
-        quality = analysis_results.get('quality_indicators', {})
+        summary = analysis_results.get("summary", {})
+        quality = analysis_results.get("quality_indicators", {})
 
         report_content = f"""DocMind 検証サマリーレポート
 {'=' * 50}
@@ -547,7 +620,7 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 """
 
         # 品質評価の判定
-        overall_score = quality.get('overall_quality_score', 0)
+        overall_score = quality.get("overall_quality_score", 0)
         if overall_score >= 90:
             report_content += "🟢 優秀 - すべての要件を満たしています\n"
         elif overall_score >= 80:
@@ -558,21 +631,23 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             report_content += "🔴 要改善 - 重要な問題があります\n"
 
         # カテゴリ別分析
-        category_analysis = analysis_results.get('category_analysis', {})
+        category_analysis = analysis_results.get("category_analysis", {})
         if category_analysis:
             report_content += "\n【カテゴリ別結果】\n"
             for category, stats in category_analysis.items():
                 report_content += f"- {category}: {stats.get('success_rate', 0):.1f}% ({stats.get('passed', 0)}/{stats.get('total', 0)})\n"
 
         # エラー分析
-        error_analysis = analysis_results.get('error_analysis', {})
-        if error_analysis.get('error_patterns'):
+        error_analysis = analysis_results.get("error_analysis", {})
+        if error_analysis.get("error_patterns"):
             report_content += "\n【主要エラーパターン】\n"
-            for error_type, count in error_analysis['error_patterns'].items():
+            for error_type, count in error_analysis["error_patterns"].items():
                 report_content += f"- {error_type}: {count}件\n"
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_summary.txt")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory, f"{self.config.report_name}_summary.txt"
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(report_content)
 
         self.logger.info(f"サマリーレポートを生成しました: {report_path}")
@@ -580,11 +655,11 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
     def _generate_detailed_html_report(self, analysis_results: dict[str, Any]) -> str:
         """詳細HTMLレポートの生成"""
-        summary = analysis_results.get('summary', {})
-        quality = analysis_results.get('quality_indicators', {})
-        category_analysis = analysis_results.get('category_analysis', {})
-        error_analysis = analysis_results.get('error_analysis', {})
-        performance_analysis = analysis_results.get('performance_analysis', {})
+        summary = analysis_results.get("summary", {})
+        quality = analysis_results.get("quality_indicators", {})
+        category_analysis = analysis_results.get("category_analysis", {})
+        error_analysis = analysis_results.get("error_analysis", {})
+        performance_analysis = analysis_results.get("performance_analysis", {})
 
         html_content = f"""
 <!DOCTYPE html>
@@ -747,7 +822,7 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         """
 
         # 品質指標カードの生成
-        overall_score = quality.get('overall_quality_score', 0)
+        overall_score = quality.get("overall_quality_score", 0)
         card_class = self._get_quality_card_class(overall_score)
 
         html_content += f"""
@@ -813,7 +888,7 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         <div class="section-card">
             """
             for category, stats in category_analysis.items():
-                success_rate = stats.get('success_rate', 0)
+                success_rate = stats.get("success_rate", 0)
                 html_content += f"""
             <h3>{category}</h3>
             <div class="progress-bar">
@@ -829,8 +904,8 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         # パフォーマンス分析
         if performance_analysis:
-            cpu_data = performance_analysis.get('cpu_usage', {})
-            memory_data = performance_analysis.get('memory_usage', {})
+            cpu_data = performance_analysis.get("cpu_usage", {})
+            memory_data = performance_analysis.get("memory_usage", {})
 
             html_content += f"""
         <h2>⚡ パフォーマンス分析</h2>
@@ -848,8 +923,8 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             """
 
         # エラー分析
-        error_patterns = error_analysis.get('error_patterns', {})
-        failed_tests = analysis_results.get('test_results', {}).get('failed_tests', [])
+        error_patterns = error_analysis.get("error_patterns", {})
+        failed_tests = analysis_results.get("test_results", {}).get("failed_tests", [])
 
         if error_patterns or failed_tests:
             html_content += """
@@ -904,8 +979,10 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 </html>
         """
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_detailed.html")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory, f"{self.config.report_name}_detailed.html"
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         self.logger.info(f"詳細HTMLレポートを生成しました: {report_path}")
@@ -922,11 +999,13 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         else:
             return "poor"
 
-    def _generate_detailed_markdown_report(self, analysis_results: dict[str, Any]) -> str:
+    def _generate_detailed_markdown_report(
+        self, analysis_results: dict[str, Any]
+    ) -> str:
         """詳細Markdownレポートの生成"""
-        summary = analysis_results.get('summary', {})
-        quality = analysis_results.get('quality_indicators', {})
-        category_analysis = analysis_results.get('category_analysis', {})
+        summary = analysis_results.get("summary", {})
+        quality = analysis_results.get("quality_indicators", {})
+        category_analysis = analysis_results.get("category_analysis", {})
 
         markdown_content = f"""# DocMind 詳細検証レポート
 
@@ -958,15 +1037,19 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         # カテゴリ別分析
         if category_analysis:
             markdown_content += "## 📂 カテゴリ別分析\n\n"
-            markdown_content += "| カテゴリ | 成功率 | 成功/総数 | 平均実行時間 | 平均メモリ使用量 |\n"
-            markdown_content += "|----------|--------|-----------|--------------|------------------|\n"
+            markdown_content += (
+                "| カテゴリ | 成功率 | 成功/総数 | 平均実行時間 | 平均メモリ使用量 |\n"
+            )
+            markdown_content += (
+                "|----------|--------|-----------|--------------|------------------|\n"
+            )
 
             for category, stats in category_analysis.items():
                 markdown_content += f"| {category} | {stats.get('success_rate', 0):.1f}% | {stats.get('passed', 0)}/{stats.get('total', 0)} | {stats.get('average_time', 0):.2f}s | {stats.get('average_memory', 0):.1f}MB |\n"
 
         # エラー分析
-        error_analysis = analysis_results.get('error_analysis', {})
-        error_patterns = error_analysis.get('error_patterns', {})
+        error_analysis = analysis_results.get("error_analysis", {})
+        error_patterns = error_analysis.get("error_patterns", {})
         if error_patterns:
             markdown_content += "\n## ❌ エラーパターン分析\n\n"
             markdown_content += "| エラータイプ | 発生回数 | 割合 |\n"
@@ -978,18 +1061,28 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
                 markdown_content += f"| {error_type} | {count} | {percentage:.1f}% |\n"
 
         # 失敗したテストの詳細
-        failed_tests = analysis_results.get('test_results', {}).get('failed_tests', [])
+        failed_tests = analysis_results.get("test_results", {}).get("failed_tests", [])
         if failed_tests:
             markdown_content += "\n## 🔍 失敗したテストの詳細\n\n"
             for i, test in enumerate(failed_tests[:5], 1):  # 最大5件表示
-                markdown_content += f"### {i}. {test.get('test_name', 'Unknown Test')}\n\n"
-                markdown_content += f"- **カテゴリ:** {test.get('category', 'Unknown')}\n"
+                markdown_content += (
+                    f"### {i}. {test.get('test_name', 'Unknown Test')}\n\n"
+                )
+                markdown_content += (
+                    f"- **カテゴリ:** {test.get('category', 'Unknown')}\n"
+                )
                 markdown_content += f"- **エラーメッセージ:** {test.get('error_message', 'No message')}\n"
-                markdown_content += f"- **実行時間:** {test.get('execution_time', 0):.2f}秒\n"
-                markdown_content += f"- **メモリ使用量:** {test.get('memory_usage', 0):.2f}MB\n\n"
+                markdown_content += (
+                    f"- **実行時間:** {test.get('execution_time', 0):.2f}秒\n"
+                )
+                markdown_content += (
+                    f"- **メモリ使用量:** {test.get('memory_usage', 0):.2f}MB\n\n"
+                )
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_detailed.md")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory, f"{self.config.report_name}_detailed.md"
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(markdown_content)
 
         self.logger.info(f"詳細Markdownレポートを生成しました: {report_path}")
@@ -1009,17 +1102,19 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
     def _generate_detailed_json_report(self, analysis_results: dict[str, Any]) -> str:
         """詳細JSONレポートの生成"""
         report_data = {
-            'metadata': {
-                'report_name': self.config.report_name,
-                'generation_time': datetime.now().isoformat(),
-                'generator_version': '1.0.0',
-                'config': asdict(self.config)
+            "metadata": {
+                "report_name": self.config.report_name,
+                "generation_time": datetime.now().isoformat(),
+                "generator_version": "1.0.0",
+                "config": asdict(self.config),
             },
-            'analysis_results': analysis_results
+            "analysis_results": analysis_results,
         }
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_detailed.json")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory, f"{self.config.report_name}_detailed.json"
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report_data, f, ensure_ascii=False, indent=2, default=str)
 
         self.logger.info(f"詳細JSONレポートを生成しました: {report_path}")
@@ -1040,8 +1135,11 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         # HTMLレポートの生成
         html_content = self._create_trend_analysis_html(trend_analysis)
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_trend_analysis.html")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory,
+            f"{self.config.report_name}_trend_analysis.html",
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         self.logger.info(f"トレンド分析レポートを生成しました: {report_path}")
@@ -1051,14 +1149,16 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         """履歴データの読み込み"""
         try:
             if os.path.exists(self.history_file):
-                with open(self.history_file, encoding='utf-8') as f:
+                with open(self.history_file, encoding="utf-8") as f:
                     return json.load(f)
             return []
         except Exception as e:
             self.logger.error(f"履歴データの読み込みに失敗しました: {e}")
             return []
 
-    def _perform_trend_analysis(self, historical_data: list[dict[str, Any]], current_data: dict[str, Any]) -> dict[str, Any]:
+    def _perform_trend_analysis(
+        self, historical_data: list[dict[str, Any]], current_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """トレンド分析の実行"""
         # 時系列データの抽出
         timestamps = []
@@ -1068,24 +1168,24 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         quality_scores = []
 
         for data in historical_data:
-            timestamps.append(data.get('timestamp', ''))
-            summary = data.get('summary', {})
-            quality = data.get('quality_indicators', {})
+            timestamps.append(data.get("timestamp", ""))
+            summary = data.get("summary", {})
+            quality = data.get("quality_indicators", {})
 
-            success_rates.append(summary.get('success_rate', 0))
-            execution_times.append(summary.get('average_execution_time', 0))
-            memory_usages.append(summary.get('peak_memory_usage', 0))
-            quality_scores.append(quality.get('overall_quality_score', 0))
+            success_rates.append(summary.get("success_rate", 0))
+            execution_times.append(summary.get("average_execution_time", 0))
+            memory_usages.append(summary.get("peak_memory_usage", 0))
+            quality_scores.append(quality.get("overall_quality_score", 0))
 
         # 現在のデータを追加
-        timestamps.append(current_data['metadata']['generation_time'])
-        current_summary = current_data.get('summary', {})
-        current_quality = current_data.get('quality_indicators', {})
+        timestamps.append(current_data["metadata"]["generation_time"])
+        current_summary = current_data.get("summary", {})
+        current_quality = current_data.get("quality_indicators", {})
 
-        success_rates.append(current_summary.get('success_rate', 0))
-        execution_times.append(current_summary.get('average_execution_time', 0))
-        memory_usages.append(current_summary.get('peak_memory_usage', 0))
-        quality_scores.append(current_quality.get('overall_quality_score', 0))
+        success_rates.append(current_summary.get("success_rate", 0))
+        execution_times.append(current_summary.get("average_execution_time", 0))
+        memory_usages.append(current_summary.get("peak_memory_usage", 0))
+        quality_scores.append(current_quality.get("overall_quality_score", 0))
 
         # トレンド計算
         success_trend = self._calculate_trend(success_rates)
@@ -1100,28 +1200,30 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             return ((values[-1] - values[0]) / values[0] * 100) if values[0] != 0 else 0
 
         return {
-            'data_points': len(timestamps),
-            'time_span_days': self._calculate_time_span_days(timestamps),
-            'trends': {
-                'success_rate': success_trend,
-                'execution_time': time_trend,
-                'memory_usage': memory_trend,
-                'quality_score': quality_trend
+            "data_points": len(timestamps),
+            "time_span_days": self._calculate_time_span_days(timestamps),
+            "trends": {
+                "success_rate": success_trend,
+                "execution_time": time_trend,
+                "memory_usage": memory_trend,
+                "quality_score": quality_trend,
             },
-            'change_rates': {
-                'success_rate': calculate_change_rate(success_rates),
-                'execution_time': calculate_change_rate(execution_times),
-                'memory_usage': calculate_change_rate(memory_usages),
-                'quality_score': calculate_change_rate(quality_scores)
+            "change_rates": {
+                "success_rate": calculate_change_rate(success_rates),
+                "execution_time": calculate_change_rate(execution_times),
+                "memory_usage": calculate_change_rate(memory_usages),
+                "quality_score": calculate_change_rate(quality_scores),
             },
-            'time_series': {
-                'timestamps': timestamps,
-                'success_rates': success_rates,
-                'execution_times': execution_times,
-                'memory_usages': memory_usages,
-                'quality_scores': quality_scores
+            "time_series": {
+                "timestamps": timestamps,
+                "success_rates": success_rates,
+                "execution_times": execution_times,
+                "memory_usages": memory_usages,
+                "quality_scores": quality_scores,
             },
-            'summary': self._generate_trend_summary(success_rates, execution_times, memory_usages, quality_scores)
+            "summary": self._generate_trend_summary(
+                success_rates, execution_times, memory_usages, quality_scores
+            ),
         }
 
     def _calculate_time_span_days(self, timestamps: list[str]) -> float:
@@ -1130,14 +1232,19 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             return 0
 
         try:
-            start_time = datetime.fromisoformat(timestamps[0].replace('Z', '+00:00'))
-            end_time = datetime.fromisoformat(timestamps[-1].replace('Z', '+00:00'))
+            start_time = datetime.fromisoformat(timestamps[0].replace("Z", "+00:00"))
+            end_time = datetime.fromisoformat(timestamps[-1].replace("Z", "+00:00"))
             return (end_time - start_time).total_seconds() / 86400  # 秒を日数に変換
         except Exception:
             return 0
 
-    def _generate_trend_summary(self, success_rates: list[float], execution_times: list[float],
-                              memory_usages: list[float], quality_scores: list[float]) -> str:
+    def _generate_trend_summary(
+        self,
+        success_rates: list[float],
+        execution_times: list[float],
+        memory_usages: list[float],
+        quality_scores: list[float],
+    ) -> str:
         """トレンドサマリーの生成"""
         if len(success_rates) < 2:
             return "データポイントが不足しているため、トレンド分析を実行できません。"
@@ -1166,18 +1273,22 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             if quality_change > 0:
                 summary_parts.append(f"品質スコアが{quality_change:.1f}ポイント向上")
             else:
-                summary_parts.append(f"品質スコアが{abs(quality_change):.1f}ポイント低下")
+                summary_parts.append(
+                    f"品質スコアが{abs(quality_change):.1f}ポイント低下"
+                )
 
         if not summary_parts:
-            return "主要な指標に大きな変化は見られません。安定した状態を維持しています。"
+            return (
+                "主要な指標に大きな変化は見られません。安定した状態を維持しています。"
+            )
 
         return "。".join(summary_parts) + "しています。"
 
     def _create_trend_analysis_html(self, trend_analysis: dict[str, Any]) -> str:
         """トレンド分析HTMLの作成"""
-        time_series = trend_analysis.get('time_series', {})
-        trends = trend_analysis.get('trends', {})
-        change_rates = trend_analysis.get('change_rates', {})
+        time_series = trend_analysis.get("time_series", {})
+        trends = trend_analysis.get("trends", {})
+        change_rates = trend_analysis.get("change_rates", {})
 
         html = f"""
 <!DOCTYPE html>
@@ -1266,10 +1377,26 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         # トレンド指標カードの生成
         trend_indicators = [
-            ('成功率', trends.get('success_rate', 'stable'), change_rates.get('success_rate', 0)),
-            ('実行時間', trends.get('execution_time', 'stable'), change_rates.get('execution_time', 0)),
-            ('メモリ使用量', trends.get('memory_usage', 'stable'), change_rates.get('memory_usage', 0)),
-            ('品質スコア', trends.get('quality_score', 'stable'), change_rates.get('quality_score', 0))
+            (
+                "成功率",
+                trends.get("success_rate", "stable"),
+                change_rates.get("success_rate", 0),
+            ),
+            (
+                "実行時間",
+                trends.get("execution_time", "stable"),
+                change_rates.get("execution_time", 0),
+            ),
+            (
+                "メモリ使用量",
+                trends.get("memory_usage", "stable"),
+                change_rates.get("memory_usage", 0),
+            ),
+            (
+                "品質スコア",
+                trends.get("quality_score", "stable"),
+                change_rates.get("quality_score", 0),
+            ),
         ]
 
         for name, trend, change_rate in trend_indicators:
@@ -1291,11 +1418,11 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         """
 
         # チャートデータの準備
-        timestamps = time_series.get('timestamps', [])
+        timestamps = time_series.get("timestamps", [])
         dates = [ts[:10] for ts in timestamps]  # 日付部分のみ
 
         # 成功率チャート
-        success_rates = time_series.get('success_rates', [])
+        success_rates = time_series.get("success_rates", [])
         if success_rates:
             html += f"""
         <div class="chart-container">
@@ -1342,7 +1469,7 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             """
 
         # 品質スコアチャート
-        quality_scores = time_series.get('quality_scores', [])
+        quality_scores = time_series.get("quality_scores", [])
         if quality_scores:
             html += f"""
         <div class="chart-container">
@@ -1395,7 +1522,9 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         return html
 
-    def _get_trend_card_class(self, trend: str, change_rate: float, metric_name: str) -> str:
+    def _get_trend_card_class(
+        self, trend: str, change_rate: float, metric_name: str
+    ) -> str:
         """トレンドカードクラスの取得"""
         if trend == "increasing":
             # 成功率と品質スコアの増加は良い、実行時間とメモリの増加は悪い
@@ -1447,13 +1576,18 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 </html>
         """
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_{report_type}.html")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory,
+            f"{self.config.report_name}_{report_type}.html",
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         return report_path
 
-    def _generate_performance_graphs(self, analysis_results: dict[str, Any]) -> dict[str, str]:
+    def _generate_performance_graphs(
+        self, analysis_results: dict[str, Any]
+    ) -> dict[str, str]:
         """パフォーマンスグラフの生成"""
         graph_files = {}
 
@@ -1466,223 +1600,304 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         try:
             # カテゴリ別成功率グラフ
-            category_analysis = analysis_results.get('category_analysis', {})
+            category_analysis = analysis_results.get("category_analysis", {})
             if category_analysis:
-                graph_path = self._create_category_success_rate_graph(category_analysis, graph_dir)
-                graph_files['category_success_rate'] = graph_path
+                graph_path = self._create_category_success_rate_graph(
+                    category_analysis, graph_dir
+                )
+                graph_files["category_success_rate"] = graph_path
 
             # 実行時間分布グラフ
-            summary = analysis_results.get('summary', {})
+            summary = analysis_results.get("summary", {})
             if summary:
-                graph_path = self._create_execution_time_distribution_graph(analysis_results, graph_dir)
-                graph_files['execution_time_distribution'] = graph_path
+                graph_path = self._create_execution_time_distribution_graph(
+                    analysis_results, graph_dir
+                )
+                graph_files["execution_time_distribution"] = graph_path
 
             # メモリ使用量グラフ
             graph_path = self._create_memory_usage_graph(analysis_results, graph_dir)
-            graph_files['memory_usage'] = graph_path
+            graph_files["memory_usage"] = graph_path
 
             # エラーパターン分布グラフ
-            error_analysis = analysis_results.get('error_analysis', {})
-            if error_analysis.get('error_patterns'):
+            error_analysis = analysis_results.get("error_analysis", {})
+            if error_analysis.get("error_patterns"):
                 graph_path = self._create_error_pattern_graph(error_analysis, graph_dir)
-                graph_files['error_patterns'] = graph_path
+                graph_files["error_patterns"] = graph_path
 
             # 品質指標レーダーチャート
-            quality_indicators = analysis_results.get('quality_indicators', {})
+            quality_indicators = analysis_results.get("quality_indicators", {})
             if quality_indicators:
-                graph_path = self._create_quality_radar_chart(quality_indicators, graph_dir)
-                graph_files['quality_radar'] = graph_path
+                graph_path = self._create_quality_radar_chart(
+                    quality_indicators, graph_dir
+                )
+                graph_files["quality_radar"] = graph_path
 
             # パフォーマンス推移グラフ（履歴データがある場合）
             historical_data = self._load_historical_data()
             if len(historical_data) >= 2:
-                graph_path = self._create_performance_trend_graph(historical_data, analysis_results, graph_dir)
-                graph_files['performance_trend'] = graph_path
+                graph_path = self._create_performance_trend_graph(
+                    historical_data, analysis_results, graph_dir
+                )
+                graph_files["performance_trend"] = graph_path
 
         except Exception as e:
             self.logger.error(f"パフォーマンスグラフ生成中にエラーが発生しました: {e}")
 
         return graph_files
 
-    def _create_category_success_rate_graph(self, category_analysis: dict[str, Any], output_dir: str) -> str:
+    def _create_category_success_rate_graph(
+        self, category_analysis: dict[str, Any], output_dir: str
+    ) -> str:
         """カテゴリ別成功率グラフの作成"""
         fig, ax = plt.subplots(figsize=(12, 8))
 
         categories = list(category_analysis.keys())
-        success_rates = [stats.get('success_rate', 0) for stats in category_analysis.values()]
+        success_rates = [
+            stats.get("success_rate", 0) for stats in category_analysis.values()
+        ]
 
         # カラーマップの設定
-        colors = plt.cm.RdYlGn([rate/100 for rate in success_rates])
+        colors = plt.cm.RdYlGn([rate / 100 for rate in success_rates])
 
         bars = ax.bar(categories, success_rates, color=colors)
 
         # グラフの装飾
-        ax.set_title('カテゴリ別成功率', fontsize=16, fontweight='bold', pad=20)
-        ax.set_ylabel('成功率 (%)', fontsize=12)
-        ax.set_xlabel('カテゴリ', fontsize=12)
+        ax.set_title("カテゴリ別成功率", fontsize=16, fontweight="bold", pad=20)
+        ax.set_ylabel("成功率 (%)", fontsize=12)
+        ax.set_xlabel("カテゴリ", fontsize=12)
         ax.set_ylim(0, 100)
 
         # 閾値線の追加
-        ax.axhline(y=95, color='green', linestyle='--', alpha=0.7, label='目標値 (95%)')
-        ax.axhline(y=80, color='orange', linestyle='--', alpha=0.7, label='警告値 (80%)')
+        ax.axhline(y=95, color="green", linestyle="--", alpha=0.7, label="目標値 (95%)")
+        ax.axhline(
+            y=80, color="orange", linestyle="--", alpha=0.7, label="警告値 (80%)"
+        )
 
         # 値をバーの上に表示
         for bar, rate in zip(bars, success_rates, strict=False):
-            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
-                   f'{rate:.1f}%', ha='center', va='bottom', fontweight='bold')
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 1,
+                f"{rate:.1f}%",
+                ha="center",
+                va="bottom",
+                fontweight="bold",
+            )
 
         # X軸ラベルの回転
-        plt.xticks(rotation=45, ha='right')
+        plt.xticks(rotation=45, ha="right")
         ax.legend()
         plt.grid(True, alpha=0.3)
         plt.tight_layout()
 
-        graph_path = os.path.join(output_dir, f"category_success_rate.{self.config.chart_format}")
-        plt.savefig(graph_path, dpi=300, bbox_inches='tight')
+        graph_path = os.path.join(
+            output_dir, f"category_success_rate.{self.config.chart_format}"
+        )
+        plt.savefig(graph_path, dpi=300, bbox_inches="tight")
         plt.close()
 
         return graph_path
 
-    def _create_execution_time_distribution_graph(self, analysis_results: dict[str, Any], output_dir: str) -> str:
+    def _create_execution_time_distribution_graph(
+        self, analysis_results: dict[str, Any], output_dir: str
+    ) -> str:
         """実行時間分布グラフの作成"""
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
         # カテゴリ別平均実行時間
-        category_analysis = analysis_results.get('category_analysis', {})
+        category_analysis = analysis_results.get("category_analysis", {})
         if category_analysis:
             categories = list(category_analysis.keys())
-            avg_times = [stats.get('average_time', 0) for stats in category_analysis.values()]
+            avg_times = [
+                stats.get("average_time", 0) for stats in category_analysis.values()
+            ]
 
-            bars = ax1.bar(categories, avg_times, color='skyblue', alpha=0.7)
-            ax1.set_title('カテゴリ別平均実行時間', fontsize=14, fontweight='bold')
-            ax1.set_ylabel('実行時間 (秒)', fontsize=12)
-            ax1.set_xlabel('カテゴリ', fontsize=12)
+            bars = ax1.bar(categories, avg_times, color="skyblue", alpha=0.7)
+            ax1.set_title("カテゴリ別平均実行時間", fontsize=14, fontweight="bold")
+            ax1.set_ylabel("実行時間 (秒)", fontsize=12)
+            ax1.set_xlabel("カテゴリ", fontsize=12)
 
             # 値をバーの上に表示
             for bar, time in zip(bars, avg_times, strict=False):
-                ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.1,
-                        f'{time:.2f}s', ha='center', va='bottom')
+                ax1.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + 0.1,
+                    f"{time:.2f}s",
+                    ha="center",
+                    va="bottom",
+                )
 
-            plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha='right')
+            plt.setp(ax1.xaxis.get_majorticklabels(), rotation=45, ha="right")
 
         # 実行時間の統計情報
-        summary = analysis_results.get('summary', {})
+        summary = analysis_results.get("summary", {})
         stats_data = [
-            ('平均', summary.get('average_execution_time', 0)),
-            ('総計', summary.get('total_execution_time', 0)),
+            ("平均", summary.get("average_execution_time", 0)),
+            ("総計", summary.get("total_execution_time", 0)),
         ]
 
         labels, values = zip(*stats_data, strict=False)
-        ax2.bar(labels, values, color=['lightcoral', 'lightgreen'])
-        ax2.set_title('実行時間統計', fontsize=14, fontweight='bold')
-        ax2.set_ylabel('時間 (秒)', fontsize=12)
+        ax2.bar(labels, values, color=["lightcoral", "lightgreen"])
+        ax2.set_title("実行時間統計", fontsize=14, fontweight="bold")
+        ax2.set_ylabel("時間 (秒)", fontsize=12)
 
         # 値をバーの上に表示
         for i, (_label, value) in enumerate(stats_data):
-            ax2.text(i, value + max(values) * 0.01, f'{value:.2f}s',
-                    ha='center', va='bottom', fontweight='bold')
+            ax2.text(
+                i,
+                value + max(values) * 0.01,
+                f"{value:.2f}s",
+                ha="center",
+                va="bottom",
+                fontweight="bold",
+            )
 
         plt.tight_layout()
 
-        graph_path = os.path.join(output_dir, f"execution_time_distribution.{self.config.chart_format}")
-        plt.savefig(graph_path, dpi=300, bbox_inches='tight')
+        graph_path = os.path.join(
+            output_dir, f"execution_time_distribution.{self.config.chart_format}"
+        )
+        plt.savefig(graph_path, dpi=300, bbox_inches="tight")
         plt.close()
 
         return graph_path
 
-    def _create_memory_usage_graph(self, analysis_results: dict[str, Any], output_dir: str) -> str:
+    def _create_memory_usage_graph(
+        self, analysis_results: dict[str, Any], output_dir: str
+    ) -> str:
         """メモリ使用量グラフの作成"""
         fig, ax = plt.subplots(figsize=(10, 6))
 
-        summary = analysis_results.get('summary', {})
-        category_analysis = analysis_results.get('category_analysis', {})
+        summary = analysis_results.get("summary", {})
+        category_analysis = analysis_results.get("category_analysis", {})
 
         if category_analysis:
             categories = list(category_analysis.keys())
-            avg_memory = [stats.get('average_memory', 0) for stats in category_analysis.values()]
+            avg_memory = [
+                stats.get("average_memory", 0) for stats in category_analysis.values()
+            ]
 
-            bars = ax.bar(categories, avg_memory, color='lightblue', alpha=0.7, label='平均メモリ使用量')
+            bars = ax.bar(
+                categories,
+                avg_memory,
+                color="lightblue",
+                alpha=0.7,
+                label="平均メモリ使用量",
+            )
 
             # 全体の最大メモリ使用量を水平線で表示
-            peak_memory = summary.get('peak_memory_usage', 0)
-            ax.axhline(y=peak_memory, color='red', linestyle='-', alpha=0.8,
-                      label=f'最大メモリ使用量 ({peak_memory:.1f}MB)')
+            peak_memory = summary.get("peak_memory_usage", 0)
+            ax.axhline(
+                y=peak_memory,
+                color="red",
+                linestyle="-",
+                alpha=0.8,
+                label=f"最大メモリ使用量 ({peak_memory:.1f}MB)",
+            )
 
             # 値をバーの上に表示
             for bar, memory in zip(bars, avg_memory, strict=False):
-                ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + peak_memory * 0.01,
-                       f'{memory:.1f}MB', ha='center', va='bottom')
+                ax.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    bar.get_height() + peak_memory * 0.01,
+                    f"{memory:.1f}MB",
+                    ha="center",
+                    va="bottom",
+                )
 
-            ax.set_title('カテゴリ別メモリ使用量', fontsize=16, fontweight='bold', pad=20)
-            ax.set_ylabel('メモリ使用量 (MB)', fontsize=12)
-            ax.set_xlabel('カテゴリ', fontsize=12)
+            ax.set_title(
+                "カテゴリ別メモリ使用量", fontsize=16, fontweight="bold", pad=20
+            )
+            ax.set_ylabel("メモリ使用量 (MB)", fontsize=12)
+            ax.set_xlabel("カテゴリ", fontsize=12)
 
-            plt.xticks(rotation=45, ha='right')
+            plt.xticks(rotation=45, ha="right")
             ax.legend()
             plt.grid(True, alpha=0.3)
 
         plt.tight_layout()
 
-        graph_path = os.path.join(output_dir, f"memory_usage.{self.config.chart_format}")
-        plt.savefig(graph_path, dpi=300, bbox_inches='tight')
+        graph_path = os.path.join(
+            output_dir, f"memory_usage.{self.config.chart_format}"
+        )
+        plt.savefig(graph_path, dpi=300, bbox_inches="tight")
         plt.close()
 
         return graph_path
 
-    def _create_error_pattern_graph(self, error_analysis: dict[str, Any], output_dir: str) -> str:
+    def _create_error_pattern_graph(
+        self, error_analysis: dict[str, Any], output_dir: str
+    ) -> str:
         """エラーパターン分布グラフの作成"""
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
 
-        error_patterns = error_analysis.get('error_patterns', {})
+        error_patterns = error_analysis.get("error_patterns", {})
 
         # 円グラフ
         labels = list(error_patterns.keys())
         sizes = list(error_patterns.values())
         colors = plt.cm.Set3(np.linspace(0, 1, len(labels)))
 
-        wedges, texts, autotexts = ax1.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%',
-                                          startangle=90, textprops={'fontsize': 10})
-        ax1.set_title('エラーパターン分布', fontsize=14, fontweight='bold')
+        wedges, texts, autotexts = ax1.pie(
+            sizes,
+            labels=labels,
+            colors=colors,
+            autopct="%1.1f%%",
+            startangle=90,
+            textprops={"fontsize": 10},
+        )
+        ax1.set_title("エラーパターン分布", fontsize=14, fontweight="bold")
 
         # 棒グラフ
         bars = ax2.bar(labels, sizes, color=colors)
-        ax2.set_title('エラーパターン発生回数', fontsize=14, fontweight='bold')
-        ax2.set_ylabel('発生回数', fontsize=12)
-        ax2.set_xlabel('エラータイプ', fontsize=12)
+        ax2.set_title("エラーパターン発生回数", fontsize=14, fontweight="bold")
+        ax2.set_ylabel("発生回数", fontsize=12)
+        ax2.set_xlabel("エラータイプ", fontsize=12)
 
         # 値をバーの上に表示
         for bar, size in zip(bars, sizes, strict=False):
-            ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.1,
-                    str(size), ha='center', va='bottom', fontweight='bold')
+            ax2.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.1,
+                str(size),
+                ha="center",
+                va="bottom",
+                fontweight="bold",
+            )
 
-        plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
+        plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha="right")
         plt.tight_layout()
 
-        graph_path = os.path.join(output_dir, f"error_patterns.{self.config.chart_format}")
-        plt.savefig(graph_path, dpi=300, bbox_inches='tight')
+        graph_path = os.path.join(
+            output_dir, f"error_patterns.{self.config.chart_format}"
+        )
+        plt.savefig(graph_path, dpi=300, bbox_inches="tight")
         plt.close()
 
         return graph_path
 
-    def _create_quality_radar_chart(self, quality_indicators: dict[str, Any], output_dir: str) -> str:
+    def _create_quality_radar_chart(
+        self, quality_indicators: dict[str, Any], output_dir: str
+    ) -> str:
         """品質指標レーダーチャートの作成"""
-        fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={'projection': 'polar'})
+        fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={"projection": "polar"})
 
         # 品質指標の設定
         categories = [
-            '成功率',
-            '安定性スコア',
-            'パフォーマンススコア',
-            'メモリ効率性',
-            'CPU効率性'
+            "成功率",
+            "安定性スコア",
+            "パフォーマンススコア",
+            "メモリ効率性",
+            "CPU効率性",
         ]
 
         values = [
-            quality_indicators.get('success_rate', 0),
-            quality_indicators.get('stability_score', 0),
-            quality_indicators.get('performance_score', 0),
-            quality_indicators.get('memory_efficiency', 0),
-            quality_indicators.get('cpu_efficiency', 0)
+            quality_indicators.get("success_rate", 0),
+            quality_indicators.get("stability_score", 0),
+            quality_indicators.get("performance_score", 0),
+            quality_indicators.get("memory_efficiency", 0),
+            quality_indicators.get("cpu_efficiency", 0),
         ]
 
         # 角度の計算
@@ -1691,35 +1906,49 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         angles += angles[:1]
 
         # レーダーチャートの描画
-        ax.plot(angles, values, 'o-', linewidth=2, label='現在の品質指標', color='blue')
-        ax.fill(angles, values, alpha=0.25, color='blue')
+        ax.plot(angles, values, "o-", linewidth=2, label="現在の品質指標", color="blue")
+        ax.fill(angles, values, alpha=0.25, color="blue")
 
         # 目標値の線を追加
         target_values = [90] * (len(categories) + 1)
-        ax.plot(angles, target_values, '--', linewidth=1, label='目標値 (90)', color='green', alpha=0.7)
+        ax.plot(
+            angles,
+            target_values,
+            "--",
+            linewidth=1,
+            label="目標値 (90)",
+            color="green",
+            alpha=0.7,
+        )
 
         # 軸の設定
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(categories, fontsize=12)
         ax.set_ylim(0, 100)
         ax.set_yticks([20, 40, 60, 80, 100])
-        ax.set_yticklabels(['20', '40', '60', '80', '100'], fontsize=10)
+        ax.set_yticklabels(["20", "40", "60", "80", "100"], fontsize=10)
         ax.grid(True)
 
         # タイトルと凡例
-        ax.set_title('品質指標レーダーチャート', fontsize=16, fontweight='bold', pad=30)
-        ax.legend(loc='upper right', bbox_to_anchor=(1.2, 1.0))
+        ax.set_title("品質指標レーダーチャート", fontsize=16, fontweight="bold", pad=30)
+        ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1.0))
 
         plt.tight_layout()
 
-        graph_path = os.path.join(output_dir, f"quality_radar.{self.config.chart_format}")
-        plt.savefig(graph_path, dpi=300, bbox_inches='tight')
+        graph_path = os.path.join(
+            output_dir, f"quality_radar.{self.config.chart_format}"
+        )
+        plt.savefig(graph_path, dpi=300, bbox_inches="tight")
         plt.close()
 
         return graph_path
 
-    def _create_performance_trend_graph(self, historical_data: list[dict[str, Any]],
-                                      current_data: dict[str, Any], output_dir: str) -> str:
+    def _create_performance_trend_graph(
+        self,
+        historical_data: list[dict[str, Any]],
+        current_data: dict[str, Any],
+        output_dir: str,
+    ) -> str:
         """パフォーマンス推移グラフの作成"""
         fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
 
@@ -1731,69 +1960,81 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         quality_scores = []
 
         for data in historical_data:
-            timestamps.append(datetime.fromisoformat(data.get('timestamp', '')))
-            summary = data.get('summary', {})
-            quality = data.get('quality_indicators', {})
+            timestamps.append(datetime.fromisoformat(data.get("timestamp", "")))
+            summary = data.get("summary", {})
+            quality = data.get("quality_indicators", {})
 
-            success_rates.append(summary.get('success_rate', 0))
-            execution_times.append(summary.get('average_execution_time', 0))
-            memory_usages.append(summary.get('peak_memory_usage', 0))
-            quality_scores.append(quality.get('overall_quality_score', 0))
+            success_rates.append(summary.get("success_rate", 0))
+            execution_times.append(summary.get("average_execution_time", 0))
+            memory_usages.append(summary.get("peak_memory_usage", 0))
+            quality_scores.append(quality.get("overall_quality_score", 0))
 
         # 現在のデータを追加
         timestamps.append(datetime.now())
-        current_summary = current_data.get('summary', {})
-        current_quality = current_data.get('quality_indicators', {})
+        current_summary = current_data.get("summary", {})
+        current_quality = current_data.get("quality_indicators", {})
 
-        success_rates.append(current_summary.get('success_rate', 0))
-        execution_times.append(current_summary.get('average_execution_time', 0))
-        memory_usages.append(current_summary.get('peak_memory_usage', 0))
-        quality_scores.append(current_quality.get('overall_quality_score', 0))
+        success_rates.append(current_summary.get("success_rate", 0))
+        execution_times.append(current_summary.get("average_execution_time", 0))
+        memory_usages.append(current_summary.get("peak_memory_usage", 0))
+        quality_scores.append(current_quality.get("overall_quality_score", 0))
 
         # 成功率推移
-        ax1.plot(timestamps, success_rates, 'o-', color='green', linewidth=2, markersize=6)
-        ax1.set_title('成功率推移', fontsize=14, fontweight='bold')
-        ax1.set_ylabel('成功率 (%)')
+        ax1.plot(
+            timestamps, success_rates, "o-", color="green", linewidth=2, markersize=6
+        )
+        ax1.set_title("成功率推移", fontsize=14, fontweight="bold")
+        ax1.set_ylabel("成功率 (%)")
         ax1.grid(True, alpha=0.3)
         ax1.set_ylim(0, 100)
 
         # 実行時間推移
-        ax2.plot(timestamps, execution_times, 'o-', color='blue', linewidth=2, markersize=6)
-        ax2.set_title('平均実行時間推移', fontsize=14, fontweight='bold')
-        ax2.set_ylabel('実行時間 (秒)')
+        ax2.plot(
+            timestamps, execution_times, "o-", color="blue", linewidth=2, markersize=6
+        )
+        ax2.set_title("平均実行時間推移", fontsize=14, fontweight="bold")
+        ax2.set_ylabel("実行時間 (秒)")
         ax2.grid(True, alpha=0.3)
 
         # メモリ使用量推移
-        ax3.plot(timestamps, memory_usages, 'o-', color='red', linewidth=2, markersize=6)
-        ax3.set_title('最大メモリ使用量推移', fontsize=14, fontweight='bold')
-        ax3.set_ylabel('メモリ使用量 (MB)')
+        ax3.plot(
+            timestamps, memory_usages, "o-", color="red", linewidth=2, markersize=6
+        )
+        ax3.set_title("最大メモリ使用量推移", fontsize=14, fontweight="bold")
+        ax3.set_ylabel("メモリ使用量 (MB)")
         ax3.grid(True, alpha=0.3)
 
         # 品質スコア推移
-        ax4.plot(timestamps, quality_scores, 'o-', color='purple', linewidth=2, markersize=6)
-        ax4.set_title('総合品質スコア推移', fontsize=14, fontweight='bold')
-        ax4.set_ylabel('品質スコア')
+        ax4.plot(
+            timestamps, quality_scores, "o-", color="purple", linewidth=2, markersize=6
+        )
+        ax4.set_title("総合品質スコア推移", fontsize=14, fontweight="bold")
+        ax4.set_ylabel("品質スコア")
         ax4.grid(True, alpha=0.3)
         ax4.set_ylim(0, 100)
 
         # 日付フォーマットの設定
         for ax in [ax1, ax2, ax3, ax4]:
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-            ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(timestamps)//5)))
+            ax.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d"))
+            ax.xaxis.set_major_locator(
+                mdates.DayLocator(interval=max(1, len(timestamps) // 5))
+            )
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
 
         plt.tight_layout()
 
-        graph_path = os.path.join(output_dir, f"performance_trend.{self.config.chart_format}")
-        plt.savefig(graph_path, dpi=300, bbox_inches='tight')
+        graph_path = os.path.join(
+            output_dir, f"performance_trend.{self.config.chart_format}"
+        )
+        plt.savefig(graph_path, dpi=300, bbox_inches="tight")
         plt.close()
 
         return graph_path
 
     def _generate_error_analysis_report(self, analysis_results: dict[str, Any]) -> str:
         """エラーログ分析レポートの生成"""
-        error_analysis = analysis_results.get('error_analysis', {})
-        failed_tests = analysis_results.get('test_results', {}).get('failed_tests', [])
+        error_analysis = analysis_results.get("error_analysis", {})
+        failed_tests = analysis_results.get("test_results", {}).get("failed_tests", [])
 
         html_content = f"""
 <!DOCTYPE html>
@@ -1931,7 +2172,7 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         """
 
         # エラーパターン分析
-        error_patterns = error_analysis.get('error_patterns', {})
+        error_patterns = error_analysis.get("error_patterns", {})
         if error_patterns:
             html_content += """
         <h2>🔍 エラーパターン分析</h2>
@@ -1945,7 +2186,9 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             """
 
             total_errors = sum(error_patterns.values())
-            sorted_patterns = sorted(error_patterns.items(), key=lambda x: x[1], reverse=True)
+            sorted_patterns = sorted(
+                error_patterns.items(), key=lambda x: x[1], reverse=True
+            )
 
             for error_type, count in sorted_patterns:
                 percentage = (count / total_errors * 100) if total_errors > 0 else 0
@@ -1969,7 +2212,7 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             """
 
             for i, test in enumerate(failed_tests[:10], 1):
-                error_type = self._classify_error_type(test.get('error_message', ''))
+                error_type = self._classify_error_type(test.get("error_message", ""))
 
                 html_content += f"""
         <div class="error-item">
@@ -1984,7 +2227,9 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
                 """
 
         # 推奨事項
-        recommendations = self._generate_error_recommendations(error_analysis, failed_tests)
+        recommendations = self._generate_error_recommendations(
+            error_analysis, failed_tests
+        )
 
         html_content += """
         <div class="recommendations">
@@ -2008,8 +2253,11 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 </html>
         """
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_error_analysis.html")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory,
+            f"{self.config.report_name}_error_analysis.html",
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         self.logger.info(f"エラー分析レポートを生成しました: {report_path}")
@@ -2026,44 +2274,66 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         else:
             return "🟢 低"
 
-    def _generate_error_recommendations(self, error_analysis: dict[str, Any], failed_tests: list[dict[str, Any]]) -> list[str]:
+    def _generate_error_recommendations(
+        self, error_analysis: dict[str, Any], failed_tests: list[dict[str, Any]]
+    ) -> list[str]:
         """エラー対策推奨事項の生成"""
         recommendations = []
-        error_patterns = error_analysis.get('error_patterns', {})
+        error_patterns = error_analysis.get("error_patterns", {})
 
         # エラーパターンに基づく推奨事項
         for error_type, _count in error_patterns.items():
             if error_type == "Timeout":
-                recommendations.append("タイムアウトエラーが多発しています。処理時間の最適化やタイムアウト値の調整を検討してください。")
+                recommendations.append(
+                    "タイムアウトエラーが多発しています。処理時間の最適化やタイムアウト値の調整を検討してください。"
+                )
             elif error_type == "Memory":
-                recommendations.append("メモリ関連エラーが発生しています。メモリリークの調査とメモリ使用量の最適化を実施してください。")
+                recommendations.append(
+                    "メモリ関連エラーが発生しています。メモリリークの調査とメモリ使用量の最適化を実施してください。"
+                )
             elif error_type == "Connection":
-                recommendations.append("接続エラーが発生しています。ネットワーク設定や接続プールの設定を見直してください。")
+                recommendations.append(
+                    "接続エラーが発生しています。ネットワーク設定や接続プールの設定を見直してください。"
+                )
             elif error_type == "File":
-                recommendations.append("ファイル関連エラーが発生しています。ファイルパスの確認とファイルアクセス権限を確認してください。")
+                recommendations.append(
+                    "ファイル関連エラーが発生しています。ファイルパスの確認とファイルアクセス権限を確認してください。"
+                )
             elif error_type == "Permission":
-                recommendations.append("権限エラーが発生しています。実行権限とファイルアクセス権限を確認してください。")
+                recommendations.append(
+                    "権限エラーが発生しています。実行権限とファイルアクセス権限を確認してください。"
+                )
 
         # エラー率に基づく推奨事項
-        error_rate = error_analysis.get('error_rate', 0)
+        error_rate = error_analysis.get("error_rate", 0)
         if error_rate > 20:
-            recommendations.append("エラー率が20%を超えています。システム全体の安定性向上を優先的に実施してください。")
+            recommendations.append(
+                "エラー率が20%を超えています。システム全体の安定性向上を優先的に実施してください。"
+            )
         elif error_rate > 10:
-            recommendations.append("エラー率が10%を超えています。主要なエラーパターンの対策を実施してください。")
+            recommendations.append(
+                "エラー率が10%を超えています。主要なエラーパターンの対策を実施してください。"
+            )
 
         # 失敗テスト数に基づく推奨事項
         if len(failed_tests) > 10:
-            recommendations.append("多数のテストが失敗しています。テストケースの見直しと基本機能の安定化を実施してください。")
+            recommendations.append(
+                "多数のテストが失敗しています。テストケースの見直しと基本機能の安定化を実施してください。"
+            )
 
         if not recommendations:
-            recommendations.append("エラー発生率は許容範囲内です。現在の品質レベルを維持してください。")
+            recommendations.append(
+                "エラー発生率は許容範囲内です。現在の品質レベルを維持してください。"
+            )
 
         return recommendations
 
-    def _generate_quality_indicators_visualization(self, analysis_results: dict[str, Any]) -> str:
+    def _generate_quality_indicators_visualization(
+        self, analysis_results: dict[str, Any]
+    ) -> str:
         """品質指標可視化レポートの生成"""
-        quality_indicators = analysis_results.get('quality_indicators', {})
-        analysis_results.get('summary', {})
+        quality_indicators = analysis_results.get("quality_indicators", {})
+        analysis_results.get("summary", {})
 
         html_content = """
 <!DOCTYPE html>
@@ -2216,12 +2486,32 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         # 品質指標カードの生成
         quality_metrics = [
-            ('総合品質スコア', quality_indicators.get('overall_quality_score', 0), '全体的な品質レベル'),
-            ('成功率', quality_indicators.get('success_rate', 0), 'テスト成功の割合'),
-            ('安定性スコア', quality_indicators.get('stability_score', 0), '実行時間の安定性'),
-            ('パフォーマンススコア', quality_indicators.get('performance_score', 0), '処理性能の評価'),
-            ('メモリ効率性', quality_indicators.get('memory_efficiency', 0), 'メモリ使用の効率性'),
-            ('CPU効率性', quality_indicators.get('cpu_efficiency', 0), 'CPU使用の効率性')
+            (
+                "総合品質スコア",
+                quality_indicators.get("overall_quality_score", 0),
+                "全体的な品質レベル",
+            ),
+            ("成功率", quality_indicators.get("success_rate", 0), "テスト成功の割合"),
+            (
+                "安定性スコア",
+                quality_indicators.get("stability_score", 0),
+                "実行時間の安定性",
+            ),
+            (
+                "パフォーマンススコア",
+                quality_indicators.get("performance_score", 0),
+                "処理性能の評価",
+            ),
+            (
+                "メモリ効率性",
+                quality_indicators.get("memory_efficiency", 0),
+                "メモリ使用の効率性",
+            ),
+            (
+                "CPU効率性",
+                quality_indicators.get("cpu_efficiency", 0),
+                "CPU使用の効率性",
+            ),
         ]
 
         for label, score, description in quality_metrics:
@@ -2270,13 +2560,13 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         # ベンチマーク比較の生成
         benchmarks = [
-            ('優秀レベル', 90, '業界トップクラス'),
-            ('良好レベル', 80, '標準以上の品質'),
-            ('普通レベル', 70, '最低限の品質'),
-            ('要改善レベル', 60, '改善が必要')
+            ("優秀レベル", 90, "業界トップクラス"),
+            ("良好レベル", 80, "標準以上の品質"),
+            ("普通レベル", 70, "最低限の品質"),
+            ("要改善レベル", 60, "改善が必要"),
         ]
 
-        current_overall = quality_indicators.get('overall_quality_score', 0)
+        current_overall = quality_indicators.get("overall_quality_score", 0)
 
         for level, threshold, description in benchmarks:
             status = "✅ 達成" if current_overall >= threshold else "❌ 未達成"
@@ -2313,11 +2603,11 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         # レーダーチャートデータの追加
         radar_data = [
-            quality_indicators.get('success_rate', 0),
-            quality_indicators.get('stability_score', 0),
-            quality_indicators.get('performance_score', 0),
-            quality_indicators.get('memory_efficiency', 0),
-            quality_indicators.get('cpu_efficiency', 0)
+            quality_indicators.get("success_rate", 0),
+            quality_indicators.get("stability_score", 0),
+            quality_indicators.get("performance_score", 0),
+            quality_indicators.get("memory_efficiency", 0),
+            quality_indicators.get("cpu_efficiency", 0),
         ]
 
         html_content += f"""
@@ -2369,8 +2659,11 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 </html>
         """
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_quality_indicators.html")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory,
+            f"{self.config.report_name}_quality_indicators.html",
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         self.logger.info(f"品質指標可視化レポートを生成しました: {report_path}")
@@ -2387,7 +2680,9 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         else:
             return "linear-gradient(90deg, #ff6b6b 0%, #ee5a24 100%)"
 
-    def generate_comparison_with_historical_results(self, current_results: dict[str, Any]) -> str:
+    def generate_comparison_with_historical_results(
+        self, current_results: dict[str, Any]
+    ) -> str:
         """過去の検証結果との比較レポート生成"""
         historical_data = self._load_historical_data()
 
@@ -2396,37 +2691,54 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             return self._generate_insufficient_data_report("comparison")
 
         # 比較分析の実行
-        comparison_analysis = self._perform_comparison_analysis(historical_data, current_results)
+        comparison_analysis = self._perform_comparison_analysis(
+            historical_data, current_results
+        )
 
         # HTMLレポートの生成
         html_content = self._create_comparison_html_report(comparison_analysis)
 
-        report_path = os.path.join(self.config.output_directory, f"{self.config.report_name}_historical_comparison.html")
-        with open(report_path, 'w', encoding='utf-8') as f:
+        report_path = os.path.join(
+            self.config.output_directory,
+            f"{self.config.report_name}_historical_comparison.html",
+        )
+        with open(report_path, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         self.logger.info(f"過去結果比較レポートを生成しました: {report_path}")
         return report_path
 
-    def _perform_comparison_analysis(self, historical_data: list[dict[str, Any]], current_data: dict[str, Any]) -> dict[str, Any]:
+    def _perform_comparison_analysis(
+        self, historical_data: list[dict[str, Any]], current_data: dict[str, Any]
+    ) -> dict[str, Any]:
         """比較分析の実行"""
         if not historical_data:
-            return {'comparison_available': False}
+            return {"comparison_available": False}
 
         # 過去データの平均値計算
-        avg_success_rate = sum(h.get('summary', {}).get('success_rate', 0) for h in historical_data) / len(historical_data)
-        avg_execution_time = sum(h.get('summary', {}).get('average_execution_time', 0) for h in historical_data) / len(historical_data)
-        avg_memory_usage = sum(h.get('summary', {}).get('peak_memory_usage', 0) for h in historical_data) / len(historical_data)
-        avg_quality_score = sum(h.get('quality_indicators', {}).get('overall_quality_score', 0) for h in historical_data) / len(historical_data)
+        avg_success_rate = sum(
+            h.get("summary", {}).get("success_rate", 0) for h in historical_data
+        ) / len(historical_data)
+        avg_execution_time = sum(
+            h.get("summary", {}).get("average_execution_time", 0)
+            for h in historical_data
+        ) / len(historical_data)
+        avg_memory_usage = sum(
+            h.get("summary", {}).get("peak_memory_usage", 0) for h in historical_data
+        ) / len(historical_data)
+        avg_quality_score = sum(
+            h.get("quality_indicators", {}).get("overall_quality_score", 0)
+            for h in historical_data
+        ) / len(historical_data)
 
         # 現在の値
-        current_summary = current_data.get('summary', {})
-        current_quality = current_data.get('quality_indicators', {})
+        current_summary = current_data.get("summary", {})
+        current_quality = current_data.get("quality_indicators", {})
 
-        current_success_rate = current_summary.get('success_rate', 0)
-        current_execution_time = current_summary.get('average_execution_time', 0)
-        current_memory_usage = current_summary.get('peak_memory_usage', 0)
-        current_quality_score = current_quality.get('overall_quality_score', 0)
+        current_success_rate = current_summary.get("success_rate", 0)
+        current_execution_time = current_summary.get("average_execution_time", 0)
+        current_memory_usage = current_summary.get("peak_memory_usage", 0)
+        current_quality_score = current_quality.get("overall_quality_score", 0)
 
         # 変化の計算
         success_rate_change = current_success_rate - avg_success_rate
@@ -2436,38 +2748,49 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         # 総合評価
         overall_rating = self._calculate_overall_comparison_rating(
-            success_rate_change, execution_time_change, memory_usage_change, quality_score_change
+            success_rate_change,
+            execution_time_change,
+            memory_usage_change,
+            quality_score_change,
         )
 
         return {
-            'comparison_available': True,
-            'historical_count': len(historical_data),
-            'averages': {
-                'success_rate': avg_success_rate,
-                'execution_time': avg_execution_time,
-                'memory_usage': avg_memory_usage,
-                'quality_score': avg_quality_score
+            "comparison_available": True,
+            "historical_count": len(historical_data),
+            "averages": {
+                "success_rate": avg_success_rate,
+                "execution_time": avg_execution_time,
+                "memory_usage": avg_memory_usage,
+                "quality_score": avg_quality_score,
             },
-            'current': {
-                'success_rate': current_success_rate,
-                'execution_time': current_execution_time,
-                'memory_usage': current_memory_usage,
-                'quality_score': current_quality_score
+            "current": {
+                "success_rate": current_success_rate,
+                "execution_time": current_execution_time,
+                "memory_usage": current_memory_usage,
+                "quality_score": current_quality_score,
             },
-            'changes': {
-                'success_rate': success_rate_change,
-                'execution_time': execution_time_change,
-                'memory_usage': memory_usage_change,
-                'quality_score': quality_score_change
+            "changes": {
+                "success_rate": success_rate_change,
+                "execution_time": execution_time_change,
+                "memory_usage": memory_usage_change,
+                "quality_score": quality_score_change,
             },
-            'overall_rating': overall_rating,
-            'recommendations': self._generate_comparison_recommendations(
-                success_rate_change, execution_time_change, memory_usage_change, quality_score_change
-            )
+            "overall_rating": overall_rating,
+            "recommendations": self._generate_comparison_recommendations(
+                success_rate_change,
+                execution_time_change,
+                memory_usage_change,
+                quality_score_change,
+            ),
         }
 
-    def _calculate_overall_comparison_rating(self, success_change: float, time_change: float,
-                                           memory_change: float, quality_change: float) -> str:
+    def _calculate_overall_comparison_rating(
+        self,
+        success_change: float,
+        time_change: float,
+        memory_change: float,
+        quality_change: float,
+    ) -> str:
         """総合比較評価の計算"""
         score = 0
 
@@ -2518,39 +2841,62 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
         else:
             return "安定"
 
-    def _generate_comparison_recommendations(self, success_change: float, time_change: float,
-                                          memory_change: float, quality_change: float) -> list[str]:
+    def _generate_comparison_recommendations(
+        self,
+        success_change: float,
+        time_change: float,
+        memory_change: float,
+        quality_change: float,
+    ) -> list[str]:
         """比較推奨事項の生成"""
         recommendations = []
 
         if success_change < -5:
-            recommendations.append("成功率が大幅に低下しています。最近の変更を見直し、品質保証プロセスを強化してください。")
+            recommendations.append(
+                "成功率が大幅に低下しています。最近の変更を見直し、品質保証プロセスを強化してください。"
+            )
         elif success_change > 5:
-            recommendations.append("成功率が大幅に向上しています。この改善を維持するための施策を継続してください。")
+            recommendations.append(
+                "成功率が大幅に向上しています。この改善を維持するための施策を継続してください。"
+            )
 
         if time_change > 5:
-            recommendations.append("実行時間が大幅に増加しています。パフォーマンスの最適化を優先的に実施してください。")
+            recommendations.append(
+                "実行時間が大幅に増加しています。パフォーマンスの最適化を優先的に実施してください。"
+            )
         elif time_change < -2:
-            recommendations.append("実行時間が大幅に短縮されています。この最適化手法を他の処理にも適用を検討してください。")
+            recommendations.append(
+                "実行時間が大幅に短縮されています。この最適化手法を他の処理にも適用を検討してください。"
+            )
 
         if memory_change > 200:
-            recommendations.append("メモリ使用量が大幅に増加しています。メモリリークの調査とメモリ効率の改善を実施してください。")
+            recommendations.append(
+                "メモリ使用量が大幅に増加しています。メモリリークの調査とメモリ効率の改善を実施してください。"
+            )
         elif memory_change < -100:
-            recommendations.append("メモリ使用量が大幅に削減されています。この効率化手法を他のコンポーネントにも適用を検討してください。")
+            recommendations.append(
+                "メモリ使用量が大幅に削減されています。この効率化手法を他のコンポーネントにも適用を検討してください。"
+            )
 
         if quality_change < -5:
-            recommendations.append("品質スコアが大幅に低下しています。品質管理プロセス全体の見直しを実施してください。")
+            recommendations.append(
+                "品質スコアが大幅に低下しています。品質管理プロセス全体の見直しを実施してください。"
+            )
         elif quality_change > 5:
-            recommendations.append("品質スコアが大幅に向上しています。現在の品質向上施策を継続し、さらなる改善を目指してください。")
+            recommendations.append(
+                "品質スコアが大幅に向上しています。現在の品質向上施策を継続し、さらなる改善を目指してください。"
+            )
 
         if not recommendations:
-            recommendations.append("全体的に安定したパフォーマンスを維持しています。現在の品質レベルを継続してください。")
+            recommendations.append(
+                "全体的に安定したパフォーマンスを維持しています。現在の品質レベルを継続してください。"
+            )
 
         return recommendations
 
     def _create_comparison_html_report(self, analysis: dict[str, Any]) -> str:
         """比較HTMLレポートの作成"""
-        if not analysis.get('comparison_available', False):
+        if not analysis.get("comparison_available", False):
             return """
 <!DOCTYPE html>
 <html lang="ja">
@@ -2559,9 +2905,9 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 </html>
             """
 
-        averages = analysis.get('averages', {})
-        current = analysis.get('current', {})
-        changes = analysis.get('changes', {})
+        averages = analysis.get("averages", {})
+        current = analysis.get("current", {})
+        changes = analysis.get("changes", {})
 
         html = f"""
 <!DOCTYPE html>
@@ -2601,10 +2947,10 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
 
         # 比較メトリクスの表示
         metrics = [
-            ('成功率', 'success_rate', '%'),
-            ('実行時間', 'execution_time', '秒'),
-            ('メモリ使用量', 'memory_usage', 'MB'),
-            ('品質スコア', 'quality_score', '')
+            ("成功率", "success_rate", "%"),
+            ("実行時間", "execution_time", "秒"),
+            ("メモリ使用量", "memory_usage", "MB"),
+            ("品質スコア", "quality_score", ""),
         ]
 
         for name, key, unit in metrics:
@@ -2613,12 +2959,20 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             change_value = changes.get(key, 0)
 
             # 変化の方向性を判定
-            if key in ['success_rate', 'quality_score']:
+            if key in ["success_rate", "quality_score"]:
                 # 高い方が良い指標
-                change_class = 'change-positive' if change_value > 0 else 'change-negative' if change_value < 0 else 'change-neutral'
+                change_class = (
+                    "change-positive"
+                    if change_value > 0
+                    else "change-negative" if change_value < 0 else "change-neutral"
+                )
             else:
                 # 低い方が良い指標
-                change_class = 'change-negative' if change_value > 0 else 'change-positive' if change_value < 0 else 'change-neutral'
+                change_class = (
+                    "change-negative"
+                    if change_value > 0
+                    else "change-positive" if change_value < 0 else "change-neutral"
+                )
 
             html += f"""
             <div class="metric-comparison">
@@ -2648,7 +3002,7 @@ CPU効率性: {quality.get('cpu_efficiency', 0):.1f}/100
             <ul>
         """
 
-        for recommendation in analysis.get('recommendations', []):
+        for recommendation in analysis.get("recommendations", []):
             html += f"<li>{recommendation}</li>"
 
         html += f"""

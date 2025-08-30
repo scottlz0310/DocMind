@@ -31,14 +31,15 @@ from src.data.models import FileType, SearchResult, SearchType
 
 class SortOrder(Enum):
     """ソート順序を定義する列挙型"""
-    RELEVANCE_DESC = "relevance_desc"    # 関連度降順（デフォルト）
-    RELEVANCE_ASC = "relevance_asc"      # 関連度昇順
-    TITLE_ASC = "title_asc"              # タイトル昇順
-    TITLE_DESC = "title_desc"            # タイトル降順
-    DATE_DESC = "date_desc"              # 日付降順
-    DATE_ASC = "date_asc"                # 日付昇順
-    SIZE_DESC = "size_desc"              # サイズ降順
-    SIZE_ASC = "size_asc"                # サイズ昇順
+
+    RELEVANCE_DESC = "relevance_desc"  # 関連度降順（デフォルト）
+    RELEVANCE_ASC = "relevance_asc"  # 関連度昇順
+    TITLE_ASC = "title_asc"  # タイトル昇順
+    TITLE_DESC = "title_desc"  # タイトル降順
+    DATE_DESC = "date_desc"  # 日付降順
+    DATE_ASC = "date_asc"  # 日付昇順
+    SIZE_DESC = "size_desc"  # サイズ降順
+    SIZE_ASC = "size_asc"  # サイズ昇順
 
 
 class SearchResultItemWidget(QFrame):
@@ -50,8 +51,8 @@ class SearchResultItemWidget(QFrame):
     """
 
     # シグナル定義
-    item_clicked = Signal(SearchResult)      # アイテムがクリックされた時
-    preview_requested = Signal(SearchResult) # プレビューが要求された時
+    item_clicked = Signal(SearchResult)  # アイテムがクリックされた時
+    preview_requested = Signal(SearchResult)  # プレビューが要求された時
 
     def __init__(self, search_result: SearchResult, parent: QWidget | None = None):
         """
@@ -158,7 +159,7 @@ class SearchResultItemWidget(QFrame):
             FileType.EXCEL: "Excel",
             FileType.MARKDOWN: "Markdown",
             FileType.TEXT: "テキスト",
-            FileType.UNKNOWN: "不明"
+            FileType.UNKNOWN: "不明",
         }
         return type_names.get(file_type, "不明")
 
@@ -228,9 +229,9 @@ class SearchResultItemWidget(QFrame):
     def _get_search_type_color(self, search_type: SearchType) -> str:
         """検索タイプに基づいて色を取得"""
         type_colors = {
-            SearchType.FULL_TEXT: "#2196f3",    # 青
-            SearchType.SEMANTIC: "#9c27b0",     # 紫
-            SearchType.HYBRID: "#ff5722"        # 深いオレンジ
+            SearchType.FULL_TEXT: "#2196f3",  # 青
+            SearchType.SEMANTIC: "#9c27b0",  # 紫
+            SearchType.HYBRID: "#ff5722",  # 深いオレンジ
         }
         return type_colors.get(search_type, "#666666")
 
@@ -282,11 +283,11 @@ class SearchResultsWidget(QWidget):
     """
 
     # シグナル定義
-    result_selected = Signal(SearchResult)       # 結果が選択された時
-    preview_requested = Signal(SearchResult)     # プレビューが要求された時
-    page_changed = Signal(int)                   # ページが変更された時
-    sort_changed = Signal(SortOrder)             # ソート順が変更された時
-    filter_changed = Signal(dict)                # フィルターが変更された時
+    result_selected = Signal(SearchResult)  # 結果が選択された時
+    preview_requested = Signal(SearchResult)  # プレビューが要求された時
+    page_changed = Signal(int)  # ページが変更された時
+    sort_changed = Signal(SortOrder)  # ソート順が変更された時
+    filter_changed = Signal(dict)  # フィルターが変更された時
 
     def __init__(self, parent: QWidget | None = None):
         """
@@ -366,16 +367,18 @@ class SearchResultsWidget(QWidget):
         layout.addWidget(sort_label)
 
         self.sort_combo = QComboBox()
-        self.sort_combo.addItems([
-            "関連度（高→低）",
-            "関連度（低→高）",
-            "タイトル（A→Z）",
-            "タイトル（Z→A）",
-            "日付（新→古）",
-            "日付（古→新）",
-            "サイズ（大→小）",
-            "サイズ（小→大）"
-        ])
+        self.sort_combo.addItems(
+            [
+                "関連度（高→低）",
+                "関連度（低→高）",
+                "タイトル（A→Z）",
+                "タイトル（Z→A）",
+                "日付（新→古）",
+                "日付（古→新）",
+                "サイズ（大→小）",
+                "サイズ（小→大）",
+            ]
+        )
         self.sort_combo.setMinimumWidth(120)
         layout.addWidget(self.sort_combo)
 
@@ -476,8 +479,12 @@ class SearchResultsWidget(QWidget):
 
         # ページネーション
         self.first_page_button.clicked.connect(lambda: self.go_to_page(1))
-        self.prev_page_button.clicked.connect(lambda: self.go_to_page(self.current_page - 1))
-        self.next_page_button.clicked.connect(lambda: self.go_to_page(self.current_page + 1))
+        self.prev_page_button.clicked.connect(
+            lambda: self.go_to_page(self.current_page - 1)
+        )
+        self.next_page_button.clicked.connect(
+            lambda: self.go_to_page(self.current_page + 1)
+        )
         self.last_page_button.clicked.connect(lambda: self.go_to_page(self.total_pages))
         self.page_spin.valueChanged.connect(self.go_to_page)
 
@@ -533,14 +540,12 @@ class SearchResultsWidget(QWidget):
             SortOrder.DATE_DESC: lambda x: -x.document.modified_date.timestamp(),
             SortOrder.DATE_ASC: lambda x: x.document.modified_date.timestamp(),
             SortOrder.SIZE_DESC: lambda x: -x.document.size,
-            SortOrder.SIZE_ASC: lambda x: x.document.size
+            SortOrder.SIZE_ASC: lambda x: x.document.size,
         }
 
         sort_func = sort_functions.get(self.current_sort_order)
         if sort_func:
-            reverse = self.current_sort_order in [
-                SortOrder.TITLE_DESC
-            ]
+            reverse = self.current_sort_order in [SortOrder.TITLE_DESC]
             self.filtered_results.sort(key=sort_func, reverse=reverse)
 
         self.logger.debug(f"ソート適用: {self.current_sort_order}")
@@ -579,7 +584,9 @@ class SearchResultsWidget(QWidget):
         if total_count == filtered_count:
             self.result_count_label.setText(f"結果: {total_count}件")
         else:
-            self.result_count_label.setText(f"結果: {filtered_count}件 (全{total_count}件中)")
+            self.result_count_label.setText(
+                f"結果: {filtered_count}件 (全{total_count}件中)"
+            )
 
     def go_to_page(self, page: int) -> None:
         """
@@ -661,7 +668,7 @@ class SearchResultsWidget(QWidget):
             SortOrder.DATE_DESC,
             SortOrder.DATE_ASC,
             SortOrder.SIZE_DESC,
-            SortOrder.SIZE_ASC
+            SortOrder.SIZE_ASC,
         ]
 
         if 0 <= index < len(sort_orders):

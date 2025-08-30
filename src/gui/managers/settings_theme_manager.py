@@ -58,11 +58,11 @@ class SettingsThemeManager(QObject, LoggerMixin):
 
         except Exception as e:
             self.logger.error(f"設定変更の適用に失敗しました: {e}")
-            if hasattr(self.main_window, 'dialog_manager'):
+            if hasattr(self.main_window, "dialog_manager"):
                 self.main_window.dialog_manager.show_partial_failure_dialog(
                     "設定変更",
                     f"一部の設定変更の適用に失敗しました:\\n{e}",
-                    "アプリケーションを再起動すると設定が正しく適用される可能性があります。"
+                    "アプリケーションを再起動すると設定が正しく適用される可能性があります。",
                 )
 
     def _update_logging_settings(self, settings: dict[str, Any]) -> None:
@@ -79,10 +79,11 @@ class SettingsThemeManager(QObject, LoggerMixin):
 
             if any([log_level, console_logging is not None, file_logging is not None]):
                 from src.utils.logging_config import reconfigure_logging
+
                 reconfigure_logging(
                     level=log_level,
                     enable_console=console_logging,
-                    enable_file=file_logging
+                    enable_file=file_logging,
                 )
                 self.logger.debug("ログ設定を更新しました")
 
@@ -102,7 +103,9 @@ class SettingsThemeManager(QObject, LoggerMixin):
 
             if window_width and window_height:
                 self.main_window.resize(window_width, window_height)
-                self.logger.debug(f"ウィンドウサイズを更新: {window_width}x{window_height}")
+                self.logger.debug(
+                    f"ウィンドウサイズを更新: {window_width}x{window_height}"
+                )
 
         except Exception as e:
             self.logger.warning(f"ウィンドウサイズの更新に失敗: {e}")
@@ -234,7 +237,7 @@ class SettingsThemeManager(QObject, LoggerMixin):
             default_settings = {
                 "ui_theme": "system",
                 "font_family": "システムデフォルト",
-                "font_size": 10
+                "font_size": 10,
             }
 
             self.handle_settings_changed(default_settings)

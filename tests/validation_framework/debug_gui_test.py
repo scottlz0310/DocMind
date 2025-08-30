@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 # GUI環境の設定
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 # プロジェクトルートをPythonパスに追加
 project_root = Path(__file__).parent.parent.parent
@@ -21,8 +21,8 @@ sys.path.insert(0, str(project_root))
 # ログ設定
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 
 logger = logging.getLogger(__name__)
@@ -123,11 +123,11 @@ def test_gui_module_imports():
     logger.info("=== GUIモジュールのインポートテストを開始 ===")
 
     gui_modules = [
-        'src.gui.main_window',
-        'src.gui.folder_tree',
-        'src.gui.search_interface',
-        'src.gui.search_results',
-        'src.gui.preview_widget'
+        "src.gui.main_window",
+        "src.gui.folder_tree",
+        "src.gui.search_interface",
+        "src.gui.search_results",
+        "src.gui.preview_widget",
     ]
 
     success_count = 0
@@ -155,7 +155,7 @@ def main():
         ("基本インポート", test_basic_imports),
         ("QApplication", test_qt_application),
         ("基本ウィジェット", test_basic_widgets),
-        ("GUIモジュールインポート", test_gui_module_imports)
+        ("GUIモジュールインポート", test_gui_module_imports),
     ]
 
     results = []

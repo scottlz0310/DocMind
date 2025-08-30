@@ -37,13 +37,14 @@ class TestIndexManager:
     def sample_document(self):
         """テスト用のサンプルドキュメントを作成"""
         # 一時ファイルを作成
-        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8')
+        temp_file = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False, encoding="utf-8"
+        )
         temp_file.write("これはテスト用のドキュメントです。検索機能をテストします。")
         temp_file.close()
 
         doc = Document.create_from_file(
-            temp_file.name,
-            "これはテスト用のドキュメントです。検索機能をテストします。"
+            temp_file.name, "これはテスト用のドキュメントです。検索機能をテストします。"
         )
 
         yield doc
@@ -63,12 +64,12 @@ class TestIndexManager:
             "機械学習とAIの基礎概念を学びます。",
             "データベース設計の重要なポイントを解説します。",
             "ウェブ開発のベストプラクティスを紹介します。",
-            "セキュリティ対策の基本的な考え方を説明します。"
+            "セキュリティ対策の基本的な考え方を説明します。",
         ]
 
         for _i, content in enumerate(contents):
             temp_file = tempfile.NamedTemporaryFile(
-                mode='w', suffix='.txt', delete=False, encoding='utf-8'
+                mode="w", suffix=".txt", delete=False, encoding="utf-8"
             )
             temp_file.write(content)
             temp_file.close()
@@ -120,7 +121,9 @@ class TestIndexManager:
         index_manager.add_document(sample_document)
 
         # ドキュメントの内容を変更
-        sample_document.content = "更新されたコンテンツです。新しい情報が含まれています。"
+        sample_document.content = (
+            "更新されたコンテンツです。新しい情報が含まれています。"
+        )
         sample_document.indexed_date = datetime.now()
 
         # ドキュメントを更新
@@ -221,10 +224,7 @@ class TestIndexManager:
             index_manager.add_document(doc)
 
         # テキストファイルのみで検索
-        results = index_manager.search_text(
-            "説明",
-            file_types=[FileType.TEXT]
-        )
+        results = index_manager.search_text("説明", file_types=[FileType.TEXT])
 
         # すべての結果がテキストファイルであることを確認
         for result in results:
@@ -237,21 +237,16 @@ class TestIndexManager:
 
         # 現在日時より前の日付で検索（結果なし）
         from datetime import timedelta
+
         past_date = datetime.now() - timedelta(days=1)
-        results = index_manager.search_text(
-            "テスト",
-            date_to=past_date
-        )
+        results = index_manager.search_text("テスト", date_to=past_date)
 
         # 結果が0件であることを確認
         assert len(results) == 0
 
         # 現在日時より後の日付で検索（結果あり）
         future_date = datetime.now() + timedelta(days=1)
-        results = index_manager.search_text(
-            "テスト",
-            date_to=future_date
-        )
+        results = index_manager.search_text("テスト", date_to=future_date)
 
         # 結果が1件であることを確認
         assert len(results) == 1
@@ -341,7 +336,7 @@ class TestIndexManager:
         invalid_path = "/root/invalid_path"  # Linuxの場合
 
         # Windowsの場合は別のパスを使用
-        if os.name == 'nt':
+        if os.name == "nt":
             invalid_path = "C:\\Windows\\System32\\invalid_path"
 
         # IndexingErrorが発生することを確認

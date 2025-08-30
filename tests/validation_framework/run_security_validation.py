@@ -32,7 +32,7 @@ def setup_logging() -> logging.Logger:
     # コンソールハンドラー
     console_handler = logging.StreamHandler()
     console_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     console_handler.setFormatter(console_formatter)
     logger.addHandler(console_handler)
@@ -44,9 +44,9 @@ def setup_logging() -> logging.Logger:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_file = log_dir / f"security_validation_{timestamp}.log"
 
-    file_handler = logging.FileHandler(log_file, encoding='utf-8')
+    file_handler = logging.FileHandler(log_file, encoding="utf-8")
     file_formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
     file_handler.setFormatter(file_formatter)
     logger.addHandler(file_handler)
@@ -76,7 +76,7 @@ def run_security_validation(quick_mode: bool = False) -> bool:
             max_execution_time=600.0 if not quick_mode else 180.0,  # 10分 or 3分
             max_memory_usage=2048.0,
             log_level="INFO",
-            output_directory=str(project_root / "validation_results" / "security")
+            output_directory=str(project_root / "validation_results" / "security"),
         )
 
         # セキュリティ検証器の初期化
@@ -92,18 +92,18 @@ def run_security_validation(quick_mode: bool = False) -> bool:
         if quick_mode:
             # クイックモード: 基本的なセキュリティテストのみ
             test_methods = [
-                'test_local_processing_verification',
-                'test_file_access_permissions_verification',
-                'test_data_encryption_verification'
+                "test_local_processing_verification",
+                "test_file_access_permissions_verification",
+                "test_data_encryption_verification",
             ]
         else:
             # フルモード: 全セキュリティテスト
             test_methods = [
-                'test_local_processing_verification',
-                'test_file_access_permissions_verification',
-                'test_data_encryption_verification',
-                'test_privacy_protection_verification',
-                'test_comprehensive_security_audit'
+                "test_local_processing_verification",
+                "test_file_access_permissions_verification",
+                "test_data_encryption_verification",
+                "test_privacy_protection_verification",
+                "test_comprehensive_security_audit",
             ]
 
         validation_results = validator.run_validation(test_methods)
@@ -115,16 +115,24 @@ def run_security_validation(quick_mode: bool = False) -> bool:
         # 結果の表示
         logger.info("=== セキュリティ検証結果サマリー ===")
         logger.info(f"実行テスト数: {security_summary['test_summary']['total_tests']}")
-        logger.info(f"セキュアなテスト: {security_summary['test_summary']['secure_tests']}")
+        logger.info(
+            f"セキュアなテスト: {security_summary['test_summary']['secure_tests']}"
+        )
         logger.info(f"警告レベル: {security_summary['test_summary']['warning_tests']}")
         logger.info(f"重大レベル: {security_summary['test_summary']['critical_tests']}")
-        logger.info(f"総合セキュリティレベル: {security_summary['test_summary']['overall_security_level']}")
-        logger.info(f"平均コンプライアンススコア: {security_summary['compliance_statistics']['average_compliance_score']:.2f}")
+        logger.info(
+            f"総合セキュリティレベル: {security_summary['test_summary']['overall_security_level']}"
+        )
+        logger.info(
+            f"平均コンプライアンススコア: {security_summary['compliance_statistics']['average_compliance_score']:.2f}"
+        )
 
         # 脆弱性の表示
-        if security_summary['vulnerability_analysis']['total_vulnerabilities'] > 0:
+        if security_summary["vulnerability_analysis"]["total_vulnerabilities"] > 0:
             logger.warning("=== 検出された脆弱性 ===")
-            for vuln in security_summary['vulnerability_analysis']['vulnerability_list']:
+            for vuln in security_summary["vulnerability_analysis"][
+                "vulnerability_list"
+            ]:
                 logger.warning(f"- {vuln}")
         else:
             logger.info("脆弱性は検出されませんでした")
@@ -135,35 +143,36 @@ def run_security_validation(quick_mode: bool = False) -> bool:
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         report_data = {
-            'validation_type': 'security',
-            'timestamp': timestamp,
-            'results': validation_results,
-            'summary': security_summary,
-            'validator_config': {
-                'quick_mode': quick_mode,
-                'test_methods': test_methods
-            }
+            "validation_type": "security",
+            "timestamp": timestamp,
+            "results": validation_results,
+            "summary": security_summary,
+            "validator_config": {
+                "quick_mode": quick_mode,
+                "test_methods": test_methods,
+            },
         }
 
         # HTMLレポートの生成
         output_dir = project_root / "validation_results" / "security"
         html_report_path = reporter.generate_html_report(
-            report_data,
-            str(output_dir / f"security_report_{timestamp}.html")
+            report_data, str(output_dir / f"security_report_{timestamp}.html")
         )
 
         # JSONレポートの生成
         json_report_path = reporter.generate_json_report(
             report_data,
-            str(output_dir / f"security_validation_results_{timestamp}.json")
+            str(output_dir / f"security_validation_results_{timestamp}.json"),
         )
 
         logger.info(f"HTMLレポート: {html_report_path}")
         logger.info(f"JSONレポート: {json_report_path}")
 
         # 成功判定
-        overall_security_level = security_summary['test_summary']['overall_security_level']
-        success = overall_security_level in ['SECURE', 'WARNING']
+        overall_security_level = security_summary["test_summary"][
+            "overall_security_level"
+        ]
+        success = overall_security_level in ["SECURE", "WARNING"]
 
         if success:
             logger.info("=== セキュリティ検証完了: 合格 ===")
@@ -198,20 +207,16 @@ def main():
   python run_security_validation.py                    # フル検証
   python run_security_validation.py --quick           # クイック検証
   python run_security_validation.py --help            # ヘルプ表示
-        """
+        """,
     )
 
     parser.add_argument(
-        '--quick',
-        action='store_true',
-        help='クイックモードで実行（基本テストのみ、短時間）'
+        "--quick",
+        action="store_true",
+        help="クイックモードで実行（基本テストのみ、短時間）",
     )
 
-    parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='詳細ログを表示'
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="詳細ログを表示")
 
     args = parser.parse_args()
 

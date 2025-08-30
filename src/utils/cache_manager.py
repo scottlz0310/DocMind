@@ -19,12 +19,13 @@ from ..data.models import Document, SearchResult
 from ..utils.exceptions import CacheError
 from ..utils.logging_config import LoggerMixin
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 @dataclass
 class CacheEntry(Generic[T]):
     """キャッシュエントリを表すデータクラス"""
+
     value: T
     timestamp: float
     access_count: int = 0
@@ -106,11 +107,7 @@ class LRUCache(Generic[T], LoggerMixin):
             current_time = time.time()
             effective_ttl = ttl if ttl is not None else self.default_ttl
 
-            entry = CacheEntry(
-                value=value,
-                timestamp=current_time,
-                ttl=effective_ttl
-            )
+            entry = CacheEntry(value=value, timestamp=current_time, ttl=effective_ttl)
 
             if key in self._cache:
                 # 既存エントリを更新
@@ -181,7 +178,7 @@ class LRUCache(Generic[T], LoggerMixin):
                 "hits": self._hits,
                 "misses": self._misses,
                 "hit_rate": hit_rate,
-                "total_requests": total_requests
+                "total_requests": total_requests,
             }
 
 
@@ -204,8 +201,9 @@ class SearchResultCache(LoggerMixin):
         self._cleanup_interval = 60.0  # 1分間隔でクリーンアップ
         self._last_cleanup = time.time()
 
-    def _generate_cache_key(self, query_text: str, search_type: str,
-                          filters: dict[str, Any] | None = None) -> str:
+    def _generate_cache_key(
+        self, query_text: str, search_type: str, filters: dict[str, Any] | None = None
+    ) -> str:
         """
         検索パラメータからキャッシュキーを生成
 
@@ -221,15 +219,16 @@ class SearchResultCache(LoggerMixin):
         key_components = [
             query_text.lower().strip(),
             search_type,
-            str(sorted(filters.items()) if filters else "")
+            str(sorted(filters.items()) if filters else ""),
         ]
 
         # ハッシュ化してキーを生成
         key_string = "|".join(key_components)
-        return hashlib.md5(key_string.encode('utf-8')).hexdigest()
+        return hashlib.md5(key_string.encode("utf-8")).hexdigest()
 
-    def get_search_results(self, query_text: str, search_type: str,
-                          filters: dict[str, Any] | None = None) -> list[SearchResult] | None:
+    def get_search_results(
+        self, query_text: str, search_type: str, filters: dict[str, Any] | None = None
+    ) -> list[SearchResult] | None:
         """
         キャッシュから検索結果を取得
 
@@ -251,9 +250,13 @@ class SearchResultCache(LoggerMixin):
 
         return results
 
-    def cache_search_results(self, query_text: str, search_type: str,
-                           results: list[SearchResult],
-                           filters: dict[str, Any] | None = None) -> None:
+    def cache_search_results(
+        self,
+        query_text: str,
+        search_type: str,
+        results: list[SearchResult],
+        filters: dict[str, Any] | None = None,
+    ) -> None:
         """
         検索結果をキャッシュに保存
 
@@ -266,7 +269,9 @@ class SearchResultCache(LoggerMixin):
         cache_key = self._generate_cache_key(query_text, search_type, filters)
         self._cache.put(cache_key, results)
 
-        self.logger.debug(f"検索結果をキャッシュに保存: {query_text} ({len(results)}件)")
+        self.logger.debug(
+            f"検索結果をキャッシュに保存: {query_text} ({len(results)}件)"
+        )
 
     def invalidate_cache(self) -> None:
         """キャッシュを無効化（クリア）"""
@@ -279,7 +284,9 @@ class SearchResultCache(LoggerMixin):
         if current_time - self._last_cleanup > self._cleanup_interval:
             expired_count = self._cache.cleanup_expired()
             if expired_count > 0:
-                self.logger.debug(f"期限切れキャッシュエントリを削除: {expired_count}件")
+                self.logger.debug(
+                    f"期限切れキャッシュエントリを削除: {expired_count}件"
+                )
             self._last_cleanup = current_time
 
     def get_stats(self) -> dict[str, Any]:
@@ -383,9 +390,11 @@ class PersistentCache(LoggerMixin):
         """ディスクからキャッシュを読み込み"""
         try:
             if self.cache_file.exists():
-                with open(self.cache_file, 'rb') as f:
+                with open(self.cache_file, "rb") as f:
                     self._data = pickle.load(f)
-                self.logger.info(f"永続化キャッシュを読み込み: {self.cache_name} ({len(self._data)}件)")
+                self.logger.info(
+                    f"永続化キャッシュを読み込み: {self.cache_name} ({len(self._data)}件)"
+                )
         except Exception as e:
             self.logger.warning(f"永続化キャッシュの読み込みに失敗: {e}")
             self._data = {}
@@ -393,7 +402,7 @@ class PersistentCache(LoggerMixin):
     def _save_cache(self) -> None:
         """キャッシュをディスクに保存"""
         try:
-            with open(self.cache_file, 'wb') as f:
+            with open(self.cache_file, "wb") as f:
                 pickle.dump(self._data, f, protocol=pickle.HIGHEST_PROTOCOL)
         except Exception as e:
             self.logger.error(f"永続化キャッシュの保存に失敗: {e}")
@@ -484,7 +493,7 @@ class CacheManager(LoggerMixin):
             "search_cache": self.search_cache.get_stats(),
             "document_cache": self.document_cache.get_stats(),
             "embedding_cache_size": self.embedding_cache.get_size(),
-            "suggestion_cache_size": self.suggestion_cache.get_size()
+            "suggestion_cache_size": self.suggestion_cache.get_size(),
         }
 
     def save_persistent_caches(self) -> None:
@@ -503,6 +512,7 @@ def get_global_cache_manager() -> CacheManager:
     global _global_cache_manager
     if _global_cache_manager is None:
         from ..utils.config import get_config
+
         config = get_config()
         cache_dir = config.get("cache_directory", "docmind_data/cache")
         _global_cache_manager = CacheManager(cache_dir)

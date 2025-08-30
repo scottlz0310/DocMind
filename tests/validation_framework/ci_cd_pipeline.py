@@ -28,6 +28,7 @@ from .comprehensive_validation_suite import (
 
 class PipelineStage(Enum):
     """パイプラインステージの定義"""
+
     BUILD = "build"
     UNIT_TEST = "unit_test"
     INTEGRATION_TEST = "integration_test"
@@ -39,6 +40,7 @@ class PipelineStage(Enum):
 
 class PipelineResult(Enum):
     """パイプライン結果の定義"""
+
     SUCCESS = "success"
     FAILURE = "failure"
     CANCELLED = "cancelled"
@@ -48,6 +50,7 @@ class PipelineResult(Enum):
 @dataclass
 class PipelineConfig:
     """パイプライン設定"""
+
     # 基本設定
     project_root: Path
     output_dir: Path = Path("pipeline_results")
@@ -84,6 +87,7 @@ class PipelineConfig:
 @dataclass
 class StageResult:
     """ステージ結果"""
+
     stage: PipelineStage
     result: PipelineResult
     start_time: datetime
@@ -98,6 +102,7 @@ class StageResult:
 @dataclass
 class PipelineSummary:
     """パイプライン結果サマリー"""
+
     pipeline_id: str
     start_time: datetime
     end_time: datetime
@@ -136,13 +141,14 @@ class QualityGate:
 
             # カバレッジ情報の読み込み（coverage.xml を想定）
             import xml.etree.ElementTree as ET
+
             tree = ET.parse(coverage_file)
             root = tree.getroot()
 
             # カバレッジ率の取得
-            coverage_element = root.find('.//coverage')
+            coverage_element = root.find(".//coverage")
             if coverage_element is not None:
-                line_rate = float(coverage_element.get('line-rate', 0)) * 100
+                line_rate = float(coverage_element.get("line-rate", 0)) * 100
 
                 self.logger.info(f"テストカバレッジ: {line_rate:.1f}%")
 
@@ -150,7 +156,9 @@ class QualityGate:
                     self.logger.info("テストカバレッジ品質ゲートを通過しました")
                     return True
                 else:
-                    self.logger.error(f"テストカバレッジが基準値 {self.config.min_test_coverage}% を下回りました")
+                    self.logger.error(
+                        f"テストカバレッジが基準値 {self.config.min_test_coverage}% を下回りました"
+                    )
                     return False
 
             return False
@@ -174,26 +182,32 @@ class QualityGate:
                 return True  # レポートがない場合は通過とする
 
             # セキュリティレポートの解析（JSON形式を想定）
-            with open(security_report, encoding='utf-8') as f:
+            with open(security_report, encoding="utf-8") as f:
                 report_data = json.load(f)
 
-            critical_issues = report_data.get('critical_issues', 0)
-            high_issues = report_data.get('high_issues', 0)
+            critical_issues = report_data.get("critical_issues", 0)
+            high_issues = report_data.get("high_issues", 0)
 
-            self.logger.info(f"セキュリティ問題: Critical={critical_issues}, High={high_issues}")
+            self.logger.info(
+                f"セキュリティ問題: Critical={critical_issues}, High={high_issues}"
+            )
 
             if critical_issues <= self.config.max_critical_issues:
                 self.logger.info("セキュリティ品質ゲートを通過しました")
                 return True
             else:
-                self.logger.error(f"重要なセキュリティ問題が {critical_issues} 件検出されました")
+                self.logger.error(
+                    f"重要なセキュリティ問題が {critical_issues} 件検出されました"
+                )
                 return False
 
         except Exception as e:
             self.logger.error(f"セキュリティチェック中にエラーが発生しました: {e}")
             return False
 
-    async def check_performance_regression(self, current_metrics: dict, baseline_file: Path) -> bool:
+    async def check_performance_regression(
+        self, current_metrics: dict, baseline_file: Path
+    ) -> bool:
         """パフォーマンス回帰のチェック
 
         Args:
@@ -205,13 +219,15 @@ class QualityGate:
         """
         try:
             if not baseline_file.exists():
-                self.logger.info("ベースラインファイルが見つかりません。現在のメトリクスをベースラインとして保存します")
-                with open(baseline_file, 'w', encoding='utf-8') as f:
+                self.logger.info(
+                    "ベースラインファイルが見つかりません。現在のメトリクスをベースラインとして保存します"
+                )
+                with open(baseline_file, "w", encoding="utf-8") as f:
                     json.dump(current_metrics, f, indent=2, ensure_ascii=False)
                 return True
 
             # ベースラインの読み込み
-            with open(baseline_file, encoding='utf-8') as f:
+            with open(baseline_file, encoding="utf-8") as f:
                 baseline_metrics = json.load(f)
 
             # パフォーマンス回帰のチェック
@@ -221,11 +237,18 @@ class QualityGate:
                     baseline_value = baseline_metrics[metric_name]
 
                     # 数値メトリクスのみチェック
-                    if isinstance(current_value, int | float) and isinstance(baseline_value, int | float):
+                    if isinstance(current_value, int | float) and isinstance(
+                        baseline_value, int | float
+                    ):
                         if baseline_value > 0:
-                            regression_percent = ((current_value - baseline_value) / baseline_value) * 100
+                            regression_percent = (
+                                (current_value - baseline_value) / baseline_value
+                            ) * 100
 
-                            if regression_percent > self.config.max_performance_regression:
+                            if (
+                                regression_percent
+                                > self.config.max_performance_regression
+                            ):
                                 self.logger.error(
                                     f"パフォーマンス回帰検出: {metric_name} "
                                     f"({baseline_value:.2f} -> {current_value:.2f}, "
@@ -236,7 +259,7 @@ class QualityGate:
             if not regression_detected:
                 self.logger.info("パフォーマンス品質ゲートを通過しました")
                 # ベースラインの更新
-                with open(baseline_file, 'w', encoding='utf-8') as f:
+                with open(baseline_file, "w", encoding="utf-8") as f:
                     json.dump(current_metrics, f, indent=2, ensure_ascii=False)
                 return True
             else:
@@ -276,7 +299,7 @@ class CICDPipeline:
 
         # ログファイルハンドラー
         log_file = self.config.output_dir / f"{self.pipeline_id}.log"
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setLevel(logging.DEBUG)
 
         # コンソールハンドラー
@@ -285,7 +308,7 @@ class CICDPipeline:
 
         # フォーマッター
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
@@ -317,12 +340,16 @@ class CICDPipeline:
 
                 # ステージが失敗した場合はパイプラインを停止
                 if stage_result.result == PipelineResult.FAILURE:
-                    self.logger.error(f"ステージ {stage.value} が失敗しました。パイプラインを停止します")
+                    self.logger.error(
+                        f"ステージ {stage.value} が失敗しました。パイプラインを停止します"
+                    )
                     break
 
                 # 品質ゲートのチェック
                 if not await self._check_quality_gates(stage, stage_result):
-                    self.logger.error(f"ステージ {stage.value} で品質ゲートに失敗しました")
+                    self.logger.error(
+                        f"ステージ {stage.value} で品質ゲートに失敗しました"
+                    )
                     stage_result.result = PipelineResult.FAILURE
                     break
 
@@ -348,7 +375,9 @@ class CICDPipeline:
             if not self.config.git_branch:
                 result = subprocess.run(
                     ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                    capture_output=True, text=True, cwd=self.config.project_root
+                    capture_output=True,
+                    text=True,
+                    cwd=self.config.project_root,
                 )
                 if result.returncode == 0:
                     self.config.git_branch = result.stdout.strip()
@@ -357,12 +386,16 @@ class CICDPipeline:
             if not self.config.git_commit:
                 result = subprocess.run(
                     ["git", "rev-parse", "HEAD"],
-                    capture_output=True, text=True, cwd=self.config.project_root
+                    capture_output=True,
+                    text=True,
+                    cwd=self.config.project_root,
                 )
                 if result.returncode == 0:
                     self.config.git_commit = result.stdout.strip()
 
-            self.logger.info(f"Git情報: ブランチ={self.config.git_branch}, コミット={self.config.git_commit[:8]}")
+            self.logger.info(
+                f"Git情報: ブランチ={self.config.git_branch}, コミット={self.config.git_commit[:8]}"
+            )
 
         except Exception as e:
             self.logger.warning(f"Git情報の取得に失敗しました: {e}")
@@ -429,10 +462,12 @@ class CICDPipeline:
                 end_time=end_time,
                 duration=duration,
                 output=output,
-                artifacts=artifacts or []
+                artifacts=artifacts or [],
             )
 
-            self.logger.info(f"ステージ '{stage.value}' が完了しました - 実行時間: {duration:.2f}秒")
+            self.logger.info(
+                f"ステージ '{stage.value}' が完了しました - 実行時間: {duration:.2f}秒"
+            )
             return result
 
         except Exception as e:
@@ -448,7 +483,7 @@ class CICDPipeline:
                 end_time=end_time,
                 duration=duration,
                 output="",
-                error=str(e)
+                error=str(e),
             )
 
     async def _run_build_stage(self) -> tuple[str, list[Path]]:
@@ -460,7 +495,9 @@ class CICDPipeline:
         if not venv_path.exists():
             result = subprocess.run(
                 [sys.executable, "-m", "venv", str(venv_path)],
-                capture_output=True, text=True, cwd=self.config.project_root
+                capture_output=True,
+                text=True,
+                cwd=self.config.project_root,
             )
             if result.returncode != 0:
                 raise RuntimeError(f"仮想環境の作成に失敗しました: {result.stderr}")
@@ -472,10 +509,14 @@ class CICDPipeline:
         if requirements_path.exists():
             result = subprocess.run(
                 [str(pip_path), "install", "-r", str(requirements_path)],
-                capture_output=True, text=True, cwd=self.config.project_root
+                capture_output=True,
+                text=True,
+                cwd=self.config.project_root,
             )
             if result.returncode != 0:
-                raise RuntimeError(f"依存関係のインストールに失敗しました: {result.stderr}")
+                raise RuntimeError(
+                    f"依存関係のインストールに失敗しました: {result.stderr}"
+                )
 
         return "ビルドが正常に完了しました", []
 
@@ -485,9 +526,20 @@ class CICDPipeline:
 
         # pytest の実行
         result = subprocess.run(
-            [sys.executable, "-m", "pytest", "tests/", "-v", "--tb=short",
-             "--cov=src", "--cov-report=xml", "--cov-report=html"],
-            capture_output=True, text=True, cwd=self.config.project_root
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "tests/",
+                "-v",
+                "--tb=short",
+                "--cov=src",
+                "--cov-report=xml",
+                "--cov-report=html",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=self.config.project_root,
         )
 
         # カバレッジファイルの確認
@@ -512,7 +564,9 @@ class CICDPipeline:
         # 統合テストの実行
         result = subprocess.run(
             [sys.executable, "-m", "pytest", "tests/", "-m", "integration", "-v"],
-            capture_output=True, text=True, cwd=self.config.project_root
+            capture_output=True,
+            text=True,
+            cwd=self.config.project_root,
         )
 
         if result.returncode != 0:
@@ -531,7 +585,7 @@ class CICDPipeline:
         validation_config = create_validation_config(
             level=ValidationLevel.DAILY,
             output_dir=self.config.output_dir / "validation",
-            timeout_seconds=1800  # 30分
+            timeout_seconds=1800,  # 30分
         )
 
         # 検証スイートの実行
@@ -545,7 +599,10 @@ class CICDPipeline:
         # アーティファクトの収集
         artifacts = list(validation_config.output_dir.glob("*"))
 
-        return f"検証が完了しました - 成功: {summary.passed_tests}, 失敗: {summary.failed_tests}", artifacts
+        return (
+            f"検証が完了しました - 成功: {summary.passed_tests}, 失敗: {summary.failed_tests}",
+            artifacts,
+        )
 
     async def _run_security_scan_stage(self) -> tuple[str, list[Path]]:
         """セキュリティスキャンステージの実行"""
@@ -554,8 +611,20 @@ class CICDPipeline:
         # bandit によるセキュリティスキャン
         try:
             subprocess.run(
-                [sys.executable, "-m", "bandit", "-r", "src/", "-f", "json", "-o", "security_report.json"],
-                capture_output=True, text=True, cwd=self.config.project_root
+                [
+                    sys.executable,
+                    "-m",
+                    "bandit",
+                    "-r",
+                    "src/",
+                    "-f",
+                    "json",
+                    "-o",
+                    "security_report.json",
+                ],
+                capture_output=True,
+                text=True,
+                cwd=self.config.project_root,
             )
 
             security_report = self.config.project_root / "security_report.json"
@@ -564,8 +633,13 @@ class CICDPipeline:
             return "セキュリティスキャンが完了しました", artifacts
 
         except FileNotFoundError:
-            self.logger.warning("bandit がインストールされていません。セキュリティスキャンをスキップします")
-            return "セキュリティスキャンはスキップされました（bandit未インストール）", []
+            self.logger.warning(
+                "bandit がインストールされていません。セキュリティスキャンをスキップします"
+            )
+            return (
+                "セキュリティスキャンはスキップされました（bandit未インストール）",
+                [],
+            )
 
     async def _run_performance_test_stage(self) -> tuple[str, list[Path]]:
         """パフォーマンステストステージの実行"""
@@ -574,13 +648,18 @@ class CICDPipeline:
         # パフォーマンステストの実行
         result = subprocess.run(
             [sys.executable, "-m", "pytest", "tests/", "-m", "performance", "-v"],
-            capture_output=True, text=True, cwd=self.config.project_root
+            capture_output=True,
+            text=True,
+            cwd=self.config.project_root,
         )
 
         if result.returncode != 0:
             # パフォーマンステストが存在しない場合はスキップ
             if "no tests ran" in result.stdout.lower():
-                return "パフォーマンステストはスキップされました（テストが見つかりません）", []
+                return (
+                    "パフォーマンステストはスキップされました（テストが見つかりません）",
+                    [],
+                )
             raise RuntimeError(f"パフォーマンステストに失敗しました: {result.stderr}")
 
         return result.stdout, []
@@ -594,8 +673,17 @@ class CICDPipeline:
 
         try:
             result = subprocess.run(
-                [sys.executable, "-m", "PyInstaller", "main.py", "--onefile", "--windowed"],
-                capture_output=True, text=True, cwd=self.config.project_root
+                [
+                    sys.executable,
+                    "-m",
+                    "PyInstaller",
+                    "main.py",
+                    "--onefile",
+                    "--windowed",
+                ],
+                capture_output=True,
+                text=True,
+                cwd=self.config.project_root,
             )
 
             if result.returncode != 0:
@@ -608,10 +696,14 @@ class CICDPipeline:
             return "デプロイが完了しました", artifacts
 
         except FileNotFoundError:
-            self.logger.warning("PyInstaller がインストールされていません。デプロイをスキップします")
+            self.logger.warning(
+                "PyInstaller がインストールされていません。デプロイをスキップします"
+            )
             return "デプロイはスキップされました（PyInstaller未インストール）", []
 
-    async def _check_quality_gates(self, stage: PipelineStage, stage_result: StageResult) -> bool:
+    async def _check_quality_gates(
+        self, stage: PipelineStage, stage_result: StageResult
+    ) -> bool:
         """品質ゲートのチェック
 
         Args:
@@ -654,7 +746,11 @@ class CICDPipeline:
                 break
 
         # 実行時間の計算
-        total_duration = (self.end_time - self.start_time).total_seconds() if self.end_time and self.start_time else 0
+        total_duration = (
+            (self.end_time - self.start_time).total_seconds()
+            if self.end_time and self.start_time
+            else 0
+        )
 
         # アーティファクトの収集
         all_artifacts = []
@@ -664,12 +760,16 @@ class CICDPipeline:
 
         # メトリクスの収集
         metrics = {
-            'pipeline_id': self.pipeline_id,
-            'git_branch': self.config.git_branch,
-            'git_commit': self.config.git_commit,
-            'stage_count': len(self.stage_results),
-            'successful_stages': sum(1 for r in self.stage_results if r.result == PipelineResult.SUCCESS),
-            'failed_stages': sum(1 for r in self.stage_results if r.result == PipelineResult.FAILURE)
+            "pipeline_id": self.pipeline_id,
+            "git_branch": self.config.git_branch,
+            "git_commit": self.config.git_commit,
+            "stage_count": len(self.stage_results),
+            "successful_stages": sum(
+                1 for r in self.stage_results if r.result == PipelineResult.SUCCESS
+            ),
+            "failed_stages": sum(
+                1 for r in self.stage_results if r.result == PipelineResult.FAILURE
+            ),
         }
 
         # 品質ゲート通過状況
@@ -684,7 +784,7 @@ class CICDPipeline:
             stage_results=self.stage_results,
             quality_gates_passed=quality_gates_passed,
             artifacts=all_artifacts,
-            metrics=metrics
+            metrics=metrics,
         )
 
     async def _send_notifications(self, summary: PipelineSummary):
@@ -709,7 +809,9 @@ class CICDPipeline:
 
     def _create_notification_message(self, summary: PipelineSummary) -> str:
         """通知メッセージの作成"""
-        status_emoji = "✅" if summary.overall_result == PipelineResult.SUCCESS else "❌"
+        status_emoji = (
+            "✅" if summary.overall_result == PipelineResult.SUCCESS else "❌"
+        )
 
         message = f"""
 {status_emoji} CI/CD パイプライン結果
@@ -724,11 +826,15 @@ class CICDPipeline:
 """
 
         for stage_result in summary.stage_results:
-            stage_emoji = "✅" if stage_result.result == PipelineResult.SUCCESS else "❌"
+            stage_emoji = (
+                "✅" if stage_result.result == PipelineResult.SUCCESS else "❌"
+            )
             message += f"  {stage_emoji} {stage_result.stage.value}: {stage_result.duration:.2f}秒\n"
 
         if summary.overall_result == PipelineResult.FAILURE:
-            failed_stages = [r for r in summary.stage_results if r.result == PipelineResult.FAILURE]
+            failed_stages = [
+                r for r in summary.stage_results if r.result == PipelineResult.FAILURE
+            ]
             if failed_stages:
                 message += "\n失敗したステージ:\n"
                 for stage_result in failed_stages:
@@ -772,12 +878,22 @@ async def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="DocMind CI/CD パイプライン")
-    parser.add_argument("--project-root", default=".", help="プロジェクトルートディレクトリ")
-    parser.add_argument("--output-dir", default="pipeline_results", help="出力ディレクトリ")
-    parser.add_argument("--timeout", type=int, default=60, help="タイムアウト時間（分）")
-    parser.add_argument("--no-build", action="store_true", help="ビルドステージを無効化")
+    parser.add_argument(
+        "--project-root", default=".", help="プロジェクトルートディレクトリ"
+    )
+    parser.add_argument(
+        "--output-dir", default="pipeline_results", help="出力ディレクトリ"
+    )
+    parser.add_argument(
+        "--timeout", type=int, default=60, help="タイムアウト時間（分）"
+    )
+    parser.add_argument(
+        "--no-build", action="store_true", help="ビルドステージを無効化"
+    )
     parser.add_argument("--no-test", action="store_true", help="テストステージを無効化")
-    parser.add_argument("--enable-deploy", action="store_true", help="デプロイステージを有効化")
+    parser.add_argument(
+        "--enable-deploy", action="store_true", help="デプロイステージを有効化"
+    )
 
     args = parser.parse_args()
 
@@ -789,7 +905,7 @@ async def main():
         enable_build=not args.no_build,
         enable_unit_test=not args.no_test,
         enable_integration_test=not args.no_test,
-        enable_deploy=args.enable_deploy
+        enable_deploy=args.enable_deploy,
     )
 
     # パイプラインの実行
@@ -805,7 +921,9 @@ async def main():
 
     print("\nステージ結果:")
     for stage_result in summary.stage_results:
-        print(f"  {stage_result.stage.value}: {stage_result.result.value} ({stage_result.duration:.2f}秒)")
+        print(
+            f"  {stage_result.stage.value}: {stage_result.result.value} ({stage_result.duration:.2f}秒)"
+        )
 
     # 終了コード
     sys.exit(0 if summary.overall_result == PipelineResult.SUCCESS else 1)

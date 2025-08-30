@@ -26,15 +26,17 @@ class ProgressManager:
     def initialize(self) -> None:
         """進捗管理コンポーネントを初期化"""
         # メインウィンドウから進捗バーとラベルの参照を取得
-        self.progress_bar = getattr(self.main_window, 'progress_bar', None)
-        self.progress_label = getattr(self.main_window, 'progress_label', None)
+        self.progress_bar = getattr(self.main_window, "progress_bar", None)
+        self.progress_label = getattr(self.main_window, "progress_label", None)
 
         # 進捗非表示タイマーを初期化
         self.progress_hide_timer = QTimer()
         self.progress_hide_timer.setSingleShot(True)
         self.progress_hide_timer.timeout.connect(self._actually_hide_progress)
 
-    def show_progress(self, message: str, value: int, current: int = 0, total: int = 0) -> None:
+    def show_progress(
+        self, message: str, value: int, current: int = 0, total: int = 0
+    ) -> None:
         """
         進捗バーを表示し、メッセージと値を設定
 
@@ -62,7 +64,8 @@ class ProgressManager:
 
         # 色情報を取得してスタイル適用
         color_info = self._get_progress_color_info(value)
-        self.progress_bar.setStyleSheet(f"""
+        self.progress_bar.setStyleSheet(
+            f"""
             QProgressBar {{
                 border: 2px solid {color_info['border']};
                 border-radius: 5px;
@@ -73,7 +76,8 @@ class ProgressManager:
                 background-color: {color_info['chunk']};
                 border-radius: 3px;
             }}
-        """)
+        """
+        )
 
         # ツールチップを設定
         tooltip = self._create_progress_tooltip(message, value, current, total)
@@ -115,37 +119,19 @@ class ProgressManager:
             色情報辞書
         """
         if value >= 100:
-            return {
-                'border': '#28a745',
-                'background': '#f8f9fa',
-                'chunk': '#28a745'
-            }
+            return {"border": "#28a745", "background": "#f8f9fa", "chunk": "#28a745"}
         elif value >= 75:
-            return {
-                'border': '#17a2b8',
-                'background': '#f8f9fa',
-                'chunk': '#17a2b8'
-            }
+            return {"border": "#17a2b8", "background": "#f8f9fa", "chunk": "#17a2b8"}
         elif value >= 50:
-            return {
-                'border': '#ffc107',
-                'background': '#f8f9fa',
-                'chunk': '#ffc107'
-            }
+            return {"border": "#ffc107", "background": "#f8f9fa", "chunk": "#ffc107"}
         elif value >= 25:
-            return {
-                'border': '#fd7e14',
-                'background': '#f8f9fa',
-                'chunk': '#fd7e14'
-            }
+            return {"border": "#fd7e14", "background": "#f8f9fa", "chunk": "#fd7e14"}
         else:
-            return {
-                'border': '#6c757d',
-                'background': '#f8f9fa',
-                'chunk': '#6c757d'
-            }
+            return {"border": "#6c757d", "background": "#f8f9fa", "chunk": "#6c757d"}
 
-    def _create_progress_tooltip(self, message: str, value: int, current: int, total: int) -> str:
+    def _create_progress_tooltip(
+        self, message: str, value: int, current: int, total: int
+    ) -> str:
         """
         進捗ツールチップを作成
 
