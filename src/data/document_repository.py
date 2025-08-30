@@ -222,7 +222,7 @@ class DocumentRepository:
             raise
         except Exception as e:
             self.logger.error(f"ドキュメント削除エラー: {e}")
-            raise DatabaseError(f"ドキュメントの削除に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの削除に失敗しました: {e}") from e
 
     def delete_document_by_path(self, file_path: str) -> bool:
         """ファイルパスでドキュメントを削除
@@ -251,7 +251,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"ドキュメント削除エラー: {e}")
-            raise DatabaseError(f"ドキュメントの削除に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの削除に失敗しました: {e}") from e
 
     def get_all_documents(
         self, limit: int | None = None, offset: int = 0
@@ -285,7 +285,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"全ドキュメント取得エラー: {e}")
-            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}") from e
 
     def get_documents_by_type(self, file_type: FileType) -> list[Document]:
         """ファイルタイプでドキュメントを取得
@@ -313,7 +313,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"ファイルタイプ別ドキュメント取得エラー: {e}")
-            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}") from e
 
     def get_documents_modified_after(self, date: datetime) -> list[Document]:
         """指定日時以降に変更されたドキュメントを取得
@@ -341,7 +341,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"変更日時別ドキュメント取得エラー: {e}")
-            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの取得に失敗しました: {e}") from e
 
     def search_documents_by_title(self, title_pattern: str) -> list[Document]:
         """タイトルでドキュメントを検索
@@ -369,7 +369,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"タイトル検索エラー: {e}")
-            raise DatabaseError(f"ドキュメントの検索に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの検索に失敗しました: {e}") from e
 
     def get_document_count(self) -> int:
         """総ドキュメント数を取得
@@ -384,7 +384,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"ドキュメント数取得エラー: {e}")
-            raise DatabaseError(f"ドキュメント数の取得に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメント数の取得に失敗しました: {e}") from e
 
     def get_index_stats(self) -> IndexStats:
         """インデックス統計情報を取得
@@ -428,7 +428,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"統計情報取得エラー: {e}")
-            raise DatabaseError(f"統計情報の取得に失敗しました: {e}")
+            raise DatabaseError(f"統計情報の取得に失敗しました: {e}") from e
 
     def bulk_insert_documents(self, documents: list[Document]) -> int:
         """ドキュメントの一括挿入
@@ -477,7 +477,7 @@ class DocumentRepository:
 
         except Exception as e:
             self.logger.error(f"一括挿入エラー: {e}")
-            raise DatabaseError(f"ドキュメントの一括挿入に失敗しました: {e}")
+            raise DatabaseError(f"ドキュメントの一括挿入に失敗しました: {e}") from e
 
     def _row_to_document(self, row) -> Document:
         """データベース行をDocumentオブジェクトに変換

@@ -298,7 +298,7 @@ class StorageManager:
 
         except Exception as e:
             self.logger.error(f"システム統計取得エラー: {e}")
-            raise DatabaseError(f"システム統計の取得に失敗しました: {e}")
+            raise DatabaseError(f"システム統計の取得に失敗しました: {e}") from e
 
     def optimize_database(self):
         """データベースの最適化を実行"""
@@ -308,7 +308,7 @@ class StorageManager:
 
         except Exception as e:
             self.logger.error(f"データベース最適化エラー: {e}")
-            raise DatabaseError(f"データベースの最適化に失敗しました: {e}")
+            raise DatabaseError(f"データベースの最適化に失敗しました: {e}") from e
 
     def backup_database(self, backup_path: str) -> bool:
         """データベースのバックアップを作成
@@ -335,7 +335,7 @@ class StorageManager:
 
         except Exception as e:
             self.logger.error(f"データベースバックアップエラー: {e}")
-            raise DatabaseError(f"データベースのバックアップに失敗しました: {e}")
+            raise DatabaseError(f"データベースのバックアップに失敗しました: {e}") from e
 
     def restore_database(self, backup_path: str) -> bool:
         """データベースのリストアを実行
@@ -375,7 +375,7 @@ class StorageManager:
 
         except Exception as e:
             self.logger.error(f"データベースリストアエラー: {e}")
-            raise DatabaseError(f"データベースのリストアに失敗しました: {e}")
+            raise DatabaseError(f"データベースのリストアに失敗しました: {e}") from e
 
     def close(self):
         """リソースのクリーンアップ"""

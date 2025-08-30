@@ -287,6 +287,33 @@ class MemoryError(DocMindException):
     pass
 
 
+class FileWatcherError(DocMindException):
+    """ファイル監視操作中に発生するエラー
+
+    ファイルシステムの監視開始、停止、イベント処理などで
+    問題が発生した場合に発生します。
+    """
+
+    def __init__(
+        self,
+        message: str,
+        watch_path: str = None,
+        operation: str = None,
+        details: str = None,
+    ):
+        """ファイル監視エラーを初期化
+
+        Args:
+            message (str): エラーメッセージ
+            watch_path (str, optional): 監視対象のパス
+            operation (str, optional): 失敗した操作の種類
+            details (str, optional): 詳細なエラー情報
+        """
+        super().__init__(message, details)
+        self.watch_path = watch_path
+        self.operation = operation
+
+
 class UpdateError(DocMindException):
     """アップデート操作中に発生するエラー
 

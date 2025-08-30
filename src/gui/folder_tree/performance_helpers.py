@@ -6,7 +6,6 @@
 """
 
 import os
-from functools import lru_cache
 
 
 class PathOptimizer:

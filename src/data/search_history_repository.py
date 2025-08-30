@@ -104,7 +104,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"最近の検索履歴取得エラー: {e}")
-            raise DatabaseError(f"検索履歴の取得に失敗しました: {e}")
+            raise DatabaseError(f"検索履歴の取得に失敗しました: {e}") from e
 
     def get_popular_queries(
         self, days: int = 30, limit: int = 20
@@ -148,7 +148,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"人気クエリ取得エラー: {e}")
-            raise DatabaseError(f"人気クエリの取得に失敗しました: {e}")
+            raise DatabaseError(f"人気クエリの取得に失敗しました: {e}") from e
 
     def get_search_suggestions(self, partial_query: str, limit: int = 10) -> list[str]:
         """検索提案を取得
@@ -178,7 +178,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"検索提案取得エラー: {e}")
-            raise DatabaseError(f"検索提案の取得に失敗しました: {e}")
+            raise DatabaseError(f"検索提案の取得に失敗しました: {e}") from e
 
     def get_search_statistics(self, days: int = 30) -> dict[str, Any]:
         """検索統計情報を取得
@@ -273,7 +273,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"検索統計取得エラー: {e}")
-            raise DatabaseError(f"検索統計の取得に失敗しました: {e}")
+            raise DatabaseError(f"検索統計の取得に失敗しました: {e}") from e
 
     def clear_old_history(self, days_to_keep: int = 90) -> int:
         """古い検索履歴を削除
@@ -303,7 +303,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"古い履歴削除エラー: {e}")
-            raise DatabaseError(f"古い検索履歴の削除に失敗しました: {e}")
+            raise DatabaseError(f"古い検索履歴の削除に失敗しました: {e}") from e
 
     def get_search_trends(self, days: int = 30) -> list[dict[str, Any]]:
         """検索トレンドを取得
@@ -350,7 +350,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"検索トレンド取得エラー: {e}")
-            raise DatabaseError(f"検索トレンドの取得に失敗しました: {e}")
+            raise DatabaseError(f"検索トレンドの取得に失敗しました: {e}") from e
 
     def get_failed_searches(
         self, days: int = 7, limit: int = 20
@@ -393,7 +393,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"失敗検索取得エラー: {e}")
-            raise DatabaseError(f"失敗した検索の取得に失敗しました: {e}")
+            raise DatabaseError(f"失敗した検索の取得に失敗しました: {e}") from e
 
     def export_search_history(
         self, start_date: datetime | None = None, end_date: datetime | None = None
@@ -445,7 +445,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"検索履歴エクスポートエラー: {e}")
-            raise DatabaseError(f"検索履歴のエクスポートに失敗しました: {e}")
+            raise DatabaseError(f"検索履歴のエクスポートに失敗しました: {e}") from e
 
     # 保存された検索の管理
 
@@ -486,7 +486,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"検索保存エラー: {e}")
-            raise DatabaseError(f"検索の保存に失敗しました: {e}")
+            raise DatabaseError(f"検索の保存に失敗しました: {e}") from e
 
     def get_saved_searches(self) -> list[dict[str, Any]]:
         """保存された検索を取得
@@ -523,7 +523,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"保存された検索取得エラー: {e}")
-            raise DatabaseError(f"保存された検索の取得に失敗しました: {e}")
+            raise DatabaseError(f"保存された検索の取得に失敗しました: {e}") from e
 
     def use_saved_search(self, search_id: int) -> dict[str, Any] | None:
         """保存された検索を使用（使用回数を更新）
@@ -577,7 +577,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"保存された検索使用エラー: {e}")
-            raise DatabaseError(f"保存された検索の使用に失敗しました: {e}")
+            raise DatabaseError(f"保存された検索の使用に失敗しました: {e}") from e
 
     def delete_saved_search(self, search_id: int) -> bool:
         """保存された検索を削除
@@ -611,7 +611,7 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"保存された検索削除エラー: {e}")
-            raise DatabaseError(f"保存された検索の削除に失敗しました: {e}")
+            raise DatabaseError(f"保存された検索の削除に失敗しました: {e}") from e
 
     def rename_saved_search(self, search_id: int, new_name: str) -> bool:
         """保存された検索の名前を変更
@@ -648,4 +648,4 @@ class SearchHistoryRepository:
 
         except Exception as e:
             self.logger.error(f"保存された検索名前変更エラー: {e}")
-            raise DatabaseError(f"保存された検索の名前変更に失敗しました: {e}")
+            raise DatabaseError(f"保存された検索の名前変更に失敗しました: {e}") from e
