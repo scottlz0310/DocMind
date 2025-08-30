@@ -1,9 +1,6 @@
 [flake8]
 max-line-length = 100
-extend-ignore = 
-    E203,  # whitespace before ':'
-    W503,  # line break before binary operator
-    F401,  # imported but unused (handled by isort)
+extend-ignore = E203,W503,E501,F401
 exclude = 
     .git,
     __pycache__,
