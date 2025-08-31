@@ -187,6 +187,7 @@ def run_pyinstaller() -> bool:
         sys.executable, "-m", "PyInstaller",
         "--clean",
         "--noconfirm",
+        "--log-level=INFO",
         str(spec_file)
     ]
 
