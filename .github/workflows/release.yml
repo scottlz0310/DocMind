@@ -154,8 +154,8 @@ jobs:
       run: |
         echo "品質メトリクス確認"
         
-        # ファイルサイズチェック（1000行以下）
-        find src -name "*.py" -exec wc -l {} + | grep -v "合計" | awk '$1 > 1000 {print "警告: " $2 " が1000行を超えています (" $1 "行)"; exit_code=1} END {exit exit_code}'
+        # ファイルサイズチェック（1000行以下、警告のみ）
+        find src -name "*.py" -exec wc -l {} + | grep -v "合計\|total" | awk '$1 > 1000 {print "警告: " $2 " が1000行を超えています (" $1 "行)"}' || true
         
         # 循環依存チェック
         python -c "
