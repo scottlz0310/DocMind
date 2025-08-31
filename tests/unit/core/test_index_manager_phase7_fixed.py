@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.core.index_manager_test import TestIndexManager
+from src.core.index_manager_test import MockIndexManager
 from src.data.models import FileType, SearchType
 from src.utils.exceptions import IndexingError, SearchError
 from tests.fixtures.mock_models import (
@@ -33,7 +33,7 @@ class TestIndexManagerPhase7:
     @pytest.fixture
     def index_manager(self, temp_index_dir):
         """TestIndexManagerインスタンスを作成"""
-        return TestIndexManager(temp_index_dir)
+        return MockIndexManager(temp_index_dir)
 
     @pytest.fixture
     def sample_document(self):
@@ -283,7 +283,7 @@ class TestIndexManagerPhase7:
             "pathlib.Path.mkdir", side_effect=PermissionError("Permission denied")
         ):
             with pytest.raises(IndexingError):
-                TestIndexManager("/invalid/path")
+                MockIndexManager("/invalid/path")
 
     def test_error_handling_add_document_failure(self, index_manager):
         """ドキュメント追加失敗のエラーハンドリングテスト"""
