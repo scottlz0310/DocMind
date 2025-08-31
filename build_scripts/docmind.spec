@@ -84,11 +84,18 @@ excluded_modules = [
 # バイナリファイルの除外（不要なバイナリを除外）
 excluded_binaries = []
 
+# 追加バイナリファイル（scipyなどの重要なライブラリ）
+import scipy
+scipy_path = scipy.__path__[0]
+additional_binaries = [
+    (scipy_path, 'scipy'),
+]
+
 # PyInstallerの分析設定
 a = Analysis(
     [str(project_root / 'main.py')],
     pathex=[str(project_root), str(src_path)],
-    binaries=[],
+    binaries=additional_binaries,
     datas=added_files,
     hiddenimports=hidden_imports,
     hookspath=[],
