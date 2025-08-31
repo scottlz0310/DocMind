@@ -223,9 +223,9 @@ def prepare_distribution() -> None:
     # 実行可能ファイルの場所（PyInstallerの出力先）
     import platform
     if platform.system() == "Windows":
-        exe_path = DIST_DIR / "DocMind" / "DocMind.exe"
+        exe_path = DIST_DIR / "pyinstaller_spec" / "DocMind.exe"
     else:
-        exe_path = DIST_DIR / "DocMind" / "DocMind"
+        exe_path = DIST_DIR / "pyinstaller_spec" / "DocMind"
 
     if not exe_path.exists():
         logger.error(f"実行可能ファイルが見つかりません: {exe_path}")
