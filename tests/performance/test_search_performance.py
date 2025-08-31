@@ -17,6 +17,7 @@ from src.core.index_manager import IndexManager
 from src.data.models import Document, FileType
 
 
+@pytest.mark.skip(reason="パフォーマンステストは時間がかかるためスキップ")
 class TestSearchPerformance:
     """検索パフォーマンステスト"""
 

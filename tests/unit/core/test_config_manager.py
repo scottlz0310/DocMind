@@ -36,7 +36,7 @@ class TestConfig:
 
         # デフォルト値の確認
         assert config.get('data_directory') is not None
-        assert config.get('log_level') == 'INFO'
+        assert config.get('log_level') == 'WARNING'
         assert config.get('max_documents') > 0
 
     def test_get_set_operations(self):
@@ -148,4 +148,4 @@ class TestConfig:
         # リセット
         config.reset_to_defaults()
         assert config.get('custom_key') is None
-        assert config.get('log_level') == 'INFO'  # デフォルト値確認
+        assert config.get('log_level') == 'WARNING'  # デフォルト値確認

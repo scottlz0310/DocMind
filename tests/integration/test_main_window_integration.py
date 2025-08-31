@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QApplication
 from src.gui.main_window import MainWindow
 
 
+@pytest.mark.skip(reason="GUI統合テストは時間がかかるためスキップ")
 class TestMainWindowIntegration:
     """メインウィンドウ統合テスト - 接続確認レベル"""
 

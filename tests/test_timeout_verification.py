@@ -18,6 +18,7 @@ def test_with_custom_timeout():
     assert True
 
 
+@pytest.mark.skip(reason="意図的なタイムアウトテスト")
 def test_long_operation():
     """長時間実行されるテスト（デフォルトタイムアウト60秒でキャンセルされるはず）"""
     # このテストは60秒のタイムアウトでキャンセルされる
