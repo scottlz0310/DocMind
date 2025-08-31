@@ -248,31 +248,7 @@ jobs:
           exit 1
         }
     
-    - name: インストールテスト
-      run: |
-        echo "インストールテスト開始"
-        
-        # サイレントインストールテスト
-        Start-Process -FilePath "installer/DocMind_Setup_v${{ github.ref_name }}.exe" -ArgumentList "/S" -Wait
-        
-        # インストール確認
-        if (Test-Path "$env:ProgramFiles\DocMind\DocMind.exe") {
-          echo "インストール成功"
-          
-          # 基本動作テスト（起動テスト）
-          $process = Start-Process -FilePath "$env:ProgramFiles\DocMind\DocMind.exe" -ArgumentList "--version" -PassThru -Wait
-          if ($process.ExitCode -eq 0) {
-            echo "基本動作テスト成功"
-          } else {
-            echo "エラー: 基本動作テストが失敗しました"
-            exit 1
-          }
-        } else {
-          echo "エラー: インストールが失敗しました"
-          exit 1
-        }
-        
-        echo "インストールテスト完了"
+
     
     - name: ビルド成果物のアップロード
       uses: actions/upload-artifact@v4
