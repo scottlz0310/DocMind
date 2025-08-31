@@ -219,6 +219,4 @@ test_documents/
 validation_results/
 
 # Quality reports and security scans
-bandit-report.json
-safety-report.json
-test-results.xml
+reports/
