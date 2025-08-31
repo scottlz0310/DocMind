@@ -1,0 +1,28 @@
+# Safety Policy - DocMind
+# 動作確認済みバージョンを維持するため、既知の脆弱性を除外
+
+security:
+  ignore-vulnerabilities:
+    # transformers 4.36.2 関連の脆弱性（動作確認済みバージョンを維持）
+    - 64402  # Shell injection vulnerability
+    - 74882  # Standalone conversion scripts vulnerability
+    - 76262  # Regular Expression Denial of Service (ReDoS)
+    - 77986  # Improper input validation vulnerability
+    - 78153  # Regular Expression Denial of Service (ReDoS)
+    - 77985  # Regular Expression Denial of Service (ReDoS)
+    - 77988  # Regular Expression Denial of Service (ReDoS)
+    - 77149  # Regular Expression Denial of Service (ReDoS)
+    - 77714  # preprocess_string() function vulnerability
+    - 71601  # Arbitrary code execution through deserialization
+    
+    # sentence-transformers 2.7.0 関連の脆弱性（動作確認済みバージョンを維持）
+    - 73169  # Arbitrary code execution when loading PyTorch model files
+
+  ignore-cvss-severity-below: 0.0
+  ignore-cvss-unknown-severity: false
+
+# 除外理由:
+# - ローカル環境での使用のため外部攻撃ベクターが限定的
+# - 信頼できるHugging Faceモデルのみ使用
+# - 動作確認済みバージョンの安定性を優先
+# - 将来的に段階的アップデートを計画

@@ -246,7 +246,7 @@ class SearchManager(LoggerMixin):
                 limit = self.config.get('search.max_results', 100)
             elif limit is None:
                 limit = 100
-                
+
             results = self.index_manager.search_text(
                 query_text=query.query_text,
                 limit=limit,
@@ -285,7 +285,7 @@ class SearchManager(LoggerMixin):
                 limit = self.config.get('search.max_results', 100)
             elif limit is None:
                 limit = 100
-                
+
             similarities = self.embedding_manager.search_similar(
                 query_text=query.query_text,
                 limit=limit,
@@ -335,7 +335,7 @@ class SearchManager(LoggerMixin):
                 limit = self.config.get('search.max_results', 100)
             elif limit is None:
                 limit = 100
-                
+
             # 全文検索を実行
             full_text_query = SearchQuery(
                 query_text=query.query_text,
@@ -524,7 +524,7 @@ class SearchManager(LoggerMixin):
                         except (ValueError, SyntaxError) as e:
                             self.logger.warning(f"メタデータの復元に失敗しました: {e}")
                             metadata = {}
-                    
+
                     document = Document(
                         id=hit["id"],
                         file_path=hit["file_path"],

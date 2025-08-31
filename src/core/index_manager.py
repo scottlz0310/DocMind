@@ -424,7 +424,7 @@ class IndexManager:
             except (ValueError, SyntaxError) as e:
                 self.logger.warning(f"メタデータの復元に失敗しました: {e}")
                 metadata = {}
-        
+
         # ドキュメントオブジェクトの再構築
         document = Document(
             id=hit["id"],

@@ -6,8 +6,6 @@
 
 from whoosh.searching import Hit
 
-from tests.fixtures.mock_models import MockDocument
-
 from ..data.models import FileType, SearchResult, SearchType
 from .index_manager import IndexManager
 
@@ -44,7 +42,7 @@ class TestIndexManager(IndexManager):
             except (ValueError, SyntaxError) as e:
                 self.logger.warning(f"メタデータの復元に失敗しました: {e}")
                 metadata = {}
-        
+
         # 実際のDocumentオブジェクトを作成（テスト用にファイル存在チェックなし）
         from ..data.models import Document
         document = Document(

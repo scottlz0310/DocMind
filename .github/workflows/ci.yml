@@ -45,8 +45,8 @@ jobs:
 
     - name: Code quality check
       run: |
-        bandit -r src/ || true
-        safety check || true
+        bandit -r src/ -c .bandit || true
+        safety check --policy-file .safety-policy.yml || true
         ruff check src/ || true
 
     - name: Upload coverage

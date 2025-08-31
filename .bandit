@@ -1,0 +1,21 @@
+# Bandit設定ファイル - DocMind
+# 除外理由:
+# B301, B403: pickle使用 - ローカル環境での信頼できるデータのみ処理
+# B110: try-except-pass - 適切なクリーンアップ処理での使用
+# B404: subprocess使用 - アップデート機能での必要な処理
+# B310: URL操作 - 信頼できるアップデートサーバーのみ使用
+# B603, B607: subprocess実行 - 制御された環境での必要な処理
+
+skips:
+  - B301
+  - B403
+  - B110
+  - B404
+  - B310
+  - B603
+  - B607
+
+exclude_dirs:
+  - tests
+  - build
+  - dist

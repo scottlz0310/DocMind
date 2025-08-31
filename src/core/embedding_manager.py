@@ -294,20 +294,20 @@ class EmbeddingManager:
             "model_name": self.model_name,
             "model_loaded": self.model is not None,
         }
-    
+
     def get_cache_statistics(self) -> dict[str, Any]:
         """
         キャッシュ統計情報を取得（テスト用）
-        
+
         Returns:
             キャッシュ統計情報の辞書
         """
         total_embeddings = len(self.embeddings)
-        
+
         # シンプルなヒット率計算（テスト用）
         # 同じコンテンツのドキュメントがある場合、キャッシュヒット率が高くなる
         hit_rate = 0.8 if total_embeddings > 0 else 0.0
-        
+
         return {
             "total_embeddings": total_embeddings,
             "hit_rate": hit_rate,
