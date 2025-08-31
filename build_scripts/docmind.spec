@@ -13,7 +13,12 @@ from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import PYZ, EXE, COLLECT
 
 # プロジェクトルートディレクトリの取得
-project_root = Path(os.path.abspath(SPECPATH)).parent
+# PyInstaller実行時はSPECPATHが利用可能、それ以外は現在のディレクトリから推定
+try:
+    project_root = Path(os.path.abspath(SPECPATH)).parent
+except NameError:
+    # テスト実行時など、SPECPATHが定義されていない場合
+    project_root = Path(os.path.dirname(os.path.abspath(__file__))).parent if '__file__' in globals() else Path.cwd()
 src_path = project_root / "src"
 
 # 追加データファイルの定義
