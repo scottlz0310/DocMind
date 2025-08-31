@@ -235,8 +235,9 @@ jobs:
         echo "ビルド成果物の確認"
         
         # インストーラーファイルの存在確認
-        if (Test-Path "installer/DocMind_Setup_v${{ github.ref_name }}.exe") {
-          $fileSize = (Get-Item "installer/DocMind_Setup_v${{ github.ref_name }}.exe").Length
+        $version = "${{ github.ref_name }}" -replace '^v', ''
+        if (Test-Path "installer/DocMind_Setup_v$version.exe") {
+          $fileSize = (Get-Item "installer/DocMind_Setup_v$version.exe").Length
           echo "インストーラーサイズ: $($fileSize / 1MB) MB"
           
           if ($fileSize -lt 10MB) {
@@ -264,7 +265,8 @@ jobs:
         echo "インストールテスト開始"
         
         # サイレントインストール
-        Start-Process -FilePath "installer/DocMind_Setup_v${{ github.ref_name }}.exe" -ArgumentList "/S" -Wait
+        $version = "${{ github.ref_name }}" -replace '^v', ''
+        Start-Process -FilePath "installer/DocMind_Setup_v$version.exe" -ArgumentList "/S" -Wait
         
         # ファイル配置確認のみ
         if (Test-Path "$env:ProgramFiles\DocMind\DocMind.exe") {
@@ -280,7 +282,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: windows-installer
-        path: installer/DocMind_Setup_v${{ github.ref_name }}.exe
+        path: installer/DocMind_Setup_v*.exe
 
   # リリース作成
   create-release:
