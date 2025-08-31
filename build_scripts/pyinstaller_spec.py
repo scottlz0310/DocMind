@@ -91,6 +91,8 @@ a = Analysis(
     win_private_assemblies=False,
     cipher=None,
     noarchive=False,
+    workpath=str(project_root / 'build'),
+    distpath=str(project_root / 'dist'),
 )
 
 # 不要なファイルの除外
