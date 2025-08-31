@@ -3,6 +3,7 @@
 
 実際のクラスインターフェースに合わせた基本的なテスト
 """
+
 import shutil
 import tempfile
 from pathlib import Path
@@ -29,10 +30,13 @@ class TestCoreSimplified:
     def sample_document(self, temp_dir):
         """テスト用ドキュメント"""
         from datetime import datetime
+
         # 実際のファイルを作成
         test_file = temp_dir / "sample.txt"
-        test_file.write_text("これはテスト用のドキュメントです。機械学習について説明します。")
-        
+        test_file.write_text(
+            "これはテスト用のドキュメントです。機械学習について説明します。"
+        )
+
         return Document(
             id="test_doc_1",
             file_path=str(test_file),
@@ -43,12 +47,12 @@ class TestCoreSimplified:
             created_date=datetime.now(),
             modified_date=datetime.now(),
             indexed_date=datetime.now(),
-            content_hash="test_hash"
+            content_hash="test_hash",
         )
 
     def test_index_manager_basic_operations(self, temp_dir, sample_document):
         """IndexManagerの基本操作テスト"""
-        index_manager = IndexManager(str(temp_dir / 'index'))
+        index_manager = IndexManager(str(temp_dir / "index"))
 
         # ドキュメント追加
         index_manager.add_document(sample_document)
@@ -68,16 +72,17 @@ class TestCoreSimplified:
 
     def test_index_manager_batch_operations(self, temp_dir):
         """IndexManagerのバッチ操作テスト"""
-        index_manager = IndexManager(str(temp_dir / 'index'))
+        index_manager = IndexManager(str(temp_dir / "index"))
 
         # 複数ドキュメント作成
         documents = []
         for i in range(10):
             from datetime import datetime
+
             # 実際のファイルを作成
             test_file = temp_dir / f"doc_{i}.txt"
             test_file.write_text(f"これはドキュメント{i}の内容です。")
-            
+
             doc = Document(
                 id=f"doc_{i}",
                 file_path=str(test_file),
@@ -88,7 +93,7 @@ class TestCoreSimplified:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                content_hash=f"hash_{i}"
+                content_hash=f"hash_{i}",
             )
             documents.append(doc)
 
@@ -102,14 +107,14 @@ class TestCoreSimplified:
 
         # 統計情報確認
         stats = index_manager.get_index_stats()
-        assert stats['document_count'] == 10
-        assert stats['index_size'] > 0
+        assert stats["document_count"] == 10
+        assert stats["index_size"] > 0
 
     def test_embedding_manager_basic_operations(self, temp_dir):
         """EmbeddingManagerの基本操作テスト"""
         # モデル読み込みをモック化しないで実際のモデルを使用
         embedding_manager = EmbeddingManager(
-            embeddings_path=str(temp_dir / 'embeddings.pkl')
+            embeddings_path=str(temp_dir / "embeddings.pkl")
         )
 
         # 埋め込み生成テスト
@@ -129,9 +134,9 @@ class TestCoreSimplified:
 
     def test_embedding_manager_cache_operations(self, temp_dir):
         """EmbeddingManagerのキャッシュ操作テスト"""
-        embeddings_path = str(temp_dir / 'embeddings.pkl')
+        embeddings_path = str(temp_dir / "embeddings.pkl")
 
-        with patch('sentence_transformers.SentenceTransformer') as mock_model:
+        with patch("sentence_transformers.SentenceTransformer") as mock_model:
             mock_instance = Mock()
             mock_instance.encode.return_value = [0.1, 0.2, 0.3]
             mock_instance.get_sentence_embedding_dimension.return_value = 3
@@ -148,8 +153,8 @@ class TestCoreSimplified:
 
             # キャッシュ情報確認
             cache_info = manager2.get_cache_info()
-            assert cache_info['total_embeddings'] == 2
-            assert cache_info['model_name'] == "all-MiniLM-L6-v2"
+            assert cache_info["total_embeddings"] == 2
+            assert cache_info["model_name"] == "all-MiniLM-L6-v2"
 
     def test_error_handling(self, temp_dir):
         """エラーハンドリングテスト"""
@@ -163,7 +168,10 @@ class TestCoreSimplified:
             assert isinstance(e, OSError | PermissionError | Exception)
 
         # EmbeddingManagerのエラーハンドリング
-        with patch('sentence_transformers.SentenceTransformer', side_effect=Exception("Model load failed")):
+        with patch(
+            "sentence_transformers.SentenceTransformer",
+            side_effect=Exception("Model load failed"),
+        ):
             embedding_manager = EmbeddingManager()
 
             # モデル読み込みエラーが適切にハンドリングされることを確認
@@ -176,18 +184,19 @@ class TestCoreSimplified:
         """基本的なパフォーマンステスト"""
         import time
 
-        index_manager = IndexManager(str(temp_dir / 'index'))
+        index_manager = IndexManager(str(temp_dir / "index"))
 
         # 100ドキュメントの追加時間測定
         start_time = time.time()
 
         for i in range(100):
             from datetime import datetime
+
             # 実際のファイルを作成
             test_file = temp_dir / f"perf_doc_{i}.txt"
             content = f"これはパフォーマンステスト用のドキュメント{i}です。" * 5
             test_file.write_text(content)
-            
+
             doc = Document(
                 id=f"perf_doc_{i}",
                 file_path=str(test_file),
@@ -198,7 +207,7 @@ class TestCoreSimplified:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                content_hash=f"perf_hash_{i}"
+                content_hash=f"perf_hash_{i}",
             )
             index_manager.add_document(doc)
 
@@ -225,16 +234,17 @@ class TestCoreSimplified:
         process = psutil.Process(os.getpid())
         initial_memory = process.memory_info().rss
 
-        index_manager = IndexManager(str(temp_dir / 'index'))
+        index_manager = IndexManager(str(temp_dir / "index"))
 
         # 500ドキュメント追加
         for i in range(500):
             from datetime import datetime
+
             # 実際のファイルを作成
             test_file = temp_dir / f"mem_doc_{i}.txt"
             content = f"メモリテスト用コンテンツ{i}です。" * 20
             test_file.write_text(content)
-            
+
             doc = Document(
                 id=f"mem_doc_{i}",
                 file_path=str(test_file),
@@ -245,7 +255,7 @@ class TestCoreSimplified:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                content_hash=f"mem_hash_{i}"
+                content_hash=f"mem_hash_{i}",
             )
             index_manager.add_document(doc)
 

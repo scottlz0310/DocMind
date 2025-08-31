@@ -27,11 +27,13 @@ class TestMainWindowIntegration:
     @pytest.fixture
     def main_window(self, qapp):
         """メインウィンドウのインスタンス"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
             window = MainWindow()
             yield window
             window.close()
@@ -40,11 +42,11 @@ class TestMainWindowIntegration:
         """全コンポーネントが正常に初期化されるか"""
         try:
             # 各マネージャーが初期化されていることを確認
-            assert hasattr(main_window, 'layout_manager')
-            assert hasattr(main_window, 'progress_manager')
-            assert hasattr(main_window, 'signal_manager')
-            assert hasattr(main_window, 'index_controller')
-            assert hasattr(main_window, 'dialog_manager')
+            assert hasattr(main_window, "layout_manager")
+            assert hasattr(main_window, "progress_manager")
+            assert hasattr(main_window, "signal_manager")
+            assert hasattr(main_window, "index_controller")
+            assert hasattr(main_window, "dialog_manager")
 
             # エラーが発生しないことを確認
             assert main_window is not None
@@ -61,7 +63,7 @@ class TestMainWindowIntegration:
             # 基本的なシグナル接続をテスト
             # 詳細な結果検証はしない - 接続確認のみ
             main_window.signal_manager.connect_signal(
-                main_window, 'windowTitleChanged', lambda: None
+                main_window, "windowTitleChanged", lambda: None
             )
 
         except Exception as e:
@@ -86,7 +88,7 @@ class TestMainWindowIntegration:
             assert main_window.menuBar() is not None
 
             # ツールバーマネージャーが存在することを確認
-            assert hasattr(main_window, 'toolbar_manager')
+            assert hasattr(main_window, "toolbar_manager")
 
         except Exception as e:
             pytest.fail(f"Menu and toolbar creation failed: {e}")
@@ -98,7 +100,7 @@ class TestMainWindowIntegration:
             assert main_window.statusBar() is not None
 
             # ステータスマネージャーが存在することを確認
-            assert hasattr(main_window, 'status_manager')
+            assert hasattr(main_window, "status_manager")
 
         except Exception as e:
             pytest.fail(f"Status bar setup failed: {e}")
@@ -110,7 +112,7 @@ class TestMainWindowIntegration:
             assert main_window.progress_manager is not None
 
             # 進捗システムマネージャーが存在することを確認
-            assert hasattr(main_window, 'progress_system_manager')
+            assert hasattr(main_window, "progress_system_manager")
 
         except Exception as e:
             pytest.fail(f"Progress system integration failed: {e}")
@@ -119,7 +121,7 @@ class TestMainWindowIntegration:
         """クリーンアップが正常に実行されるか"""
         try:
             # クリーンアップマネージャーが存在することを確認
-            assert hasattr(main_window, 'cleanup_manager')
+            assert hasattr(main_window, "cleanup_manager")
 
             # クリーンアップを実行（エラーが発生しないことを確認）
             main_window.cleanup_manager.cleanup()
@@ -131,7 +133,7 @@ class TestMainWindowIntegration:
         """ウィンドウ状態管理が正常に動作するか"""
         try:
             # ウィンドウ状態マネージャーが存在することを確認
-            assert hasattr(main_window, 'window_state_manager')
+            assert hasattr(main_window, "window_state_manager")
 
             # 基本的な状態操作をテスト
             main_window.window_state_manager.save_window_state()
@@ -144,7 +146,7 @@ class TestMainWindowIntegration:
         """エラーハンドリングが正常に統合されているか"""
         try:
             # エラー・リビルドマネージャーが存在することを確認
-            assert hasattr(main_window, 'error_rebuild_manager')
+            assert hasattr(main_window, "error_rebuild_manager")
 
             # エラーハンドリングが機能することを確認
             # 詳細な検証はしない - 存在確認のみ
@@ -156,7 +158,7 @@ class TestMainWindowIntegration:
         """スレッド管理が正常に統合されているか"""
         try:
             # スレッドハンドラーマネージャーが存在することを確認
-            assert hasattr(main_window, 'thread_handler_manager')
+            assert hasattr(main_window, "thread_handler_manager")
 
             # スレッド管理が機能することを確認
             # 詳細な検証はしない - 存在確認のみ
@@ -168,7 +170,7 @@ class TestMainWindowIntegration:
         """設定管理が正常に統合されているか"""
         try:
             # 設定ハンドラーマネージャーが存在することを確認
-            assert hasattr(main_window, 'settings_handler_manager')
+            assert hasattr(main_window, "settings_handler_manager")
 
             # 設定管理が機能することを確認
             # 詳細な検証はしない - 存在確認のみ
@@ -180,7 +182,7 @@ class TestMainWindowIntegration:
         """検索ハンドラーが正常に統合されているか"""
         try:
             # 検索ハンドラーマネージャーが存在することを確認
-            assert hasattr(main_window, 'search_handler_manager')
+            assert hasattr(main_window, "search_handler_manager")
 
             # 検索ハンドラーが機能することを確認
             # 詳細な検証はしない - 存在確認のみ

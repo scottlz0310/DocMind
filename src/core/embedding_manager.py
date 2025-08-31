@@ -141,7 +141,7 @@ class EmbeddingManager:
                 if existing.text_hash == text_hash:
                     self.logger.debug(f"ドキュメント {doc_id} の埋め込みは既に最新です")
                     # キャッシュヒットを記録
-                    if not hasattr(self, '_cache_hits'):
+                    if not hasattr(self, "_cache_hits"):
                         self._cache_hits = 0
                     self._cache_hits += 1
                     return

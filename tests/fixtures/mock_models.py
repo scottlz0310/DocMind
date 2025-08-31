@@ -80,7 +80,7 @@ class MockDocument:
         )
 
         if last_sentence_end > max_length // 2:
-            return summary[:last_sentence_end + 1]
+            return summary[: last_sentence_end + 1]
         else:
             return summary + "..."
 
@@ -136,7 +136,7 @@ def create_mock_document(
     title: str = "テストドキュメント",
     content: str = "これはテスト用のドキュメントです。",
     file_type: FileType = FileType.TEXT,
-    size: int = 1024
+    size: int = 1024,
 ) -> MockDocument:
     """テスト用のMockDocumentを簡単に作成するヘルパー関数"""
     now = datetime.now()
@@ -151,7 +151,7 @@ def create_mock_document(
         created_date=now,
         modified_date=now,
         indexed_date=now,
-        content_hash=""
+        content_hash="",
     )
 
 
@@ -164,7 +164,7 @@ def create_mock_documents(count: int = 5) -> list[MockDocument]:
             file_path=f"/test/sample_{i}.txt",
             title=f"テストドキュメント{i}",
             content=f"これは{i}番目のテストドキュメントです。検索テスト用データ。",
-            size=1024 + i * 100
+            size=1024 + i * 100,
         )
         documents.append(doc)
 

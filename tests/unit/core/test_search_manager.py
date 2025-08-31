@@ -3,6 +3,7 @@ SearchManager強化テスト
 
 ハイブリッド検索・セマンティック検索のパフォーマンス・精度テスト
 """
+
 import shutil
 import tempfile
 import time
@@ -33,17 +34,29 @@ class TestSearchManager:
 
         # テストドキュメントを追加
         test_docs = [
-            ("機械学習の基礎", "機械学習は人工知能の一分野です。データから学習してパターンを見つけます。"),
-            ("データ分析手法", "データ分析では統計的手法を用いてデータの傾向を把握します。"),
-            ("プロジェクト管理", "プロジェクト管理はスケジュール、リソース、品質を管理する手法です。"),
-            ("Python プログラミング", "Pythonは読みやすく書きやすいプログラミング言語です。"),
-            ("ソフトウェア設計", "良いソフトウェア設計は保守性と拡張性を重視します。")
+            (
+                "機械学習の基礎",
+                "機械学習は人工知能の一分野です。データから学習してパターンを見つけます。",
+            ),
+            (
+                "データ分析手法",
+                "データ分析では統計的手法を用いてデータの傾向を把握します。",
+            ),
+            (
+                "プロジェクト管理",
+                "プロジェクト管理はスケジュール、リソース、品質を管理する手法です。",
+            ),
+            (
+                "Python プログラミング",
+                "Pythonは読みやすく書きやすいプログラミング言語です。",
+            ),
+            ("ソフトウェア設計", "良いソフトウェア設計は保守性と拡張性を重視します。"),
         ]
 
         for i, (title, content) in enumerate(test_docs):
             from src.data.models import Document, FileType
             from datetime import datetime
-            
+
             full_content = f"{title}\n{content}"
             document = Document(
                 id=f"test_doc_{i}",
@@ -55,7 +68,7 @@ class TestSearchManager:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                metadata={'title': title, 'file_type': 'txt'}
+                metadata={"title": title, "file_type": "txt"},
             )
             index_manager.add_document(document)
 
@@ -67,7 +80,13 @@ class TestSearchManager:
         index_manager = IndexManager(str(temp_index_dir))
 
         # 大量のテストドキュメントを追加
-        topics = ["機械学習", "データ分析", "プロジェクト管理", "プログラミング", "設計"]
+        topics = [
+            "機械学習",
+            "データ分析",
+            "プロジェクト管理",
+            "プログラミング",
+            "設計",
+        ]
 
         for i in range(1000):
             topic = topics[i % len(topics)]
@@ -75,7 +94,7 @@ class TestSearchManager:
 
             from src.data.models import Document, FileType
             from datetime import datetime
-            
+
             document = Document(
                 id=f"large_doc_{i}",
                 file_path=f"/large/doc_{i}.txt",
@@ -86,7 +105,7 @@ class TestSearchManager:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                metadata={'topic': topic, 'file_type': 'txt'}
+                metadata={"topic": topic, "file_type": "txt"},
             )
             index_manager.add_document(document)
 
@@ -100,14 +119,14 @@ class TestSearchManager:
             Mock(text="データ分析", expected_results=1),
             Mock(text="プロジェクト", expected_results=1),
             Mock(text="Python", expected_results=1),
-            Mock(text="設計", expected_results=1)
+            Mock(text="設計", expected_results=1),
         ]
 
     def test_hybrid_search_accuracy(self, test_index, search_queries):
         """ハイブリッド検索精度テスト"""
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -115,13 +134,11 @@ class TestSearchManager:
 
             for query in search_queries:
                 from src.data.models import SearchQuery, SearchType
-                
+
                 search_query = SearchQuery(
-                    query_text=query.text,
-                    search_type=SearchType.HYBRID,
-                    limit=10
+                    query_text=query.text, search_type=SearchType.HYBRID, limit=10
                 )
-                
+
                 start_time = time.time()
                 results = manager.search(search_query)
                 end_time = time.time()
@@ -139,7 +156,7 @@ class TestSearchManager:
         """セマンティック検索パフォーマンステスト"""
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -165,7 +182,7 @@ class TestSearchManager:
         """全文検索速度テスト"""
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -194,7 +211,7 @@ class TestSearchManager:
         from concurrent.futures import ThreadPoolExecutor
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -207,10 +224,7 @@ class TestSearchManager:
             return manager.hybrid_search(query, limit=10)
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(search_operation, query)
-                for query in queries
-            ]
+            futures = [executor.submit(search_operation, query) for query in queries]
             results = [future.result() for future in futures]
 
         end_time = time.time()
@@ -223,7 +237,7 @@ class TestSearchManager:
         """検索結果ランキング品質テスト"""
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -244,7 +258,7 @@ class TestSearchManager:
         """フィルター付き検索テスト"""
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -252,13 +266,11 @@ class TestSearchManager:
 
         # ファイルタイプフィルター
         result = manager.search_with_filters(
-            query="プログラミング",
-            filters={'file_type': 'txt'},
-            limit=10
+            query="プログラミング", filters={"file_type": "txt"}, limit=10
         )
 
         assert len(result.documents) > 0
-        assert all(doc.metadata.get('file_type') == 'txt' for doc in result.documents)
+        assert all(doc.metadata.get("file_type") == "txt" for doc in result.documents)
 
     def test_search_memory_efficiency(self, large_index):
         """検索メモリ効率テスト"""
@@ -271,7 +283,7 @@ class TestSearchManager:
 
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -293,7 +305,7 @@ class TestSearchManager:
         """検索エラーハンドリングテスト"""
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -317,7 +329,7 @@ class TestSearchManager:
         """検索統計追跡テスト"""
         from src.core.embedding_manager import EmbeddingManager
         import tempfile
-        
+
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
             embedding_manager = EmbeddingManager(temp_dir)
@@ -332,7 +344,7 @@ class TestSearchManager:
         # 統計情報取得
         stats = manager.get_search_statistics()
 
-        assert 'total_searches' in stats
-        assert 'average_search_time' in stats
-        assert 'most_frequent_queries' in stats
-        assert stats['total_searches'] >= len(queries)
+        assert "total_searches" in stats
+        assert "average_search_time" in stats
+        assert "most_frequent_queries" in stats
+        assert stats["total_searches"] >= len(queries)

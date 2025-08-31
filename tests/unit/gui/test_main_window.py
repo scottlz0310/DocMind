@@ -11,6 +11,7 @@ import pytest
 
 try:
     from src.gui.main_window import MainWindow
+
     GUI_AVAILABLE = True
 except ImportError:
     GUI_AVAILABLE = False
@@ -23,11 +24,13 @@ class TestMainWindow:
 
     def test_initialization(self):
         """メインウィンドウ初期化テスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -39,16 +42,18 @@ class TestMainWindow:
 
             # 基本的な初期化確認
             assert window is not None
-            assert hasattr(window, 'layout_manager')
-            assert hasattr(window, 'progress_manager')
+            assert hasattr(window, "layout_manager")
+            assert hasattr(window, "progress_manager")
 
     def test_component_managers_creation(self):
         """コンポーネントマネージャー作成テスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -56,11 +61,19 @@ class TestMainWindow:
 
             # 15個のマネージャーをモックで設定
             managers = [
-                'layout_manager', 'progress_manager', 'signal_manager',
-                'cleanup_manager', 'window_state_manager', 'menu_manager',
-                'toolbar_manager', 'status_manager', 'thread_handler_manager',
-                'error_rebuild_manager', 'settings_handler_manager',
-                'search_handler_manager', 'progress_system_manager'
+                "layout_manager",
+                "progress_manager",
+                "signal_manager",
+                "cleanup_manager",
+                "window_state_manager",
+                "menu_manager",
+                "toolbar_manager",
+                "status_manager",
+                "thread_handler_manager",
+                "error_rebuild_manager",
+                "settings_handler_manager",
+                "search_handler_manager",
+                "progress_system_manager",
             ]
 
             for manager_name in managers:
@@ -71,11 +84,13 @@ class TestMainWindow:
 
     def test_ui_components_creation(self):
         """UIコンポーネント作成テスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -93,11 +108,13 @@ class TestMainWindow:
 
     def test_search_components_initialization(self):
         """検索コンポーネント初期化テスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -111,19 +128,21 @@ class TestMainWindow:
             window.database_manager = Mock()
 
             # 検索関連コンポーネントが初期化されているか
-            assert hasattr(window, 'index_manager')
-            assert hasattr(window, 'search_manager')
-            assert hasattr(window, 'embedding_manager')
-            assert hasattr(window, 'document_processor')
-            assert hasattr(window, 'database_manager')
+            assert hasattr(window, "index_manager")
+            assert hasattr(window, "search_manager")
+            assert hasattr(window, "embedding_manager")
+            assert hasattr(window, "document_processor")
+            assert hasattr(window, "database_manager")
 
     def test_signal_connections(self):
         """シグナル接続テスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -135,20 +154,22 @@ class TestMainWindow:
             window.search_requested = Mock()
 
             # シグナルマネージャーが存在することを確認
-            assert hasattr(window, 'signal_manager')
+            assert hasattr(window, "signal_manager")
             assert window.signal_manager is not None
 
             # 基本的なシグナルが定義されていることを確認
-            assert hasattr(window, 'folder_selected')
-            assert hasattr(window, 'search_requested')
+            assert hasattr(window, "folder_selected")
+            assert hasattr(window, "search_requested")
 
     def test_progress_system(self):
         """進捗システムテスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -160,9 +181,9 @@ class TestMainWindow:
             window.hide_progress = Mock()
 
             # 進捗システムが機能することを確認
-            assert hasattr(window, 'show_progress')
-            assert hasattr(window, 'update_progress')
-            assert hasattr(window, 'hide_progress')
+            assert hasattr(window, "show_progress")
+            assert hasattr(window, "update_progress")
+            assert hasattr(window, "hide_progress")
 
             # 基本的な進捗操作をテスト
             window.show_progress("テスト進捗", 50)
@@ -176,11 +197,13 @@ class TestMainWindow:
 
     def test_status_message_display(self):
         """ステータスメッセージ表示テスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -191,8 +214,8 @@ class TestMainWindow:
             window.update_system_info = Mock()
 
             # ステータスメッセージ表示が機能することを確認
-            assert hasattr(window, 'show_status_message')
-            assert hasattr(window, 'update_system_info')
+            assert hasattr(window, "show_status_message")
+            assert hasattr(window, "update_system_info")
 
             # 基本的なステータス操作をテスト
             window.show_status_message("テストメッセージ", 1000)
@@ -204,11 +227,13 @@ class TestMainWindow:
 
     def test_cleanup_functionality(self):
         """クリーンアップ機能テスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -219,11 +244,11 @@ class TestMainWindow:
             window.cleanup_manager.cleanup = Mock()
 
             # クリーンアップマネージャーが存在することを確認
-            assert hasattr(window, 'cleanup_manager')
+            assert hasattr(window, "cleanup_manager")
             assert window.cleanup_manager is not None
 
             # クリーンアップが実行できることを確認
-            assert hasattr(window.cleanup_manager, 'cleanup')
+            assert hasattr(window.cleanup_manager, "cleanup")
 
             # クリーンアップを実行
             window.cleanup_manager.cleanup()
@@ -231,11 +256,13 @@ class TestMainWindow:
 
     def test_error_handling(self):
         """エラーハンドリングテスト"""
-        with patch('src.core.index_manager.IndexManager'), \
-             patch('src.core.search_manager.SearchManager'), \
-             patch('src.core.embedding_manager.EmbeddingManager'), \
-             patch('src.core.document_processor.DocumentProcessor'), \
-             patch('src.data.database.DatabaseManager'):
+        with (
+            patch("src.core.index_manager.IndexManager"),
+            patch("src.core.search_manager.SearchManager"),
+            patch("src.core.embedding_manager.EmbeddingManager"),
+            patch("src.core.document_processor.DocumentProcessor"),
+            patch("src.data.database.DatabaseManager"),
+        ):
 
             # モックウィジェットを作成
             window = Mock()
@@ -246,8 +273,8 @@ class TestMainWindow:
             window.show_error_dialog = Mock()
 
             # エラーハンドリングが機能することを確認
-            assert hasattr(window, 'handle_error')
-            assert hasattr(window, 'show_error_dialog')
+            assert hasattr(window, "handle_error")
+            assert hasattr(window, "show_error_dialog")
 
             # エラーハンドリングをテスト
             test_error = Exception("テストエラー")

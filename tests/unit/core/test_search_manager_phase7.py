@@ -60,7 +60,7 @@ class TestSearchManagerPhase7:
             title="テストドキュメント",
             content="これはテスト用のドキュメントです。検索機能をテストします。",
             file_type=FileType.TEXT,
-            size=1024
+            size=1024,
         )
 
     @pytest.fixture
@@ -93,8 +93,10 @@ class TestSearchManagerPhase7:
         assert results[0].document.id == sample_document.id
         assert results[0].search_type == SearchType.FULL_TEXT
 
-    @patch('src.core.embedding_manager.EmbeddingManager.search_similar')
-    def test_semantic_search(self, mock_search_similar, search_manager, sample_document):
+    @patch("src.core.embedding_manager.EmbeddingManager.search_similar")
+    def test_semantic_search(
+        self, mock_search_similar, search_manager, sample_document
+    ):
         """セマンティック検索テスト"""
         # モックの設定
         mock_search_similar.return_value = [(sample_document.id, 0.8)]
@@ -108,11 +110,15 @@ class TestSearchManagerPhase7:
         assert results[0].search_type == SearchType.SEMANTIC
         mock_search_similar.assert_called_once()
 
-    @patch('src.core.embedding_manager.EmbeddingManager.search_similar')
-    def test_hybrid_search_accuracy(self, mock_search_similar, search_manager, multiple_documents):
+    @patch("src.core.embedding_manager.EmbeddingManager.search_similar")
+    def test_hybrid_search_accuracy(
+        self, mock_search_similar, search_manager, multiple_documents
+    ):
         """ハイブリッド検索精度テスト"""
         # モックの設定
-        mock_search_similar.return_value = [(doc.id, 0.7 + i * 0.05) for i, doc in enumerate(multiple_documents[:5])]
+        mock_search_similar.return_value = [
+            (doc.id, 0.7 + i * 0.05) for i, doc in enumerate(multiple_documents[:5])
+        ]
 
         # ドキュメントをインデックスに追加
         for doc in multiple_documents:
@@ -181,13 +187,13 @@ class TestSearchManagerPhase7:
         # 全文検索結果をモック
         full_text_results = [
             SearchResult(document=doc1, score=0.8, search_type=SearchType.FULL_TEXT),
-            SearchResult(document=doc2, score=0.6, search_type=SearchType.FULL_TEXT)
+            SearchResult(document=doc2, score=0.6, search_type=SearchType.FULL_TEXT),
         ]
 
         # セマンティック検索結果をモック
         semantic_results = [
             SearchResult(document=doc1, score=0.7, search_type=SearchType.SEMANTIC),
-            SearchResult(document=doc2, score=0.9, search_type=SearchType.SEMANTIC)
+            SearchResult(document=doc2, score=0.9, search_type=SearchType.SEMANTIC),
         ]
 
         # 結果をマージ
@@ -213,7 +219,7 @@ class TestSearchManagerPhase7:
         results = [
             SearchResult(document=doc, score=0.8, search_type=SearchType.FULL_TEXT),
             SearchResult(document=doc, score=0.7, search_type=SearchType.SEMANTIC),
-            SearchResult(document=doc, score=0.9, search_type=SearchType.HYBRID)
+            SearchResult(document=doc, score=0.9, search_type=SearchType.HYBRID),
         ]
 
         # 重複を除去
@@ -278,7 +284,12 @@ class TestSearchManagerPhase7:
     def test_get_search_suggestions(self, search_manager):
         """検索提案取得テスト"""
         # インデックス化された用語をモック
-        search_manager._indexed_terms = {"テスト", "テストデータ", "検索", "ドキュメント"}
+        search_manager._indexed_terms = {
+            "テスト",
+            "テストデータ",
+            "検索",
+            "ドキュメント",
+        }
 
         suggestions = search_manager.get_search_suggestions("テ", limit=5)
 
@@ -317,8 +328,7 @@ class TestSearchManagerPhase7:
         date_to = datetime(2024, 1, 4)
 
         results = search_manager.search(
-            "テスト", SearchType.FULL_TEXT,
-            date_from=date_from, date_to=date_to
+            "テスト", SearchType.FULL_TEXT, date_from=date_from, date_to=date_to
         )
 
         # 日付範囲内のドキュメントのみが返されることを確認

@@ -14,6 +14,7 @@ try:
         FolderTreeContainer,
         FolderTreeWidget,
     )
+
     GUI_AVAILABLE = True
 except ImportError:
     GUI_AVAILABLE = False
@@ -74,8 +75,8 @@ class TestFolderTreeWidget:
     def test_init(self, folder_tree_widget):
         """初期化のテスト"""
         assert folder_tree_widget is not None
-        assert hasattr(folder_tree_widget, 'root_paths')
-        assert hasattr(folder_tree_widget, 'item_map')
+        assert hasattr(folder_tree_widget, "root_paths")
+        assert hasattr(folder_tree_widget, "item_map")
         assert folder_tree_widget.root_paths == []
         assert folder_tree_widget.item_map == {}
 
@@ -97,9 +98,11 @@ class TestFolderTreeWidget:
         assert isinstance(folder_tree_widget.excluded_paths, set)
         assert isinstance(folder_tree_widget.error_paths, set)
 
-    @patch('src.gui.folder_tree.folder_tree_widget.os.path.exists')
-    @patch('src.gui.folder_tree.folder_tree_widget.os.path.isdir')
-    def test_load_folder_structure_success(self, mock_isdir, mock_exists, folder_tree_widget):
+    @patch("src.gui.folder_tree.folder_tree_widget.os.path.exists")
+    @patch("src.gui.folder_tree.folder_tree_widget.os.path.isdir")
+    def test_load_folder_structure_success(
+        self, mock_isdir, mock_exists, folder_tree_widget
+    ):
         """フォルダ構造読み込み成功のテスト"""
         mock_exists.return_value = True
         mock_isdir.return_value = True
@@ -133,18 +136,26 @@ class TestFolderTreeWidget:
         folder_tree_widget.addTopLevelItem.assert_called_once()
 
         # 非同期読み込みが開始されることを確認
-        folder_tree_widget._load_subfolders_async.assert_called_once_with("/test/folder")
+        folder_tree_widget._load_subfolders_async.assert_called_once_with(
+            "/test/folder"
+        )
 
-    @patch('src.gui.folder_tree.folder_tree_widget.os.path.exists')
-    @patch('src.gui.folder_tree.folder_tree_widget.QMessageBox')
-    def test_load_folder_structure_invalid_path(self, mock_msgbox, mock_exists, folder_tree_widget):
+    @patch("src.gui.folder_tree.folder_tree_widget.os.path.exists")
+    @patch("src.gui.folder_tree.folder_tree_widget.QMessageBox")
+    def test_load_folder_structure_invalid_path(
+        self, mock_msgbox, mock_exists, folder_tree_widget
+    ):
         """無効なパスでのフォルダ構造読み込みのテスト"""
         mock_exists.return_value = False
 
         # load_folder_structureメソッドの無効パス処理をシミュレート
         def mock_load_folder_structure(root_path):
             if not mock_exists.return_value:
-                mock_msgbox.warning(folder_tree_widget, "エラー", f"指定されたフォルダが見つかりません:\n{root_path}")
+                mock_msgbox.warning(
+                    folder_tree_widget,
+                    "エラー",
+                    f"指定されたフォルダが見つかりません:\n{root_path}",
+                )
                 return
 
         folder_tree_widget.load_folder_structure = mock_load_folder_structure
@@ -186,11 +197,11 @@ class TestFolderTreeWidget:
     def test_cleanup_workers(self, folder_tree_widget):
         """ワーカークリーンアップのテスト"""
         folder_tree_widget.async_manager.cleanup_workers = Mock()
-        
+
         # _cleanup_workersメソッドをモック化
         def mock_cleanup_workers():
             folder_tree_widget.async_manager.cleanup_workers()
-        
+
         folder_tree_widget._cleanup_workers = mock_cleanup_workers
 
         folder_tree_widget._cleanup_workers()
@@ -201,25 +212,27 @@ class TestFolderTreeWidget:
         """コンテキストメニュー表示のテスト"""
         folder_tree_widget.context_menu_manager.show_context_menu = Mock()
         position = Mock()
-        
+
         # _show_context_menuメソッドをモック化
         def mock_show_context_menu(pos):
             folder_tree_widget.context_menu_manager.show_context_menu(pos)
-        
+
         folder_tree_widget._show_context_menu = mock_show_context_menu
 
         folder_tree_widget._show_context_menu(position)
 
-        folder_tree_widget.context_menu_manager.show_context_menu.assert_called_once_with(position)
+        folder_tree_widget.context_menu_manager.show_context_menu.assert_called_once_with(
+            position
+        )
 
     def test_filter_folders(self, folder_tree_widget):
         """フォルダフィルタリングのテスト"""
         folder_tree_widget.filter_manager.filter_folders = Mock()
-        
+
         # filter_foldersメソッドをモック化
         def mock_filter_folders(text):
             folder_tree_widget.filter_manager.filter_folders(text)
-        
+
         folder_tree_widget.filter_folders = mock_filter_folders
 
         folder_tree_widget.filter_folders("test")
@@ -231,14 +244,14 @@ class TestFolderTreeWidget:
         mock_item = Mock()
         mock_item.folder_path = "/selected/folder"
         folder_tree_widget.currentItem = Mock(return_value=mock_item)
-        
+
         # get_selected_folderメソッドをモック化
         def mock_get_selected_folder():
             current_item = folder_tree_widget.currentItem()
-            if current_item and hasattr(current_item, 'folder_path'):
+            if current_item and hasattr(current_item, "folder_path"):
                 return current_item.folder_path
             return None
-        
+
         folder_tree_widget.get_selected_folder = mock_get_selected_folder
 
         result = folder_tree_widget.get_selected_folder()
@@ -247,14 +260,14 @@ class TestFolderTreeWidget:
     def test_get_selected_folder_no_selection(self, folder_tree_widget):
         """選択されたフォルダ取得のテスト（選択なし）"""
         folder_tree_widget.currentItem = Mock(return_value=None)
-        
+
         # get_selected_folderメソッドをモック化
         def mock_get_selected_folder():
             current_item = folder_tree_widget.currentItem()
-            if current_item and hasattr(current_item, 'folder_path'):
+            if current_item and hasattr(current_item, "folder_path"):
                 return current_item.folder_path
             return None
-        
+
         folder_tree_widget.get_selected_folder = mock_get_selected_folder
 
         result = folder_tree_widget.get_selected_folder()
@@ -265,12 +278,12 @@ class TestFolderTreeWidget:
         folder_tree_widget._ensure_path_sets()
         folder_tree_widget.indexed_paths.add("/folder1")
         folder_tree_widget.indexed_paths.add("/folder2")
-        
+
         # get_indexed_foldersメソッドをモック化
         def mock_get_indexed_folders():
             folder_tree_widget._ensure_path_sets()
             return list(folder_tree_widget.indexed_paths)
-        
+
         folder_tree_widget.get_indexed_folders = mock_get_indexed_folders
 
         result = folder_tree_widget.get_indexed_folders()
@@ -281,12 +294,12 @@ class TestFolderTreeWidget:
         folder_tree_widget._ensure_path_sets()
         folder_tree_widget.excluded_paths.add("/excluded1")
         folder_tree_widget.excluded_paths.add("/excluded2")
-        
+
         # get_excluded_foldersメソッドをモック化
         def mock_get_excluded_folders():
             folder_tree_widget._ensure_path_sets()
             return list(folder_tree_widget.excluded_paths)
-        
+
         folder_tree_widget.get_excluded_folders = mock_get_excluded_folders
 
         result = folder_tree_widget.get_excluded_folders()
@@ -295,14 +308,14 @@ class TestFolderTreeWidget:
     def test_set_indexed_folders(self, folder_tree_widget):
         """インデックス済みフォルダ設定のテスト"""
         folder_tree_widget._update_item_types = Mock()
-        
+
         # set_indexed_foldersメソッドをモック化
         def mock_set_indexed_folders(folders):
             folder_tree_widget._ensure_path_sets()
             folder_tree_widget.indexed_paths.clear()
             folder_tree_widget.indexed_paths.update(folders)
             folder_tree_widget._update_item_types()
-        
+
         folder_tree_widget.set_indexed_folders = mock_set_indexed_folders
 
         folder_tree_widget.set_indexed_folders(["/folder1", "/folder2"])
@@ -314,14 +327,14 @@ class TestFolderTreeWidget:
     def test_set_excluded_folders(self, folder_tree_widget):
         """除外フォルダ設定のテスト"""
         folder_tree_widget._update_item_types = Mock()
-        
+
         # set_excluded_foldersメソッドをモック化
         def mock_set_excluded_folders(folders):
             folder_tree_widget._ensure_path_sets()
             folder_tree_widget.excluded_paths.clear()
             folder_tree_widget.excluded_paths.update(folders)
             folder_tree_widget._update_item_types()
-        
+
         folder_tree_widget.set_excluded_folders = mock_set_excluded_folders
 
         folder_tree_widget.set_excluded_folders(["/excluded1", "/excluded2"])
@@ -336,7 +349,7 @@ class TestFolderTreeWidget:
         mock_item = Mock()
         folder_tree_widget.item_map["/test/folder"] = mock_item
         folder_tree_widget.path_optimizer.get_basename = Mock(return_value="folder")
-        
+
         # set_folder_indexingメソッドをモック化
         def mock_set_folder_indexing(path):
             folder_tree_widget._ensure_path_sets()
@@ -346,7 +359,7 @@ class TestFolderTreeWidget:
                 item = folder_tree_widget.item_map[path]
                 basename = folder_tree_widget.path_optimizer.get_basename(path)
                 item.setText(0, f"{basename} (処理中...)")
-        
+
         folder_tree_widget.set_folder_indexing = mock_set_folder_indexing
 
         folder_tree_widget.set_folder_indexing("/test/folder")
@@ -360,7 +373,7 @@ class TestFolderTreeWidget:
         folder_tree_widget._ensure_path_sets()
         mock_item = Mock()
         folder_tree_widget.item_map["/test/folder"] = mock_item
-        
+
         # set_folder_indexedメソッドをモック化
         def mock_set_folder_indexed(path, total_files, indexed_files):
             folder_tree_widget._ensure_path_sets()
@@ -369,7 +382,7 @@ class TestFolderTreeWidget:
             if path in folder_tree_widget.item_map:
                 item = folder_tree_widget.item_map[path]
                 item.update_statistics(total_files, indexed_files)
-        
+
         folder_tree_widget.set_folder_indexed = mock_set_folder_indexed
 
         folder_tree_widget.set_folder_indexed("/test/folder", 100, 80)
@@ -384,7 +397,7 @@ class TestFolderTreeWidget:
         mock_item = Mock()
         folder_tree_widget.item_map["/test/folder"] = mock_item
         folder_tree_widget.path_optimizer.get_basename = Mock(return_value="folder")
-        
+
         # set_folder_errorメソッドをモック化
         def mock_set_folder_error(path, error_message):
             folder_tree_widget._ensure_path_sets()
@@ -395,7 +408,7 @@ class TestFolderTreeWidget:
                 basename = folder_tree_widget.path_optimizer.get_basename(path)
                 item.setText(0, f"{basename} (エラー)")
                 item.setToolTip(0, f"{path}\nエラー: {error_message}")
-        
+
         folder_tree_widget.set_folder_error = mock_set_folder_error
 
         folder_tree_widget.set_folder_error("/test/folder", "Test error")
@@ -403,7 +416,9 @@ class TestFolderTreeWidget:
         assert "/test/folder" in folder_tree_widget.error_paths
         assert "/test/folder" not in folder_tree_widget.indexing_paths
         mock_item.setText.assert_called_once_with(0, "folder (エラー)")
-        mock_item.setToolTip.assert_called_once_with(0, "/test/folder\nエラー: Test error")
+        mock_item.setToolTip.assert_called_once_with(
+            0, "/test/folder\nエラー: Test error"
+        )
 
     def test_clear_folder_state(self, folder_tree_widget):
         """フォルダ状態クリアのテスト"""
@@ -415,7 +430,7 @@ class TestFolderTreeWidget:
         mock_item = Mock()
         folder_tree_widget.item_map["/test/folder"] = mock_item
         folder_tree_widget.path_optimizer.get_basename = Mock(return_value="folder")
-        
+
         # clear_folder_stateメソッドをモック化
         def mock_clear_folder_state(path):
             folder_tree_widget._ensure_path_sets()
@@ -426,7 +441,7 @@ class TestFolderTreeWidget:
                 item = folder_tree_widget.item_map[path]
                 basename = folder_tree_widget.path_optimizer.get_basename(path)
                 item.setText(0, basename)
-        
+
         folder_tree_widget.clear_folder_state = mock_clear_folder_state
 
         folder_tree_widget.clear_folder_state("/test/folder")
@@ -439,16 +454,18 @@ class TestFolderTreeWidget:
     def test_expand_to_path(self, folder_tree_widget):
         """パスまでの展開のテスト"""
         folder_tree_widget.action_manager.expand_to_path = Mock()
-        
+
         # expand_to_pathメソッドをモック化
         def mock_expand_to_path(path):
             folder_tree_widget.action_manager.expand_to_path(path)
-        
+
         folder_tree_widget.expand_to_path = mock_expand_to_path
 
         folder_tree_widget.expand_to_path("/test/folder")
 
-        folder_tree_widget.action_manager.expand_to_path.assert_called_once_with("/test/folder")
+        folder_tree_widget.action_manager.expand_to_path.assert_called_once_with(
+            "/test/folder"
+        )
 
 
 @pytest.mark.skipif(not GUI_AVAILABLE, reason="GUI環境が利用できません")
@@ -487,35 +504,39 @@ class TestFolderTreeContainer:
     def test_init(self, folder_tree_container):
         """初期化のテスト"""
         assert folder_tree_container is not None
-        assert hasattr(folder_tree_container, 'tree_widget')
-        assert hasattr(folder_tree_container, 'add_button')
-        assert hasattr(folder_tree_container, 'filter_input')
-        assert hasattr(folder_tree_container, 'stats_label')
+        assert hasattr(folder_tree_container, "tree_widget")
+        assert hasattr(folder_tree_container, "add_button")
+        assert hasattr(folder_tree_container, "filter_input")
+        assert hasattr(folder_tree_container, "stats_label")
 
     def test_load_folder_structure(self, folder_tree_container):
         """フォルダ構造読み込みのテスト"""
         folder_tree_container._update_stats = Mock()
-        
+
         # load_folder_structureメソッドをモック化
         def mock_load_folder_structure(path):
             folder_tree_container.tree_widget.load_folder_structure(path)
             folder_tree_container._update_stats()
-        
+
         folder_tree_container.load_folder_structure = mock_load_folder_structure
 
         folder_tree_container.load_folder_structure("/test/folder")
 
-        folder_tree_container.tree_widget.load_folder_structure.assert_called_once_with("/test/folder")
+        folder_tree_container.tree_widget.load_folder_structure.assert_called_once_with(
+            "/test/folder"
+        )
         folder_tree_container._update_stats.assert_called_once()
 
     def test_get_selected_folder(self, folder_tree_container):
         """選択されたフォルダ取得のテスト"""
-        folder_tree_container.tree_widget.get_selected_folder.return_value = "/selected/folder"
-        
+        folder_tree_container.tree_widget.get_selected_folder.return_value = (
+            "/selected/folder"
+        )
+
         # get_selected_folderメソッドをモック化
         def mock_get_selected_folder():
             return folder_tree_container.tree_widget.get_selected_folder()
-        
+
         folder_tree_container.get_selected_folder = mock_get_selected_folder
 
         result = folder_tree_container.get_selected_folder()
@@ -525,12 +546,15 @@ class TestFolderTreeContainer:
 
     def test_get_indexed_folders(self, folder_tree_container):
         """インデックス済みフォルダ取得のテスト"""
-        folder_tree_container.tree_widget.get_indexed_folders.return_value = ["/folder1", "/folder2"]
-        
+        folder_tree_container.tree_widget.get_indexed_folders.return_value = [
+            "/folder1",
+            "/folder2",
+        ]
+
         # get_indexed_foldersメソッドをモック化
         def mock_get_indexed_folders():
             return folder_tree_container.tree_widget.get_indexed_folders()
-        
+
         folder_tree_container.get_indexed_folders = mock_get_indexed_folders
 
         result = folder_tree_container.get_indexed_folders()
@@ -541,45 +565,51 @@ class TestFolderTreeContainer:
     def test_set_folder_indexing(self, folder_tree_container):
         """フォルダインデックス処理中状態設定のテスト"""
         folder_tree_container._update_stats = Mock()
-        
+
         # set_folder_indexingメソッドをモック化
         def mock_set_folder_indexing(path):
             folder_tree_container.tree_widget.set_folder_indexing(path)
             folder_tree_container._update_stats()
-        
+
         folder_tree_container.set_folder_indexing = mock_set_folder_indexing
 
         folder_tree_container.set_folder_indexing("/test/folder")
 
-        folder_tree_container.tree_widget.set_folder_indexing.assert_called_once_with("/test/folder")
+        folder_tree_container.tree_widget.set_folder_indexing.assert_called_once_with(
+            "/test/folder"
+        )
         folder_tree_container._update_stats.assert_called_once()
 
     def test_set_folder_indexed(self, folder_tree_container):
         """フォルダインデックス済み状態設定のテスト"""
         folder_tree_container._update_stats = Mock()
-        
+
         # set_folder_indexedメソッドをモック化
         def mock_set_folder_indexed(path, total_files, indexed_files):
-            folder_tree_container.tree_widget.set_folder_indexed(path, total_files, indexed_files)
+            folder_tree_container.tree_widget.set_folder_indexed(
+                path, total_files, indexed_files
+            )
             folder_tree_container._update_stats()
-        
+
         folder_tree_container.set_folder_indexed = mock_set_folder_indexed
 
         folder_tree_container.set_folder_indexed("/test/folder", 100, 80)
 
-        folder_tree_container.tree_widget.set_folder_indexed.assert_called_once_with("/test/folder", 100, 80)
+        folder_tree_container.tree_widget.set_folder_indexed.assert_called_once_with(
+            "/test/folder", 100, 80
+        )
         folder_tree_container._update_stats.assert_called_once()
 
     def test_clear_filter(self, folder_tree_container):
         """フィルタークリアのテスト"""
         folder_tree_container.filter_input.clear = Mock()
         folder_tree_container.tree_widget.filter_manager.clear_filter = Mock()
-        
+
         # _clear_filterメソッドをモック化
         def mock_clear_filter():
             folder_tree_container.filter_input.clear()
             folder_tree_container.tree_widget.filter_manager.clear_filter()
-        
+
         folder_tree_container._clear_filter = mock_clear_filter
 
         folder_tree_container._clear_filter()
@@ -593,12 +623,15 @@ class TestFolderTreeContainer:
         folder_tree_container.tree_widget._ensure_path_sets = Mock()
 
         # パスセットをモック化
-        folder_tree_container.tree_widget.item_map = {"/folder1": Mock(), "/folder2": Mock()}
+        folder_tree_container.tree_widget.item_map = {
+            "/folder1": Mock(),
+            "/folder2": Mock(),
+        }
         folder_tree_container.tree_widget.indexing_paths = {"/folder1"}
         folder_tree_container.tree_widget.indexed_paths = {"/folder2"}
         folder_tree_container.tree_widget.excluded_paths = set()
         folder_tree_container.tree_widget.error_paths = set()
-        
+
         # _update_statsメソッドをモック化
         def mock_update_stats():
             folder_tree_container.tree_widget._ensure_path_sets()
@@ -607,7 +640,7 @@ class TestFolderTreeContainer:
             indexing_count = len(folder_tree_container.tree_widget.indexing_paths)
             stats_text = f"フォルダ: {total_folders}, インデックス: {indexed_count}, 処理中: {indexing_count}"
             folder_tree_container.stats_label.setText(stats_text)
-        
+
         folder_tree_container._update_stats = mock_update_stats
 
         folder_tree_container._update_stats()

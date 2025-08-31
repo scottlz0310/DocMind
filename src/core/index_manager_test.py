@@ -36,6 +36,7 @@ class TestIndexManager(IndexManager):
         if metadata_str:
             try:
                 import ast
+
                 metadata = ast.literal_eval(metadata_str)
                 if not isinstance(metadata, dict):
                     metadata = {}
@@ -45,6 +46,7 @@ class TestIndexManager(IndexManager):
 
         # 実際のDocumentオブジェクトを作成（テスト用にファイル存在チェックなし）
         from ..data.models import Document
+
         document = Document(
             id=hit["id"],
             file_path=hit["file_path"],

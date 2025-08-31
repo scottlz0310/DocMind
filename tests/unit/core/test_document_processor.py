@@ -35,7 +35,9 @@ class TestDocumentProcessor:
         """サンプルテキストファイルを作成"""
         file_path = os.path.join(temp_dir, "sample.txt")
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write("これはテスト用のテキストファイルです。\n検索機能のテストに使用します。")
+            f.write(
+                "これはテスト用のテキストファイルです。\n検索機能のテストに使用します。"
+            )
         return file_path
 
     @pytest.fixture
@@ -43,13 +45,15 @@ class TestDocumentProcessor:
         """サンプルMarkdownファイルを作成"""
         file_path = os.path.join(temp_dir, "sample.md")
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write("# テストドキュメント\n\n## 概要\n\nこれはテスト用のMarkdownファイルです。")
+            f.write(
+                "# テストドキュメント\n\n## 概要\n\nこれはテスト用のMarkdownファイルです。"
+            )
         return file_path
 
     def test_initialization(self, processor):
         """初期化テスト"""
         assert processor is not None
-        assert hasattr(processor, 'logger')
+        assert hasattr(processor, "logger")
 
     def test_process_text_file(self, processor, sample_text_file):
         """テキストファイル処理テスト"""
@@ -88,7 +92,7 @@ class TestDocumentProcessor:
         assert isinstance(content, str)
         assert len(content) > 0
 
-    @patch('src.core.document_processor.fitz')
+    @patch("src.core.document_processor.fitz")
     def test_extract_pdf_text_no_library(self, mock_fitz, processor, temp_dir):
         """PDFライブラリ未インストール時のテスト"""
         pdf_path = os.path.join(temp_dir, "test.pdf")
@@ -174,7 +178,7 @@ class TestDocumentProcessor:
 
         # バイナリデータを書き込んで破損ファイルをシミュレート
         with open(corrupted_file, "wb") as f:
-            f.write(b'\x00\x01\x02\x03\x04\x05')
+            f.write(b"\x00\x01\x02\x03\x04\x05")
 
         # エラーが発生しても適切に処理されることを確認
         try:

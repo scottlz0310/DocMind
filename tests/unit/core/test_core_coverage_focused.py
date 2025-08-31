@@ -3,6 +3,7 @@
 
 実際のインターフェースに合わせた最小限のテスト
 """
+
 import shutil
 import tempfile
 from datetime import datetime
@@ -32,7 +33,7 @@ class TestCoreLogicCoverage:
     @pytest.fixture
     def mock_document(self):
         """モックドキュメント"""
-        with patch('src.data.models.Document._validate_fields'):
+        with patch("src.data.models.Document._validate_fields"):
             doc = Document(
                 id="test_id",
                 file_path="/test/sample.txt",
@@ -43,7 +44,7 @@ class TestCoreLogicCoverage:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                content_hash="test_hash"
+                content_hash="test_hash",
             )
             return doc
 
@@ -133,9 +134,7 @@ class TestCoreLogicCoverage:
 
         # 検索設定更新
         search_manager.update_search_settings(
-            full_text_weight=0.7,
-            semantic_weight=0.3,
-            min_semantic_similarity=0.2
+            full_text_weight=0.7, semantic_weight=0.3, min_semantic_similarity=0.2
         )
 
         # 検索提案（空の場合）
@@ -146,12 +145,12 @@ class TestCoreLogicCoverage:
         """EmbeddingManager カバレッジテスト"""
         embeddings_path = temp_dir / "embeddings.pkl"
 
-        with patch('sentence_transformers.SentenceTransformer'):
+        with patch("sentence_transformers.SentenceTransformer"):
             manager = EmbeddingManager(str(embeddings_path))
 
             # 基本属性確認
-            assert hasattr(manager, 'embeddings')
-            assert hasattr(manager, 'model')
+            assert hasattr(manager, "embeddings")
+            assert hasattr(manager, "model")
 
             # キャッシュクリア
             manager.clear_cache()

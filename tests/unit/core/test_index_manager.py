@@ -3,6 +3,7 @@ IndexManager強化テスト
 
 大規模インデックス作成・増分更新のパフォーマンステスト
 """
+
 import shutil
 import tempfile
 import time
@@ -33,9 +34,9 @@ class TestIndexManager:
             doc.file_path = f"/test/doc_{i}.txt"
             doc.content = f"テストドキュメント{i}の内容です。" * 10
             doc.metadata = {
-                'file_size': 1024,
-                'modified_time': time.time(),
-                'file_type': 'txt'
+                "file_size": 1024,
+                "modified_time": time.time(),
+                "file_type": "txt",
             }
             documents.append(doc)
         return documents
@@ -47,6 +48,7 @@ class TestIndexManager:
         # 小規模な既存インデックスを作成
         from src.data.models import Document, FileType
         from datetime import datetime
+
         for i in range(100):
             content = f"既存ドキュメント{i}"
             document = Document(
@@ -59,7 +61,7 @@ class TestIndexManager:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                metadata={'file_type': 'txt'}
+                metadata={"file_type": "txt"},
             )
             manager.add_document(document)
         return manager
@@ -76,6 +78,7 @@ class TestIndexManager:
                 # Documentオブジェクトを作成
                 from src.data.models import Document, FileType
                 from datetime import datetime
+
                 document = Document(
                     id=f"doc_{success_count}",
                     file_path=doc.file_path,
@@ -86,7 +89,7 @@ class TestIndexManager:
                     created_date=datetime.now(),
                     modified_date=datetime.now(),
                     indexed_date=datetime.now(),
-                    metadata=doc.metadata
+                    metadata=doc.metadata,
                 )
                 manager.add_document(document)
                 success_count += 1
@@ -99,7 +102,7 @@ class TestIndexManager:
         assert success_count == len(large_document_set)
         assert (end_time - start_time) < 60  # 1分以内
         # get_document_countメソッドが存在しない場合はスキップ
-        if hasattr(manager, 'get_document_count'):
+        if hasattr(manager, "get_document_count"):
             assert manager.get_document_count() == len(large_document_set)
 
     def test_incremental_update_performance(self, existing_index):
@@ -109,28 +112,31 @@ class TestIndexManager:
         # 新しいドキュメントを準備
         new_documents = []
         for i in range(50):
-            new_documents.append({
-                'path': f"/new/doc_{i}.txt",
-                'content': f"新規ドキュメント{i}の内容",
-                'metadata': {'file_type': 'txt'}
-            })
+            new_documents.append(
+                {
+                    "path": f"/new/doc_{i}.txt",
+                    "content": f"新規ドキュメント{i}の内容",
+                    "metadata": {"file_type": "txt"},
+                }
+            )
 
         start_time = time.time()
 
         from src.data.models import Document, FileType
         from datetime import datetime
+
         for i, doc in enumerate(new_documents):
             document = Document(
                 id=f"new_doc_{i}",
-                file_path=doc['path'],
+                file_path=doc["path"],
                 title=f"New Document {i}",
-                content=doc['content'],
+                content=doc["content"],
                 file_type=FileType.TEXT,
-                size=len(doc['content']),
+                size=len(doc["content"]),
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                metadata=doc['metadata']
+                metadata=doc["metadata"],
             )
             manager.add_document(document)
 
@@ -139,7 +145,7 @@ class TestIndexManager:
         # 検証
         assert (end_time - start_time) < 10  # 10秒以内
         # get_document_countメソッドが存在しない場合はスキップ
-        if hasattr(manager, 'get_document_count'):
+        if hasattr(manager, "get_document_count"):
             assert manager.get_document_count() == 150  # 100 + 50
 
     def test_index_optimization_performance(self, existing_index):
@@ -147,7 +153,7 @@ class TestIndexManager:
         manager = existing_index
 
         # optimize_indexメソッドが存在する場合のみテスト
-        if hasattr(manager, 'optimize_index'):
+        if hasattr(manager, "optimize_index"):
             start_time = time.time()
             manager.optimize_index()
             end_time = time.time()
@@ -171,6 +177,7 @@ class TestIndexManager:
         # 正常なインデックスを作成
         from src.data.models import Document, FileType
         from datetime import datetime
+
         for i in range(10):
             content = f"テストドキュメント{i}"
             document = Document(
@@ -183,7 +190,7 @@ class TestIndexManager:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                metadata={'file_type': 'txt'}
+                metadata={"file_type": "txt"},
             )
             manager.add_document(document)
 
@@ -192,6 +199,7 @@ class TestIndexManager:
 
         # インデックスファイルを完全に破損（バイナリデータで上書き）
         import shutil
+
         # インデックスディレクトリを削除して無効なファイルで置き換え
         shutil.rmtree(temp_index_dir)
         temp_index_dir.mkdir()
@@ -200,6 +208,7 @@ class TestIndexManager:
 
         # 破損したインデックスを開こうとするとIndexingErrorが発生することを確認
         from src.utils.exceptions import IndexingError
+
         with pytest.raises(IndexingError, match="インデックスの初期化に失敗しました"):
             IndexManager(str(temp_index_dir))
 
@@ -217,6 +226,7 @@ class TestIndexManager:
         # 大量のドキュメントを追加
         from src.data.models import Document, FileType
         from datetime import datetime
+
         for i in range(500):
             large_content = "大きなコンテンツ " * 1000  # 約15KB
             document = Document(
@@ -229,7 +239,7 @@ class TestIndexManager:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                metadata={'file_type': 'txt'}
+                metadata={"file_type": "txt"},
             )
             manager.add_document(document)
 
@@ -244,7 +254,7 @@ class TestIndexManager:
         manager = existing_index
 
         # get_statisticsメソッドが存在する場合のみテスト
-        if hasattr(manager, 'get_statistics'):
+        if hasattr(manager, "get_statistics"):
             stats = manager.get_statistics()
 
             # 統計情報の検証

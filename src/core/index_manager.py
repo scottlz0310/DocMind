@@ -418,6 +418,7 @@ class IndexManager:
         if metadata_str:
             try:
                 import ast
+
                 metadata = ast.literal_eval(metadata_str)
                 if not isinstance(metadata, dict):
                     metadata = {}

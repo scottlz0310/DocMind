@@ -1,6 +1,7 @@
 """
 テスト共通設定 - pytest設定とフィクスチャ
 """
+
 import os
 import sys
 from pathlib import Path
@@ -13,8 +14,9 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # Qt環境設定
-os.environ['QT_QPA_PLATFORM'] = 'offscreen'
-os.environ['QT_LOGGING_RULES'] = '*.debug=false'
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+os.environ["QT_LOGGING_RULES"] = "*.debug=false"
+
 
 @pytest.fixture(scope="session")
 def qapp():
@@ -41,7 +43,9 @@ def qapp():
         # PySide6が利用できない場合はNoneを返す
         yield None
 
+
 # pytest-qtのqtbotフィクスチャを使用し、独自の定義は削除
+
 
 @pytest.fixture
 def temp_config_dir(tmp_path):
@@ -50,12 +54,16 @@ def temp_config_dir(tmp_path):
     config_dir.mkdir()
     return str(config_dir)
 
+
 @pytest.fixture
 def sample_text_file(tmp_path):
     """サンプルテキストファイル"""
     file_path = tmp_path / "sample.txt"
-    file_path.write_text("これはサンプルテキストファイルです。\n検索テスト用の内容が含まれています。")
+    file_path.write_text(
+        "これはサンプルテキストファイルです。\n検索テスト用の内容が含まれています。"
+    )
     return str(file_path)
+
 
 @pytest.fixture
 def mock_search_manager():
@@ -63,9 +71,10 @@ def mock_search_manager():
     manager = Mock()
     manager.search.return_value = [
         {"title": "テストドキュメント1", "content": "テスト内容1"},
-        {"title": "テストドキュメント2", "content": "テスト内容2"}
+        {"title": "テストドキュメント2", "content": "テスト内容2"},
     ]
     return manager
+
 
 @pytest.fixture
 def mock_index_manager():

@@ -14,6 +14,7 @@ from unittest.mock import Mock
 try:
     from PySide6.QtCore import QEventLoop, QTimer
     from PySide6.QtWidgets import QApplication, QWidget
+
     GUI_AVAILABLE = True
 except ImportError:
     GUI_AVAILABLE = False
@@ -25,7 +26,9 @@ class GUITestHelper:
     DEFAULT_TIMEOUT = 5.0  # デフォルトタイムアウト（秒）
 
     @staticmethod
-    def create_test_widget(widget_class, timeout: float = DEFAULT_TIMEOUT, **kwargs) -> QWidget | None:
+    def create_test_widget(
+        widget_class, timeout: float = DEFAULT_TIMEOUT, **kwargs
+    ) -> QWidget | None:
         """
         テスト用ウィジェット作成
 
@@ -53,7 +56,9 @@ class GUITestHelper:
             if GUITestHelper._execute_with_timeout(create_widget, timeout):
                 return widget
             else:
-                logging.warning(f"ウィジェット作成がタイムアウトしました: {widget_class.__name__}")
+                logging.warning(
+                    f"ウィジェット作成がタイムアウトしました: {widget_class.__name__}"
+                )
                 return None
 
         except Exception as e:
@@ -61,7 +66,9 @@ class GUITestHelper:
             return None
 
     @staticmethod
-    def simulate_user_interaction(widget: QWidget, action: str, timeout: float = DEFAULT_TIMEOUT, *args) -> bool:
+    def simulate_user_interaction(
+        widget: QWidget, action: str, timeout: float = DEFAULT_TIMEOUT, *args
+    ) -> bool:
         """
         ユーザー操作シミュレーション
 
@@ -78,6 +85,7 @@ class GUITestHelper:
             return False
 
         try:
+
             def execute_action():
                 if hasattr(widget, action):
                     getattr(widget, action)(*args)
@@ -92,8 +100,11 @@ class GUITestHelper:
             return False
 
     @staticmethod
-    def wait_for_condition(condition: Callable[[], bool], timeout: float = DEFAULT_TIMEOUT,
-                          interval: float = 0.1) -> bool:
+    def wait_for_condition(
+        condition: Callable[[], bool],
+        timeout: float = DEFAULT_TIMEOUT,
+        interval: float = 0.1,
+    ) -> bool:
         """
         条件が満たされるまで待機
 
@@ -139,6 +150,7 @@ class GUITestHelper:
             return True
 
         try:
+
             def cleanup():
                 widget.hide()
                 widget.close()
@@ -215,15 +227,18 @@ class MockGUITestHelper:
         return mock_widget
 
     @staticmethod
-    def simulate_user_interaction(widget: Any, action: str, timeout: float = 5.0, *args) -> bool:
+    def simulate_user_interaction(
+        widget: Any, action: str, timeout: float = 5.0, *args
+    ) -> bool:
         """モックユーザー操作"""
         if hasattr(widget, action):
             getattr(widget, action)(*args)
         return True
 
     @staticmethod
-    def wait_for_condition(condition: Callable[[], bool], timeout: float = 5.0,
-                          interval: float = 0.1) -> bool:
+    def wait_for_condition(
+        condition: Callable[[], bool], timeout: float = 5.0, interval: float = 0.1
+    ) -> bool:
         """モック条件待機"""
         try:
             return condition()

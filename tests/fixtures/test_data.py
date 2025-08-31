@@ -20,7 +20,7 @@ def sample_documents() -> list[dict[str, Any]]:
             "content": "これはテスト用のドキュメントです。",
             "file_type": "txt",
             "size": 1024,
-            "modified": "2024-01-01T00:00:00"
+            "modified": "2024-01-01T00:00:00",
         },
         {
             "title": "テストドキュメント2",
@@ -28,7 +28,7 @@ def sample_documents() -> list[dict[str, Any]]:
             "content": "PDFファイルのテスト内容です。",
             "file_type": "pdf",
             "size": 2048,
-            "modified": "2024-01-02T00:00:00"
+            "modified": "2024-01-02T00:00:00",
         },
         {
             "title": "テストドキュメント3",
@@ -36,21 +36,15 @@ def sample_documents() -> list[dict[str, Any]]:
             "content": "Wordドキュメントのテスト内容です。",
             "file_type": "docx",
             "size": 4096,
-            "modified": "2024-01-03T00:00:00"
-        }
+            "modified": "2024-01-03T00:00:00",
+        },
     ]
 
 
 @pytest.fixture
 def sample_search_queries() -> list[str]:
     """サンプル検索クエリ"""
-    return [
-        "テスト",
-        "ドキュメント",
-        "PDF ファイル",
-        "Word 文書",
-        "検索テスト"
-    ]
+    return ["テスト", "ドキュメント", "PDF ファイル", "Word 文書", "検索テスト"]
 
 
 @pytest.fixture
@@ -62,15 +56,15 @@ def sample_search_results() -> list[dict[str, Any]]:
             "path": "/test/results/result1.txt",
             "score": 0.95,
             "snippet": "検索にマッチしたテキストの抜粋...",
-            "file_type": "txt"
+            "file_type": "txt",
         },
         {
             "title": "検索結果2",
             "path": "/test/results/result2.pdf",
             "score": 0.87,
             "snippet": "PDFファイルからの抜粋...",
-            "file_type": "pdf"
-        }
+            "file_type": "pdf",
+        },
     ]
 
 
@@ -90,22 +84,22 @@ def sample_folder_structure() -> dict[str, Any]:
                     {
                         "name": "file1.txt",
                         "path": "/test/root/documents/file1.txt",
-                        "type": "file"
+                        "type": "file",
                     },
                     {
                         "name": "file2.pdf",
                         "path": "/test/root/documents/file2.pdf",
-                        "type": "file"
-                    }
-                ]
+                        "type": "file",
+                    },
+                ],
             },
             {
                 "name": "images",
                 "path": "/test/root/images",
                 "type": "folder",
-                "children": []
-            }
-        ]
+                "children": [],
+            },
+        ],
     }
 
 
@@ -118,7 +112,7 @@ def sample_index_data() -> dict[str, Any]:
         "failed_files": 5,
         "index_size": 1024000,
         "last_updated": "2024-01-01T12:00:00",
-        "status": "completed"
+        "status": "completed",
     }
 
 
@@ -131,7 +125,7 @@ def sample_progress_data() -> dict[str, Any]:
         "percentage": 50.0,
         "message": "処理中...",
         "elapsed_time": 30.5,
-        "estimated_remaining": 30.5
+        "estimated_remaining": 30.5,
     }
 
 
@@ -143,7 +137,7 @@ def sample_error_data() -> dict[str, Any]:
         "error_message": "ファイルが見つかりません",
         "file_path": "/test/missing_file.txt",
         "timestamp": "2024-01-01T12:00:00",
-        "stack_trace": "Traceback (most recent call last)..."
+        "stack_trace": "Traceback (most recent call last)...",
     }
 
 
@@ -157,7 +151,7 @@ def sample_settings_data() -> dict[str, Any]:
         "theme": "light",
         "language": "ja",
         "auto_index": True,
-        "index_extensions": [".txt", ".pdf", ".docx", ".md"]
+        "index_extensions": [".txt", ".pdf", ".docx", ".md"],
     }
 
 
@@ -169,7 +163,7 @@ def mock_file_paths() -> list[Path]:
         Path("/test/file2.pdf"),
         Path("/test/file3.docx"),
         Path("/test/folder1"),
-        Path("/test/folder2")
+        Path("/test/folder2"),
     ]
 
 
@@ -181,7 +175,7 @@ def empty_search_result() -> dict[str, Any]:
         "results": [],
         "total_count": 0,
         "query": "",
-        "search_time": 0.0
+        "search_time": 0.0,
     }
 
 
@@ -194,7 +188,7 @@ def failed_search_result() -> dict[str, Any]:
         "total_count": 0,
         "query": "test query",
         "error": "検索に失敗しました",
-        "search_time": 0.0
+        "search_time": 0.0,
     }
 
 
@@ -207,5 +201,5 @@ def sample_ui_state() -> dict[str, Any]:
         "selected_folder": "/test/documents",
         "search_query": "test query",
         "search_type": "fulltext",
-        "show_preview": True
+        "show_preview": True,
     }

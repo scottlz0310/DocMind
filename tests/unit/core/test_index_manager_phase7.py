@@ -44,7 +44,7 @@ class TestIndexManagerPhase7:
             title="テストドキュメント",
             content="これはテスト用のドキュメントです。検索機能をテストします。",
             file_type=FileType.TEXT,
-            size=1024
+            size=1024,
         )
 
     @pytest.fixture
@@ -185,7 +185,9 @@ class TestIndexManagerPhase7:
         date_from = datetime(2024, 1, 2)
         date_to = datetime(2024, 1, 4)
 
-        results = index_manager.search_text("テスト", date_from=date_from, date_to=date_to)
+        results = index_manager.search_text(
+            "テスト", date_from=date_from, date_to=date_to
+        )
 
         # 日付範囲内のドキュメントのみが返されることを確認
         assert len(results) == 3
@@ -277,7 +279,9 @@ class TestIndexManagerPhase7:
 
     def test_error_handling_invalid_index_path(self):
         """無効なインデックスパスのエラーハンドリングテスト"""
-        with patch('pathlib.Path.mkdir', side_effect=PermissionError("Permission denied")):
+        with patch(
+            "pathlib.Path.mkdir", side_effect=PermissionError("Permission denied")
+        ):
             with pytest.raises(IndexingError):
                 IndexManager("/invalid/path")
 
@@ -304,7 +308,9 @@ class TestIndexManagerPhase7:
 
         assert index_manager._index is None
 
-    @pytest.mark.skip(reason="並行アクセステストはWhooshロック機能により不安定なためスキップ")
+    @pytest.mark.skip(
+        reason="並行アクセステストはWhooshロック機能により不安定なためスキップ"
+    )
     def test_concurrent_access_safety(self, index_manager, multiple_documents):
         """並行アクセス安全性テスト（スキップ）"""
         # Whooshのロック機能により並行アクセスは制限されるためスキップ

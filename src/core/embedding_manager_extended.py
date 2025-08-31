@@ -60,10 +60,7 @@ class EmbeddingManagerExtended(EmbeddingManager):
         vec1_np = np.array(vec1)
         vec2_np = np.array(vec2)
 
-        return cosine_similarity(
-            vec1_np.reshape(1, -1),
-            vec2_np.reshape(1, -1)
-        )[0][0]
+        return cosine_similarity(vec1_np.reshape(1, -1), vec2_np.reshape(1, -1))[0][0]
 
     def update_document_embedding(self, doc_id: str, text: str) -> None:
         """ドキュメントの埋め込みを更新（add_document_embeddingのエイリアス）

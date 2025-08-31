@@ -33,7 +33,7 @@ class TestPhase7InterfaceFixes:
     @pytest.fixture
     def mock_document(self):
         """モックドキュメント（ファイル存在チェック無効化）"""
-        with patch('src.data.models.Document._validate_fields'):
+        with patch("src.data.models.Document._validate_fields"):
             doc = Document(
                 id="test_doc_1",
                 file_path="/test/sample.txt",
@@ -44,7 +44,7 @@ class TestPhase7InterfaceFixes:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                content_hash="test_hash"
+                content_hash="test_hash",
             )
             yield doc
 
@@ -56,7 +56,7 @@ class TestPhase7InterfaceFixes:
     @pytest.fixture
     def embedding_manager(self, temp_dir):
         """EmbeddingManager インスタンス"""
-        with patch('src.core.embedding_manager.SentenceTransformer'):
+        with patch("src.core.embedding_manager.SentenceTransformer"):
             return EmbeddingManager(str(Path(temp_dir) / "embeddings"))
 
     @pytest.fixture
@@ -72,31 +72,31 @@ class TestPhase7InterfaceFixes:
         # ドキュメントが追加されたことを確認
         assert index_manager.document_exists(mock_document.id)
 
-    def test_search_manager_search_interface(self, search_manager, mock_document, index_manager):
+    def test_search_manager_search_interface(
+        self, search_manager, mock_document, index_manager
+    ):
         """SearchManager.search インターフェーステスト"""
         # ドキュメントを追加
         index_manager.add_document(mock_document)
 
         # 正しいインターフェース: search(query: SearchQuery)
         query = SearchQuery(
-            query_text="テスト",
-            search_type=SearchType.FULL_TEXT,
-            limit=10
+            query_text="テスト", search_type=SearchType.FULL_TEXT, limit=10
         )
 
         results = search_manager.search(query)
         assert isinstance(results, list)
 
-    def test_search_manager_semantic_search_interface(self, search_manager, mock_document, index_manager):
+    def test_search_manager_semantic_search_interface(
+        self, search_manager, mock_document, index_manager
+    ):
         """SearchManager セマンティック検索インターフェーステスト"""
         # ドキュメントを追加
         index_manager.add_document(mock_document)
 
         # セマンティック検索クエリ
         query = SearchQuery(
-            query_text="テスト",
-            search_type=SearchType.SEMANTIC,
-            limit=10
+            query_text="テスト", search_type=SearchType.SEMANTIC, limit=10
         )
 
         # エラーが発生しても例外処理されることを確認
@@ -107,7 +107,9 @@ class TestPhase7InterfaceFixes:
             # セマンティック検索が利用できない場合は正常
             pass
 
-    def test_search_manager_hybrid_search_interface(self, search_manager, mock_document, index_manager):
+    def test_search_manager_hybrid_search_interface(
+        self, search_manager, mock_document, index_manager
+    ):
         """SearchManager ハイブリッド検索インターフェーステスト"""
         # ドキュメントを追加
         index_manager.add_document(mock_document)
@@ -117,7 +119,7 @@ class TestPhase7InterfaceFixes:
             query_text="テスト",
             search_type=SearchType.HYBRID,
             limit=10,
-            weights={"full_text": 0.6, "semantic": 0.4}
+            weights={"full_text": 0.6, "semantic": 0.4},
         )
 
         # エラーが発生しても例外処理されることを確認
@@ -139,7 +141,7 @@ class TestPhase7InterfaceFixes:
             limit=10,
             file_types=[FileType.TEXT],
             date_from=None,
-            date_to=None
+            date_to=None,
         )
 
         assert isinstance(results, list)
@@ -150,12 +152,13 @@ class TestPhase7InterfaceFixes:
 
         # 存在しないファイルでは例外が発生することを確認
         from src.utils.exceptions import DocumentProcessingError
+
         with pytest.raises((DocumentProcessingError, FileNotFoundError, OSError)):
             processor.process_file("/nonexistent/file.txt")
 
     def test_search_result_creation_without_file_validation(self):
         """SearchResult作成時のファイル検証回避テスト"""
-        with patch('src.data.models.Document._validate_fields'):
+        with patch("src.data.models.Document._validate_fields"):
             doc = Document(
                 id="test_doc",
                 file_path="/test/sample.txt",
@@ -166,11 +169,11 @@ class TestPhase7InterfaceFixes:
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                content_hash="hash"
+                content_hash="hash",
             )
 
             # SearchResult作成時もファイル検証を回避
-            with patch('src.data.models.SearchResult._validate_fields'):
+            with patch("src.data.models.SearchResult._validate_fields"):
                 result = SearchResult(
                     document=doc,
                     score=0.8,
@@ -178,7 +181,7 @@ class TestPhase7InterfaceFixes:
                     snippet="テストスニペット",
                     highlighted_terms=["テスト"],
                     relevance_explanation="テスト説明",
-                    rank=1
+                    rank=1,
                 )
 
                 assert result.document.id == "test_doc"
@@ -186,7 +189,7 @@ class TestPhase7InterfaceFixes:
 
     def test_large_scale_operations_with_mocked_validation(self, index_manager):
         """大規模操作テスト（検証モック化）"""
-        with patch('src.data.models.Document._validate_fields'):
+        with patch("src.data.models.Document._validate_fields"):
             # 複数ドキュメントの作成
             documents = []
             for i in range(10):
@@ -200,7 +203,7 @@ class TestPhase7InterfaceFixes:
                     created_date=datetime.now(),
                     modified_date=datetime.now(),
                     indexed_date=datetime.now(),
-                    content_hash=f"hash_{i}"
+                    content_hash=f"hash_{i}",
                 )
                 documents.append(doc)
 
@@ -219,18 +222,12 @@ class TestPhase7InterfaceFixes:
         """エラーハンドリング堅牢性テスト"""
         # 空のクエリは検証エラーになることを確認
         with pytest.raises(ValueError, match="検索クエリは空にできません"):
-            SearchQuery(
-                query_text="",
-                search_type=SearchType.FULL_TEXT,
-                limit=10
-            )
+            SearchQuery(query_text="", search_type=SearchType.FULL_TEXT, limit=10)
 
         # 有効なクエリでの検索
         try:
             query = SearchQuery(
-                query_text="テスト",
-                search_type=SearchType.FULL_TEXT,
-                limit=10
+                query_text="テスト", search_type=SearchType.FULL_TEXT, limit=10
             )
             results = search_manager.search(query)
             assert isinstance(results, list)
@@ -247,7 +244,7 @@ class TestPhase7InterfaceFixes:
 
         def add_document_worker(doc_id):
             try:
-                with patch('src.data.models.Document._validate_fields'):
+                with patch("src.data.models.Document._validate_fields"):
                     doc = Document(
                         id=f"concurrent_doc_{doc_id}",
                         file_path=f"/test/concurrent_{doc_id}.txt",
@@ -258,7 +255,7 @@ class TestPhase7InterfaceFixes:
                         created_date=datetime.now(),
                         modified_date=datetime.now(),
                         indexed_date=datetime.now(),
-                        content_hash=f"concurrent_hash_{doc_id}"
+                        content_hash=f"concurrent_hash_{doc_id}",
                     )
                     index_manager.add_document(doc)
                     results.append(doc_id)
@@ -289,19 +286,20 @@ class TestPhase7InterfaceFixes:
         initial_memory = process.memory_info().rss
 
         # 複数ドキュメントの処理
-        with patch('src.data.models.Document._validate_fields'):
+        with patch("src.data.models.Document._validate_fields"):
             for i in range(50):  # 適度な数でテスト
                 doc = Document(
                     id=f"memory_test_doc_{i}",
                     file_path=f"/test/memory_test_{i}.txt",
                     title=f"メモリテスト{i}",
-                    content=f"メモリ使用量テスト用ドキュメント{i}" * 10,  # 少し大きめのコンテンツ
+                    content=f"メモリ使用量テスト用ドキュメント{i}"
+                    * 10,  # 少し大きめのコンテンツ
                     file_type=FileType.TEXT,
                     size=1000,
                     created_date=datetime.now(),
                     modified_date=datetime.now(),
                     indexed_date=datetime.now(),
-                    content_hash=f"memory_hash_{i}"
+                    content_hash=f"memory_hash_{i}",
                 )
                 index_manager.add_document(doc)
 
@@ -316,7 +314,7 @@ class TestPhase7InterfaceFixes:
         import time
 
         # ドキュメント追加のパフォーマンス
-        with patch('src.data.models.Document._validate_fields'):
+        with patch("src.data.models.Document._validate_fields"):
             start_time = time.time()
 
             for i in range(20):  # 適度な数でテスト
@@ -330,7 +328,7 @@ class TestPhase7InterfaceFixes:
                     created_date=datetime.now(),
                     modified_date=datetime.now(),
                     indexed_date=datetime.now(),
-                    content_hash=f"perf_hash_{i}"
+                    content_hash=f"perf_hash_{i}",
                 )
                 index_manager.add_document(doc)
 

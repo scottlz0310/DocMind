@@ -3,6 +3,7 @@ EmbeddingManager強化テスト
 
 埋め込みベクトル生成・キャッシュ・パフォーマンステスト
 """
+
 import shutil
 import tempfile
 from pathlib import Path
@@ -32,7 +33,7 @@ class TestEmbeddingManager:
             "データサイエンスでは統計的手法を使用します",
             "プログラミングは論理的思考が必要です",
             "ソフトウェア開発にはチームワークが重要です",
-            "プロジェクト管理は計画と実行が鍵となります"
+            "プロジェクト管理は計画と実行が鍵となります",
         ]
 
     def test_embedding_generation_accuracy(self, temp_cache_dir, sample_texts):
@@ -90,7 +91,9 @@ class TestEmbeddingManager:
         individual_time = time.time() - start_time
 
         # 新しいマネージャーで同じ処理（キャッシュなし）
-        manager2 = EmbeddingManager(embeddings_path=str(temp_cache_dir / "embeddings2.pkl"))
+        manager2 = EmbeddingManager(
+            embeddings_path=str(temp_cache_dir / "embeddings2.pkl")
+        )
         start_time = time.time()
         for i, text in enumerate(sample_texts):
             manager2.add_document_embedding(f"doc{i}", text)
@@ -129,18 +132,18 @@ class TestEmbeddingManager:
     def test_embedding_persistence(self, temp_cache_dir, sample_texts):
         """埋め込み永続化テスト"""
         embeddings_path = str(temp_cache_dir / "embeddings.pkl")
-        
+
         # 最初のマネージャーで埋め込み生成
         manager1 = EmbeddingManager(embeddings_path=embeddings_path)
         for i, text in enumerate(sample_texts):
             manager1.add_document_embedding(f"doc{i}", text)
-        
+
         # 保存
         manager1.save_embeddings()
-        
+
         # 新しいマネージャーでキャッシュから読み込み
         manager2 = EmbeddingManager(embeddings_path=embeddings_path)
-        
+
         # 検証
         assert len(manager2.embeddings) == len(sample_texts)
         for i in range(len(sample_texts)):

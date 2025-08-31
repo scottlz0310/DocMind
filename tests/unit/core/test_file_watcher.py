@@ -40,11 +40,8 @@ class TestFileWatcher:
     def file_watcher(self, mock_index_manager, mock_embedding_manager):
         """FileWatcherインスタンスを作成"""
         return FileWatcher(
-            index_manager=mock_index_manager,
-            embedding_manager=mock_embedding_manager
+            index_manager=mock_index_manager, embedding_manager=mock_embedding_manager
         )
-
-
 
     def test_initialization(self, file_watcher):
         """初期化テスト"""
@@ -75,14 +72,20 @@ class TestFileWatcher:
     def test_add_watch_path(self, file_watcher, temp_watch_dir):
         """監視パス追加テスト"""
         file_watcher.add_watch_path(temp_watch_dir)
-        assert temp_watch_dir in file_watcher.watched_paths or os.path.abspath(temp_watch_dir) in file_watcher.watched_paths
+        assert (
+            temp_watch_dir in file_watcher.watched_paths
+            or os.path.abspath(temp_watch_dir) in file_watcher.watched_paths
+        )
 
     def test_remove_watch_path(self, file_watcher, temp_watch_dir):
         """監視パス削除テスト"""
         file_watcher.add_watch_path(temp_watch_dir)
         file_watcher.remove_watch_path(temp_watch_dir)
         abs_path = os.path.abspath(temp_watch_dir)
-        assert temp_watch_dir not in file_watcher.watched_paths and abs_path not in file_watcher.watched_paths
+        assert (
+            temp_watch_dir not in file_watcher.watched_paths
+            and abs_path not in file_watcher.watched_paths
+        )
 
     def test_get_stats(self, file_watcher):
         """統計情報取得テスト"""
@@ -103,7 +106,7 @@ class TestFileWatcher:
         txt_file = os.path.join(temp_watch_dir, "test.txt")
         with open(txt_file, "w") as f:
             f.write("test")
-        
+
         # ファイルが存在する場合のみテスト
         if os.path.exists(txt_file):
             result = file_watcher._should_process_file(txt_file)
@@ -115,12 +118,13 @@ class TestFileWatcher:
         result = file_watcher.wait_for_queue_empty(timeout=1.0)
         assert result is True
 
-    def test_watch_nonexistent_directory(self, mock_index_manager, mock_embedding_manager):
+    def test_watch_nonexistent_directory(
+        self, mock_index_manager, mock_embedding_manager
+    ):
         """存在しないディレクトリの監視テスト"""
         file_watcher = FileWatcher(
-            index_manager=mock_index_manager,
-            embedding_manager=mock_embedding_manager
+            index_manager=mock_index_manager, embedding_manager=mock_embedding_manager
         )
-        
+
         with pytest.raises(Exception):  # FileSystemErrorまたは似たようなエラー
             file_watcher.add_watch_path("/nonexistent/directory")

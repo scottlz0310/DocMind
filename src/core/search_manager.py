@@ -50,7 +50,10 @@ class SearchManager(LoggerMixin):
     """
 
     def __init__(
-        self, index_manager: IndexManager, embedding_manager: EmbeddingManager, config=None
+        self,
+        index_manager: IndexManager,
+        embedding_manager: EmbeddingManager,
+        config=None,
     ):
         """
         SearchManagerを初期化
@@ -243,7 +246,7 @@ class SearchManager(LoggerMixin):
             # limitが指定されていない場合は設定から取得
             limit = query.limit
             if limit is None and self.config:
-                limit = self.config.get('search.max_results', 100)
+                limit = self.config.get("search.max_results", 100)
             elif limit is None:
                 limit = 100
 
@@ -282,7 +285,7 @@ class SearchManager(LoggerMixin):
             # limitが指定されていない場合は設定から取得
             limit = query.limit
             if limit is None and self.config:
-                limit = self.config.get('search.max_results', 100)
+                limit = self.config.get("search.max_results", 100)
             elif limit is None:
                 limit = 100
 
@@ -332,7 +335,7 @@ class SearchManager(LoggerMixin):
             # limitが指定されていない場合は設定から取得
             limit = query.limit
             if limit is None and self.config:
-                limit = self.config.get('search.max_results', 100)
+                limit = self.config.get("search.max_results", 100)
             elif limit is None:
                 limit = 100
 
@@ -518,6 +521,7 @@ class SearchManager(LoggerMixin):
                     if metadata_str:
                         try:
                             import ast
+
                             metadata = ast.literal_eval(metadata_str)
                             if not isinstance(metadata, dict):
                                 metadata = {}
@@ -580,7 +584,7 @@ class SearchManager(LoggerMixin):
         # 結果数制限を適用
         limit = query.limit
         if limit is None and self.config:
-            limit = self.config.get('search.max_results', 100)
+            limit = self.config.get("search.max_results", 100)
         if limit is not None:
             unique_results = unique_results[:limit]
 

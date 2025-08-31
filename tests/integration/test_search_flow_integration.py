@@ -34,8 +34,10 @@ class TestSearchFlowIntegration:
     @pytest.fixture
     def search_interface(self, qapp, mock_main_window):
         """検索インターフェースのインスタンス"""
-        with patch('src.gui.search_interface.SearchManager'), \
-             patch('src.gui.search_interface.IndexManager'):
+        with (
+            patch("src.gui.search_interface.SearchManager"),
+            patch("src.gui.search_interface.IndexManager"),
+        ):
             interface = SearchInterface(mock_main_window)
             yield interface
 
@@ -51,11 +53,13 @@ class TestSearchFlowIntegration:
         preview = PreviewWidget(mock_main_window)
         yield preview
 
-    def test_search_pipeline_connection(self, search_interface, search_results, preview_widget):
+    def test_search_pipeline_connection(
+        self, search_interface, search_results, preview_widget
+    ):
         """検索パイプライン全体の接続確認"""
         try:
             # SearchInterface → SearchController の接続確認
-            assert hasattr(search_interface, 'search_controller')
+            assert hasattr(search_interface, "search_controller")
 
             # SearchResults が存在することを確認
             assert search_results is not None
@@ -72,9 +76,9 @@ class TestSearchFlowIntegration:
         """検索インターフェース初期化の接続確認"""
         try:
             # 各マネージャーが初期化されていることを確認
-            assert hasattr(search_interface, 'search_ui_manager')
-            assert hasattr(search_interface, 'search_controller')
-            assert hasattr(search_interface, 'search_layout_manager')
+            assert hasattr(search_interface, "search_ui_manager")
+            assert hasattr(search_interface, "search_controller")
+            assert hasattr(search_interface, "search_layout_manager")
 
         except Exception as e:
             pytest.fail(f"Search interface initialization failed: {e}")
@@ -86,7 +90,9 @@ class TestSearchFlowIntegration:
             assert search_interface.search_controller is not None
 
             # 基本的な検索実行をテスト（詳細な結果検証はしない）
-            with patch.object(search_interface.search_controller, 'execute_search') as mock_search:
+            with patch.object(
+                search_interface.search_controller, "execute_search"
+            ) as mock_search:
                 mock_search.return_value = Mock(success=True, results=[])
 
                 # 検索実行が呼び出されることを確認
@@ -116,7 +122,7 @@ class TestSearchFlowIntegration:
             assert preview_widget is not None
 
             # 基本的なプレビュー表示をテスト
-            with patch.object(preview_widget, 'load_document') as mock_load:
+            with patch.object(preview_widget, "load_document") as mock_load:
                 preview_widget.load_document("/test/document.txt")
                 mock_load.assert_called_once_with("/test/document.txt")
 
@@ -127,7 +133,7 @@ class TestSearchFlowIntegration:
         """検索オプション統合の接続確認"""
         try:
             # 検索オプションマネージャーが存在することを確認
-            assert hasattr(search_interface, 'search_options_manager')
+            assert hasattr(search_interface, "search_options_manager")
 
             # オプション管理が機能することを確認
             # 詳細な検証はしない - 存在確認のみ
@@ -139,7 +145,7 @@ class TestSearchFlowIntegration:
         """検索イベント処理の接続確認"""
         try:
             # 検索イベントマネージャーが存在することを確認
-            assert hasattr(search_interface, 'search_event_manager')
+            assert hasattr(search_interface, "search_event_manager")
 
             # イベント処理が機能することを確認
             # 詳細な検証はしない - 存在確認のみ
@@ -151,7 +157,7 @@ class TestSearchFlowIntegration:
         """検索API統合の接続確認"""
         try:
             # 検索APIマネージャーが存在することを確認
-            assert hasattr(search_interface, 'search_api_manager')
+            assert hasattr(search_interface, "search_api_manager")
 
             # API統合が機能することを確認
             # 詳細な検証はしない - 存在確認のみ
@@ -163,7 +169,7 @@ class TestSearchFlowIntegration:
         """ショートカット統合の接続確認"""
         try:
             # ショートカットマネージャーが存在することを確認
-            assert hasattr(search_interface, 'shortcut_manager')
+            assert hasattr(search_interface, "shortcut_manager")
 
             # ショートカット機能が機能することを確認
             # 詳細な検証はしない - 存在確認のみ
@@ -187,11 +193,11 @@ class TestSearchFlowIntegration:
         """検索履歴統合の接続確認"""
         try:
             # 検索履歴機能が統合されていることを確認
-            if hasattr(search_interface, 'search_controller'):
+            if hasattr(search_interface, "search_controller"):
                 controller = search_interface.search_controller
 
                 # 履歴機能が存在することを確認
-                if hasattr(controller, 'search_history'):
+                if hasattr(controller, "search_history"):
                     assert controller.search_history is not None
 
         except Exception as e:
@@ -201,11 +207,13 @@ class TestSearchFlowIntegration:
         """検索候補統合の接続確認"""
         try:
             # 検索候補機能が統合されていることを確認
-            if hasattr(search_interface, 'search_controller'):
+            if hasattr(search_interface, "search_controller"):
                 controller = search_interface.search_controller
 
                 # 候補機能をテスト（詳細な検証はしない）
-                with patch.object(controller, 'get_search_suggestions') as mock_suggestions:
+                with patch.object(
+                    controller, "get_search_suggestions"
+                ) as mock_suggestions:
                     mock_suggestions.return_value = ["suggestion1", "suggestion2"]
 
                     controller.get_search_suggestions("test")
@@ -221,12 +229,12 @@ class TestSearchFlowIntegration:
             # 詳細な検証はしない - 基本的な動作確認のみ
 
             # 無効な検索でもエラーが適切に処理されることを確認
-            if hasattr(search_interface, 'search_controller'):
+            if hasattr(search_interface, "search_controller"):
                 controller = search_interface.search_controller
                 result = controller.execute_search("")  # 空クエリ
 
                 # エラーが適切に処理されることを確認
-                assert hasattr(result, 'success')
+                assert hasattr(result, "success")
 
         except Exception as e:
             pytest.fail(f"Error handling in search flow failed: {e}")

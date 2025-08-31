@@ -26,19 +26,25 @@ def sample_text_files(sample_files_dir):
     # 日本語テキストファイル
     japanese_file = os.path.join(sample_files_dir, "japanese.txt")
     with open(japanese_file, "w", encoding="utf-8") as f:
-        f.write("これは日本語のテストファイルです。\n機械学習と自然言語処理について説明します。\nDocMindは優れた検索ツールです。")
+        f.write(
+            "これは日本語のテストファイルです。\n機械学習と自然言語処理について説明します。\nDocMindは優れた検索ツールです。"
+        )
     files.append(japanese_file)
 
     # 英語テキストファイル
     english_file = os.path.join(sample_files_dir, "english.txt")
     with open(english_file, "w", encoding="utf-8") as f:
-        f.write("This is an English test file.\nIt contains information about machine learning and natural language processing.\nDocMind is an excellent search tool.")
+        f.write(
+            "This is an English test file.\nIt contains information about machine learning and natural language processing.\nDocMind is an excellent search tool."
+        )
     files.append(english_file)
 
     # 混合言語ファイル
     mixed_file = os.path.join(sample_files_dir, "mixed.txt")
     with open(mixed_file, "w", encoding="utf-8") as f:
-        f.write("Mixed language file 混合言語ファイル\nEnglish and Japanese 英語と日本語\nSearch functionality 検索機能")
+        f.write(
+            "Mixed language file 混合言語ファイル\nEnglish and Japanese 英語と日本語\nSearch functionality 検索機能"
+        )
     files.append(mixed_file)
 
     return files
@@ -52,7 +58,8 @@ def sample_markdown_files(sample_files_dir):
     # 基本的なMarkdownファイル
     basic_md = os.path.join(sample_files_dir, "basic.md")
     with open(basic_md, "w", encoding="utf-8") as f:
-        f.write("""# メインタイトル
+        f.write(
+            """# メインタイトル
 
 ## セクション1
 
@@ -74,13 +81,15 @@ def hello_world():
 ```
 
 [リンクテキスト](https://example.com)
-""")
+"""
+        )
     files.append(basic_md)
 
     # 複雑なMarkdownファイル
     complex_md = os.path.join(sample_files_dir, "complex.md")
     with open(complex_md, "w", encoding="utf-8") as f:
-        f.write("""# DocMind ドキュメント
+        f.write(
+            """# DocMind ドキュメント
 
 ## 概要
 
@@ -126,7 +135,8 @@ python main.py
 ```
 
 > **注意**: Python 3.11以上が必要です。
-""")
+"""
+        )
     files.append(complex_md)
 
     return files
@@ -140,7 +150,9 @@ def sample_large_file(sample_files_dir):
     # 10,000行の大きなファイルを作成
     with open(large_file, "w", encoding="utf-8") as f:
         for i in range(10000):
-            f.write(f"これは{i}行目のテストデータです。検索機能のパフォーマンステスト用。\n")
+            f.write(
+                f"これは{i}行目のテストデータです。検索機能のパフォーマンステスト用。\n"
+            )
 
     return large_file
 
@@ -159,7 +171,7 @@ def sample_binary_file(sample_files_dir):
     binary_file = os.path.join(sample_files_dir, "binary.bin")
 
     with open(binary_file, "wb") as f:
-        f.write(b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09')
+        f.write(b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09")
 
     return binary_file
 
@@ -208,7 +220,7 @@ def sample_documents_data():
         created_date=datetime(2024, 1, 1),
         modified_date=datetime(2024, 1, 15),
         indexed_date=datetime.now(),
-        content_hash="tech_hash_1"
+        content_hash="tech_hash_1",
     )
     documents.append(doc1)
 
@@ -223,7 +235,7 @@ def sample_documents_data():
         created_date=datetime(2024, 1, 5),
         modified_date=datetime(2024, 1, 20),
         indexed_date=datetime.now(),
-        content_hash="manual_hash_1"
+        content_hash="manual_hash_1",
     )
     documents.append(doc2)
 
@@ -238,7 +250,7 @@ def sample_documents_data():
         created_date=datetime(2024, 1, 10),
         modified_date=datetime(2024, 1, 25),
         indexed_date=datetime.now(),
-        content_hash="paper_hash_1"
+        content_hash="paper_hash_1",
     )
     documents.append(doc3)
 
@@ -260,15 +272,15 @@ def performance_test_documents():
             id=f"perf_doc_{i:04d}",
             file_path=f"/test/performance/doc_{i:04d}.txt",
             title=f"パフォーマンステストドキュメント {i}",
-            content=f"これは{i}番目のパフォーマンステスト用ドキュメントです。" +
-                   "検索機能のスケーラビリティをテストします。" +
-                   f"キーワード: test{i % 10}, performance, document, search",
+            content=f"これは{i}番目のパフォーマンステスト用ドキュメントです。"
+            + "検索機能のスケーラビリティをテストします。"
+            + f"キーワード: test{i % 10}, performance, document, search",
             file_type=FileType.TEXT,
             size=512 + (i % 100) * 10,
             created_date=base_date + timedelta(days=i % 365),
             modified_date=base_date + timedelta(days=i % 365, hours=i % 24),
             indexed_date=datetime.now(),
-            content_hash=f"perf_hash_{i:04d}"
+            content_hash=f"perf_hash_{i:04d}",
         )
         documents.append(doc)
 

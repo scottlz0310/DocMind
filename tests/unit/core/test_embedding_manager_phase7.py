@@ -49,7 +49,7 @@ class TestEmbeddingManagerPhase7:
         assert embedding_manager.embeddings == {}
         assert embedding_manager.model is None
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
+    @patch("src.core.embedding_manager.SentenceTransformer")
     def test_model_loading(self, mock_transformer, temp_embedding_dir):
         """モデル読み込みテスト"""
         mock_model = Mock()
@@ -117,7 +117,7 @@ class TestEmbeddingManagerPhase7:
         embedding_manager.embeddings = {
             "doc1": Mock(embedding=np.array([0.1, 0.2, 0.3])),
             "doc2": Mock(embedding=np.array([0.2, 0.3, 0.4])),
-            "doc3": Mock(embedding=np.array([0.9, 0.8, 0.7]))
+            "doc3": Mock(embedding=np.array([0.9, 0.8, 0.7])),
         }
 
         # クエリの埋め込みをモック
@@ -141,7 +141,7 @@ class TestEmbeddingManagerPhase7:
 
         embedding_manager.embeddings = {
             "doc1": Mock(embedding=np.array([0.1, 0.2, 0.3])),
-            "doc2": Mock(embedding=np.array([0.2, 0.3, 0.4]))
+            "doc2": Mock(embedding=np.array([0.2, 0.3, 0.4])),
         }
 
         query_embedding = np.array([0.15, 0.25, 0.35])
@@ -179,7 +179,9 @@ class TestEmbeddingManagerPhase7:
         embedding_manager.save_embeddings()
 
         # 新しいマネージャーインスタンスで読み込み
-        new_manager = EmbeddingManagerExtended(embeddings_path=embedding_manager.embeddings_path)
+        new_manager = EmbeddingManagerExtended(
+            embeddings_path=embedding_manager.embeddings_path
+        )
 
         assert doc_id in new_manager.embeddings
 
@@ -270,11 +272,13 @@ class TestEmbeddingManagerPhase7:
         similarity_same = embedding_manager._calculate_similarity(vec1, vec3)
         assert abs(similarity_same - 1.0) < 0.01
 
-    @patch('src.core.embedding_manager.SentenceTransformer')
-    def test_error_handling_model_loading_failure(self, mock_transformer, temp_embedding_dir):
+    @patch("src.core.embedding_manager.SentenceTransformer")
+    def test_error_handling_model_loading_failure(
+        self, mock_transformer, temp_embedding_dir
+    ):
         """モデル読み込み失敗のエラーハンドリングテスト"""
         mock_transformer.side_effect = Exception("モデル読み込みエラー")
-        
+
         embeddings_path = str(Path(temp_embedding_dir) / "embeddings.pkl")
         manager = EmbeddingManagerExtended(embeddings_path=embeddings_path)
 
@@ -378,7 +382,9 @@ class TestEmbeddingManagerPhase7:
         # 全埋め込みが正常に追加されたことを確認
         assert len(embedding_manager.embeddings) == 6
 
-    def test_embedding_persistence_across_sessions(self, temp_embedding_dir, mock_model):
+    def test_embedding_persistence_across_sessions(
+        self, temp_embedding_dir, mock_model
+    ):
         """セッション間での埋め込み永続化テスト"""
         embeddings_path = str(Path(temp_embedding_dir) / "embeddings.pkl")
 

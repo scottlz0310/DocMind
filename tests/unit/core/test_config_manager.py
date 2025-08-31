@@ -3,6 +3,7 @@ Config強化テスト
 
 設定管理・永続化・バリデーション・復旧テスト
 """
+
 import shutil
 import tempfile
 from pathlib import Path
@@ -27,8 +28,8 @@ class TestConfig:
         config = Config()
 
         assert config is not None
-        assert hasattr(config, 'get')
-        assert hasattr(config, 'set')
+        assert hasattr(config, "get")
+        assert hasattr(config, "set")
 
     def test_default_values(self, temp_config_dir):
         """デフォルト値テスト"""
@@ -36,17 +37,17 @@ class TestConfig:
         config = Config(str(config_file))
 
         # デフォルト値の確認
-        assert config.get('data_directory') is not None
-        assert config.get('log_level') == 'INFO'
-        assert config.get('max_documents') > 0
+        assert config.get("data_directory") is not None
+        assert config.get("log_level") == "INFO"
+        assert config.get("max_documents") > 0
 
     def test_get_set_operations(self):
         """設定値の取得・設定テスト"""
         config = Config()
 
         # 設定値の設定と取得
-        test_key = 'test_setting'
-        test_value = 'test_value'
+        test_key = "test_setting"
+        test_value = "test_value"
 
         config.set(test_key, test_value)
         assert config.get(test_key) == test_value
@@ -57,12 +58,12 @@ class TestConfig:
 
         # 設定を保存
         config = Config(str(config_file))
-        config.set('test_key', 'test_value')
+        config.set("test_key", "test_value")
         config.save_config()
 
         # 新しいインスタンスで設定を読み込み
         new_config = Config(str(config_file))
-        assert new_config.get('test_key') == 'test_value'
+        assert new_config.get("test_key") == "test_value"
 
     def test_validation(self):
         """設定値の検証テスト"""
@@ -109,15 +110,15 @@ class TestConfig:
         # 各種設定グループ
         search_settings = config.get_search_settings()
         assert isinstance(search_settings, dict)
-        assert 'max_results' in search_settings
+        assert "max_results" in search_settings
 
         performance_settings = config.get_performance_settings()
         assert isinstance(performance_settings, dict)
-        assert 'batch_size' in performance_settings
+        assert "batch_size" in performance_settings
 
         font_settings = config.get_font_settings()
         assert isinstance(font_settings, dict)
-        assert 'family' in font_settings
+        assert "family" in font_settings
 
     def test_export_import_settings(self, temp_config_dir):
         """設定エクスポート・インポートテスト"""
@@ -125,7 +126,7 @@ class TestConfig:
         export_file = temp_config_dir / "export.json"
 
         # テスト設定
-        config.set('test_export', 'export_value')
+        config.set("test_export", "export_value")
 
         # エクスポート
         result = config.export_settings(str(export_file))
@@ -136,7 +137,7 @@ class TestConfig:
         new_config = Config()
         result = new_config.import_settings(str(export_file))
         assert result is True
-        assert new_config.get('test_export') == 'export_value'
+        assert new_config.get("test_export") == "export_value"
 
     def test_reset_to_defaults(self, temp_config_dir):
         """デフォルト値リセットテスト"""
@@ -144,10 +145,10 @@ class TestConfig:
         config = Config(str(config_file))
 
         # カスタム値設定
-        config.set('custom_key', 'custom_value')
-        assert config.get('custom_key') == 'custom_value'
+        config.set("custom_key", "custom_value")
+        assert config.get("custom_key") == "custom_value"
 
         # リセット
         config.reset_to_defaults()
-        assert config.get('custom_key') is None
-        assert config.get('log_level') == 'INFO'  # デフォルト値確認
+        assert config.get("custom_key") is None
+        assert config.get("log_level") == "INFO"  # デフォルト値確認

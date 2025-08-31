@@ -40,22 +40,22 @@ class TestDocumentProcessorPhase7:
         pdf_path = os.path.join(temp_dir, "test.pdf")
         Path(pdf_path).touch()
 
-        with patch('src.core.document_processor.fitz') as mock_fitz:
+        with patch("src.core.document_processor.fitz") as mock_fitz:
             # モックPDFドキュメントを設定
             mock_doc = Mock()
             mock_page = Mock()
             mock_page.get_text.return_value = "これはPDFのテストテキストです。"
-            
+
             # PDFドキュメントの完全な動作を模擬
             mock_doc.__len__ = Mock(return_value=1)  # 1ページのPDF
             mock_doc.__getitem__ = Mock(return_value=mock_page)  # ページアクセス
             mock_doc.__iter__ = Mock(return_value=iter([mock_page]))
             mock_doc.close = Mock()
-            
+
             # コンテキストマネージャープロトコルを追加
             mock_doc.__enter__ = Mock(return_value=mock_doc)
             mock_doc.__exit__ = Mock(return_value=None)
-            
+
             mock_fitz.open.return_value = mock_doc
 
             result = processor.extract_pdf_text(pdf_path)
@@ -68,7 +68,7 @@ class TestDocumentProcessorPhase7:
         pdf_path = os.path.join(temp_dir, "test.pdf")
         Path(pdf_path).touch()
 
-        with patch('src.core.document_processor.fitz', None):
+        with patch("src.core.document_processor.fitz", None):
             with pytest.raises(DocumentProcessingError):
                 processor.extract_pdf_text(pdf_path)
 
@@ -77,7 +77,7 @@ class TestDocumentProcessorPhase7:
         docx_path = os.path.join(temp_dir, "test.docx")
         Path(docx_path).touch()
 
-        with patch('src.core.document_processor.DocxDocument') as mock_docx_document:
+        with patch("src.core.document_processor.DocxDocument") as mock_docx_document:
             # モックWordドキュメントを設定
             mock_doc = Mock()
             mock_paragraph = Mock()
@@ -96,18 +96,18 @@ class TestDocumentProcessorPhase7:
         xlsx_path = os.path.join(temp_dir, "test.xlsx")
         Path(xlsx_path).touch()
 
-        with patch('src.core.document_processor.load_workbook') as mock_load_workbook:
+        with patch("src.core.document_processor.load_workbook") as mock_load_workbook:
             # モックExcelワークブックを設定
             mock_workbook = Mock()
             mock_worksheet = Mock()
             mock_worksheet.title = "Sheet1"
-            
+
             # iter_rowsのモック設定
             mock_workbook.sheetnames = ["Sheet1"]
             mock_workbook.__getitem__ = Mock(return_value=mock_worksheet)
             mock_worksheet.iter_rows.return_value = [
                 ("ヘッダー1", "ヘッダー2"),
-                ("データ1", "データ2")
+                ("データ1", "データ2"),
             ]
             mock_workbook.close = Mock()
             mock_load_workbook.return_value = mock_workbook
@@ -116,7 +116,9 @@ class TestDocumentProcessorPhase7:
 
             assert "ヘッダー1" in result
             assert "データ1" in result
-            mock_load_workbook.assert_called_once_with(xlsx_path, read_only=True, data_only=True)
+            mock_load_workbook.assert_called_once_with(
+                xlsx_path, read_only=True, data_only=True
+            )
 
     def test_extract_markdown_text_accuracy(self, processor, temp_dir):
         """Markdown テキスト抽出精度テスト"""
@@ -134,7 +136,7 @@ class TestDocumentProcessorPhase7:
 **太字テキスト**と*斜体テキスト*があります。
 """
 
-        with open(md_path, 'w', encoding='utf-8') as f:
+        with open(md_path, "w", encoding="utf-8") as f:
             f.write(markdown_content)
 
         result = processor.extract_markdown_text(md_path)
@@ -147,9 +149,11 @@ class TestDocumentProcessorPhase7:
         """テキストファイル抽出精度テスト"""
         txt_path = os.path.join(temp_dir, "test.txt")
 
-        text_content = "これはテキストファイルのテストです。\n日本語の文字も含まれています。"
+        text_content = (
+            "これはテキストファイルのテストです。\n日本語の文字も含まれています。"
+        )
 
-        with open(txt_path, 'w', encoding='utf-8') as f:
+        with open(txt_path, "w", encoding="utf-8") as f:
             f.write(text_content)
 
         result = processor.extract_text_file(txt_path)
@@ -168,7 +172,7 @@ class TestDocumentProcessorPhase7:
 
         for filename, content in files_to_test:
             file_path = os.path.join(temp_dir, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             result = processor.process_file(file_path)
@@ -185,7 +189,7 @@ class TestDocumentProcessorPhase7:
         large_txt_path = os.path.join(temp_dir, "large_test.txt")
         large_content = "これは大きなファイルのテストです。" * 10000  # 約300KB
 
-        with open(large_txt_path, 'w', encoding='utf-8') as f:
+        with open(large_txt_path, "w", encoding="utf-8") as f:
             f.write(large_content)
 
         start_time = time.time()
@@ -207,7 +211,7 @@ class TestDocumentProcessorPhase7:
             file_path = os.path.join(temp_dir, f"batch_test_{i}.txt")
             content = f"これは{i}番目のバッチテストファイルです。"
 
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             file_paths.append(file_path)
@@ -227,14 +231,14 @@ class TestDocumentProcessorPhase7:
     def test_encoding_detection_accuracy(self, processor, temp_dir):
         """文字エンコーディング検出精度テスト"""
         # 異なるエンコーディングのファイルを作成
-        encodings_to_test = ['utf-8', 'shift_jis', 'euc-jp']
+        encodings_to_test = ["utf-8", "shift_jis", "euc-jp"]
 
         for encoding in encodings_to_test:
             try:
                 file_path = os.path.join(temp_dir, f"test_{encoding}.txt")
                 content = "これは日本語のテストファイルです。"
 
-                with open(file_path, 'w', encoding=encoding) as f:
+                with open(file_path, "w", encoding=encoding) as f:
                     f.write(content)
 
                 result = processor.extract_text_file(file_path)
@@ -250,7 +254,7 @@ class TestDocumentProcessorPhase7:
         """破損ファイルのエラーハンドリングテスト"""
         # 破損したファイルを作成
         corrupted_path = os.path.join(temp_dir, "corrupted.pdf")
-        with open(corrupted_path, 'wb') as f:
+        with open(corrupted_path, "wb") as f:
             f.write(b"Invalid PDF data")  # 無効なPDFデータ
 
         # 破損したファイルの処理でエラーが発生することを確認
@@ -269,7 +273,7 @@ class TestDocumentProcessorPhase7:
         restricted_path = os.path.join(temp_dir, "restricted.txt")
 
         # ファイルを作成
-        with open(restricted_path, 'w') as f:
+        with open(restricted_path, "w") as f:
             f.write("制限されたファイル")
 
         # 読み取り権限を削除
@@ -287,7 +291,7 @@ class TestDocumentProcessorPhase7:
         txt_path = os.path.join(temp_dir, "metadata_test.txt")
         content = "これはメタデータテスト用のファイルです。\n複数行のテキストが含まれています。"
 
-        with open(txt_path, 'w', encoding='utf-8') as f:
+        with open(txt_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         result = processor.process_file(txt_path)
@@ -311,7 +315,7 @@ class TestDocumentProcessorPhase7:
             file_path = os.path.join(temp_dir, f"memory_test_{i}.txt")
             content = f"メモリテスト用ファイル{i}です。" * 1000  # 約30KB
 
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             result = processor.process_file(file_path)
@@ -334,7 +338,7 @@ class TestDocumentProcessorPhase7:
             file_path = os.path.join(temp_dir, f"concurrent_test_{i}.txt")
             content = f"並行処理テスト用ファイル{i}です。"
 
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             file_paths.append(file_path)
@@ -345,7 +349,9 @@ class TestDocumentProcessorPhase7:
         start_time = time.time()
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [executor.submit(process_file_wrapper, path) for path in file_paths]
+            futures = [
+                executor.submit(process_file_wrapper, path) for path in file_paths
+            ]
             results = [future.result() for future in futures]
 
         end_time = time.time()
@@ -364,7 +370,7 @@ class TestDocumentProcessorPhase7:
 
         for filename, content, expected_type in test_files:
             file_path = os.path.join(temp_dir, filename)
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 f.write(content)
 
             result = processor.process_file(file_path)
@@ -386,7 +392,7 @@ class TestDocumentProcessorPhase7:
         タブ文字\t\tも含まれています。
         """
 
-        with open(txt_path, 'w', encoding='utf-8') as f:
+        with open(txt_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         result = processor.process_file(txt_path)
@@ -401,7 +407,7 @@ class TestDocumentProcessorPhase7:
         txt_path = os.path.join(temp_dir, "consistency_test.txt")
         content = "一貫性テスト用のファイルです。"
 
-        with open(txt_path, 'w', encoding='utf-8') as f:
+        with open(txt_path, "w", encoding="utf-8") as f:
             f.write(content)
 
         # 同じファイルを複数回処理
@@ -413,4 +419,6 @@ class TestDocumentProcessorPhase7:
         # 全ての結果が同じであることを確認
         assert all(result is not None for result in results)
         assert all(result.content == results[0].content for result in results)
-        assert all(result.size == results[0].size for result in results)  # size属性を使用
+        assert all(
+            result.size == results[0].size for result in results
+        )  # size属性を使用

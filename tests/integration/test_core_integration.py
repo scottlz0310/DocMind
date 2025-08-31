@@ -3,6 +3,7 @@
 
 IndexManager・SearchManager・EmbeddingManager・ConfigManagerの連携テスト
 """
+
 import shutil
 import tempfile
 from pathlib import Path
@@ -23,15 +24,15 @@ class TestCoreIntegration:
         """テスト用一時ワークスペース"""
         temp_dir = tempfile.mkdtemp()
         workspace = {
-            'root': Path(temp_dir),
-            'index': Path(temp_dir) / 'index',
-            'cache': Path(temp_dir) / 'cache',
-            'config': Path(temp_dir) / 'config.json'
+            "root": Path(temp_dir),
+            "index": Path(temp_dir) / "index",
+            "cache": Path(temp_dir) / "cache",
+            "config": Path(temp_dir) / "config.json",
         }
 
         # ディレクトリ作成
-        workspace['index'].mkdir()
-        workspace['cache'].mkdir()
+        workspace["index"].mkdir()
+        workspace["cache"].mkdir()
 
         yield workspace
         shutil.rmtree(temp_dir)
@@ -39,16 +40,18 @@ class TestCoreIntegration:
     @pytest.fixture
     def integrated_system(self, temp_workspace):
         """統合システム"""
-        config = Config(str(temp_workspace['config']))
-        embedding_manager = EmbeddingManager(embeddings_path=str(temp_workspace['cache'] / 'embeddings.pkl'))
-        index_manager = IndexManager(str(temp_workspace['index']))
+        config = Config(str(temp_workspace["config"]))
+        embedding_manager = EmbeddingManager(
+            embeddings_path=str(temp_workspace["cache"] / "embeddings.pkl")
+        )
+        index_manager = IndexManager(str(temp_workspace["index"]))
         search_manager = SearchManager(index_manager, embedding_manager, config)
 
         return {
-            'config': config,
-            'embedding': embedding_manager,
-            'index': index_manager,
-            'search': search_manager
+            "config": config,
+            "embedding": embedding_manager,
+            "index": index_manager,
+            "search": search_manager,
         }
 
     def test_end_to_end_document_workflow(self, integrated_system):
@@ -56,56 +59,55 @@ class TestCoreIntegration:
         system = integrated_system
 
         # 1. 設定初期化
-        system['config'].set('search.max_results', 50)
-        system['config'].set('indexing.batch_size', 10)
+        system["config"].set("search.max_results", 50)
+        system["config"].set("indexing.batch_size", 10)
 
         # 2. ドキュメント追加
         test_documents = [
             {
-                'path': '/test/ml_basics.txt',
-                'content': '機械学習の基礎について説明します。教師あり学習と教師なし学習があります。',
-                'metadata': {'topic': '機械学習', 'level': '初級'}
+                "path": "/test/ml_basics.txt",
+                "content": "機械学習の基礎について説明します。教師あり学習と教師なし学習があります。",
+                "metadata": {"topic": "機械学習", "level": "初級"},
             },
             {
-                'path': '/test/data_analysis.txt',
-                'content': 'データ分析では統計的手法を用いてデータの傾向を把握します。',
-                'metadata': {'topic': 'データ分析', 'level': '中級'}
+                "path": "/test/data_analysis.txt",
+                "content": "データ分析では統計的手法を用いてデータの傾向を把握します。",
+                "metadata": {"topic": "データ分析", "level": "中級"},
             },
             {
-                'path': '/test/programming.txt',
-                'content': 'Pythonプログラミングの基本的な文法と構造について学習します。',
-                'metadata': {'topic': 'プログラミング', 'level': '初級'}
-            }
+                "path": "/test/programming.txt",
+                "content": "Pythonプログラミングの基本的な文法と構造について学習します。",
+                "metadata": {"topic": "プログラミング", "level": "初級"},
+            },
         ]
 
         # インデックス作成
         for doc in test_documents:
             from src.data.models import Document, FileType
             from datetime import datetime
-            
+
             document = Document(
-                id=doc['path'],
-                file_path=doc['path'],
-                title=doc['path'].split('/')[-1],
-                content=doc['content'],
+                id=doc["path"],
+                file_path=doc["path"],
+                title=doc["path"].split("/")[-1],
+                content=doc["content"],
                 file_type=FileType.TEXT,
-                size=len(doc['content']),
+                size=len(doc["content"]),
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
-                content_hash=str(hash(doc['content'])),
-                metadata=doc['metadata']
+                content_hash=str(hash(doc["content"])),
+                metadata=doc["metadata"],
             )
-            system['index'].add_document(document)
+            system["index"].add_document(document)
 
         # 3. 検索実行
         from src.data.models import SearchQuery, SearchType
+
         query = SearchQuery(
-            query_text='機械学習',
-            search_type=SearchType.HYBRID,
-            limit=10
+            query_text="機械学習", search_type=SearchType.HYBRID, limit=10
         )
-        search_result = system['search'].search(query)
+        search_result = system["search"].search(query)
 
         # 4. 結果検証
         assert len(search_result) > 0
@@ -113,25 +115,25 @@ class TestCoreIntegration:
         first_result = search_result[0]
         # metadataは辞書型であることを確認
         assert isinstance(first_result.document.metadata, dict)
-        assert first_result.document.metadata.get('topic') == '機械学習'
+        assert first_result.document.metadata.get("topic") == "機械学習"
 
     def test_configuration_driven_behavior(self, integrated_system):
         """設定駆動動作テスト"""
         system = integrated_system
 
         # 検索結果数制限設定
-        system['config'].set('search.max_results', 5)
+        system["config"].set("search.max_results", 5)
 
         # ドキュメント追加
         for i in range(20):
             from src.data.models import Document, FileType
             from datetime import datetime
-            
-            content = f'テストドキュメント{i}です。検索テスト用の内容を含みます。'
+
+            content = f"テストドキュメント{i}です。検索テスト用の内容を含みます。"
             document = Document(
-                id=f'/test/doc_{i}.txt',
-                file_path=f'/test/doc_{i}.txt',
-                title=f'doc_{i}.txt',
+                id=f"/test/doc_{i}.txt",
+                file_path=f"/test/doc_{i}.txt",
+                title=f"doc_{i}.txt",
                 content=content,
                 file_type=FileType.TEXT,
                 size=len(content),
@@ -139,21 +141,22 @@ class TestCoreIntegration:
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
                 content_hash=str(hash(content)),
-                metadata={'doc_id': i}
+                metadata={"doc_id": i},
             )
-            system['index'].add_document(document)
+            system["index"].add_document(document)
 
         # 検索実行
         from src.data.models import SearchQuery, SearchType
+
         query = SearchQuery(
-            query_text='テスト',
+            query_text="テスト",
             search_type=SearchType.FULL_TEXT,
-            limit=None  # 設定ファイルの値を使用
+            limit=None,  # 設定ファイルの値を使用
         )
-        result = system['search'].search(query)
+        result = system["search"].search(query)
 
         # 設定に従った結果数制限確認
-        max_results = system['config'].get('search.max_results')
+        max_results = system["config"].get("search.max_results")
         assert len(result) <= max_results
 
     def test_embedding_cache_integration(self, integrated_system):
@@ -166,11 +169,11 @@ class TestCoreIntegration:
         for i in range(5):
             from src.data.models import Document, FileType
             from datetime import datetime
-            
+
             document = Document(
-                id=f'/test/duplicate_{i}.txt',
-                file_path=f'/test/duplicate_{i}.txt',
-                title=f'duplicate_{i}.txt',
+                id=f"/test/duplicate_{i}.txt",
+                file_path=f"/test/duplicate_{i}.txt",
+                title=f"duplicate_{i}.txt",
                 content=duplicate_content,
                 file_type=FileType.TEXT,
                 size=len(duplicate_content),
@@ -178,23 +181,21 @@ class TestCoreIntegration:
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
                 content_hash=str(hash(duplicate_content)),
-                metadata={'doc_id': i}
+                metadata={"doc_id": i},
             )
-            system['index'].add_document(document)
+            system["index"].add_document(document)
             # 埋め込みも生成
-            system['embedding'].add_document_embedding(document.id, document.content)
+            system["embedding"].add_document_embedding(document.id, document.content)
 
         # セマンティック検索実行
         from src.data.models import SearchQuery, SearchType
-        query = SearchQuery(
-            query_text='機械学習',
-            search_type=SearchType.SEMANTIC
-        )
-        system['search'].search(query)
+
+        query = SearchQuery(query_text="機械学習", search_type=SearchType.SEMANTIC)
+        system["search"].search(query)
 
         # キャッシュ効率確認
-        cache_stats = system['embedding'].get_cache_statistics()
-        assert cache_stats['hit_rate'] > 0.5  # 50%以上のキャッシュヒット率
+        cache_stats = system["embedding"].get_cache_statistics()
+        assert cache_stats["hit_rate"] > 0.5  # 50%以上のキャッシュヒット率
 
     def test_error_propagation_handling(self, integrated_system):
         """エラー伝播ハンドリングテスト"""
@@ -202,9 +203,13 @@ class TestCoreIntegration:
 
         # 無効なドキュメント追加試行
         invalid_docs = [
-            {'id': '', 'path': '/valid/path.txt', 'content': 'valid content'},  # 空ID
-            {'id': '/valid/id', 'path': '', 'content': 'valid content'},  # 空パス
-            {'id': '/valid/id', 'path': '/valid/path.txt', 'content': ''},  # 空コンテンツ
+            {"id": "", "path": "/valid/path.txt", "content": "valid content"},  # 空ID
+            {"id": "/valid/id", "path": "", "content": "valid content"},  # 空パス
+            {
+                "id": "/valid/id",
+                "path": "/valid/path.txt",
+                "content": "",
+            },  # 空コンテンツ
         ]
 
         success_count = 0
@@ -214,21 +219,21 @@ class TestCoreIntegration:
             try:
                 from src.data.models import Document, FileType
                 from datetime import datetime
-                
+
                 document = Document(
-                    id=doc['id'],
-                    file_path=doc['path'],
-                    title=doc['path'].split('/')[-1] if doc['path'] else 'empty',
-                    content=doc['content'],
+                    id=doc["id"],
+                    file_path=doc["path"],
+                    title=doc["path"].split("/")[-1] if doc["path"] else "empty",
+                    content=doc["content"],
                     file_type=FileType.TEXT,
-                    size=len(doc['content']),
+                    size=len(doc["content"]),
                     created_date=datetime.now(),
                     modified_date=datetime.now(),
                     indexed_date=datetime.now(),
-                    content_hash=str(hash(doc['content'])),
-                    metadata={}
+                    content_hash=str(hash(doc["content"])),
+                    metadata={},
                 )
-                system['index'].add_document(document)
+                system["index"].add_document(document)
                 success_count += 1
             except Exception as e:
                 error_count += 1
@@ -239,11 +244,9 @@ class TestCoreIntegration:
 
         # システム全体の安定性確認
         from src.data.models import SearchQuery, SearchType
-        test_query = SearchQuery(
-            query_text='test',
-            search_type=SearchType.FULL_TEXT
-        )
-        result = system['search'].search(test_query)
+
+        test_query = SearchQuery(query_text="test", search_type=SearchType.FULL_TEXT)
+        result = system["search"].search(test_query)
         assert isinstance(result, list)
 
     def test_concurrent_operations_stability(self, integrated_system):
@@ -258,12 +261,12 @@ class TestCoreIntegration:
                 for i in range(10):
                     from src.data.models import Document, FileType
                     from datetime import datetime
-                    
-                    content = f'スレッド{thread_id}のドキュメント{i}'
+
+                    content = f"スレッド{thread_id}のドキュメント{i}"
                     document = Document(
-                        id=f'/thread_{thread_id}/doc_{i}.txt',
-                        file_path=f'/thread_{thread_id}/doc_{i}.txt',
-                        title=f'doc_{i}.txt',
+                        id=f"/thread_{thread_id}/doc_{i}.txt",
+                        file_path=f"/thread_{thread_id}/doc_{i}.txt",
+                        title=f"doc_{i}.txt",
                         content=content,
                         file_type=FileType.TEXT,
                         size=len(content),
@@ -271,9 +274,9 @@ class TestCoreIntegration:
                         modified_date=datetime.now(),
                         indexed_date=datetime.now(),
                         content_hash=str(hash(content)),
-                        metadata={'thread_id': thread_id, 'doc_id': i}
+                        metadata={"thread_id": thread_id, "doc_id": i},
                     )
-                    system['index'].add_document(document)
+                    system["index"].add_document(document)
                 results.append(True)
             except Exception:
                 results.append(False)
@@ -282,11 +285,12 @@ class TestCoreIntegration:
             try:
                 for _i in range(5):
                     from src.data.models import SearchQuery, SearchType
+
                     query = SearchQuery(
-                        query_text=f'スレッド{thread_id}',
-                        search_type=SearchType.FULL_TEXT
+                        query_text=f"スレッド{thread_id}",
+                        search_type=SearchType.FULL_TEXT,
                     )
-                    result = system['search'].search(query)
+                    result = system["search"].search(query)
                     assert isinstance(result, list)
                 results.append(True)
             except Exception:
@@ -295,16 +299,10 @@ class TestCoreIntegration:
         # 並行実行
         with ThreadPoolExecutor(max_workers=8) as executor:
             # インデックス操作
-            index_futures = [
-                executor.submit(index_operation, i)
-                for i in range(4)
-            ]
+            index_futures = [executor.submit(index_operation, i) for i in range(4)]
 
             # 検索操作
-            search_futures = [
-                executor.submit(search_operation, i)
-                for i in range(4)
-            ]
+            search_futures = [executor.submit(search_operation, i) for i in range(4)]
 
             # 完了待機
             for future in index_futures + search_futures:
@@ -324,12 +322,12 @@ class TestCoreIntegration:
         for i in range(10):
             from src.data.models import Document, FileType
             from datetime import datetime
-            
-            content = f'復旧テスト用ドキュメント{i}'
+
+            content = f"復旧テスト用ドキュメント{i}"
             document = Document(
-                id=f'/recovery/doc_{i}.txt',
-                file_path=f'/recovery/doc_{i}.txt',
-                title=f'doc_{i}.txt',
+                id=f"/recovery/doc_{i}.txt",
+                file_path=f"/recovery/doc_{i}.txt",
+                title=f"doc_{i}.txt",
                 content=content,
                 file_type=FileType.TEXT,
                 size=len(content),
@@ -337,39 +335,37 @@ class TestCoreIntegration:
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
                 content_hash=str(hash(content)),
-                metadata={'doc_id': i}
+                metadata={"doc_id": i},
             )
-            system['index'].add_document(document)
+            system["index"].add_document(document)
 
         # 設定保存
-        system['config'].set('search.max_results', 25)  # テスト用の設定を追加
-        system['config'].save_config()
+        system["config"].set("search.max_results", 25)  # テスト用の設定を追加
+        system["config"].save_config()
 
         # システム再起動シミュレーション
         # Configは初期化時に自動的に設定ファイルを読み込み
         new_system = {
-            'config': Config(str(temp_workspace['config'])),
-            'embedding': EmbeddingManager(embeddings_path=str(temp_workspace['cache'] / 'embeddings.pkl')),
-            'index': IndexManager(str(temp_workspace['index'])),
+            "config": Config(str(temp_workspace["config"])),
+            "embedding": EmbeddingManager(
+                embeddings_path=str(temp_workspace["cache"] / "embeddings.pkl")
+            ),
+            "index": IndexManager(str(temp_workspace["index"])),
         }
-        
-        new_system['search'] = SearchManager(
-            new_system['index'],
-            new_system['embedding'],
-            new_system['config']
+
+        new_system["search"] = SearchManager(
+            new_system["index"], new_system["embedding"], new_system["config"]
         )
 
         # 復旧後の動作確認
         from src.data.models import SearchQuery, SearchType
-        query = SearchQuery(
-            query_text='復旧テスト',
-            search_type=SearchType.FULL_TEXT
-        )
-        result = new_system['search'].search(query)
+
+        query = SearchQuery(query_text="復旧テスト", search_type=SearchType.FULL_TEXT)
+        result = new_system["search"].search(query)
         assert len(result) > 0
 
         # 設定復旧確認
-        max_results = new_system['config'].get('search.max_results')
+        max_results = new_system["config"].get("search.max_results")
         assert max_results is not None
 
     def test_performance_under_load(self, integrated_system):
@@ -384,12 +380,12 @@ class TestCoreIntegration:
         for i in range(100):
             from src.data.models import Document, FileType
             from datetime import datetime
-            
-            content = f'負荷テスト用ドキュメント{i}です。' + 'コンテンツ ' * 50
+
+            content = f"負荷テスト用ドキュメント{i}です。" + "コンテンツ " * 50
             document = Document(
-                id=f'/load_test/doc_{i}.txt',
-                file_path=f'/load_test/doc_{i}.txt',
-                title=f'doc_{i}.txt',
+                id=f"/load_test/doc_{i}.txt",
+                file_path=f"/load_test/doc_{i}.txt",
+                title=f"doc_{i}.txt",
                 content=content,
                 file_type=FileType.TEXT,
                 size=len(content),
@@ -397,9 +393,9 @@ class TestCoreIntegration:
                 modified_date=datetime.now(),
                 indexed_date=datetime.now(),
                 content_hash=str(hash(content)),
-                metadata={'doc_id': i, 'category': f'cat_{i % 10}'}
+                metadata={"doc_id": i, "category": f"cat_{i % 10}"},
             )
-            system['index'].add_document(document)
+            system["index"].add_document(document)
 
         indexing_time = time.time() - start_time
 
@@ -409,12 +405,13 @@ class TestCoreIntegration:
         for i in range(20):
             start_time = time.time()
             from src.data.models import SearchQuery, SearchType
+
             query = SearchQuery(
-                query_text=f'ドキュメント{i}',
+                query_text=f"ドキュメント{i}",
                 search_type=SearchType.FULL_TEXT,
-                limit=20
+                limit=20,
             )
-            result = system['search'].search(query)
+            result = system["search"].search(query)
             search_time = time.time() - start_time
             search_times.append(search_time)
 
