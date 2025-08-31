@@ -235,8 +235,21 @@ def prepare_distribution() -> None:
     distribution_dir = INSTALLER_DIR / "DocMind"
     distribution_dir.mkdir(parents=True, exist_ok=True)
 
-    # 実行可能ファイルをコピー（名前をDocMind.exeに変更）
-    shutil.copy2(exe_path, distribution_dir / "DocMind.exe")
+    # onedirモードの場合、実行ファイルと_internalディレクトリをコピー
+    import platform
+    if platform.system() == "Windows":
+        # 実行ファイルをコピー（名前をDocMind.exeに変更）
+        shutil.copy2(exe_path, distribution_dir / "DocMind.exe")
+        
+        # _internalディレクトリをコピー
+        internal_src = exe_path.parent / "_internal"
+        internal_dst = distribution_dir / "_internal"
+        if internal_src.exists():
+            shutil.copytree(internal_src, internal_dst)
+            logger.info(f"_internalディレクトリをコピー: {internal_dst}")
+    else:
+        # Linuxの場合は単一ファイル
+        shutil.copy2(exe_path, distribution_dir / "DocMind")
     
     # インストーラーファイルを作成（シンプルなコピー版）
     installer_name = f"DocMind_Setup_v1.0.0.exe"
