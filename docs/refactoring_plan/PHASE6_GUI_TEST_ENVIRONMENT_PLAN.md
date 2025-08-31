@@ -259,7 +259,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.11'  # 安定性のため3.11を使用、3.13は将来対応予定
     
     - name: Setup virtual display
       run: |

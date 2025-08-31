@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from src.core.config_manager import ConfigManager
+from src.utils.config import Config
 from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
 from src.core.search_manager import SearchManager
@@ -39,13 +39,13 @@ class TestCoreIntegration:
     @pytest.fixture
     def integrated_system(self, temp_workspace):
         """統合システム"""
-        config_manager = ConfigManager(str(temp_workspace['config']))
+        config = Config(str(temp_workspace['config']))
         embedding_manager = EmbeddingManager(cache_dir=str(temp_workspace['cache']))
         index_manager = IndexManager(str(temp_workspace['index']))
         search_manager = SearchManager(index_manager, embedding_manager)
 
         return {
-            'config': config_manager,
+            'config': config,
             'embedding': embedding_manager,
             'index': index_manager,
             'search': search_manager
@@ -232,11 +232,11 @@ class TestCoreIntegration:
             )
 
         # 設定保存
-        system['config'].save()
+        system['config'].save_config()
 
         # システム再起動シミュレーション
         new_system = {
-            'config': ConfigManager(str(temp_workspace['config'])),
+            'config': Config(str(temp_workspace['config'])),
             'embedding': EmbeddingManager(cache_dir=str(temp_workspace['cache'])),
             'index': IndexManager(str(temp_workspace['index'])),
         }

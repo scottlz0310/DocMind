@@ -42,7 +42,7 @@ DocMindの初回安定版リリースです。完全オフラインで動作す�
 - **拡張性**: 新機能追加時の影響範囲を最小化
 
 #### 技術スタック
-- **言語**: Python 3.11+
+- **言語**: Python 3.11-3.13
 - **GUIフレームワーク**: PySide6
 - **検索エンジン**: Whoosh
 - **AI/ML**: sentence-transformers（all-MiniLM-L6-v2モデル）

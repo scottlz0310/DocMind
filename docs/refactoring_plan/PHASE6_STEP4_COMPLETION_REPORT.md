@@ -25,7 +25,7 @@
 ```yaml
 # 主要機能
 - マルチOS対応: Ubuntu・Windows
-- Python版本対応: 3.11・3.12
+- Python版本対応: 3.11-3.13
 - 段階的テスト: unit・integration・performance
 - 自動カバレッジ: codecov統合
 - 仮想ディスプレイ: ヘッドレスGUIテスト

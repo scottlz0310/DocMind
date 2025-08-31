@@ -23,7 +23,7 @@
 
 ### 2. CI/CD完全統合完成
 - **GitHub Actions設定**: comprehensive-ci.yml・品質ゲート・アーティファクト保存
-- **マルチPythonバージョン対応**: Python 3.11・3.12マトリックス・キャッシュ最適化
+- **マルチPythonバージョン対応**: Python 3.11-3.13マトリックス・キャッシュ最適化
 - **ヘッドレス環境対応**: Xvfb・QT_QPA_PLATFORM=offscreen設定
 - **品質ゲート**: カバレッジ85%・パフォーマンス10%以内劣化検出
 - **セキュリティチェック**: bandit・safety・コード品質メトリクス統合

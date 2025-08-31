@@ -20,7 +20,7 @@ REM Python環境の確認
 echo Python環境を確認中...
 python --version
 if %errorLevel% neq 0 (
-    echo Python 3.11以降がインストールされていることを確認してください
+    echo Python 3.11-3.13がインストールされていることを確認してください
     pause
     exit /b 1
 )

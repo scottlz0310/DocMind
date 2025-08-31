@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: '3.11'  # 安定性のため3.11を使用、3.13は将来対応予定
 
 jobs:
   # ドキュメント整合性チェック
