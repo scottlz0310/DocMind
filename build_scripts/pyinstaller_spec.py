@@ -9,7 +9,7 @@ Windows向けアプリケーションパッケージ化設定
 import sys
 from pathlib import Path
 from PyInstaller.building.build_main import Analysis
-from PyInstaller.building.api import PYZ, EXE
+from PyInstaller.building.api import PYZ, EXE, COLLECT
 
 # プロジェクトルートディレクトリの取得
 project_root = Path(__file__).parent.parent
@@ -100,10 +100,8 @@ pyz = PYZ(a.pure, a.zipped_data, cipher=None)
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
     [],
+    exclude_binaries=True,
     name='DocMind',
     debug=False,
     bootloader_ignore_signals=False,
@@ -118,6 +116,18 @@ exe = EXE(
     entitlements_file=None,
     icon=str(project_root / "assets" / "docmind.ico") if (project_root / "assets" / "docmind.ico").exists() else None,
     version=str(project_root / "build_scripts" / "version_info.txt") if (project_root / "build_scripts" / "version_info.txt").exists() else None,
+)
+
+# ディレクトリ形式の配布ファイル作成
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='DocMind'
 )
 
 # Windows向けの追加設定
