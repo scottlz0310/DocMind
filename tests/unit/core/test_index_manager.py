@@ -190,11 +190,13 @@ class TestIndexManager:
         # インデックスを閉じる
         manager.close()
 
-        # インデックスファイルを意図的に破損
-        index_files = list(temp_index_dir.glob("*"))
-        if index_files:
-            with open(index_files[0], 'w') as f:
-                f.write("破損データ")
+        # インデックスファイルを完全に破損（バイナリデータで上書き）
+        import shutil
+        # インデックスディレクトリを削除して無効なファイルで置き換え
+        shutil.rmtree(temp_index_dir)
+        temp_index_dir.mkdir()
+        # 無効なインデックスファイルを作成
+        (temp_index_dir / "_MAIN_1.toc").write_bytes(b"\x00\x01\x02\x03invalid_data")
 
         # 破損したインデックスを開こうとするとIndexingErrorが発生することを確認
         from src.utils.exceptions import IndexingError
