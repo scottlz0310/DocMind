@@ -221,7 +221,7 @@ jobs:
     - name: 依存関係のインストール
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[build]
+        pip install -e .[build,dev]
     
     - name: アプリケーションビルド
       run: |
