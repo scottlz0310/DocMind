@@ -412,6 +412,19 @@ class IndexManager:
         Returns:
             SearchResult: 作成されたSearchResultオブジェクト
         """
+        # メタデータの復元
+        metadata = {}
+        metadata_str = hit.get("metadata", "")
+        if metadata_str:
+            try:
+                import ast
+                metadata = ast.literal_eval(metadata_str)
+                if not isinstance(metadata, dict):
+                    metadata = {}
+            except (ValueError, SyntaxError) as e:
+                self.logger.warning(f"メタデータの復元に失敗しました: {e}")
+                metadata = {}
+        
         # ドキュメントオブジェクトの再構築
         document = Document(
             id=hit["id"],
@@ -424,6 +437,7 @@ class IndexManager:
             modified_date=hit["modified_date"],
             indexed_date=hit["indexed_date"],
             content_hash=hit["content_hash"],
+            metadata=metadata,
         )
 
         # スニペットの生成

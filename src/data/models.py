@@ -274,7 +274,7 @@ class SearchQuery:
     search_type: SearchType  # 検索タイプ
 
     # オプションフィールド
-    limit: int = 100  # 最大結果数
+    limit: int | None = None  # 最大結果数（Noneの場合は設定から取得）
     file_types: list[FileType] = field(
         default_factory=list
     )  # フィルター対象のファイルタイプ
@@ -296,7 +296,7 @@ class SearchQuery:
         if not isinstance(self.search_type, SearchType):
             raise ValueError("search_typeはSearchType列挙型である必要があります")
 
-        if self.limit <= 0:
+        if self.limit is not None and self.limit <= 0:
             raise ValueError("制限数は1以上である必要があります")
 
         if self.date_from and self.date_to and self.date_from > self.date_to:

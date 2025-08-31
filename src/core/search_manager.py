@@ -50,7 +50,7 @@ class SearchManager(LoggerMixin):
     """
 
     def __init__(
-        self, index_manager: IndexManager, embedding_manager: EmbeddingManager
+        self, index_manager: IndexManager, embedding_manager: EmbeddingManager, config=None
     ):
         """
         SearchManagerを初期化
@@ -58,9 +58,11 @@ class SearchManager(LoggerMixin):
         Args:
             index_manager: 全文検索を担当するIndexManager
             embedding_manager: セマンティック検索を担当するEmbeddingManager
+            config: 設定オブジェクト（オプション）
         """
         self.index_manager = index_manager
         self.embedding_manager = embedding_manager
+        self.config = config
 
         # デフォルト検索設定
         self.default_weights = SearchWeights()
@@ -238,9 +240,16 @@ class SearchManager(LoggerMixin):
     def _full_text_search(self, query: SearchQuery) -> list[SearchResult]:
         """全文検索を実行"""
         try:
+            # limitが指定されていない場合は設定から取得
+            limit = query.limit
+            if limit is None and self.config:
+                limit = self.config.get('search.max_results', 100)
+            elif limit is None:
+                limit = 100
+                
             results = self.index_manager.search_text(
                 query_text=query.query_text,
-                limit=query.limit,
+                limit=limit,
                 file_types=query.file_types,
                 date_from=query.date_from,
                 date_to=query.date_to,
@@ -270,9 +279,16 @@ class SearchManager(LoggerMixin):
     def _semantic_search(self, query: SearchQuery) -> list[SearchResult]:
         """セマンティック検索を実行"""
         try:
+            # limitが指定されていない場合は設定から取得
+            limit = query.limit
+            if limit is None and self.config:
+                limit = self.config.get('search.max_results', 100)
+            elif limit is None:
+                limit = 100
+                
             similarities = self.embedding_manager.search_similar(
                 query_text=query.query_text,
-                limit=query.limit,
+                limit=limit,
                 min_similarity=self.min_semantic_similarity,
             )
 
@@ -313,11 +329,18 @@ class SearchManager(LoggerMixin):
                 semantic=query.weights.get("semantic", self.default_weights.semantic),
             )
 
+            # limitが指定されていない場合は設定から取得
+            limit = query.limit
+            if limit is None and self.config:
+                limit = self.config.get('search.max_results', 100)
+            elif limit is None:
+                limit = 100
+                
             # 全文検索を実行
             full_text_query = SearchQuery(
                 query_text=query.query_text,
                 search_type=SearchType.FULL_TEXT,
-                limit=query.limit * 2,
+                limit=limit * 2,
                 file_types=query.file_types,
                 date_from=query.date_from,
                 date_to=query.date_to,
@@ -328,7 +351,7 @@ class SearchManager(LoggerMixin):
             semantic_query = SearchQuery(
                 query_text=query.query_text,
                 search_type=SearchType.SEMANTIC,
-                limit=query.limit * 2,
+                limit=limit * 2,
                 file_types=query.file_types,
                 date_from=query.date_from,
                 date_to=query.date_to,
@@ -340,7 +363,7 @@ class SearchManager(LoggerMixin):
                 full_text_results, semantic_results, weights
             )
 
-            return merged_results[: query.limit]
+            return merged_results[:limit]
 
         except Exception as e:
             self.logger.error(f"ハイブリッド検索に失敗しました: {e}")
@@ -489,6 +512,19 @@ class SearchManager(LoggerMixin):
 
                 if results:
                     hit = results[0]
+                    # メタデータの復元
+                    metadata = {}
+                    metadata_str = hit.get("metadata", "")
+                    if metadata_str:
+                        try:
+                            import ast
+                            metadata = ast.literal_eval(metadata_str)
+                            if not isinstance(metadata, dict):
+                                metadata = {}
+                        except (ValueError, SyntaxError) as e:
+                            self.logger.warning(f"メタデータの復元に失敗しました: {e}")
+                            metadata = {}
+                    
                     document = Document(
                         id=hit["id"],
                         file_path=hit["file_path"],
@@ -500,6 +536,7 @@ class SearchManager(LoggerMixin):
                         modified_date=hit["modified_date"],
                         indexed_date=hit["indexed_date"],
                         content_hash=hit["content_hash"],
+                        metadata=metadata,
                     )
                     return document
 
@@ -539,6 +576,13 @@ class SearchManager(LoggerMixin):
 
         # スコア順でソート
         unique_results.sort(key=lambda x: x.score, reverse=True)
+
+        # 結果数制限を適用
+        limit = query.limit
+        if limit is None and self.config:
+            limit = self.config.get('search.max_results', 100)
+        if limit is not None:
+            unique_results = unique_results[:limit]
 
         # ランクを再設定
         for i, result in enumerate(unique_results):
