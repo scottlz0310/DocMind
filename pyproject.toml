@@ -27,15 +27,12 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    # GUI フレームワーク
     "PySide6>=6.0.0",
+    # 検索エンジン
     "whoosh>=2.7.4",
-    # AI/ML - セマンティック検索（互換性確認済みバージョン）
+    # AI/ML - セマンティック検索（依存関係は自動解決）
     "sentence-transformers>=2.2.0,<3.0.0",
-    "transformers>=4.36.0,<4.37.0",
-    "huggingface-hub>=0.19.0,<0.20.0",
-    "torch>=1.11.0",
-    "numpy>=1.21.0",
-    "scikit-learn>=1.0.0",
     # ドキュメント処理
     "PyMuPDF>=1.20.0",
     "python-docx>=0.8.11",
@@ -49,29 +46,19 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    # テストフレームワーク - Phase5最適化（GUI関連プラグイン除外）
+    # テストフレームワーク
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-mock>=3.11.0",
-    "pytest-benchmark>=4.0.0",
     "pytest-timeout>=2.1.0",
-    # GUI関連テスト（ヘッドレス環境整備後に有効化）
-    # "pytest-qt>=4.2.0",
-    # "pytest-xvfb>=3.0.0",
-    # "pytest-parallel>=0.1.1",
     # コード品質
     "black>=23.0.0",
     "isort>=5.12.0",
     "flake8>=6.0.0",
-    "ruff>=0.0.280",
     "mypy>=1.5.0",
-    "pre-commit>=3.3.0",
     # セキュリティ
     "bandit>=1.7.0",
     "safety>=2.3.0",
-    "semgrep>=1.45.0",
-    # パフォーマンス
-    "memory-profiler>=0.61.0",
 ]
 build = [
     "pyinstaller>=5.13.0",
@@ -80,11 +67,6 @@ build = [
 security = [
     "bandit>=1.7.0",
     "safety>=2.3.0",
-    "semgrep>=1.45.0",
-]
-performance = [
-    "pytest-benchmark>=4.0.0",
-    "memory-profiler>=0.61.0",
 ]
 
 [project.scripts]
