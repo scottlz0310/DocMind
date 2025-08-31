@@ -8,6 +8,8 @@ Windows向けアプリケーションパッケージ化設定
 
 import sys
 from pathlib import Path
+from PyInstaller.building.build_main import Analysis
+from PyInstaller.building.api import PYZ, EXE
 
 # プロジェクトルートディレクトリの取得
 project_root = Path(__file__).parent.parent
