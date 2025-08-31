@@ -40,7 +40,7 @@ class TestCoreIntegration:
     def integrated_system(self, temp_workspace):
         """統合システム"""
         config = Config(str(temp_workspace['config']))
-        embedding_manager = EmbeddingManager(cache_dir=str(temp_workspace['cache']))
+        embedding_manager = EmbeddingManager(embeddings_path=str(temp_workspace['cache'] / 'embeddings.pkl'))
         index_manager = IndexManager(str(temp_workspace['index']))
         search_manager = SearchManager(index_manager, embedding_manager)
 
@@ -237,7 +237,7 @@ class TestCoreIntegration:
         # システム再起動シミュレーション
         new_system = {
             'config': Config(str(temp_workspace['config'])),
-            'embedding': EmbeddingManager(cache_dir=str(temp_workspace['cache'])),
+            'embedding': EmbeddingManager(embeddings_path=str(temp_workspace['cache'] / 'embeddings.pkl')),
             'index': IndexManager(str(temp_workspace['index'])),
         }
         new_system['search'] = SearchManager(

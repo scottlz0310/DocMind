@@ -51,7 +51,7 @@ class TestErrorCases:
 
     def test_memory_pressure_handling(self, temp_workspace):
         """メモリ圧迫ハンドリングテスト"""
-        embedding_manager = EmbeddingManager(cache_dir=str(temp_workspace / 'cache'))
+        embedding_manager = EmbeddingManager(embeddings_path=str(temp_workspace / 'cache' / 'embeddings.pkl'))
 
         # 大量のメモリを消費する処理
         large_texts = []
@@ -119,7 +119,7 @@ class TestErrorCases:
     def test_network_timeout_simulation(self, temp_workspace):
         """ネットワークタイムアウトシミュレーションテスト"""
         # 外部API呼び出しがある場合のテスト
-        embedding_manager = EmbeddingManager(cache_dir=str(temp_workspace / 'cache'))
+        embedding_manager = EmbeddingManager(embeddings_path=str(temp_workspace / 'cache' / 'embeddings.pkl'))
 
         # タイムアウトシミュレーション
         with patch('requests.get', side_effect=TimeoutError("Connection timeout")):
@@ -203,7 +203,7 @@ class TestErrorCases:
 
     def test_unicode_edge_cases(self, temp_workspace):
         """Unicode境界ケーステスト"""
-        embedding_manager = EmbeddingManager(cache_dir=str(temp_workspace / 'cache'))
+        embedding_manager = EmbeddingManager(embeddings_path=str(temp_workspace / 'cache' / 'embeddings.pkl'))
 
         # 特殊Unicode文字
         edge_cases = [
