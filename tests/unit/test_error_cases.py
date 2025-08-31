@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.core.config_manager import ConfigManager
+from src.utils.config import Config
 from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
 
@@ -168,13 +168,13 @@ class TestErrorCases:
 
     def test_resource_exhaustion_graceful_degradation(self, temp_workspace):
         """リソース枯渇時の優雅な劣化テスト"""
-        config_manager = ConfigManager(str(temp_workspace / 'config.json'))
+        config_manager = Config(str(temp_workspace / 'config.json'))
 
         # ファイルハンドル制限シミュレーション
         with patch('builtins.open', side_effect=OSError("Too many open files")):
             # 設定保存試行
             config_manager.set('test.value', 'test')
-            save_result = config_manager.save()
+            save_result = config_manager.save_config()
 
             # 失敗は許容するが、クラッシュしてはいけない
             assert save_result is False or save_result is None
@@ -191,7 +191,7 @@ class TestErrorCases:
         config_file.write_text('{ invalid json content }')
 
         # 不正データからの復旧
-        config_manager = ConfigManager(str(config_file))
+        config_manager = Config(str(config_file))
 
         # デフォルト値で動作することを確認
         default_value = config_manager.get('search.max_results')
