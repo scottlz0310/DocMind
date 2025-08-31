@@ -63,6 +63,9 @@ dev = [
 build = [
     "pyinstaller>=5.13.0",
     "auto-py-to-exe>=2.40.0",
+    # ビルドスクリプトが必要とする依存関係
+    "PySide6>=6.0.0",
+    "python-docx>=0.8.11",
 ]
 security = [
     "bandit>=1.7.0",
