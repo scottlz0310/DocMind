@@ -12,9 +12,9 @@ from unittest.mock import patch
 
 import pytest
 
-from src.utils.config import Config
 from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
+from src.utils.config import Config
 
 
 class TestErrorCases:
@@ -29,8 +29,9 @@ class TestErrorCases:
 
     def test_disk_space_exhaustion_handling(self, temp_workspace):
         """ディスク容量不足ハンドリングテスト"""
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         index_manager = IndexManager(str(temp_workspace / "index"))
 
@@ -119,8 +120,9 @@ class TestErrorCases:
 
     def test_corrupted_index_recovery(self, temp_workspace):
         """破損インデックス復旧テスト"""
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         index_dir = temp_workspace / "index"
         index_manager = IndexManager(str(index_dir))
@@ -249,8 +251,9 @@ class TestErrorCases:
         """並行アクセス競合テスト"""
         import threading
         import time
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         index_manager = IndexManager(str(temp_workspace / "index"))
         conflicts = []
@@ -366,8 +369,9 @@ class TestErrorCases:
 
     def test_boundary_value_limits(self, temp_workspace):
         """境界値制限テスト"""
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         index_manager = IndexManager(str(temp_workspace / "index"))
 
@@ -414,8 +418,9 @@ class TestErrorCases:
         import signal
         import threading
         import time
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         index_manager = IndexManager(str(temp_workspace / "index"))
         interrupted = False

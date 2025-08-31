@@ -46,8 +46,9 @@ class TestIndexManager:
         """既存インデックス"""
         manager = IndexManager(str(temp_index_dir))
         # 小規模な既存インデックスを作成
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         for i in range(100):
             content = f"既存ドキュメント{i}"
@@ -76,8 +77,9 @@ class TestIndexManager:
         for doc in large_document_set:
             try:
                 # Documentオブジェクトを作成
-                from src.data.models import Document, FileType
                 from datetime import datetime
+
+                from src.data.models import Document, FileType
 
                 document = Document(
                     id=f"doc_{success_count}",
@@ -122,8 +124,9 @@ class TestIndexManager:
 
         start_time = time.time()
 
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         for i, doc in enumerate(new_documents):
             document = Document(
@@ -175,8 +178,9 @@ class TestIndexManager:
         manager = IndexManager(str(temp_index_dir))
 
         # 正常なインデックスを作成
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         for i in range(10):
             content = f"テストドキュメント{i}"
@@ -224,8 +228,9 @@ class TestIndexManager:
         manager = IndexManager(str(temp_index_dir))
 
         # 大量のドキュメントを追加
-        from src.data.models import Document, FileType
         from datetime import datetime
+
+        from src.data.models import Document, FileType
 
         for i in range(500):
             large_content = "大きなコンテンツ " * 1000  # 約15KB

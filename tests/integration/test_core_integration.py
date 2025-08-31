@@ -10,10 +10,10 @@ from pathlib import Path
 
 import pytest
 
-from src.utils.config import Config
 from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
 from src.core.search_manager import SearchManager
+from src.utils.config import Config
 
 
 class TestCoreIntegration:
@@ -83,8 +83,9 @@ class TestCoreIntegration:
 
         # インデックス作成
         for doc in test_documents:
-            from src.data.models import Document, FileType
             from datetime import datetime
+
+            from src.data.models import Document, FileType
 
             document = Document(
                 id=doc["path"],
@@ -126,8 +127,9 @@ class TestCoreIntegration:
 
         # ドキュメント追加
         for i in range(20):
-            from src.data.models import Document, FileType
             from datetime import datetime
+
+            from src.data.models import Document, FileType
 
             content = f"テストドキュメント{i}です。検索テスト用の内容を含みます。"
             document = Document(
@@ -167,8 +169,9 @@ class TestCoreIntegration:
         duplicate_content = "機械学習とデータサイエンスの関係について"
 
         for i in range(5):
-            from src.data.models import Document, FileType
             from datetime import datetime
+
+            from src.data.models import Document, FileType
 
             document = Document(
                 id=f"/test/duplicate_{i}.txt",
@@ -217,8 +220,9 @@ class TestCoreIntegration:
 
         for doc in invalid_docs:
             try:
-                from src.data.models import Document, FileType
                 from datetime import datetime
+
+                from src.data.models import Document, FileType
 
                 document = Document(
                     id=doc["id"],
@@ -259,8 +263,9 @@ class TestCoreIntegration:
         def index_operation(thread_id):
             try:
                 for i in range(10):
-                    from src.data.models import Document, FileType
                     from datetime import datetime
+
+                    from src.data.models import Document, FileType
 
                     content = f"スレッド{thread_id}のドキュメント{i}"
                     document = Document(
@@ -320,8 +325,9 @@ class TestCoreIntegration:
 
         # 正常なデータ追加
         for i in range(10):
-            from src.data.models import Document, FileType
             from datetime import datetime
+
+            from src.data.models import Document, FileType
 
             content = f"復旧テスト用ドキュメント{i}"
             document = Document(
@@ -378,8 +384,9 @@ class TestCoreIntegration:
         start_time = time.time()
 
         for i in range(100):
-            from src.data.models import Document, FileType
             from datetime import datetime
+
+            from src.data.models import Document, FileType
 
             content = f"負荷テスト用ドキュメント{i}です。" + "コンテンツ " * 50
             document = Document(

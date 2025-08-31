@@ -54,8 +54,9 @@ class TestSearchManager:
         ]
 
         for i, (title, content) in enumerate(test_docs):
-            from src.data.models import Document, FileType
             from datetime import datetime
+
+            from src.data.models import Document, FileType
 
             full_content = f"{title}\n{content}"
             document = Document(
@@ -92,8 +93,9 @@ class TestSearchManager:
             topic = topics[i % len(topics)]
             content = f"{topic}に関するドキュメント{i}です。" + "詳細な内容 " * 50
 
-            from src.data.models import Document, FileType
             from datetime import datetime
+
+            from src.data.models import Document, FileType
 
             document = Document(
                 id=f"large_doc_{i}",
@@ -124,8 +126,9 @@ class TestSearchManager:
 
     def test_hybrid_search_accuracy(self, test_index, search_queries):
         """ハイブリッド検索精度テスト"""
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -154,8 +157,9 @@ class TestSearchManager:
 
     def test_semantic_search_performance(self, large_index):
         """セマンティック検索パフォーマンステスト"""
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -180,8 +184,9 @@ class TestSearchManager:
 
     def test_fulltext_search_speed(self, large_index):
         """全文検索速度テスト"""
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -208,9 +213,10 @@ class TestSearchManager:
 
     def test_concurrent_search_performance(self, large_index):
         """並行検索パフォーマンステスト"""
-        from concurrent.futures import ThreadPoolExecutor
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+        from concurrent.futures import ThreadPoolExecutor
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -235,8 +241,9 @@ class TestSearchManager:
 
     def test_search_result_ranking_quality(self, test_index):
         """検索結果ランキング品質テスト"""
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -256,8 +263,9 @@ class TestSearchManager:
 
     def test_search_with_filters(self, test_index):
         """フィルター付き検索テスト"""
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -281,8 +289,9 @@ class TestSearchManager:
         process = psutil.Process(os.getpid())
         initial_memory = process.memory_info().rss
 
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -303,8 +312,9 @@ class TestSearchManager:
 
     def test_search_error_handling(self, test_index):
         """検索エラーハンドリングテスト"""
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -327,8 +337,9 @@ class TestSearchManager:
 
     def test_search_statistics_tracking(self, test_index):
         """検索統計追跡テスト"""
-        from src.core.embedding_manager import EmbeddingManager
         import tempfile
+
+        from src.core.embedding_manager import EmbeddingManager
 
         # テスト用のEmbeddingManagerを作成
         with tempfile.TemporaryDirectory() as temp_dir:
