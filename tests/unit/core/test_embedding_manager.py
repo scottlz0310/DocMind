@@ -77,7 +77,6 @@ class TestEmbeddingManager:
 
     def test_batch_embedding_efficiency(self, temp_cache_dir, sample_texts):
         """バッチ埋め込み効率テスト"""
-        import time
 
         embeddings_path = str(temp_cache_dir / "embeddings.pkl")
         manager = EmbeddingManager(embeddings_path=embeddings_path)
@@ -187,7 +186,6 @@ class TestEmbeddingManager:
     @pytest.mark.skipif("CI" in os.environ, reason="CI環境では並行処理テストをスキップ")
     def test_concurrent_embedding_generation(self, temp_cache_dir):
         """並行埋め込み生成テスト（ローカルのみ）"""
-        import os
         from concurrent.futures import ThreadPoolExecutor
 
         embeddings_path = str(temp_cache_dir / "embeddings.pkl")
