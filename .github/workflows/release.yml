@@ -250,6 +250,23 @@ jobs:
     
 
     
+    - name: インストールテスト
+      run: |
+        echo "インストールテスト開始"
+        
+        # サイレントインストール
+        Start-Process -FilePath "installer/DocMind_Setup_v${{ github.ref_name }}.exe" -ArgumentList "/S" -Wait
+        
+        # ファイル配置確認のみ
+        if (Test-Path "$env:ProgramFiles\DocMind\DocMind.exe") {
+          echo "インストール成功"
+        } else {
+          echo "エラー: インストールが失敗しました"
+          exit 1
+        }
+        
+        echo "インストールテスト完了"
+    
     - name: ビルド成果物のアップロード
       uses: actions/upload-artifact@v4
       with:
