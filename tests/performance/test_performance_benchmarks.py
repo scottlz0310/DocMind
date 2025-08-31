@@ -43,25 +43,25 @@ class TestPerformanceBenchmarks:
     def test_search_performance(self):
         """検索パフォーマンステスト"""
         import time
-        
+
         search_manager = MockSearchManager()
-        
+
         start_time = time.time()
         result = search_manager.search("test query")
         elapsed_time = time.time() - start_time
-        
+
         assert elapsed_time < 1.0
         assert len(result) > 0
 
     def test_index_creation_performance(self, sample_documents):
         """インデックス作成パフォーマンステスト"""
         import time
-        
+
         index_manager = MockIndexManager()
-        
+
         start_time = time.time()
         result = index_manager.bulk_add_documents(sample_documents)
         elapsed_time = time.time() - start_time
-        
+
         assert elapsed_time < 3.0
         assert result.success is True
