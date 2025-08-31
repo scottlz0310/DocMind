@@ -46,6 +46,8 @@ hidden_imports = [
     'transformers',
     'torch',
     'numpy',
+    'scipy',
+    'scipy.spatial.distance',
     'sklearn',
     'sklearn.metrics.pairwise',
 
