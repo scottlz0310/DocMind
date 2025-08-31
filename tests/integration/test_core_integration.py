@@ -80,11 +80,23 @@ class TestCoreIntegration:
 
         # インデックス作成
         for doc in test_documents:
-            system['index'].add_document(
-                doc['path'],
-                doc['content'],
-                doc['metadata']
+            from src.data.models import Document, FileType
+            from datetime import datetime
+            
+            document = Document(
+                id=doc['path'],
+                file_path=doc['path'],
+                title=doc['path'].split('/')[-1],
+                content=doc['content'],
+                file_type=FileType.TEXT,
+                size=len(doc['content']),
+                created_date=datetime.now(),
+                modified_date=datetime.now(),
+                indexed_date=datetime.now(),
+                content_hash=str(hash(doc['content'])),
+                metadata=doc['metadata']
             )
+            system['index'].add_document(document)
 
         # 3. 検索実行
         search_result = system['search'].hybrid_search('機械学習', limit=10)
@@ -103,11 +115,24 @@ class TestCoreIntegration:
 
         # ドキュメント追加
         for i in range(20):
-            system['index'].add_document(
-                f'/test/doc_{i}.txt',
-                f'テストドキュメント{i}です。検索テスト用の内容を含みます。',
-                {'doc_id': i}
+            from src.data.models import Document, FileType
+            from datetime import datetime
+            
+            content = f'テストドキュメント{i}です。検索テスト用の内容を含みます。'
+            document = Document(
+                id=f'/test/doc_{i}.txt',
+                file_path=f'/test/doc_{i}.txt',
+                title=f'doc_{i}.txt',
+                content=content,
+                file_type=FileType.TEXT,
+                size=len(content),
+                created_date=datetime.now(),
+                modified_date=datetime.now(),
+                indexed_date=datetime.now(),
+                content_hash=str(hash(content)),
+                metadata={'doc_id': i}
             )
+            system['index'].add_document(document)
 
         # 検索実行
         result = system['search'].fulltext_search('テスト')
@@ -124,11 +149,23 @@ class TestCoreIntegration:
         duplicate_content = "機械学習とデータサイエンスの関係について"
 
         for i in range(5):
-            system['index'].add_document(
-                f'/test/duplicate_{i}.txt',
-                duplicate_content,
-                {'doc_id': i}
+            from src.data.models import Document, FileType
+            from datetime import datetime
+            
+            document = Document(
+                id=f'/test/duplicate_{i}.txt',
+                file_path=f'/test/duplicate_{i}.txt',
+                title=f'duplicate_{i}.txt',
+                content=duplicate_content,
+                file_type=FileType.TEXT,
+                size=len(duplicate_content),
+                created_date=datetime.now(),
+                modified_date=datetime.now(),
+                indexed_date=datetime.now(),
+                content_hash=str(hash(duplicate_content)),
+                metadata={'doc_id': i}
             )
+            system['index'].add_document(document)
 
         # セマンティック検索実行
         system['search'].semantic_search('機械学習')
@@ -153,11 +190,26 @@ class TestCoreIntegration:
 
         for doc in invalid_docs:
             try:
-                system['index'].add_document(
-                    doc['path'],
-                    doc['content'],
-                    doc['metadata']
+                from src.data.models import Document, FileType
+                from datetime import datetime
+                
+                if doc['content'] is None:
+                    continue
+                    
+                document = Document(
+                    id=doc['path'] or 'empty_path',
+                    file_path=doc['path'] or 'empty_path',
+                    title=(doc['path'] or 'empty_path').split('/')[-1],
+                    content=doc['content'] or '',
+                    file_type=FileType.TEXT,
+                    size=len(doc['content'] or ''),
+                    created_date=datetime.now(),
+                    modified_date=datetime.now(),
+                    indexed_date=datetime.now(),
+                    content_hash=str(hash(doc['content'] or '')),
+                    metadata=doc['metadata']
                 )
+                system['index'].add_document(document)
                 success_count += 1
             except Exception:
                 error_count += 1
@@ -179,11 +231,24 @@ class TestCoreIntegration:
         def index_operation(thread_id):
             try:
                 for i in range(10):
-                    system['index'].add_document(
-                        f'/thread_{thread_id}/doc_{i}.txt',
-                        f'スレッド{thread_id}のドキュメント{i}',
-                        {'thread_id': thread_id, 'doc_id': i}
+                    from src.data.models import Document, FileType
+                    from datetime import datetime
+                    
+                    content = f'スレッド{thread_id}のドキュメント{i}'
+                    document = Document(
+                        id=f'/thread_{thread_id}/doc_{i}.txt',
+                        file_path=f'/thread_{thread_id}/doc_{i}.txt',
+                        title=f'doc_{i}.txt',
+                        content=content,
+                        file_type=FileType.TEXT,
+                        size=len(content),
+                        created_date=datetime.now(),
+                        modified_date=datetime.now(),
+                        indexed_date=datetime.now(),
+                        content_hash=str(hash(content)),
+                        metadata={'thread_id': thread_id, 'doc_id': i}
                     )
+                    system['index'].add_document(document)
                 results.append(True)
             except Exception:
                 results.append(False)
@@ -225,11 +290,24 @@ class TestCoreIntegration:
 
         # 正常なデータ追加
         for i in range(10):
-            system['index'].add_document(
-                f'/recovery/doc_{i}.txt',
-                f'復旧テスト用ドキュメント{i}',
-                {'doc_id': i}
+            from src.data.models import Document, FileType
+            from datetime import datetime
+            
+            content = f'復旧テスト用ドキュメント{i}'
+            document = Document(
+                id=f'/recovery/doc_{i}.txt',
+                file_path=f'/recovery/doc_{i}.txt',
+                title=f'doc_{i}.txt',
+                content=content,
+                file_type=FileType.TEXT,
+                size=len(content),
+                created_date=datetime.now(),
+                modified_date=datetime.now(),
+                indexed_date=datetime.now(),
+                content_hash=str(hash(content)),
+                metadata={'doc_id': i}
             )
+            system['index'].add_document(document)
 
         # 設定保存
         system['config'].save_config()
@@ -263,11 +341,24 @@ class TestCoreIntegration:
         start_time = time.time()
 
         for i in range(1000):
-            system['index'].add_document(
-                f'/load_test/doc_{i}.txt',
-                f'負荷テスト用ドキュメント{i}です。' + 'コンテンツ ' * 50,
-                {'doc_id': i, 'category': f'cat_{i % 10}'}
+            from src.data.models import Document, FileType
+            from datetime import datetime
+            
+            content = f'負荷テスト用ドキュメント{i}です。' + 'コンテンツ ' * 50
+            document = Document(
+                id=f'/load_test/doc_{i}.txt',
+                file_path=f'/load_test/doc_{i}.txt',
+                title=f'doc_{i}.txt',
+                content=content,
+                file_type=FileType.TEXT,
+                size=len(content),
+                created_date=datetime.now(),
+                modified_date=datetime.now(),
+                indexed_date=datetime.now(),
+                content_hash=str(hash(content)),
+                metadata={'doc_id': i, 'category': f'cat_{i % 10}'}
             )
+            system['index'].add_document(document)
 
         indexing_time = time.time() - start_time
 
