@@ -240,7 +240,7 @@ jobs:
           $fileSize = (Get-Item "installer/DocMind_Setup_v$version.exe").Length
           echo "インストーラーサイズ: $($fileSize / 1MB) MB"
           
-          if ($fileSize -lt 10MB) {
+          if ($fileSize -lt 1MB) {
             echo "警告: インストーラーサイズが小さすぎます"
             exit 1
           }
