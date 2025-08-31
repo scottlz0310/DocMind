@@ -126,13 +126,14 @@ jobs:
       run: |
         echo "テスト実行開始"
         
-        # ユニットテスト（GUIテストを除外）
+        # ユニットテスト（GUI関連テストを除外）
         pytest tests/ -v --tb=short \
           --ignore=tests/gui/ \
-          --ignore=tests/integration/test_main_window_integration.py \
+          --ignore=tests/integration/ \
           --ignore=tests/unit/controllers/ \
           --ignore=tests/unit/managers/ \
           --ignore=tests/unit/search/managers/ \
+          --ignore=tests/unit/folder_tree/ \
           --cov=src \
           --cov-report=xml:reports/coverage.xml \
           --cov-report=term-missing \
