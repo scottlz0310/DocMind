@@ -112,10 +112,20 @@ def clean_build_directories() -> None:
     for directory in directories_to_clean:
         if directory.exists():
             try:
-                shutil.rmtree(directory)
+                # Windowsでの権限問題を回避するため、読み取り専用属性を削除
+                import stat
+                import os
+                
+                def remove_readonly(func, path, _):
+                    """読み取り専用ファイルを削除可能にする"""
+                    os.chmod(path, stat.S_IWRITE)
+                    func(path)
+                
+                shutil.rmtree(directory, onerror=remove_readonly)
                 logger.info(f"削除完了: {directory}")
             except Exception as e:
                 logger.warning(f"削除に失敗: {directory} - {e}")
+                # 削除に失敗した場合は続行
 
     # 必要なディレクトリを再作成
     for directory in directories_to_clean:
@@ -199,7 +209,8 @@ def run_pyinstaller() -> bool:
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
-            encoding='utf-8'
+            encoding='utf-8',
+            errors='replace'  # エンコーディングエラーを置換文字で処理
         )
 
         if result.returncode == 0:
@@ -355,6 +366,49 @@ pause
     script_path = distribution_dir / "uninstall.bat"
     with open(script_path, 'w', encoding='shift_jis') as f:
         f.write(uninstall_script)
+
+    logger.info(f"アンインストールスクリプトを作成: {script_path}")
+
+
+def main() -> None:
+    """
+    メイン実行関数
+    """
+    logger.info("DocMind Windowsビルドプロセスを開始します")
+
+    try:
+        # 1. 要件チェック
+        if not check_requirements():
+            logger.error("ビルド要件が満たされていません")
+            sys.exit(1)
+
+        # 2. ビルドディレクトリのクリーンアップ
+        clean_build_directories()
+
+        # 3. アセットファイルの作成
+        create_assets()
+
+        # 4. デフォルト設定ファイルの作成
+        create_default_config()
+
+        # 5. PyInstallerでビルド
+        if not run_pyinstaller():
+            logger.error("PyInstallerビルドに失敗しました")
+            sys.exit(1)
+
+        # 6. 配布用ファイルの準備
+        prepare_distribution()
+
+        logger.info("ビルドプロセスが正常に完了しました")
+        logger.info(f"配布ファイル: {INSTALLER_DIR}")
+
+    except Exception as e:
+        logger.error(f"ビルドプロセス中にエラーが発生: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()t)
 
     logger.info(f"アンインストールスクリプトを作成: {script_path}")
 
