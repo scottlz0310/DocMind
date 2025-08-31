@@ -29,7 +29,7 @@ check-venv:
 install: check-venv
 	@echo "📦 依存関係をインストール中..."
 	pip install --upgrade pip
-	pip install -r requirements.txt
+	pip install -e ."[build,dev]"
 	pip install pytest-qt pytest-benchmark pytest-cov ruff black isort
 
 # 全テスト実行

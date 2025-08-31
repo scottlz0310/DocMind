@@ -89,7 +89,7 @@ def check_requirements() -> bool:
     required_files = [
         PROJECT_ROOT / "main.py",
         PROJECT_ROOT / "pyproject.toml",
-        PROJECT_ROOT / "build_scripts" / "pyinstaller_spec.py"
+        PROJECT_ROOT / "build_scripts" / "docmind.spec"
     ]
 
     missing_files = [f for f in required_files if not f.exists()]
@@ -181,13 +181,15 @@ def run_pyinstaller() -> bool:
     """
     logger.info("PyInstallerでアプリケーションをビルド中...")
 
-    spec_file = PROJECT_ROOT / "build_scripts" / "pyinstaller_spec.py"
+    spec_file = PROJECT_ROOT / "build_scripts" / "docmind.spec"
 
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--clean",
         "--noconfirm",
         "--log-level=INFO",
+        f"--workpath={BUILD_DIR}",
+        f"--distpath={DIST_DIR}",
         str(spec_file)
     ]
 
@@ -223,9 +225,9 @@ def prepare_distribution() -> None:
     # 実行可能ファイルの場所（PyInstallerの出力先）
     import platform
     if platform.system() == "Windows":
-        exe_path = DIST_DIR / "pyinstaller_spec" / "pyinstaller_spec.exe"
+        exe_path = DIST_DIR / "DocMind" / "DocMind.exe"
     else:
-        exe_path = DIST_DIR / "pyinstaller_spec" / "pyinstaller_spec"
+        exe_path = DIST_DIR / "DocMind" / "DocMind"
 
     if not exe_path.exists():
         logger.error(f"実行可能ファイルが見つかりません: {exe_path}")

@@ -40,7 +40,7 @@ DocMindは、ローカルPC上に保存された様々なドキュメント形�
 1. リポジトリをクローン
 2. 仮想環境を作成: `python -m venv venv`
 3. 仮想環境をアクティベート: `venv\Scripts\activate` (Windows)
-4. 依存関係をインストール: `pip install -r requirements.txt`
+4. 依存関係をインストール: `pip install -e .`
 5. アプリケーションを実行: `python main.py`
 
 ### Windows向けバイナリインストール
