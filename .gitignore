@@ -220,3 +220,8 @@ validation_results/
 
 # Quality reports and security scans
 reports/
+
+# Build artifacts
+installer/
+config/default_config.json
+build.log
