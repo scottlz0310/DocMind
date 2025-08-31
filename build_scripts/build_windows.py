@@ -60,9 +60,23 @@ def check_requirements() -> bool:
     ]
 
     missing_packages = []
+    import_map = {
+        'PyInstaller': 'PyInstaller',
+        'PySide6': 'PySide6',
+        'sentence-transformers': 'sentence_transformers',
+        'Whoosh': 'whoosh',
+        'PyMuPDF': 'fitz',
+        'python-docx': 'docx',
+        'openpyxl': 'openpyxl',
+        'watchdog': 'watchdog',
+        'chardet': 'chardet',
+        'psutil': 'psutil'
+    }
+    
     for package in required_packages:
         try:
-            __import__(package.lower().replace('-', '_'))
+            import_name = import_map.get(package, package.lower().replace('-', '_'))
+            __import__(import_name)
         except ImportError:
             missing_packages.append(package)
 

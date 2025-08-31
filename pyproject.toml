@@ -65,7 +65,14 @@ build = [
     "auto-py-to-exe>=2.40.0",
     # ビルドスクリプトが必要とする依存関係
     "PySide6>=6.0.0",
+    "sentence-transformers>=2.2.0,<3.0.0",
+    "whoosh>=2.7.4",
+    "PyMuPDF>=1.20.0",
     "python-docx>=0.8.11",
+    "openpyxl>=3.0.0",
+    "watchdog>=2.1.0",
+    "chardet>=5.0.0",
+    "psutil>=5.8.0",
 ]
 security = [
     "bandit>=1.7.0",
