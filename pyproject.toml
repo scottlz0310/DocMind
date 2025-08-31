@@ -175,14 +175,19 @@ select = [
     "T20", # flake8-print
 ]
 ignore = [
-    "E501",  # line too long, handled by black
     "B008",  # do not perform function calls in argument defaults
     "C901",  # too complex
+    "B017",  # pytest.raises(Exception) is too broad
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"tests/*" = ["T20"]
+"tests/*" = ["T20", "F841"]  # Allow unused variables in tests
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.11"
