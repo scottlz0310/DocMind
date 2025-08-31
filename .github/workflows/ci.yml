@@ -49,7 +49,10 @@ jobs:
         safety check --policy-file .safety-policy.yml || true
         ruff check src/ || true
 
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      if: matrix.python-version == '3.11'
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
+        slug: scottlz0310/DocMind

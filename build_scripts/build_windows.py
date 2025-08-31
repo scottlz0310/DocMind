@@ -68,13 +68,13 @@ def check_requirements() -> bool:
 
     if missing_packages:
         logger.error(f"不足しているパッケージ: {', '.join(missing_packages)}")
-        logger.error("pip install -r requirements.txt を実行してください")
+        logger.error("pip install -e .[build,dev] を実行してください")
         return False
 
     # プロジェクトファイルの存在チェック
     required_files = [
         PROJECT_ROOT / "main.py",
-        PROJECT_ROOT / "requirements.txt",
+        PROJECT_ROOT / "pyproject.toml",
         PROJECT_ROOT / "build_scripts" / "pyinstaller_spec.py"
     ]
 
