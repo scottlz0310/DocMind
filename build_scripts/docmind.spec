@@ -7,12 +7,13 @@ Windows向けアプリケーションパッケージ化設定
 """
 
 import sys
+import os
 from pathlib import Path
 from PyInstaller.building.build_main import Analysis
 from PyInstaller.building.api import PYZ, EXE, COLLECT
 
 # プロジェクトルートディレクトリの取得
-project_root = Path(__file__).parent.parent
+project_root = Path(os.path.abspath(SPECPATH)).parent
 src_path = project_root / "src"
 
 # 追加データファイルの定義
