@@ -82,22 +82,18 @@ class TestEmbeddingManager:
         embeddings_path = str(temp_cache_dir / "embeddings.pkl")
         manager = EmbeddingManager(embeddings_path=embeddings_path)
 
-        # 個別処理時間
-        start_time = time.time()
+        # 個別処理
         individual_embeddings = []
         for i, text in enumerate(sample_texts):
             manager.add_document_embedding(f"doc{i}", text)
             individual_embeddings.append(manager.embeddings[f"doc{i}"].embedding)
-        individual_time = time.time() - start_time
 
         # 新しいマネージャーで同じ処理（キャッシュなし）
         manager2 = EmbeddingManager(
             embeddings_path=str(temp_cache_dir / "embeddings2.pkl")
         )
-        start_time = time.time()
         for i, text in enumerate(sample_texts):
             manager2.add_document_embedding(f"doc{i}", text)
-        batch_time = time.time() - start_time
 
         # 検証（処理時間の比較）
         assert len(manager.embeddings) == len(sample_texts)
