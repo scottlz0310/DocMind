@@ -221,7 +221,11 @@ def prepare_distribution() -> None:
     logger.info("配布用ファイルを準備中...")
 
     # 実行可能ファイルの場所（PyInstallerの出力先）
-    exe_path = DIST_DIR / "pyinstaller_spec" / "pyinstaller_spec.exe"
+    import platform
+    if platform.system() == "Windows":
+        exe_path = DIST_DIR / "pyinstaller_spec" / "pyinstaller_spec.exe"
+    else:
+        exe_path = DIST_DIR / "pyinstaller_spec" / "pyinstaller_spec"
 
     if not exe_path.exists():
         logger.error(f"実行可能ファイルが見つかりません: {exe_path}")
