@@ -239,7 +239,7 @@ class TestCoreIntegration:
                 )
                 system["index"].add_document(document)
                 success_count += 1
-            except Exception as e:
+            except Exception:
                 error_count += 1
 
         # エラーハンドリング確認

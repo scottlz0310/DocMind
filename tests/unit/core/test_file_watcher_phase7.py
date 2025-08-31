@@ -14,7 +14,6 @@ import pytest
 
 from src.core.embedding_manager_extended import EmbeddingManagerExtended
 from src.core.file_watcher import FileWatcher
-from src.utils.exceptions import FileWatcherError
 
 
 class TestFileWatcherPhase7:

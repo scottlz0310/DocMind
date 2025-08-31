@@ -12,7 +12,6 @@ import numpy as np
 import pytest
 
 from src.core.embedding_manager import EmbeddingManager
-from src.utils.exceptions import EmbeddingError
 
 
 class TestEmbeddingManager:

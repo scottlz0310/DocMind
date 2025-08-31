@@ -6,13 +6,11 @@ FileWatcherのテストモジュール
 
 import os
 import tempfile
-import time
 from unittest.mock import Mock
 
 import pytest
 
 from src.core.file_watcher import FileWatcher
-from src.utils.exceptions import FileWatcherError
 
 
 class TestFileWatcher:
