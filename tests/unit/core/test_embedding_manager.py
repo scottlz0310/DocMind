@@ -184,9 +184,7 @@ class TestEmbeddingManager:
         # メモリ増加量が500MB以下（モデル読み込みを考慮）
         assert memory_increase < 500 * 1024 * 1024
 
-    @pytest.mark.skipif(
-        "CI" in os.environ, reason="CI環境では並行処理テストをスキップ"
-    )
+    @pytest.mark.skipif("CI" in os.environ, reason="CI環境では並行処理テストをスキップ")
     def test_concurrent_embedding_generation(self, temp_cache_dir):
         """並行埋め込み生成テスト（ローカルのみ）"""
         import os
