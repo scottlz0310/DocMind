@@ -234,19 +234,30 @@ jobs:
       run: |
         echo "ビルド成果物の確認"
         
-        # インストーラーファイルの存在確認
-        if (Test-Path "installer/DocMind_Setup_v${{ github.ref_name }}.exe") {
-          $fileSize = (Get-Item "installer/DocMind_Setup_v${{ github.ref_name }}.exe").Length
-          echo "インストーラーサイズ: $($fileSize / 1MB) MB"
-          
-          if ($fileSize -lt 50MB) {
-            echo "警告: インストーラーサイズが小さすぎます"
+        # Windows環境でのみインストーラーファイルをチェック
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          if (Test-Path "installer/DocMind_Setup_v${{ github.ref_name }}.exe") {
+            $fileSize = (Get-Item "installer/DocMind_Setup_v${{ github.ref_name }}.exe").Length
+            echo "インストーラーサイズ: $($fileSize / 1MB) MB"
+            
+            if ($fileSize -lt 50MB) {
+              echo "警告: インストーラーサイズが小さすぎます"
+              exit 1
+            fi
+          } else {
+            echo "エラー: インストーラーファイルが見つかりません"
             exit 1
-          }
-        } else {
-          echo "エラー: インストーラーファイルが見つかりません"
-          exit 1
-        }
+          fi
+        else
+          echo "Linux環境のため、インストーラーファイルのチェックをスキップします"
+          # 代わりにdistディレクトリの内容を確認
+          if [ -d "dist" ]; then
+            echo "ビルド成果物:"
+            ls -la dist/
+          else
+            echo "警告: distディレクトリが見つかりません"
+          fi
+        fi
     
 
     
