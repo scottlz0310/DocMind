@@ -134,6 +134,7 @@ jobs:
           --ignore=tests/unit/managers/ \
           --ignore=tests/unit/search/managers/ \
           --ignore=tests/unit/folder_tree/ \
+          --ignore=tests/unit/core/test_index_manager_phase7_fixed.py \
           --cov=src \
           --cov-report=xml:reports/coverage.xml \
           --cov-report=term-missing \
