@@ -219,8 +219,8 @@ def prepare_distribution() -> None:
     """
     logger.info("配布用ファイルを準備中...")
 
-    # 実行可能ファイルの場所
-    exe_path = DIST_DIR / "DocMind.exe"
+    # 実行可能ファイルの場所（PyInstallerの出力先）
+    exe_path = DIST_DIR / "pyinstaller_spec" / "pyinstaller_spec.exe"
 
     if not exe_path.exists():
         logger.error(f"実行可能ファイルが見つかりません: {exe_path}")
@@ -230,8 +230,14 @@ def prepare_distribution() -> None:
     distribution_dir = INSTALLER_DIR / "DocMind"
     distribution_dir.mkdir(parents=True, exist_ok=True)
 
-    # 実行可能ファイルをコピー
+    # 実行可能ファイルをコピー（名前をDocMind.exeに変更）
     shutil.copy2(exe_path, distribution_dir / "DocMind.exe")
+    
+    # インストーラーファイルを作成（シンプルなコピー版）
+    installer_name = f"DocMind_Setup_v1.0.0.exe"
+    installer_path = INSTALLER_DIR / installer_name
+    shutil.copy2(exe_path, installer_path)
+    logger.info(f"インストーラーファイルを作成: {installer_path}")
     logger.info("実行可能ファイルをコピーしました")
 
     # 追加ファイルをコピー
