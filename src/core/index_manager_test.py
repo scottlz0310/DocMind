@@ -10,8 +10,8 @@ from ..data.models import FileType, SearchResult, SearchType
 from .index_manager import IndexManager
 
 
-class TestIndexManager(IndexManager):
-    """テスト用IndexManager
+class MockIndexManager(IndexManager):
+    """モック用IndexManager
 
     検索結果作成時にMockDocumentを使用してファイル存在チェックを回避
     """
