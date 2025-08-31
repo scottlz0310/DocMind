@@ -32,8 +32,22 @@ class TestIndexManager(IndexManager):
         Returns:
             SearchResult: 作成されたSearchResultオブジェクト
         """
-        # MockDocumentオブジェクトの作成（ファイル存在チェックなし）
-        document = MockDocument(
+        # メタデータの復元
+        metadata = {}
+        metadata_str = hit.get("metadata", "")
+        if metadata_str:
+            try:
+                import ast
+                metadata = ast.literal_eval(metadata_str)
+                if not isinstance(metadata, dict):
+                    metadata = {}
+            except (ValueError, SyntaxError) as e:
+                self.logger.warning(f"メタデータの復元に失敗しました: {e}")
+                metadata = {}
+        
+        # 実際のDocumentオブジェクトを作成（テスト用にファイル存在チェックなし）
+        from ..data.models import Document
+        document = Document(
             id=hit["id"],
             file_path=hit["file_path"],
             title=hit["title"],
@@ -44,6 +58,7 @@ class TestIndexManager(IndexManager):
             modified_date=hit["modified_date"],
             indexed_date=hit["indexed_date"],
             content_hash=hit["content_hash"],
+            metadata=metadata,
         )
 
         # スニペットの生成

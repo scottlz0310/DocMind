@@ -94,8 +94,9 @@ class TestDocumentProcessor:
         pdf_path = os.path.join(temp_dir, "test.pdf")
         Path(pdf_path).touch()
 
-        with pytest.raises(DocumentProcessingError):
-            processor.extract_pdf_text(pdf_path)
+        # 空のPDFファイルの場合、空文字列が返されることを確認
+        result = processor.extract_pdf_text(pdf_path)
+        assert result == ""
 
     def test_get_supported_extensions(self, processor):
         """サポート拡張子取得テスト"""

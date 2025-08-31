@@ -331,8 +331,8 @@ class TestIndexManagerPhase7:
         for doc in large_document_set:
             index_manager.add_document(doc)
 
-        # 検索パフォーマンスを測定
-        queries = ["テスト", "ドキュメント", "検索", "データ", "機能"]
+        # 検索パフォーマンスを測定（実際にドキュメントに含まれる単語で検索）
+        queries = ["テスト", "ドキュメント", "検索"]
 
         for query in queries:
             start_time = time.time()
@@ -341,4 +341,5 @@ class TestIndexManagerPhase7:
 
             # 各検索が1秒以内に完了することを確認
             assert (end_time - start_time) < 1.0
+            # ドキュメントに含まれる単語なので結果があるはず
             assert len(results) > 0

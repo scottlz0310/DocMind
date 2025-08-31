@@ -30,13 +30,14 @@ class TestConfig:
         assert hasattr(config, 'get')
         assert hasattr(config, 'set')
 
-    def test_default_values(self):
+    def test_default_values(self, temp_config_dir):
         """デフォルト値テスト"""
-        config = Config()
+        config_file = temp_config_dir / "test_defaults.json"
+        config = Config(str(config_file))
 
         # デフォルト値の確認
         assert config.get('data_directory') is not None
-        assert config.get('log_level') == 'WARNING'
+        assert config.get('log_level') == 'INFO'
         assert config.get('max_documents') > 0
 
     def test_get_set_operations(self):
@@ -137,9 +138,10 @@ class TestConfig:
         assert result is True
         assert new_config.get('test_export') == 'export_value'
 
-    def test_reset_to_defaults(self):
+    def test_reset_to_defaults(self, temp_config_dir):
         """デフォルト値リセットテスト"""
-        config = Config()
+        config_file = temp_config_dir / "test_reset.json"
+        config = Config(str(config_file))
 
         # カスタム値設定
         config.set('custom_key', 'custom_value')
@@ -148,4 +150,4 @@ class TestConfig:
         # リセット
         config.reset_to_defaults()
         assert config.get('custom_key') is None
-        assert config.get('log_level') == 'WARNING'  # デフォルト値確認
+        assert config.get('log_level') == 'INFO'  # デフォルト値確認

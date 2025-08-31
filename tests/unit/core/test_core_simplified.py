@@ -75,7 +75,7 @@ class TestCoreSimplified:
                 file_path=f"/test/doc_{i}.txt",
                 title=f"ドキュメント{i}",
                 content=f"これはドキュメント{i}の内容です。",
-                file_type=FileType.TXT,
+                file_type=FileType.TEXT,
                 size=100,
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
@@ -100,10 +100,11 @@ class TestCoreSimplified:
     def test_embedding_manager_basic_operations(self, temp_dir):
         """EmbeddingManagerの基本操作テスト"""
         # モデル読み込みをモック化
-        with patch('sentence_transformers.SentenceTransformer') as mock_model:
+        with patch('src.core.embedding_manager.SentenceTransformer') as mock_model:
             # モックの設定
             mock_instance = Mock()
-            mock_instance.encode.return_value = [0.1, 0.2, 0.3, 0.4, 0.5]
+            import numpy as np
+            mock_instance.encode.return_value = np.array([0.1, 0.2, 0.3, 0.4, 0.5])
             mock_instance.get_sentence_embedding_dimension.return_value = 5
             mock_model.return_value = mock_instance
 
@@ -130,9 +131,10 @@ class TestCoreSimplified:
         """EmbeddingManagerのキャッシュ操作テスト"""
         embeddings_path = str(temp_dir / 'embeddings.pkl')
 
-        with patch('sentence_transformers.SentenceTransformer') as mock_model:
+        with patch('src.core.embedding_manager.SentenceTransformer') as mock_model:
             mock_instance = Mock()
-            mock_instance.encode.return_value = [0.1, 0.2, 0.3]
+            import numpy as np
+            mock_instance.encode.return_value = np.array([0.1, 0.2, 0.3])
             mock_instance.get_sentence_embedding_dimension.return_value = 3
             mock_model.return_value = mock_instance
 
@@ -162,7 +164,7 @@ class TestCoreSimplified:
             assert isinstance(e, OSError | PermissionError | Exception)
 
         # EmbeddingManagerのエラーハンドリング
-        with patch('sentence_transformers.SentenceTransformer', side_effect=Exception("Model load failed")):
+        with patch('src.core.embedding_manager.SentenceTransformer', side_effect=Exception("Model load failed")):
             embedding_manager = EmbeddingManager()
 
             # モデル読み込みエラーが適切にハンドリングされることを確認
@@ -187,7 +189,7 @@ class TestCoreSimplified:
                 file_path=f"/perf/doc_{i}.txt",
                 title=f"パフォーマンステスト{i}",
                 content=f"これはパフォーマンステスト用のドキュメント{i}です。" * 5,
-                file_type=FileType.TXT,
+                file_type=FileType.TEXT,
                 size=200,
                 created_date=datetime.now(),
                 modified_date=datetime.now(),
@@ -229,7 +231,7 @@ class TestCoreSimplified:
                 file_path=f"/mem/doc_{i}.txt",
                 title=f"メモリテスト{i}",
                 content=f"メモリテスト用コンテンツ{i}です。" * 20,
-                file_type=FileType.TXT,
+                file_type=FileType.TEXT,
                 size=400,
                 created_date=datetime.now(),
                 modified_date=datetime.now(),

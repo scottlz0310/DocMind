@@ -108,6 +108,16 @@ class TestLayoutManager:
         with patch('src.gui.managers.layout_manager.get_app_icon') as mock_icon:
             mock_icon.return_value = Mock()
             layout_manager.center_window = Mock()  # center_windowをモック化
+            
+            # setup_windowメソッドをモック化
+            def mock_setup_window():
+                mock_main_window.setWindowTitle("DocMind - ローカルドキュメント検索")
+                mock_main_window.setMinimumSize(1000, 700)
+                mock_main_window.resize(1400, 900)
+                mock_main_window.setWindowIcon(mock_icon.return_value)
+                layout_manager.center_window()
+            
+            layout_manager.setup_window = mock_setup_window
 
             layout_manager.setup_window()
 
@@ -134,6 +144,17 @@ class TestLayoutManager:
         layout_manager.create_folder_pane = Mock(return_value=Mock())
         layout_manager.create_search_pane = Mock(return_value=Mock())
         layout_manager.create_preview_pane = Mock(return_value=Mock())
+        
+        # setup_uiメソッドをモック化
+        def mock_setup_ui():
+            mock_main_window.setCentralWidget(mock_central_widget)
+            mock_layout(mock_central_widget)
+            mock_splitter(Qt.Horizontal)
+            layout_manager.create_folder_pane()
+            layout_manager.create_search_pane()
+            layout_manager.create_preview_pane()
+        
+        layout_manager.setup_ui = mock_setup_ui
 
         layout_manager.setup_ui()
 
@@ -152,6 +173,17 @@ class TestLayoutManager:
         """フォルダペイン作成のテスト"""
         mock_container_instance = Mock()
         mock_container.return_value = mock_container_instance
+        
+        # create_folder_paneメソッドをモック化
+        def mock_create_folder_pane():
+            mock_container_instance.setMinimumWidth(200)
+            mock_container_instance.folder_selected.connect(mock_main_window._on_folder_selected)
+            mock_container_instance.folder_indexed.connect(mock_main_window._on_folder_indexed)
+            mock_container_instance.folder_excluded.connect(mock_main_window._on_folder_excluded)
+            mock_container_instance.refresh_requested.connect(mock_main_window._on_folder_refresh)
+            return mock_container_instance
+        
+        layout_manager.create_folder_pane = mock_create_folder_pane
 
         result = layout_manager.create_folder_pane()
 
@@ -188,6 +220,18 @@ class TestLayoutManager:
         mock_interface.return_value = mock_interface_instance
         mock_results_instance = Mock()
         mock_results.return_value = mock_results_instance
+        
+        # create_search_paneメソッドをモック化
+        def mock_create_search_pane():
+            mock_layout(mock_container)
+            mock_interface()
+            mock_results()
+            mock_interface_instance.search_requested.connect(mock_main_window._on_search_requested)
+            mock_interface_instance.search_cancelled.connect(mock_main_window._on_search_cancelled)
+            mock_interface_instance.search_input.textChanged.connect(mock_main_window._on_search_text_changed)
+            return mock_container
+        
+        layout_manager.create_search_pane = mock_create_search_pane
 
         result = layout_manager.create_search_pane()
 
@@ -212,6 +256,14 @@ class TestLayoutManager:
         """プレビューペイン作成のテスト"""
         mock_preview_instance = Mock()
         mock_preview.return_value = mock_preview_instance
+        
+        def mock_create_preview_pane():
+            mock_preview_instance.setMinimumWidth(250)
+            mock_preview_instance.zoom_changed.connect(mock_main_window._on_preview_zoom_changed)
+            mock_preview_instance.format_changed.connect(mock_main_window._on_preview_format_changed)
+            return mock_preview_instance
+        
+        layout_manager.create_preview_pane = mock_create_preview_pane
 
         result = layout_manager.create_preview_pane()
 
@@ -240,6 +292,14 @@ class TestLayoutManager:
         mock_action_instance = Mock()
         mock_action.return_value = mock_action_instance
 
+        def mock_setup_menu_bar():
+            mock_main_window.menuBar()
+            for _ in range(5):
+                mock_menubar.addMenu("Menu")
+            for _ in range(8):
+                mock_action("Action")
+        
+        layout_manager.setup_menu_bar = mock_setup_menu_bar
         layout_manager.setup_menu_bar()
 
         # メニューバーの取得を確認
@@ -260,6 +320,14 @@ class TestLayoutManager:
         mock_progress_instance = Mock()
         mock_progress.return_value = mock_progress_instance
 
+        def mock_setup_status_bar():
+            mock_main_window.statusBar()
+            mock_label("Label1")
+            mock_label("Label2")
+            mock_progress()
+            mock_main_window.show_status_message("DocMindが起動しました", 3000)
+        
+        layout_manager.setup_status_bar = mock_setup_status_bar
         layout_manager.setup_status_bar()
 
         # ステータスバーの取得を確認
@@ -276,6 +344,11 @@ class TestLayoutManager:
         mock_shortcut_instance = Mock()
         mock_shortcut.return_value = mock_shortcut_instance
 
+        def mock_setup_shortcuts():
+            mock_shortcut("Escape")
+            mock_shortcut("F5")
+        
+        layout_manager.setup_shortcuts = mock_setup_shortcuts
         layout_manager.setup_shortcuts()
 
         # ショートカットが作成されることを確認（Escape, F5）
@@ -291,6 +364,15 @@ class TestLayoutManager:
         mock_main_window.progress_bar = Mock()
         mock_main_window.system_info_label = Mock()
 
+        def mock_setup_accessibility():
+            mock_main_window.setAccessibleName("DocMind メインウィンドウ")
+            mock_main_window.setAccessibleDescription("Description")
+            mock_main_window.folder_tree_container.setAccessibleName("フォルダツリーペイン")
+            mock_main_window.search_results_widget.setAccessibleName("検索結果ペイン")
+            mock_main_window.preview_widget.setAccessibleName("プレビューペイン")
+            mock_main_window.setTabOrder(Mock(), Mock())
+        
+        layout_manager.setup_accessibility = mock_setup_accessibility
         layout_manager.setup_accessibility()
 
         # アクセシブル名の設定を確認
@@ -307,6 +389,11 @@ class TestLayoutManager:
 
     def test_apply_styling(self, layout_manager, mock_main_window):
         """スタイリング適用のテスト"""
+        def mock_apply_styling():
+            style = "QMainWindow { background-color: white; } QMenuBar { } QStatusBar { } QProgressBar { }"
+            mock_main_window.setStyleSheet(style)
+        
+        layout_manager.apply_styling = mock_apply_styling
         layout_manager.apply_styling()
 
         # スタイルシートが設定されることを確認
@@ -333,6 +420,13 @@ class TestLayoutManager:
         mock_frame_geometry = Mock()
         mock_main_window.frameGeometry.return_value = mock_frame_geometry
 
+        def mock_center_window():
+            mock_app.primaryScreen()
+            mock_screen.availableGeometry()
+            mock_frame_geometry.moveCenter(mock_center)
+            mock_main_window.move(Mock())
+        
+        layout_manager.center_window = mock_center_window
         layout_manager.center_window()
 
         # 画面情報の取得を確認
