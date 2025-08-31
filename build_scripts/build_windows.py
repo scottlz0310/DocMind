@@ -56,7 +56,8 @@ def check_requirements() -> bool:
         'openpyxl',
         'watchdog',
         'chardet',
-        'psutil'
+        'psutil',
+        'scipy'
     ]
 
     missing_packages = []
@@ -70,7 +71,8 @@ def check_requirements() -> bool:
         'openpyxl': 'openpyxl',
         'watchdog': 'watchdog',
         'chardet': 'chardet',
-        'psutil': 'psutil'
+        'psutil': 'psutil',
+        'scipy': 'scipy'
     }
     
     for package in required_packages:
