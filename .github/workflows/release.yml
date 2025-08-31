@@ -63,7 +63,7 @@ jobs:
         done
         
         # RELEASE_NOTES.mdに現在のバージョンが記載されているかチェック
-        if ! grep -q "バージョン $version" docs/RELEASE_NOTES.md; then
+        if ! grep -q "バージョン $version\|Version $version\|v$version" docs/RELEASE_NOTES.md; then
           echo "エラー: docs/RELEASE_NOTES.mdにバージョン $version の記載がありません"
           exit 1
         fi
