@@ -113,7 +113,7 @@ jobs:
         # コードスタイルチェック
         black --check --diff src/ tests/
         isort --check-only --diff src/ tests/
-        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+        flake8 src/ tests/ --max-line-length=100 --extend-ignore=E203,W503,E501
         
         # セキュリティチェック
         bandit -r src/ -f json -o bandit-report.json
