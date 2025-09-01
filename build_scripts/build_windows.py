@@ -404,16 +404,38 @@ def create_simple_installer() -> None:
         installer_name = f"DocMind_Setup_v1.0.0.exe"
         installer_path = INSTALLER_DIR / installer_name
         
-        # 7-Zipでアーカイブを作成
+        # SFX設定ファイルを作成（サイレントオプション付き）
+        sfx_config = """;!@Install@!UTF-8!
+Title="DocMind Installer"
+BeginPrompt="DocMindをインストールしますか？"
+CancelPrompt="インストールをキャンセルしますか？"
+ExtractDialogText="DocMindを展開中..."
+ExtractPathText="展開先:"
+ExtractTitle="DocMind Installer"
+GUIFlags="8+32+64+256+4096"
+GUIMode="1"
+InstallPath="%ProgramFiles%\\DocMind"
+OverwriteMode="2"
+ExecuteFile="DocMind.exe"
+ExecuteParameters=""
+;!@InstallEnd@!"""
+        
+        sfx_config_path = INSTALLER_DIR / "config.txt"
+        with open(sfx_config_path, 'w', encoding='utf-8') as f:
+            f.write(sfx_config)
+        
+        # 7-Zipでアーカイブを作成（設定ファイル付き）
         cmd = [
             "7z", "a", "-sfx7z.sfx", str(installer_path), 
-            str(distribution_dir / "*")
+            str(distribution_dir / "*"), f"-p{sfx_config_path}"
         ]
         
         result = subprocess.run(cmd, capture_output=True, text=True)
         
         if result.returncode == 0:
             logger.info(f"SFXインストーラーを作成: {installer_path}")
+            # 設定ファイルを削除
+            sfx_config_path.unlink(exist_ok=True)
         else:
             # 7-Zipも利用できない場合は、ZIPファイルを作成
             logger.warning("7-Zipが利用できません。ZIPアーカイブを作成します")
