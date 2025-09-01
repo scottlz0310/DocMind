@@ -294,9 +294,9 @@ jobs:
         
         echo "📦 インストーラー実行: $installerPath"
         
-        # サイレントインストール（タイムアウト付き）
+        # サイレントインストール
         try {
-          $process = Start-Process -FilePath $installerPath -ArgumentList "/S" -PassThru -Wait -TimeoutSec 300
+          $process = Start-Process -FilePath $installerPath -ArgumentList "/S" -PassThru -Wait
           if ($process.ExitCode -ne 0) {
             echo "⚠️ 警告: インストーラーが非ゼロで終了しました (ExitCode: $($process.ExitCode))"
           }
