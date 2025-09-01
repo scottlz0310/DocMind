@@ -435,7 +435,8 @@ ExecuteParameters=""
         if result.returncode == 0:
             logger.info(f"SFXインストーラーを作成: {installer_path}")
             # 設定ファイルを削除
-            sfx_config_path.unlink(exist_ok=True)
+            if sfx_config_path.exists():
+                sfx_config_path.unlink()
         else:
             # 7-Zipも利用できない場合は、ZIPファイルを作成
             logger.warning("7-Zipが利用できません。ZIPアーカイブを作成します")
