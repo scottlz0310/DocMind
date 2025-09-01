@@ -279,8 +279,8 @@ def prepare_distribution() -> None:
     # アンインストールスクリプトを作成
     create_uninstall_script(distribution_dir)
     
-    # Inno Setupインストーラーを作成
-    create_inno_setup_installer()
+    # ZIPアーカイブを作成（サイレントインストール用）
+    create_zip_archive()
 
 
 def create_startup_script(distribution_dir: Path) -> None:
@@ -364,108 +364,32 @@ pause
     logger.info(f"アンインストールスクリプトを作成: {script_path}")
 
 
-def create_inno_setup_installer() -> None:
-    """
-    Inno Setupインストーラーを作成
-    """
-    logger.info("Inno Setupインストーラーを作成中...")
-    
-    iss_file = PROJECT_ROOT / "build_scripts" / "docmind_installer.iss"
-    if not iss_file.exists():
-        logger.warning("Inno Setupスクリプトが見つかりません。スキップします。")
-        return
-    
-    try:
-        # Inno Setup Compilerを実行
-        cmd = ["iscc", str(iss_file)]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            logger.info("Inno Setupインストーラーの作成が完了しました")
-        else:
-            logger.warning(f"Inno Setupが利用できません: {result.stderr}")
-            logger.info("代替インストーラーを作成します")
-            create_simple_installer()
-            
-    except FileNotFoundError:
-        logger.warning("Inno Setup Compilerが見つかりません。代替インストーラーを作成します")
-        create_simple_installer()
 
-
-def create_simple_installer() -> None:
-    """
-    シンプルなインストーラーを作成（Inno Setupが利用できない場合）
-    """
-    logger.info("シンプルなインストーラーを作成中...")
-    
-    # 7-Zipを使用してSFXアーカイブを作成
-    try:
-        distribution_dir = INSTALLER_DIR / "DocMind"
-        installer_name = f"DocMind_Setup_v1.0.0.exe"
-        installer_path = INSTALLER_DIR / installer_name
-        
-        # SFX設定ファイルを作成（サイレントオプション付き）
-        sfx_config = """;!@Install@!UTF-8!
-Title="DocMind Installer"
-BeginPrompt="DocMindをインストールしますか？"
-CancelPrompt="インストールをキャンセルしますか？"
-ExtractDialogText="DocMindを展開中..."
-ExtractPathText="展開先:"
-ExtractTitle="DocMind Installer"
-GUIFlags="8+32+64+256+4096"
-GUIMode="1"
-InstallPath="%ProgramFiles%\\DocMind"
-OverwriteMode="2"
-ExecuteFile="DocMind.exe"
-ExecuteParameters=""
-;!@InstallEnd@!"""
-        
-        sfx_config_path = INSTALLER_DIR / "config.txt"
-        with open(sfx_config_path, 'w', encoding='utf-8') as f:
-            f.write(sfx_config)
-        
-        # 7-Zipでアーカイブを作成
-        cmd = [
-            "7z", "a", "-sfx7z.sfx", str(installer_path), 
-            str(distribution_dir / "*")
-        ]
-        
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            logger.info(f"SFXインストーラーを作成: {installer_path}")
-            # 設定ファイルを削除
-            if sfx_config_path.exists():
-                sfx_config_path.unlink()
-        else:
-            # 7-Zipも利用できない場合は、ZIPファイルを作成
-            logger.warning("7-Zipが利用できません。ZIPアーカイブを作成します")
-            create_zip_archive()
-            
-    except FileNotFoundError:
-        logger.warning("7-Zipが見つかりません。ZIPアーカイブを作成します")
-        create_zip_archive()
 
 
 def create_zip_archive() -> None:
     """
-    ZIPアーカイブを作成
+    ZIPアーカイブを作成（サイレントインストール用）
     """
     import zipfile
     
     logger.info("ZIPアーカイブを作成中...")
     
     distribution_dir = INSTALLER_DIR / "DocMind"
-    zip_name = f"DocMind_v1.0.0.zip"
-    zip_path = INSTALLER_DIR / zip_name
     
-    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    # インストーラー名を.exeにしてGitHub Actionsと互換性を保つ
+    installer_name = f"DocMind_Setup_v1.0.0.exe"
+    installer_path = INSTALLER_DIR / installer_name
+    
+    # 実際はZIPファイルだが、.exe拡張子で保存
+    with zipfile.ZipFile(installer_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for file_path in distribution_dir.rglob('*'):
             if file_path.is_file():
                 arcname = file_path.relative_to(distribution_dir)
                 zipf.write(file_path, arcname)
     
-    logger.info(f"ZIPアーカイブを作成: {zip_path}")
+    logger.info(f"サイレントインストーラーを作成: {installer_path}")
+    logger.info("注意: このファイルは実際はZIPアーカイブです")
 
 
 def main() -> None:

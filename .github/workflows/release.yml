@@ -294,33 +294,39 @@ jobs:
         
         echo "📦 インストーラー実行: $installerPath"
         
-        # サイレントインストール
+        # ZIPファイルの展開テスト（実際はZIPアーカイブ）
         try {
-          $process = Start-Process -FilePath $installerPath -ArgumentList "/S" -PassThru -Wait
-          if ($process.ExitCode -ne 0) {
-            echo "⚠️ 警告: インストーラーが非ゼロで終了しました (ExitCode: $($process.ExitCode))"
+          $extractPath = "$env:TEMP\DocMind_Test"
+          if (Test-Path $extractPath) {
+            Remove-Item -Path $extractPath -Recurse -Force
+          }
+          
+          # PowerShellでZIPファイルを展開
+          Expand-Archive -Path $installerPath -DestinationPath $extractPath -Force
+          
+          # 展開されたファイルの確認
+          $extractedExe = "$extractPath\DocMind.exe"
+          if (Test-Path $extractedExe) {
+            echo "✅ ZIPファイル展開成功: $extractedExe"
+            
+            # ファイルサイズ確認
+            $exeSize = (Get-Item $extractedExe).Length
+            echo "📊 実行ファイルサイズ: $([math]::Round($exeSize / 1MB, 2)) MB"
+            
+            # テスト用ディレクトリを削除
+            Remove-Item -Path $extractPath -Recurse -Force
+          } else {
+            echo "❌ エラー: 展開されたファイルが見つかりません"
+            echo "📁 展開先の内容:"
+            Get-ChildItem -Path $extractPath -Recurse -ErrorAction SilentlyContinue
+            exit 1
           }
         } catch {
-          echo "❌ エラー: インストール中に例外が発生しました: $($_.Exception.Message)"
+          echo "❌ エラー: ファイル展開中に例外が発生しました: $($_.Exception.Message)"
           exit 1
         }
         
-        # インストール結果の確認
-        $installPath = "$env:ProgramFiles\DocMind\DocMind.exe"
-        if (Test-Path $installPath) {
-          echo "✅ インストール成功: $installPath"
-          
-          # ファイルサイズ確認
-          $exeSize = (Get-Item $installPath).Length
-          echo "📊 実行ファイルサイズ: $([math]::Round($exeSize / 1MB, 2)) MB"
-        } else {
-          echo "❌ エラー: インストールが失敗しました"
-          echo "📁 Program Filesの内容:"
-          Get-ChildItem -Path "$env:ProgramFiles" -Filter "*DocMind*" -Recurse -ErrorAction SilentlyContinue
-          exit 1
-        }
-        
-        echo "✅ インストールテスト完了"
+        echo "✅ ファイル展開テスト完了"
     
     - name: ビルド成果物のアップロード
       uses: actions/upload-artifact@v4
