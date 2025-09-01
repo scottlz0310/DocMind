@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  PYTHON_VERSION: '3.11'  # 安定性のため3.11を使用、3.13は将来対応予定
+  PYTHON_VERSION: '3.13.7'
 
 jobs:
   # ドキュメント整合性チェック
@@ -236,25 +236,44 @@ jobs:
         
         # インストーラーファイルの存在確認
         $version = "${{ github.ref_name }}" -replace '^v', ''
-        if (Test-Path "installer/DocMind_Setup_v$version.exe") {
-          $fileSize = (Get-Item "installer/DocMind_Setup_v$version.exe").Length
-          echo "インストーラーサイズ: $($fileSize / 1MB) MB"
+        $installerPath = "installer/DocMind_Setup_v$version.exe"
+        
+        if (Test-Path $installerPath) {
+          $fileSize = (Get-Item $installerPath).Length
+          echo "✅ インストーラー確認: $installerPath"
+          echo "📦 インストーラーサイズ: $([math]::Round($fileSize / 1MB, 2)) MB"
           
-          if ($fileSize -lt 1MB) {
-            echo "警告: インストーラーサイズが小さすぎます"
+          if ($fileSize -lt 50MB) {
+            echo "⚠️ 警告: インストーラーサイズが小さすぎます ($([math]::Round($fileSize / 1MB, 2)) MB)"
             exit 1
           }
+          
+          # DocMindフォルダの確認
+          if (Test-Path "installer/DocMind/DocMind.exe") {
+            echo "✅ 実行ファイル確認: installer/DocMind/DocMind.exe"
+          } else {
+            echo "❌ エラー: DocMind.exeが見つかりません"
+            exit 1
+          }
+          
         } else {
-          echo "エラー: インストーラーファイルが見つかりません"
-          # 代わりにビルド成果物を確認
-          if (Test-Path "dist") {
-            echo "ビルド成果物:"
-            Get-ChildItem -Path "dist" -Recurse
-          }
+          echo "❌ エラー: インストーラーファイルが見つかりません: $installerPath"
+          
+          # デバッグ情報の出力
+          echo "📁 installerディレクトリの内容:"
           if (Test-Path "installer") {
-            echo "installerディレクトリの内容:"
-            Get-ChildItem -Path "installer" -Recurse
+            Get-ChildItem -Path "installer" -Recurse | Select-Object Name, Length, FullName
+          } else {
+            echo "installerディレクトリが存在しません"
           }
+          
+          echo "📁 distディレクトリの内容:"
+          if (Test-Path "dist") {
+            Get-ChildItem -Path "dist" -Recurse | Select-Object Name, Length, FullName
+          } else {
+            echo "distディレクトリが存在しません"
+          }
+          
           exit 1
         }
     
@@ -264,19 +283,44 @@ jobs:
       run: |
         echo "インストールテスト開始"
         
-        # サイレントインストール
+        # インストーラーの存在確認
         $version = "${{ github.ref_name }}" -replace '^v', ''
-        Start-Process -FilePath "installer/DocMind_Setup_v$version.exe" -ArgumentList "/S" -Wait
+        $installerPath = "installer/DocMind_Setup_v$version.exe"
         
-        # ファイル配置確認のみ
-        if (Test-Path "$env:ProgramFiles\DocMind\DocMind.exe") {
-          echo "インストール成功"
-        } else {
-          echo "エラー: インストールが失敗しました"
+        if (-not (Test-Path $installerPath)) {
+          echo "❌ エラー: インストーラーが見つかりません: $installerPath"
           exit 1
         }
         
-        echo "インストールテスト完了"
+        echo "📦 インストーラー実行: $installerPath"
+        
+        # サイレントインストール（タイムアウト付き）
+        try {
+          $process = Start-Process -FilePath $installerPath -ArgumentList "/S" -PassThru -Wait -TimeoutSec 300
+          if ($process.ExitCode -ne 0) {
+            echo "⚠️ 警告: インストーラーが非ゼロで終了しました (ExitCode: $($process.ExitCode))"
+          }
+        } catch {
+          echo "❌ エラー: インストール中に例外が発生しました: $($_.Exception.Message)"
+          exit 1
+        }
+        
+        # インストール結果の確認
+        $installPath = "$env:ProgramFiles\DocMind\DocMind.exe"
+        if (Test-Path $installPath) {
+          echo "✅ インストール成功: $installPath"
+          
+          # ファイルサイズ確認
+          $exeSize = (Get-Item $installPath).Length
+          echo "📊 実行ファイルサイズ: $([math]::Round($exeSize / 1MB, 2)) MB"
+        } else {
+          echo "❌ エラー: インストールが失敗しました"
+          echo "📁 Program Filesの内容:"
+          Get-ChildItem -Path "$env:ProgramFiles" -Filter "*DocMind*" -Recurse -ErrorAction SilentlyContinue
+          exit 1
+        }
+        
+        echo "✅ インストールテスト完了"
     
     - name: ビルド成果物のアップロード
       uses: actions/upload-artifact@v4
@@ -313,7 +357,7 @@ jobs:
         awk "/## バージョン $version_clean/,/## バージョン|$/" docs/RELEASE_NOTES.md > release_notes_current.md
         
         # ファイルサイズ情報の追加
-        installer_size=$(stat -c%s "artifacts/DocMind_Setup_v$version.exe" | awk '{print int($1/1024/1024) " MB"}')
+        installer_size=$(stat -c%s "artifacts/DocMind_Setup_v$version_clean.exe" | awk '{print int($1/1024/1024) " MB"}')
         echo "" >> release_notes_current.md
         echo "### ダウンロード情報" >> release_notes_current.md
         echo "- **インストーラーサイズ**: $installer_size" >> release_notes_current.md
@@ -326,7 +370,7 @@ jobs:
         name: DocMind ${{ github.ref_name }}
         body_path: release_notes_current.md
         files: |
-          artifacts/DocMind_Setup_v${{ github.ref_name }}.exe
+          artifacts/DocMind_Setup_v*.exe
         draft: false
         prerelease: false
         generate_release_notes: true
