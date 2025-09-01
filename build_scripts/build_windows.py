@@ -424,10 +424,10 @@ ExecuteParameters=""
         with open(sfx_config_path, 'w', encoding='utf-8') as f:
             f.write(sfx_config)
         
-        # 7-Zipでアーカイブを作成（設定ファイル付き）
+        # 7-Zipでアーカイブを作成
         cmd = [
             "7z", "a", "-sfx7z.sfx", str(installer_path), 
-            str(distribution_dir / "*"), f"-p{sfx_config_path}"
+            str(distribution_dir / "*")
         ]
         
         result = subprocess.run(cmd, capture_output=True, text=True)
@@ -473,6 +473,7 @@ def main() -> None:
     メイン実行関数
     """
     logger.info("DocMind Windowsビルドプロセスを開始します")
+    logger.info(f"Pythonバージョン: {sys.version}")
 
     try:
         # 1. 要件チェック
