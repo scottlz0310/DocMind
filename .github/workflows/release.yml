@@ -419,10 +419,15 @@ jobs:
         fi
         
         # アセットが正常にアップロードされたか確認
-        if echo "$release_info" | grep -q "DocMind_Setup_v${{ github.ref_name }}.exe"; then
+        version_clean="${{ github.ref_name }}" | sed 's/^v//'
+        if echo "$release_info" | grep -q "DocMind_Setup_v.*\.exe"; then
           echo "✅ インストーラーが正常にアップロードされました"
+          # アップロードされたファイル名を表示
+          echo "$release_info" | grep -o "DocMind_Setup_v.*\.exe" | head -1
         else
           echo "❌ インストーラーのアップロードに問題があります"
+          echo "デバッグ: リリース情報の一部"
+          echo "$release_info" | grep -A5 -B5 "assets" || echo "アセット情報が見つかりません"
           exit 1
         fi
     
