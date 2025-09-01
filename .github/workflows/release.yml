@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+  packages: write
+  actions: read
+
 env:
   PYTHON_VERSION: '3.13.7'
 
