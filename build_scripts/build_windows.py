@@ -236,11 +236,7 @@ def prepare_distribution() -> None:
     logger.info("配布用ファイルを準備中...")
 
     # 実行可能ファイルの場所（PyInstallerの出力先）
-    import platform
-    if platform.system() == "Windows":
-        exe_path = DIST_DIR / "DocMind" / "DocMind.exe"
-    else:
-        exe_path = DIST_DIR / "DocMind" / "DocMind"
+    exe_path = DIST_DIR / "DocMind" / "DocMind.exe"
 
     if not exe_path.exists():
         logger.error(f"実行可能ファイルが見つかりません: {exe_path}")
@@ -250,27 +246,20 @@ def prepare_distribution() -> None:
     distribution_dir = INSTALLER_DIR / "DocMind"
     distribution_dir.mkdir(parents=True, exist_ok=True)
 
-    # onedirモードの場合、実行ファイルと_internalディレクトリをコピー
-    import platform
-    if platform.system() == "Windows":
-        # 実行ファイルをコピー（名前をDocMind.exeに変更）
-        shutil.copy2(exe_path, distribution_dir / "DocMind.exe")
-        
-        # _internalディレクトリをコピー
-        internal_src = exe_path.parent / "_internal"
-        internal_dst = distribution_dir / "_internal"
-        if internal_src.exists():
-            shutil.copytree(internal_src, internal_dst)
-            logger.info(f"_internalディレクトリをコピー: {internal_dst}")
-    else:
-        # Linuxの場合は単一ファイル
-        shutil.copy2(exe_path, distribution_dir / "DocMind")
+    # 実行ファイルをコピー
+    shutil.copy2(exe_path, distribution_dir / "DocMind.exe")
     
-    # インストーラーファイルを作成（シンプルなコピー版）
-    installer_name = f"DocMind_Setup_v1.0.0.exe"
-    installer_path = INSTALLER_DIR / installer_name
-    shutil.copy2(exe_path, installer_path)
-    logger.info(f"インストーラーファイルを作成: {installer_path}")
+    # _internalディレクトリをコピー
+    internal_src = exe_path.parent / "_internal"
+    internal_dst = distribution_dir / "_internal"
+    if internal_src.exists():
+        shutil.copytree(internal_src, internal_dst)
+        logger.info(f"_internalディレクトリをコピー: {internal_dst}")
+    
+    # データディレクトリを作成
+    data_dir = distribution_dir / "docmind_data"
+    data_dir.mkdir(exist_ok=True)
+    
     logger.info("実行可能ファイルをコピーしました")
 
     # 追加ファイルをコピー
@@ -289,6 +278,9 @@ def prepare_distribution() -> None:
 
     # アンインストールスクリプトを作成
     create_uninstall_script(distribution_dir)
+    
+    # Inno Setupインストーラーを作成
+    create_inno_setup_installer()
 
 
 def create_startup_script(distribution_dir: Path) -> None:
@@ -370,6 +362,87 @@ pause
         f.write(uninstall_script)
 
     logger.info(f"アンインストールスクリプトを作成: {script_path}")
+
+
+def create_inno_setup_installer() -> None:
+    """
+    Inno Setupインストーラーを作成
+    """
+    logger.info("Inno Setupインストーラーを作成中...")
+    
+    iss_file = PROJECT_ROOT / "build_scripts" / "docmind_installer.iss"
+    if not iss_file.exists():
+        logger.warning("Inno Setupスクリプトが見つかりません。スキップします。")
+        return
+    
+    try:
+        # Inno Setup Compilerを実行
+        cmd = ["iscc", str(iss_file)]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            logger.info("Inno Setupインストーラーの作成が完了しました")
+        else:
+            logger.warning(f"Inno Setupが利用できません: {result.stderr}")
+            logger.info("代替インストーラーを作成します")
+            create_simple_installer()
+            
+    except FileNotFoundError:
+        logger.warning("Inno Setup Compilerが見つかりません。代替インストーラーを作成します")
+        create_simple_installer()
+
+
+def create_simple_installer() -> None:
+    """
+    シンプルなインストーラーを作成（Inno Setupが利用できない場合）
+    """
+    logger.info("シンプルなインストーラーを作成中...")
+    
+    # 7-Zipを使用してSFXアーカイブを作成
+    try:
+        distribution_dir = INSTALLER_DIR / "DocMind"
+        installer_name = f"DocMind_Setup_v1.0.0.exe"
+        installer_path = INSTALLER_DIR / installer_name
+        
+        # 7-Zipでアーカイブを作成
+        cmd = [
+            "7z", "a", "-sfx7z.sfx", str(installer_path), 
+            str(distribution_dir / "*")
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            logger.info(f"SFXインストーラーを作成: {installer_path}")
+        else:
+            # 7-Zipも利用できない場合は、ZIPファイルを作成
+            logger.warning("7-Zipが利用できません。ZIPアーカイブを作成します")
+            create_zip_archive()
+            
+    except FileNotFoundError:
+        logger.warning("7-Zipが見つかりません。ZIPアーカイブを作成します")
+        create_zip_archive()
+
+
+def create_zip_archive() -> None:
+    """
+    ZIPアーカイブを作成
+    """
+    import zipfile
+    
+    logger.info("ZIPアーカイブを作成中...")
+    
+    distribution_dir = INSTALLER_DIR / "DocMind"
+    zip_name = f"DocMind_v1.0.0.zip"
+    zip_path = INSTALLER_DIR / zip_name
+    
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for file_path in distribution_dir.rglob('*'):
+            if file_path.is_file():
+                arcname = file_path.relative_to(distribution_dir)
+                zipf.write(file_path, arcname)
+    
+    logger.info(f"ZIPアーカイブを作成: {zip_path}")
 
 
 def main() -> None:
