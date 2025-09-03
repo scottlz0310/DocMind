@@ -227,3 +227,18 @@ reports/
 installer/
 config/default_config.json
 build.log
+
+# Added by add-autogen-gitignore.ps1 on 2025-09-03T15:56:24.4957177+09:00
+.venv/
+*.py[cod]
+*.pyo
+*.pyd
+*.whl
+.env.*
+.vscode.bak.*
+uv.lock
+.DS_Store
+Thumbs.db
+*.sqlite3
+node_modules/
+requirements.txt
