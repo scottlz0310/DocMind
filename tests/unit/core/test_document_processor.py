@@ -2,12 +2,14 @@
 DocumentProcessorのテストモジュール
 
 ドキュメント処理機能の包括的なテストを提供します。
+Phase7強化版の内容を統合済み。
 """
 
 import os
 import tempfile
+import time
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -195,3 +197,171 @@ class TestDocumentProcessor:
         processor._check_dependencies()
         # エラーが発生しないことを確認（ログ出力のみ）
         assert True
+
+    # Phase7統合: PDF処理精度テスト
+    def test_extract_pdf_text_accuracy(self, processor, temp_dir):
+        """PDF テキスト抽出精度テスト"""
+        pdf_path = os.path.join(temp_dir, "test.pdf")
+        Path(pdf_path).touch()
+
+        with patch("src.core.document_processor.fitz") as mock_fitz:
+            mock_doc = Mock()
+            mock_page = Mock()
+            mock_page.get_text.return_value = "これはPDFのテストテキストです。"
+
+            mock_doc.__len__ = Mock(return_value=1)
+            mock_doc.__getitem__ = Mock(return_value=mock_page)
+            mock_doc.__iter__ = Mock(return_value=iter([mock_page]))
+            mock_doc.close = Mock()
+            mock_doc.__enter__ = Mock(return_value=mock_doc)
+            mock_doc.__exit__ = Mock(return_value=None)
+
+            mock_fitz.open.return_value = mock_doc
+
+            result = processor.extract_pdf_text(pdf_path)
+
+            assert result == "これはPDFのテストテキストです。"
+            mock_fitz.open.assert_called_once_with(pdf_path)
+
+    # Phase7統合: Word処理精度テスト
+    def test_extract_word_text_accuracy(self, processor, temp_dir):
+        """Word文書テキスト抽出精度テスト"""
+        docx_path = os.path.join(temp_dir, "test.docx")
+        Path(docx_path).touch()
+
+        with patch("src.core.document_processor.DocxDocument") as mock_docx_document:
+            mock_doc = Mock()
+            mock_paragraph = Mock()
+            mock_paragraph.text = "これはWordドキュメントのテストテキストです。"
+            mock_doc.paragraphs = [mock_paragraph]
+            mock_doc.tables = []
+            mock_docx_document.return_value = mock_doc
+
+            result = processor.extract_word_text(docx_path)
+
+            assert result == "これはWordドキュメントのテストテキストです。"
+            mock_docx_document.assert_called_once_with(docx_path)
+
+    # Phase7統合: Excel処理精度テスト
+    def test_extract_excel_data_accuracy(self, processor, temp_dir):
+        """Excel データ抽出精度テスト"""
+        xlsx_path = os.path.join(temp_dir, "test.xlsx")
+        Path(xlsx_path).touch()
+
+        with patch("src.core.document_processor.load_workbook") as mock_load_workbook:
+            mock_workbook = Mock()
+            mock_worksheet = Mock()
+            mock_worksheet.title = "Sheet1"
+
+            mock_workbook.sheetnames = ["Sheet1"]
+            mock_workbook.__getitem__ = Mock(return_value=mock_worksheet)
+            mock_worksheet.iter_rows.return_value = [
+                ("ヘッダー1", "ヘッダー2"),
+                ("データ1", "データ2"),
+            ]
+            mock_workbook.close = Mock()
+            mock_load_workbook.return_value = mock_workbook
+
+            result = processor.extract_excel_text(xlsx_path)
+
+            assert "ヘッダー1" in result
+            assert "データ1" in result
+            mock_load_workbook.assert_called_once_with(
+                xlsx_path, read_only=True, data_only=True
+            )
+
+    # Phase7統合: パフォーマンステスト
+    def test_large_file_processing_performance(self, processor, temp_dir):
+        """大規模ファイル処理パフォーマンステスト"""
+        large_txt_path = os.path.join(temp_dir, "large_test.txt")
+        large_content = "これは大きなファイルのテストです。" * 10000
+
+        with open(large_txt_path, "w", encoding="utf-8") as f:
+            f.write(large_content)
+
+        start_time = time.time()
+        result = processor.process_file(large_txt_path)
+        end_time = time.time()
+
+        assert (end_time - start_time) < 5.0
+        assert result is not None
+        assert len(result.content) > 0
+
+    # Phase7統合: バッチ処理テスト
+    def test_batch_document_processing(self, processor, temp_dir):
+        """バッチドキュメント処理テスト"""
+        file_paths = []
+        for i in range(10):
+            file_path = os.path.join(temp_dir, f"batch_test_{i}.txt")
+            content = f"これは{i}番目のバッチテストファイルです。"
+
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            file_paths.append(file_path)
+
+        start_time = time.time()
+        results = []
+        for file_path in file_paths:
+            result = processor.process_file(file_path)
+            results.append(result)
+        end_time = time.time()
+
+        assert (end_time - start_time) < 10.0
+        assert len(results) == 10
+        assert all(result is not None for result in results)
+
+    # Phase7統合: メモリ使用量テスト
+    def test_memory_usage_during_processing(self, processor, temp_dir):
+        """処理中のメモリ使用量テスト"""
+        import psutil
+
+        process = psutil.Process(os.getpid())
+        initial_memory = process.memory_info().rss
+
+        for i in range(20):
+            file_path = os.path.join(temp_dir, f"memory_test_{i}.txt")
+            content = f"メモリテスト用ファイル{i}です。" * 1000
+
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            result = processor.process_file(file_path)
+            assert result is not None
+
+        final_memory = process.memory_info().rss
+        memory_increase = final_memory - initial_memory
+
+        assert memory_increase < 50 * 1024 * 1024
+
+    # Phase7統合: 並行処理テスト
+    def test_concurrent_document_processing(self, processor, temp_dir):
+        """並行ドキュメント処理テスト"""
+        from concurrent.futures import ThreadPoolExecutor
+
+        file_paths = []
+        for i in range(10):
+            file_path = os.path.join(temp_dir, f"concurrent_test_{i}.txt")
+            content = f"並行処理テスト用ファイル{i}です。"
+
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+            file_paths.append(file_path)
+
+        def process_file_wrapper(file_path):
+            return processor.process_file(file_path)
+
+        start_time = time.time()
+
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = [
+                executor.submit(process_file_wrapper, path) for path in file_paths
+            ]
+            results = [future.result() for future in futures]
+
+        end_time = time.time()
+
+        assert (end_time - start_time) < 15.0
+        assert len(results) == 10
+        assert all(result is not None for result in results)

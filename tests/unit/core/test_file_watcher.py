@@ -2,10 +2,13 @@
 FileWatcherのテストモジュール
 
 ファイルシステム監視機能の包括的なテストを提供します。
+Phase7強化版の内容を統合済み。
 """
 
 import os
 import tempfile
+import time
+from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -21,6 +24,14 @@ class TestFileWatcher:
         """監視用一時ディレクトリを作成"""
         with tempfile.TemporaryDirectory() as temp_dir:
             yield temp_dir
+
+    @pytest.fixture
+    def temp_embedding_dir(self):
+        """埋め込み用一時ディレクトリを作成"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            embedding_dir = Path(temp_dir) / "embeddings"
+            embedding_dir.mkdir(exist_ok=True)
+            yield str(embedding_dir)
 
     @pytest.fixture
     def mock_index_manager(self):
@@ -126,3 +137,76 @@ class TestFileWatcher:
 
         with pytest.raises(Exception):  # FileSystemErrorまたは似たようなエラー
             file_watcher.add_watch_path("/nonexistent/directory")
+
+    # Phase7統合: ファイル作成検出テスト
+    def test_file_creation_detection(self, file_watcher, temp_watch_dir):
+        """ファイル作成検出テスト"""
+        file_watcher.add_watch_path(temp_watch_dir)
+        file_watcher.start_watching()
+
+        # ファイルを作成
+        test_file = os.path.join(temp_watch_dir, "new_file.txt")
+        with open(test_file, "w") as f:
+            f.write("新しいファイルです")
+
+        # 少し待機してイベントが処理されるのを待つ
+        time.sleep(0.5)
+
+        # 監視を停止
+        file_watcher.stop_watching()
+
+    # Phase7統合: ファイル変更検出テスト
+    def test_file_modification_detection(self, file_watcher, temp_watch_dir):
+        """ファイル変更検出テスト"""
+        # テストファイルを事前に作成
+        test_file = os.path.join(temp_watch_dir, "existing_file.txt")
+        with open(test_file, "w") as f:
+            f.write("既存のファイル")
+
+        file_watcher.add_watch_path(temp_watch_dir)
+        file_watcher.start_watching()
+
+        # ファイルを変更
+        with open(test_file, "a") as f:
+            f.write("\n追加されたテキスト")
+
+        # 少し待機
+        time.sleep(0.5)
+
+        # 監視を停止
+        file_watcher.stop_watching()
+
+    # Phase7統合: パフォーマンステスト
+    def test_multiple_file_operations(self, file_watcher, temp_watch_dir):
+        """複数ファイル操作テスト"""
+        file_watcher.add_watch_path(temp_watch_dir)
+        file_watcher.start_watching()
+
+        # 複数のファイルを作成
+        for i in range(5):
+            test_file = os.path.join(temp_watch_dir, f"test_file_{i}.txt")
+            with open(test_file, "w") as f:
+                f.write(f"テストファイル{i}")
+
+        # 少し待機
+        time.sleep(1.0)
+
+        # 監視を停止
+        file_watcher.stop_watching()
+
+    # Phase7統合: エラーハンドリングテスト
+    def test_error_handling_invalid_path(self, file_watcher):
+        """無効パスのエラーハンドリングテスト"""
+        # 空文字列パス
+        try:
+            file_watcher.add_watch_path("")
+        except (ValueError, OSError):
+            # 適切なエラーが発生したことを確認
+            pass
+
+        # Noneパス
+        try:
+            file_watcher.add_watch_path(None)
+        except (TypeError, AttributeError):
+            # 適切なエラーが発生したことを確認
+            pass

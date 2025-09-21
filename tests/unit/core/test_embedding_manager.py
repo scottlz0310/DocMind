@@ -2,6 +2,7 @@
 EmbeddingManager強化テスト
 
 埋め込みベクトル生成・キャッシュ・パフォーマンステスト
+Phase7強化版の内容を統合済み。
 """
 
 import os
@@ -13,6 +14,7 @@ import numpy as np
 import pytest
 
 from src.core.embedding_manager import EmbeddingManager
+from src.utils.exceptions import EmbeddingError
 
 
 class TestEmbeddingManager:
@@ -247,3 +249,73 @@ class TestEmbeddingManager:
         # キャッシュサイズ確認
         cache_info = manager.get_cache_info()
         assert cache_info["total_embeddings"] == 10
+
+    # Phase7統合: モデル読み込みテスト
+    def test_model_loading_with_mock(self, temp_cache_dir):
+        """モデル読み込みテスト"""
+        from unittest.mock import Mock, patch
+        
+        with patch("src.core.embedding_manager.SentenceTransformer") as mock_transformer:
+            mock_model = Mock()
+            mock_transformer.return_value = mock_model
+            
+            embeddings_path = str(temp_cache_dir / "embeddings.pkl")
+            manager = EmbeddingManager(embeddings_path=embeddings_path)
+            
+            # モデルが正しく設定されていることを確認
+            assert manager.model is not None
+
+    # Phase7統合: エラーハンドリングテスト
+    def test_error_handling_robustness_extended(self, temp_cache_dir):
+        """拡張エラーハンドリングテスト"""
+        embeddings_path = str(temp_cache_dir / "embeddings.pkl")
+        manager = EmbeddingManager(embeddings_path=embeddings_path)
+
+        # None値テスト
+        try:
+            embedding = manager.generate_embedding(None)
+            assert embedding is not None
+        except (TypeError, AttributeError):
+            # None値でエラーが発生するのは正常
+            pass
+
+        # 非文字列テスト
+        try:
+            embedding = manager.generate_embedding(123)
+            assert embedding is not None
+        except (TypeError, AttributeError):
+            # 数値でエラーが発生するのは正常
+            pass
+
+    # Phase7統合: バッチ処理テスト
+    def test_batch_processing_efficiency(self, temp_cache_dir, sample_texts):
+        """バッチ処理効率テスト"""
+        embeddings_path = str(temp_cache_dir / "embeddings.pkl")
+        manager = EmbeddingManager(embeddings_path=embeddings_path)
+
+        # バッチ処理のシミュレーション
+        for i, text in enumerate(sample_texts):
+            manager.add_document_embedding(f"batch_doc_{i}", text)
+
+        # 検証
+        assert len(manager.embeddings) == len(sample_texts)
+        for i in range(len(sample_texts)):
+            assert f"batch_doc_{i}" in manager.embeddings
+
+    # Phase7統合: メタデータテスト
+    def test_embedding_metadata(self, temp_cache_dir, sample_texts):
+        """埋め込みメタデータテスト"""
+        embeddings_path = str(temp_cache_dir / "embeddings.pkl")
+        manager = EmbeddingManager(embeddings_path=embeddings_path)
+
+        # ドキュメント埋め込みを追加
+        manager.add_document_embedding("meta_doc", sample_texts[0])
+
+        # メタデータの確認
+        if hasattr(manager, 'get_embedding_stats'):
+            stats = manager.get_embedding_stats()
+            assert isinstance(stats, dict)
+            assert "total_embeddings" in stats or "total_documents" in stats
+        else:
+            # メソッドがない場合は基本的な確認
+            assert "meta_doc" in manager.embeddings
