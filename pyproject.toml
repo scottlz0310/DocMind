@@ -92,6 +92,9 @@ dependencies = [
     "triton==3.4.0",
     "typing-extensions==4.15.0",
     "urllib3==2.5.0",
+    "pytest>=8.4.2",
+    "pytest-cov>=6.3.0",
+    "pytest-xdist>=3.8.0",
 ]
 
 [project.optional-dependencies]

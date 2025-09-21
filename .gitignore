@@ -219,6 +219,7 @@ playground/
 test_results/
 test_documents/
 validation_results/
+backup/
 
 # Quality reports and security scans
 reports/
