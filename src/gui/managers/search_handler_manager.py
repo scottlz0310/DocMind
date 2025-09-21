@@ -6,7 +6,6 @@ DocMind 検索・プレビューハンドラーマネージャー
 検索ワーカースレッド管理、結果表示、プレビュー制御を統合処理します。
 """
 
-
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QMainWindow
 

@@ -14,8 +14,7 @@ from unittest.mock import Mock
 import pytest
 
 from src.core.index_manager import IndexManager
-from src.data.models import SearchType
-from src.utils.exceptions import IndexingError, SearchError
+from src.utils.exceptions import IndexingError
 
 
 class TestIndexManager:
@@ -166,8 +165,6 @@ class TestIndexManager:
         # 最適化は30秒以内
         assert (end_time - start_time) < 30
 
-
-
     def test_index_corruption_recovery(self, temp_index_dir):
         """インデックス破損復旧テスト"""
         manager = IndexManager(str(temp_index_dir))
@@ -267,10 +264,11 @@ class TestIndexManager:
     def test_update_document(self, temp_index_dir):
         """ドキュメント更新テスト"""
         manager = IndexManager(str(temp_index_dir))
-        
+
         from datetime import datetime
+
         from src.data.models import Document, FileType
-        
+
         # 最初のドキュメントを追加
         content = "テストドキュメント"
         document = Document(
@@ -286,17 +284,17 @@ class TestIndexManager:
             metadata={"file_type": "txt"},
         )
         manager.add_document(document)
-        
+
         # ドキュメントを更新
         document.content = "更新されたテストドキュメント"
-        if hasattr(manager, 'update_document'):
+        if hasattr(manager, "update_document"):
             manager.update_document(document)
         else:
             # update_documentメソッドがない場合は再追加
             manager.add_document(document)
-        
+
         # 更新されたことを確認
-        if hasattr(manager, 'search_text'):
+        if hasattr(manager, "search_text"):
             results = manager.search_text("更新")
             assert len(results) >= 0  # 検索結果の存在を確認
 
@@ -304,10 +302,11 @@ class TestIndexManager:
     def test_search_with_file_type_filter(self, temp_index_dir):
         """ファイルタイプフィルター付き検索テスト"""
         manager = IndexManager(str(temp_index_dir))
-        
+
         from datetime import datetime
+
         from src.data.models import Document, FileType
-        
+
         # 異なるファイルタイプのドキュメントを作成
         documents = [
             Document(
@@ -335,12 +334,12 @@ class TestIndexManager:
                 metadata={"file_type": "docx"},
             ),
         ]
-        
+
         for doc in documents:
             manager.add_document(doc)
-        
+
         # ファイルタイプフィルター付き検索のシミュレーション
-        if hasattr(manager, 'search_text'):
+        if hasattr(manager, "search_text"):
             # 基本的な検索で結果があることを確認
             results = manager.search_text("テスト")
             assert len(results) >= 0
@@ -349,7 +348,7 @@ class TestIndexManager:
     def test_error_handling_invalid_document(self, temp_index_dir):
         """無効ドキュメントのエラーハンドリングテスト"""
         manager = IndexManager(str(temp_index_dir))
-        
+
         # Noneドキュメント
         try:
             manager.add_document(None)
@@ -363,10 +362,11 @@ class TestIndexManager:
     def test_search_performance_benchmark(self, temp_index_dir):
         """検索パフォーマンスベンチマークテスト"""
         manager = IndexManager(str(temp_index_dir))
-        
+
         from datetime import datetime
+
         from src.data.models import Document, FileType
-        
+
         # テスト用ドキュメントを追加
         for i in range(50):  # 数を減らしてテストを安定化
             content = f"パフォーマンステストドキュメント{i}"
@@ -383,16 +383,16 @@ class TestIndexManager:
                 metadata={"file_type": "txt"},
             )
             manager.add_document(document)
-        
+
         # 検索パフォーマンスを測定
-        if hasattr(manager, 'search_text'):
+        if hasattr(manager, "search_text"):
             queries = ["パフォーマンス", "テスト", "ドキュメント"]
-            
+
             for query in queries:
                 start_time = time.time()
                 results = manager.search_text(query)
                 end_time = time.time()
-                
+
                 # 各検索が2秒以内に完了することを確認
                 assert (end_time - start_time) < 2.0
                 assert len(results) >= 0  # 結果の存在を確認

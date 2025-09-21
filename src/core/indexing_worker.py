@@ -324,7 +324,7 @@ class IndexingWorker(QObject):
                 return document
             else:
                 self.logger.warning(
-                    f"ファイル処理でドキュメントが生成されませんでした: " f"{file_path}"
+                    f"ファイル処理でドキュメントが生成されませんでした: {file_path}"
                 )
                 return None
 
@@ -395,9 +395,9 @@ class IndexingWorker(QObject):
                 if size_bytes < 1024:
                     file_size = f" ({size_bytes}B)"
                 elif size_bytes < 1024 * 1024:
-                    file_size = f" ({size_bytes/1024:.1f}KB)"
+                    file_size = f" ({size_bytes / 1024:.1f}KB)"
                 else:
-                    file_size = f" ({size_bytes/(1024*1024):.1f}MB)"
+                    file_size = f" ({size_bytes / (1024 * 1024):.1f}MB)"
             except Exception as e:
                 self.logger.debug(f"ファイルサイズ取得エラー: {e}")
 

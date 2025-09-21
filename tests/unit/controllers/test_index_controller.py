@@ -49,9 +49,7 @@ class TestIndexController:
 
             # 必要なメソッドを実装
             def rebuild_index():
-                if (
-                    not mock_main_window.dialog_manager.show_rebuild_confirmation_dialog()
-                ):
+                if not mock_main_window.dialog_manager.show_rebuild_confirmation_dialog():
                     return
                 folder_path = (
                     mock_main_window.folder_tree_container.get_selected_folder()
@@ -71,9 +69,7 @@ class TestIndexController:
                     mock_main_window.dialog_manager.show_operation_failed_dialog()
 
             def clear_index():
-                if (
-                    not mock_main_window.dialog_manager.show_clear_index_confirmation_dialog()
-                ):
+                if not mock_main_window.dialog_manager.show_clear_index_confirmation_dialog():
                     return
                 mock_main_window.show_progress("インデックスをクリア中...", 0)
                 mock_main_window.index_manager.clear_index()
@@ -154,9 +150,7 @@ class TestIndexController:
     def test_rebuild_index_success(self, index_controller, mock_main_window):
         """インデックス再構築成功のテスト"""
         # ダイアログマネージャーの設定
-        mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = (
-            True
-        )
+        mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = True
         mock_main_window.folder_tree_container.get_selected_folder.return_value = (
             "/test/folder"
         )
@@ -191,9 +185,7 @@ class TestIndexController:
     def test_rebuild_index_cancelled(self, index_controller, mock_main_window):
         """インデックス再構築キャンセルのテスト"""
         # ユーザーがキャンセルを選択
-        mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = (
-            False
-        )
+        mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = False
 
         index_controller.rebuild_index()
 
@@ -206,9 +198,7 @@ class TestIndexController:
     def test_rebuild_index_no_folder_selected(self, index_controller, mock_main_window):
         """フォルダ未選択時のテスト"""
         # ダイアログマネージャーの設定
-        mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = (
-            True
-        )
+        mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = True
         mock_main_window.folder_tree_container.get_selected_folder.return_value = None
 
         index_controller.rebuild_index()
@@ -224,9 +214,7 @@ class TestIndexController:
     ):
         """スレッド開始失敗のテスト"""
         # ダイアログマネージャーの設定
-        mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = (
-            True
-        )
+        mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = True
         mock_main_window.folder_tree_container.get_selected_folder.return_value = (
             "/test/folder"
         )
@@ -247,9 +235,7 @@ class TestIndexController:
     def test_clear_index_success(self, index_controller, mock_main_window):
         """インデックスクリア成功のテスト"""
         # ダイアログマネージャーの設定
-        mock_main_window.dialog_manager.show_clear_index_confirmation_dialog.return_value = (
-            True
-        )
+        mock_main_window.dialog_manager.show_clear_index_confirmation_dialog.return_value = True
 
         index_controller.clear_index()
 
@@ -281,9 +267,7 @@ class TestIndexController:
     def test_clear_index_cancelled(self, index_controller, mock_main_window):
         """インデックスクリアキャンセルのテスト"""
         # ユーザーがキャンセルを選択
-        mock_main_window.dialog_manager.show_clear_index_confirmation_dialog.return_value = (
-            False
-        )
+        mock_main_window.dialog_manager.show_clear_index_confirmation_dialog.return_value = False
 
         index_controller.clear_index()
 

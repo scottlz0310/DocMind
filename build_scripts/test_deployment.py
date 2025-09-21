@@ -29,11 +29,11 @@ test_results = []
 # ログ設定
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler('deployment_test.log', encoding='utf-8')
-    ]
+        logging.FileHandler("deployment_test.log", encoding="utf-8"),
+    ],
 )
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,13 @@ logger = logging.getLogger(__name__)
 class TestResult:
     """テスト結果を格納するクラス"""
 
-    def __init__(self, test_name: str, success: bool, message: str = "", details: dict[str, Any] = None):
+    def __init__(
+        self,
+        test_name: str,
+        success: bool,
+        message: str = "",
+        details: dict[str, Any] = None,
+    ):
         self.test_name = test_name
         self.success = success
         self.message = message
@@ -107,19 +113,26 @@ class DeploymentTester:
 
         # インストーラーファイルの存在確認
         if not self.installer_path.exists():
-            self._add_test_result("前提条件チェック", False, f"インストーラーが見つかりません: {self.installer_path}")
+            self._add_test_result(
+                "前提条件チェック",
+                False,
+                f"インストーラーが見つかりません: {self.installer_path}",
+            )
             return False
 
         # Windows バージョンチェック
         try:
             import platform
+
             windows_version = platform.version()
             logger.info(f"Windows バージョン: {windows_version}")
 
             # Windows 10以降かチェック（簡易）
-            version_parts = windows_version.split('.')
+            version_parts = windows_version.split(".")
             if len(version_parts) >= 1 and int(version_parts[0]) < 10:
-                self._add_test_result("前提条件チェック", False, "Windows 10以降が必要です")
+                self._add_test_result(
+                    "前提条件チェック", False, "Windows 10以降が必要です"
+                )
                 return False
 
         except Exception as e:
@@ -135,14 +148,20 @@ class DeploymentTester:
 
         # ディスク容量チェック
         try:
-            disk = psutil.disk_usage('C:')
+            disk = psutil.disk_usage("C:")
             if disk.free < 2 * 1024 * 1024 * 1024:  # 2GB
-                self._add_test_result("前提条件チェック", False, "ディスク容量が不足しています（最低2GB必要）")
+                self._add_test_result(
+                    "前提条件チェック",
+                    False,
+                    "ディスク容量が不足しています（最低2GB必要）",
+                )
                 return False
         except Exception as e:
             logger.warning(f"ディスク容量チェックに失敗: {e}")
 
-        self._add_test_result("前提条件チェック", True, "すべての前提条件を満たしています")
+        self._add_test_result(
+            "前提条件チェック", True, "すべての前提条件を満たしています"
+        )
         return True
 
     def _test_installer(self) -> bool:
@@ -155,9 +174,9 @@ class DeploymentTester:
 
             cmd = [
                 str(self.installer_path),
-                '/SILENT',
-                '/NORESTART',
-                f'/DIR={install_dir}'
+                "/SILENT",
+                "/NORESTART",
+                f"/DIR={install_dir}",
             ]
 
             logger.info(f"インストールコマンド: {' '.join(cmd)}")
@@ -166,31 +185,42 @@ class DeploymentTester:
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=300  # 5分でタイムアウト
+                timeout=300,  # 5分でタイムアウト
             )
 
             if result.returncode != 0:
-                self._add_test_result("インストーラーテスト", False,
-                                    f"インストールに失敗: {result.stderr}")
+                self._add_test_result(
+                    "インストーラーテスト",
+                    False,
+                    f"インストールに失敗: {result.stderr}",
+                )
                 return False
 
             # インストール結果の確認
             exe_path = install_dir / "DocMind.exe"
             if not exe_path.exists():
-                self._add_test_result("インストーラーテスト", False,
-                                    f"実行ファイルが見つかりません: {exe_path}")
+                self._add_test_result(
+                    "インストーラーテスト",
+                    False,
+                    f"実行ファイルが見つかりません: {exe_path}",
+                )
                 return False
 
             self.install_dir = install_dir
-            self._add_test_result("インストーラーテスト", True,
-                                f"インストール成功: {install_dir}")
+            self._add_test_result(
+                "インストーラーテスト", True, f"インストール成功: {install_dir}"
+            )
             return True
 
         except subprocess.TimeoutExpired:
-            self._add_test_result("インストーラーテスト", False, "インストールがタイムアウトしました")
+            self._add_test_result(
+                "インストーラーテスト", False, "インストールがタイムアウトしました"
+            )
             return False
         except Exception as e:
-            self._add_test_result("インストーラーテスト", False, f"インストールエラー: {e}")
+            self._add_test_result(
+                "インストーラーテスト", False, f"インストールエラー: {e}"
+            )
             return False
 
     def _test_application_startup(self) -> bool:
@@ -198,7 +228,9 @@ class DeploymentTester:
         logger.info("アプリケーション起動をテスト中...")
 
         if not self.install_dir:
-            self._add_test_result("起動テスト", False, "インストールディレクトリが不明です")
+            self._add_test_result(
+                "起動テスト", False, "インストールディレクトリが不明です"
+            )
             return False
 
         try:
@@ -206,9 +238,7 @@ class DeploymentTester:
 
             # アプリケーションを起動
             self.app_process = subprocess.Popen(
-                [str(exe_path)],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                [str(exe_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE
             )
 
             # 起動を待機
@@ -217,19 +247,27 @@ class DeploymentTester:
             # プロセスが実行中かチェック
             if self.app_process.poll() is not None:
                 stdout, stderr = self.app_process.communicate()
-                self._add_test_result("起動テスト", False,
-                                    f"アプリケーションが終了しました: {stderr.decode('utf-8', errors='ignore')}")
+                self._add_test_result(
+                    "起動テスト",
+                    False,
+                    f"アプリケーションが終了しました: {stderr.decode('utf-8', errors='ignore')}",
+                )
                 return False
 
             # プロセスが存在するかチェック
             try:
                 process = psutil.Process(self.app_process.pid)
                 if process.is_running():
-                    self._add_test_result("起動テスト", True,
-                                        f"アプリケーションが正常に起動しました (PID: {self.app_process.pid})")
+                    self._add_test_result(
+                        "起動テスト",
+                        True,
+                        f"アプリケーションが正常に起動しました (PID: {self.app_process.pid})",
+                    )
                     return True
                 else:
-                    self._add_test_result("起動テスト", False, "プロセスが実行されていません")
+                    self._add_test_result(
+                        "起動テスト", False, "プロセスが実行されていません"
+                    )
                     return False
             except psutil.NoSuchProcess:
                 self._add_test_result("起動テスト", False, "プロセスが見つかりません")
@@ -244,7 +282,9 @@ class DeploymentTester:
         logger.info("基本機能をテスト中...")
 
         if not self.app_process or self.app_process.poll() is not None:
-            self._add_test_result("基本機能テスト", False, "アプリケーションが実行されていません")
+            self._add_test_result(
+                "基本機能テスト", False, "アプリケーションが実行されていません"
+            )
             return False
 
         try:
@@ -253,25 +293,39 @@ class DeploymentTester:
             time.sleep(5)  # データディレクトリ作成を待機
 
             if user_data_dir.exists():
-                self._add_test_result("データディレクトリ作成", True,
-                                    f"データディレクトリが作成されました: {user_data_dir}")
+                self._add_test_result(
+                    "データディレクトリ作成",
+                    True,
+                    f"データディレクトリが作成されました: {user_data_dir}",
+                )
             else:
-                self._add_test_result("データディレクトリ作成", False,
-                                    "データディレクトリが作成されませんでした")
+                self._add_test_result(
+                    "データディレクトリ作成",
+                    False,
+                    "データディレクトリが作成されませんでした",
+                )
 
             # 設定ファイルの確認
             config_file = user_data_dir / "config.json"
             if config_file.exists():
-                self._add_test_result("設定ファイル作成", True, "設定ファイルが作成されました")
+                self._add_test_result(
+                    "設定ファイル作成", True, "設定ファイルが作成されました"
+                )
             else:
-                self._add_test_result("設定ファイル作成", False, "設定ファイルが作成されませんでした")
+                self._add_test_result(
+                    "設定ファイル作成", False, "設定ファイルが作成されませんでした"
+                )
 
             # ログファイルの確認
             log_dir = user_data_dir / "logs"
             if log_dir.exists() and any(log_dir.glob("*.log")):
-                self._add_test_result("ログファイル作成", True, "ログファイルが作成されました")
+                self._add_test_result(
+                    "ログファイル作成", True, "ログファイルが作成されました"
+                )
             else:
-                self._add_test_result("ログファイル作成", False, "ログファイルが作成されませんでした")
+                self._add_test_result(
+                    "ログファイル作成", False, "ログファイルが作成されませんでした"
+                )
 
             return True
 
@@ -284,7 +338,9 @@ class DeploymentTester:
         logger.info("パフォーマンスをテスト中...")
 
         if not self.app_process or self.app_process.poll() is not None:
-            self._add_test_result("パフォーマンステスト", False, "アプリケーションが実行されていません")
+            self._add_test_result(
+                "パフォーマンステスト", False, "アプリケーションが実行されていません"
+            )
             return
 
         try:
@@ -295,19 +351,31 @@ class DeploymentTester:
             memory_mb = memory_info.rss / 1024 / 1024
 
             if memory_mb < 500:  # 500MB未満
-                self._add_test_result("メモリ使用量", True, f"メモリ使用量: {memory_mb:.1f}MB")
+                self._add_test_result(
+                    "メモリ使用量", True, f"メモリ使用量: {memory_mb:.1f}MB"
+                )
             else:
-                self._add_test_result("メモリ使用量", False, f"メモリ使用量が多すぎます: {memory_mb:.1f}MB")
+                self._add_test_result(
+                    "メモリ使用量",
+                    False,
+                    f"メモリ使用量が多すぎます: {memory_mb:.1f}MB",
+                )
 
             # CPU使用率の測定
             cpu_percent = process.cpu_percent(interval=5)
             if cpu_percent < 50:  # 50%未満
-                self._add_test_result("CPU使用率", True, f"CPU使用率: {cpu_percent:.1f}%")
+                self._add_test_result(
+                    "CPU使用率", True, f"CPU使用率: {cpu_percent:.1f}%"
+                )
             else:
-                self._add_test_result("CPU使用率", False, f"CPU使用率が高すぎます: {cpu_percent:.1f}%")
+                self._add_test_result(
+                    "CPU使用率", False, f"CPU使用率が高すぎます: {cpu_percent:.1f}%"
+                )
 
         except Exception as e:
-            self._add_test_result("パフォーマンステスト", False, f"パフォーマンステストエラー: {e}")
+            self._add_test_result(
+                "パフォーマンステスト", False, f"パフォーマンステストエラー: {e}"
+            )
 
     def _test_uninstaller(self) -> None:
         """アンインストーラーのテスト"""
@@ -327,27 +395,39 @@ class DeploymentTester:
             if uninstall_script.exists():
                 # バッチファイルによるアンインストール
                 result = subprocess.run(
-                    [str(uninstall_script)],
-                    capture_output=True,
-                    text=True,
-                    timeout=60
+                    [str(uninstall_script)], capture_output=True, text=True, timeout=60
                 )
 
                 if result.returncode == 0:
-                    self._add_test_result("アンインストールテスト", True, "アンインストールが成功しました")
+                    self._add_test_result(
+                        "アンインストールテスト", True, "アンインストールが成功しました"
+                    )
                 else:
-                    self._add_test_result("アンインストールテスト", False,
-                                        f"アンインストールに失敗: {result.stderr}")
+                    self._add_test_result(
+                        "アンインストールテスト",
+                        False,
+                        f"アンインストールに失敗: {result.stderr}",
+                    )
             else:
                 # 手動でディレクトリを削除
                 if self.install_dir.exists():
                     shutil.rmtree(self.install_dir, ignore_errors=True)
-                self._add_test_result("アンインストールテスト", True, "手動でアンインストールしました")
+                self._add_test_result(
+                    "アンインストールテスト", True, "手動でアンインストールしました"
+                )
 
         except Exception as e:
-            self._add_test_result("アンインストールテスト", False, f"アンインストールエラー: {e}")
+            self._add_test_result(
+                "アンインストールテスト", False, f"アンインストールエラー: {e}"
+            )
 
-    def _add_test_result(self, test_name: str, success: bool, message: str = "", details: dict[str, Any] = None) -> None:
+    def _add_test_result(
+        self,
+        test_name: str,
+        success: bool,
+        message: str = "",
+        details: dict[str, Any] = None,
+    ) -> None:
         """テスト結果を追加"""
         result = TestResult(test_name, success, message, details)
         self.test_results.append(result)
@@ -364,29 +444,31 @@ class DeploymentTester:
                 "total_tests": len(self.test_results),
                 "passed": sum(1 for r in self.test_results if r.success),
                 "failed": sum(1 for r in self.test_results if not r.success),
-                "timestamp": time.time()
+                "timestamp": time.time(),
             },
-            "test_results": []
+            "test_results": [],
         }
 
         for result in self.test_results:
-            report["test_results"].append({
-                "test_name": result.test_name,
-                "success": result.success,
-                "message": result.message,
-                "details": result.details,
-                "timestamp": result.timestamp
-            })
+            report["test_results"].append(
+                {
+                    "test_name": result.test_name,
+                    "success": result.success,
+                    "message": result.message,
+                    "details": result.details,
+                    "timestamp": result.timestamp,
+                }
+            )
 
         # JSONレポートの保存
         report_file = Path("deployment_test_report.json")
-        with open(report_file, 'w', encoding='utf-8') as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
         # テキストレポートの生成
         text_report = self._generate_text_report(report)
         text_report_file = Path("deployment_test_report.txt")
-        with open(text_report_file, 'w', encoding='utf-8') as f:
+        with open(text_report_file, "w", encoding="utf-8") as f:
             f.write(text_report)
 
         logger.info(f"テストレポートを生成しました: {report_file}, {text_report_file}")
@@ -404,7 +486,9 @@ class DeploymentTester:
         lines.append(f"  総テスト数: {summary['total_tests']}")
         lines.append(f"  成功: {summary['passed']}")
         lines.append(f"  失敗: {summary['failed']}")
-        lines.append(f"  成功率: {summary['passed'] / summary['total_tests'] * 100:.1f}%")
+        lines.append(
+            f"  成功率: {summary['passed'] / summary['total_tests'] * 100:.1f}%"
+        )
         lines.append("")
 
         lines.append("詳細結果:")

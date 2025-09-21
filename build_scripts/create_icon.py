@@ -25,11 +25,7 @@ def svg_to_ico(svg_path, ico_path, sizes=None):
         sizes = [16, 32, 48, 64, 128, 256]
 
     # SVGをPNGに変換
-    png_data = cairosvg.svg2png(
-        url=svg_path,
-        output_width=256,
-        output_height=256
-    )
+    png_data = cairosvg.svg2png(url=svg_path, output_width=256, output_height=256)
 
     # PNGデータをPIL Imageに変換
     png_image = Image.open(io.BytesIO(png_data))
@@ -37,20 +33,16 @@ def svg_to_ico(svg_path, ico_path, sizes=None):
     # 各サイズの画像を作成
     images = []
     for size in sizes:
-        resized_image = png_image.resize(
-            (size, size),
-            Image.Resampling.LANCZOS
-        )
+        resized_image = png_image.resize((size, size), Image.Resampling.LANCZOS)
         images.append(resized_image)
 
     # ICOファイルとして保存
     images[0].save(
         ico_path,
-        format='ICO',
+        format="ICO",
         sizes=[(size, size) for size in sizes],
-        append_images=images[1:]
+        append_images=images[1:],
     )
-
 
 
 def main():
@@ -78,12 +70,12 @@ def main():
         if ico_path.exists():
             ico_path.stat().st_size / 1024
 
-
     except ImportError:
         sys.exit(1)
 
     except Exception:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

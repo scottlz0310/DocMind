@@ -54,7 +54,7 @@ class SafetyMeasuresImplementor:
             return self.results
 
         except Exception as e:
-            self.results['error'] = str(e)
+            self.results["error"] = str(e)
             return self.results
 
     def _create_safety_directories(self):
@@ -68,13 +68,13 @@ class SafetyMeasuresImplementor:
             self.safety_dir / "quality_gates",
             self.backup_dir,
             self.backup_dir / "daily",
-            self.backup_dir / "weekly"
+            self.backup_dir / "weekly",
         ]
 
         for directory in directories:
             directory.mkdir(parents=True, exist_ok=True)
 
-        self.results['directories_created'] = len(directories)
+        self.results["directories_created"] = len(directories)
 
     def _create_verification_scripts(self):
         """検証スクリプト作成"""
@@ -172,10 +172,10 @@ if __name__ == "__main__":
     sys.exit(main())
 '''
 
-        daily_verification.write_text(daily_content, encoding='utf-8')
+        daily_verification.write_text(daily_content, encoding="utf-8")
         daily_verification.chmod(0o755)
 
-        self.results['verification_scripts'] = 1
+        self.results["verification_scripts"] = 1
 
     def _create_backup_system(self):
         """バックアップシステム構築"""
@@ -285,10 +285,10 @@ if __name__ == "__main__":
     main()
 '''
 
-        backup_script.write_text(backup_content, encoding='utf-8')
+        backup_script.write_text(backup_content, encoding="utf-8")
         backup_script.chmod(0o755)
 
-        self.results['backup_system'] = 1
+        self.results["backup_system"] = 1
 
     def _create_rollback_system(self):
         """ロールバックシステム構築"""
@@ -459,10 +459,10 @@ if __name__ == "__main__":
     main()
 '''
 
-        rollback_script.write_text(rollback_content, encoding='utf-8')
+        rollback_script.write_text(rollback_content, encoding="utf-8")
         rollback_script.chmod(0o755)
 
-        self.results['rollback_system'] = 1
+        self.results["rollback_system"] = 1
 
     def _create_quality_gates(self):
         """品質ゲート設定"""
@@ -657,10 +657,10 @@ if __name__ == "__main__":
     sys.exit(main())
 '''
 
-        quality_gate_script.write_text(quality_content, encoding='utf-8')
+        quality_gate_script.write_text(quality_content, encoding="utf-8")
         quality_gate_script.chmod(0o755)
 
-        self.results['quality_gates'] = 1
+        self.results["quality_gates"] = 1
 
     def _test_safety_measures(self):
         """安全対策テスト実行"""
@@ -669,55 +669,65 @@ if __name__ == "__main__":
 
         # 1. 検証スクリプトテスト
         try:
-            verification_script = self.safety_dir / "verification" / "daily_verification.py"
-            result = subprocess.run([
-                sys.executable, str(verification_script)
-            ], capture_output=True, text=True, timeout=60)
+            verification_script = (
+                self.safety_dir / "verification" / "daily_verification.py"
+            )
+            result = subprocess.run(
+                [sys.executable, str(verification_script)],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
 
-            test_results['verification_test'] = result.returncode == 0
+            test_results["verification_test"] = result.returncode == 0
             if result.returncode == 0:
                 pass
             else:
                 pass
         except Exception:
-            test_results['verification_test'] = False
+            test_results["verification_test"] = False
 
         # 2. バックアップシステムテスト
         try:
             backup_script = self.safety_dir / "backup" / "create_backup.py"
-            result = subprocess.run([
-                sys.executable, str(backup_script)
-            ], capture_output=True, text=True, timeout=60)
+            result = subprocess.run(
+                [sys.executable, str(backup_script)],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
 
-            test_results['backup_test'] = result.returncode == 0
+            test_results["backup_test"] = result.returncode == 0
             if result.returncode == 0:
                 pass
             else:
                 pass
         except Exception:
-            test_results['backup_test'] = False
+            test_results["backup_test"] = False
 
         # 3. 品質ゲートテスト
         try:
             quality_script = self.safety_dir / "quality_gates" / "quality_check.py"
-            result = subprocess.run([
-                sys.executable, str(quality_script)
-            ], capture_output=True, text=True, timeout=60)
+            result = subprocess.run(
+                [sys.executable, str(quality_script)],
+                capture_output=True,
+                text=True,
+                timeout=60,
+            )
 
-            test_results['quality_gate_test'] = result.returncode == 0
+            test_results["quality_gate_test"] = result.returncode == 0
             if result.returncode == 0:
                 pass
             else:
                 pass
         except Exception:
-            test_results['quality_gate_test'] = False
+            test_results["quality_gate_test"] = False
 
-        self.results['safety_tests'] = test_results
+        self.results["safety_tests"] = test_results
 
         # テスト結果サマリー
         passed_tests = sum(1 for result in test_results.values() if result)
         total_tests = len(test_results)
-
 
         if passed_tests >= total_tests * 0.8:  # 80%以上で合格
             return True
@@ -728,12 +738,14 @@ if __name__ == "__main__":
         """結果保存"""
 
         # 実行情報追加
-        self.results.update({
-            'timestamp': datetime.now().isoformat(),
-            'phase': 'Phase4 Week 0 Day 4',
-            'task': '安全対策実装',
-            'status': 'completed'
-        })
+        self.results.update(
+            {
+                "timestamp": datetime.now().isoformat(),
+                "phase": "Phase4 Week 0 Day 4",
+                "task": "安全対策実装",
+                "status": "completed",
+            }
+        )
 
         # 結果ファイル保存
         results_file = self.project_root / "PHASE4_SAFETY_IMPLEMENTATION_RESULTS.md"
@@ -741,27 +753,27 @@ if __name__ == "__main__":
         content = f"""# Phase4 安全対策実装結果
 
 ## 📊 実行サマリー
-- **実行日時**: {self.results['timestamp']}
-- **フェーズ**: {self.results['phase']}
-- **タスク**: {self.results['task']}
-- **ステータス**: {self.results['status']}
+- **実行日時**: {self.results["timestamp"]}
+- **フェーズ**: {self.results["phase"]}
+- **タスク**: {self.results["task"]}
+- **ステータス**: {self.results["status"]}
 
 ## 🛡️ 実装完了項目
 
 ### 作成されたディレクトリ
-- 安全対策ディレクトリ: {self.results.get('directories_created', 0)}個
+- 安全対策ディレクトリ: {self.results.get("directories_created", 0)}個
 
 ### 実装されたシステム
-- 検証スクリプト: {self.results.get('verification_scripts', 0)}個
-- バックアップシステム: {self.results.get('backup_system', 0)}個
-- ロールバックシステム: {self.results.get('rollback_system', 0)}個
-- 品質ゲート: {self.results.get('quality_gates', 0)}個
+- 検証スクリプト: {self.results.get("verification_scripts", 0)}個
+- バックアップシステム: {self.results.get("backup_system", 0)}個
+- ロールバックシステム: {self.results.get("rollback_system", 0)}個
+- 品質ゲート: {self.results.get("quality_gates", 0)}個
 
 ## 🧪 テスト結果
 """
 
-        if 'safety_tests' in self.results:
-            for test_name, result in self.results['safety_tests'].items():
+        if "safety_tests" in self.results:
+            for test_name, result in self.results["safety_tests"].items():
                 status = "✅ 成功" if result else "❌ 失敗"
                 content += f"- {test_name}: {status}\n"
 
@@ -820,22 +832,24 @@ Phase4の安全対策実装が完了しました。
 次回は Week 0 Day 5 の最終準備確認を実行してください。
 
 ---
-**作成日**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**作成日**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **ステータス**: ✅ 完了
 **次回作業**: Week 0 Day 5 - 最終準備確認
 """
 
-        results_file.write_text(content, encoding='utf-8')
+        results_file.write_text(content, encoding="utf-8")
+
 
 def main():
     """メイン処理"""
     implementor = SafetyMeasuresImplementor()
     results = implementor.run()
 
-    if 'error' in results:
+    if "error" in results:
         sys.exit(1)
     else:
         sys.exit(0)
+
 
 if __name__ == "__main__":
     main()

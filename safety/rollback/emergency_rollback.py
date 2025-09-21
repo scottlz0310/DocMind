@@ -56,8 +56,11 @@ class EmergencyRollback:
 
             # 作業ブランチを削除（存在する場合）
             try:
-                subprocess.run(["git", "branch", "-D", "refactor/folder-tree-phase4"],
-                             check=True, capture_output=True)
+                subprocess.run(
+                    ["git", "branch", "-D", "refactor/folder-tree-phase4"],
+                    check=True,
+                    capture_output=True,
+                )
             except subprocess.CalledProcessError:
                 pass
 
@@ -81,6 +84,7 @@ class EmergencyRollback:
             info_file = backup_dir / "backup_info.json"
             if info_file.exists():
                 import json
+
                 backup_info = json.loads(info_file.read_text())
                 files_to_restore = backup_info.get("files", [])
             else:
@@ -104,11 +108,11 @@ class EmergencyRollback:
         except Exception:
             return False
 
+
 def main():
     """メイン処理"""
 
     rollback = EmergencyRollback()
-
 
     try:
         choice = input("\n選択 (1-4): ").strip()
@@ -133,6 +137,7 @@ def main():
         pass
     except Exception:
         pass
+
 
 if __name__ == "__main__":
     main()

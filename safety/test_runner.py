@@ -21,15 +21,18 @@ class TestRunner:
         test_modules = [
             "src.gui.folder_tree",
             "src.gui.main_window",
-            "src.gui.search_interface"
+            "src.gui.search_interface",
         ]
 
         all_passed = True
         for module in test_modules:
             try:
-                result = subprocess.run([
-                    sys.executable, "-c", f"import {module}; print('✅ {module}')"
-                ], capture_output=True, text=True, timeout=10)
+                result = subprocess.run(
+                    [sys.executable, "-c", f"import {module}; print('✅ {module}')"],
+                    capture_output=True,
+                    text=True,
+                    timeout=10,
+                )
 
                 if result.returncode == 0:
                     pass
@@ -46,7 +49,7 @@ class TestRunner:
         python_files = [
             "src/gui/folder_tree.py",
             "src/gui/main_window.py",
-            "src/gui/search_interface.py"
+            "src/gui/search_interface.py",
         ]
 
         all_passed = True
@@ -56,9 +59,11 @@ class TestRunner:
                 continue
 
             try:
-                result = subprocess.run([
-                    sys.executable, "-m", "py_compile", str(full_path)
-                ], capture_output=True, text=True)
+                result = subprocess.run(
+                    [sys.executable, "-m", "py_compile", str(full_path)],
+                    capture_output=True,
+                    text=True,
+                )
 
                 if result.returncode == 0:
                     pass
@@ -80,11 +85,13 @@ class TestRunner:
         else:
             return False
 
+
 def main():
     """テスト実行のメイン関数"""
     runner = TestRunner()
     success = runner.run_all_tests()
     return success
+
 
 if __name__ == "__main__":
     success = main()

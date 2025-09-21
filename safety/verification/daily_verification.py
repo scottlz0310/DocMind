@@ -17,9 +17,11 @@ def run_syntax_check():
         return False
 
     try:
-        result = subprocess.run([
-            sys.executable, "-m", "py_compile", str(target_file)
-        ], capture_output=True, text=True)
+        result = subprocess.run(
+            [sys.executable, "-m", "py_compile", str(target_file)],
+            capture_output=True,
+            text=True,
+        )
 
         if result.returncode == 0:
             return True
@@ -27,15 +29,22 @@ def run_syntax_check():
             return False
     except Exception:
         return False
+
 
 def run_import_check():
     """インポートチェック実行"""
 
     try:
-        result = subprocess.run([
-            sys.executable, "-c",
-            "import sys; sys.path.append('src'); from gui.folder_tree import FolderTreeWidget; print('インポート成功')"
-        ], capture_output=True, text=True, cwd=Path.cwd())
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.path.append('src'); from gui.folder_tree import FolderTreeWidget; print('インポート成功')",
+            ],
+            capture_output=True,
+            text=True,
+            cwd=Path.cwd(),
+        )
 
         if result.returncode == 0:
             return True
@@ -43,13 +52,14 @@ def run_import_check():
             return False
     except Exception:
         return False
+
 
 def main():
     """メイン処理"""
 
     checks = [
         ("構文チェック", run_syntax_check),
-        ("インポートチェック", run_import_check)
+        ("インポートチェック", run_import_check),
     ]
 
     results = []
@@ -67,6 +77,7 @@ def main():
         return 0
     else:
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -20,15 +20,15 @@ class DependencyAnalyzer:
         self.target_file = target_file
         self.project_root = Path(__file__).parent.parent
         self.results = {
-            'imports': [],
-            'classes': [],
-            'methods': [],
-            'signals': [],
-            'qt_dependencies': [],
-            'internal_dependencies': [],
-            'async_components': [],
-            'ui_components': [],
-            'risk_assessment': {}
+            "imports": [],
+            "classes": [],
+            "methods": [],
+            "signals": [],
+            "qt_dependencies": [],
+            "internal_dependencies": [],
+            "async_components": [],
+            "ui_components": [],
+            "risk_assessment": {},
         }
 
     def analyze(self) -> dict:
@@ -37,7 +37,7 @@ class DependencyAnalyzer:
         if not os.path.exists(self.target_file):
             raise FileNotFoundError(f"対象ファイルが見つかりません: {self.target_file}")
 
-        with open(self.target_file, encoding='utf-8') as f:
+        with open(self.target_file, encoding="utf-8") as f:
             content = f.read()
 
         # AST解析
@@ -61,22 +61,26 @@ class DependencyAnalyzer:
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    self.results['imports'].append({
-                        'type': 'import',
-                        'module': alias.name,
-                        'alias': alias.asname,
-                        'line': node.lineno
-                    })
+                    self.results["imports"].append(
+                        {
+                            "type": "import",
+                            "module": alias.name,
+                            "alias": alias.asname,
+                            "line": node.lineno,
+                        }
+                    )
             elif isinstance(node, ast.ImportFrom):
-                module = node.module or ''
+                module = node.module or ""
                 for alias in node.names:
-                    self.results['imports'].append({
-                        'type': 'from_import',
-                        'module': module,
-                        'name': alias.name,
-                        'alias': alias.asname,
-                        'line': node.lineno
-                    })
+                    self.results["imports"].append(
+                        {
+                            "type": "from_import",
+                            "module": module,
+                            "name": alias.name,
+                            "alias": alias.asname,
+                            "line": node.lineno,
+                        }
+                    )
 
     def _analyze_classes(self, tree: ast.AST):
         """クラス分析"""
@@ -86,14 +90,16 @@ class DependencyAnalyzer:
                 bases = [self._get_name(base) for base in node.bases]
                 methods = [n.name for n in node.body if isinstance(n, ast.FunctionDef)]
 
-                self.results['classes'].append({
-                    'name': node.name,
-                    'bases': bases,
-                    'methods': methods,
-                    'method_count': len(methods),
-                    'line': node.lineno,
-                    'is_qt_widget': any('Q' in base for base in bases)
-                })
+                self.results["classes"].append(
+                    {
+                        "name": node.name,
+                        "bases": bases,
+                        "methods": methods,
+                        "method_count": len(methods),
+                        "line": node.lineno,
+                        "is_qt_widget": any("Q" in base for base in bases),
+                    }
+                )
 
     def _analyze_methods(self, tree: ast.AST):
         """メソッド分析"""
@@ -103,127 +109,159 @@ class DependencyAnalyzer:
                 # メソッドの複雑度を簡易計算
                 complexity = self._calculate_complexity(node)
 
-                self.results['methods'].append({
-                    'name': node.name,
-                    'line': node.lineno,
-                    'complexity': complexity,
-                    'is_private': node.name.startswith('_'),
-                    'is_slot': self._is_slot_method(node),
-                    'is_async_related': self._is_async_method(node)
-                })
+                self.results["methods"].append(
+                    {
+                        "name": node.name,
+                        "line": node.lineno,
+                        "complexity": complexity,
+                        "is_private": node.name.startswith("_"),
+                        "is_slot": self._is_slot_method(node),
+                        "is_async_related": self._is_async_method(node),
+                    }
+                )
 
     def _analyze_signals(self, content: str):
         """シグナル・スロット分析"""
 
         # シグナル定義を検索
-        signal_pattern = r'(\w+)\s*=\s*Signal\s*\([^)]*\)'
+        signal_pattern = r"(\w+)\s*=\s*Signal\s*\([^)]*\)"
         signals = re.findall(signal_pattern, content)
 
         # connect呼び出しを検索
-        connect_pattern = r'(\w+)\.connect\s*\([^)]+\)'
+        connect_pattern = r"(\w+)\.connect\s*\([^)]+\)"
         connects = re.findall(connect_pattern, content)
 
         # emit呼び出しを検索
-        emit_pattern = r'(\w+)\.emit\s*\([^)]*\)'
+        emit_pattern = r"(\w+)\.emit\s*\([^)]*\)"
         emits = re.findall(emit_pattern, content)
 
-        self.results['signals'] = {
-            'definitions': signals,
-            'connections': connects,
-            'emissions': emits,
-            'total_signal_usage': len(signals) + len(connects) + len(emits)
+        self.results["signals"] = {
+            "definitions": signals,
+            "connections": connects,
+            "emissions": emits,
+            "total_signal_usage": len(signals) + len(connects) + len(emits),
         }
 
     def _analyze_qt_dependencies(self, content: str):
         """Qt依存関係分析"""
 
         qt_patterns = {
-            'widgets': r'Q\w*Widget|Q\w*Item|Q\w*Layout',
-            'core': r'Q\w*Thread|Q\w*Timer|Q\w*Object',
-            'gui': r'Q\w*Font|Q\w*Color|Q\w*Cursor',
-            'signals': r'Signal|Slot|connect|emit'
+            "widgets": r"Q\w*Widget|Q\w*Item|Q\w*Layout",
+            "core": r"Q\w*Thread|Q\w*Timer|Q\w*Object",
+            "gui": r"Q\w*Font|Q\w*Color|Q\w*Cursor",
+            "signals": r"Signal|Slot|connect|emit",
         }
 
         for category, pattern in qt_patterns.items():
             matches = re.findall(pattern, content)
-            self.results['qt_dependencies'].append({
-                'category': category,
-                'components': list(set(matches)),
-                'count': len(matches)
-            })
+            self.results["qt_dependencies"].append(
+                {
+                    "category": category,
+                    "components": list(set(matches)),
+                    "count": len(matches),
+                }
+            )
 
     def _analyze_async_components(self, content: str):
         """非同期コンポーネント分析"""
 
         async_patterns = {
-            'threads': r'QThread|Worker|moveToThread',
-            'signals': r'started|finished|terminated',
-            'methods': r'start\(\)|quit\(\)|wait\(\)|terminate\(\)'
+            "threads": r"QThread|Worker|moveToThread",
+            "signals": r"started|finished|terminated",
+            "methods": r"start\(\)|quit\(\)|wait\(\)|terminate\(\)",
         }
 
         for category, pattern in async_patterns.items():
             matches = re.findall(pattern, content)
             if matches:
-                self.results['async_components'].append({
-                    'category': category,
-                    'components': list(set(matches)),
-                    'count': len(matches)
-                })
+                self.results["async_components"].append(
+                    {
+                        "category": category,
+                        "components": list(set(matches)),
+                        "count": len(matches),
+                    }
+                )
 
     def _analyze_ui_components(self, content: str):
         """UIコンポーネント分析"""
 
         ui_patterns = {
-            'tree_operations': r'addTopLevelItem|takeTopLevelItem|currentItem',
-            'item_operations': r'setExpanded|setSelected|setHidden',
-            'events': r'mousePressEvent|enterEvent|leaveEvent',
-            'styling': r'setStyleSheet|setIcon|setToolTip'
+            "tree_operations": r"addTopLevelItem|takeTopLevelItem|currentItem",
+            "item_operations": r"setExpanded|setSelected|setHidden",
+            "events": r"mousePressEvent|enterEvent|leaveEvent",
+            "styling": r"setStyleSheet|setIcon|setToolTip",
         }
 
         for category, pattern in ui_patterns.items():
             matches = re.findall(pattern, content)
             if matches:
-                self.results['ui_components'].append({
-                    'category': category,
-                    'components': list(set(matches)),
-                    'count': len(matches)
-                })
+                self.results["ui_components"].append(
+                    {
+                        "category": category,
+                        "components": list(set(matches)),
+                        "count": len(matches),
+                    }
+                )
 
     def _assess_risks(self):
         """リスク評価"""
 
         # 複雑度リスク
-        method_complexities = [m['complexity'] for m in self.results['methods']]
-        avg_complexity = sum(method_complexities) / len(method_complexities) if method_complexities else 0
+        method_complexities = [m["complexity"] for m in self.results["methods"]]
+        avg_complexity = (
+            sum(method_complexities) / len(method_complexities)
+            if method_complexities
+            else 0
+        )
 
         # 非同期処理リスク
-        async_risk = sum(comp['count'] for comp in self.results['async_components'])
+        async_risk = sum(comp["count"] for comp in self.results["async_components"])
 
         # Qt依存リスク
-        qt_risk = sum(comp['count'] for comp in self.results['qt_dependencies'])
+        qt_risk = sum(comp["count"] for comp in self.results["qt_dependencies"])
 
         # シグナル・スロットリスク
-        signal_risk = self.results['signals']['total_signal_usage']
+        signal_risk = self.results["signals"]["total_signal_usage"]
 
-        self.results['risk_assessment'] = {
-            'complexity_risk': {
-                'level': 'HIGH' if avg_complexity > 10 else 'MEDIUM' if avg_complexity > 5 else 'LOW',
-                'average_complexity': avg_complexity,
-                'max_complexity': max(method_complexities) if method_complexities else 0
+        self.results["risk_assessment"] = {
+            "complexity_risk": {
+                "level": "HIGH"
+                if avg_complexity > 10
+                else "MEDIUM"
+                if avg_complexity > 5
+                else "LOW",
+                "average_complexity": avg_complexity,
+                "max_complexity": max(method_complexities)
+                if method_complexities
+                else 0,
             },
-            'async_risk': {
-                'level': 'HIGH' if async_risk > 20 else 'MEDIUM' if async_risk > 10 else 'LOW',
-                'component_count': async_risk
+            "async_risk": {
+                "level": "HIGH"
+                if async_risk > 20
+                else "MEDIUM"
+                if async_risk > 10
+                else "LOW",
+                "component_count": async_risk,
             },
-            'qt_dependency_risk': {
-                'level': 'HIGH' if qt_risk > 50 else 'MEDIUM' if qt_risk > 25 else 'LOW',
-                'dependency_count': qt_risk
+            "qt_dependency_risk": {
+                "level": "HIGH"
+                if qt_risk > 50
+                else "MEDIUM"
+                if qt_risk > 25
+                else "LOW",
+                "dependency_count": qt_risk,
             },
-            'signal_risk': {
-                'level': 'HIGH' if signal_risk > 30 else 'MEDIUM' if signal_risk > 15 else 'LOW',
-                'signal_usage_count': signal_risk
+            "signal_risk": {
+                "level": "HIGH"
+                if signal_risk > 30
+                else "MEDIUM"
+                if signal_risk > 15
+                else "LOW",
+                "signal_usage_count": signal_risk,
             },
-            'overall_risk': self._calculate_overall_risk(avg_complexity, async_risk, qt_risk, signal_risk)
+            "overall_risk": self._calculate_overall_risk(
+                avg_complexity, async_risk, qt_risk, signal_risk
+            ),
         }
 
     def _calculate_complexity(self, node: ast.FunctionDef) -> int:
@@ -242,14 +280,14 @@ class DependencyAnalyzer:
         """スロットメソッドかどうか判定"""
         return any(
             keyword in node.name.lower()
-            for keyword in ['slot', 'on_', 'handle_', '_on_']
+            for keyword in ["slot", "on_", "handle_", "_on_"]
         )
 
     def _is_async_method(self, node: ast.FunctionDef) -> bool:
         """非同期関連メソッドかどうか判定"""
         return any(
             keyword in node.name.lower()
-            for keyword in ['thread', 'worker', 'async', 'load', 'cleanup']
+            for keyword in ["thread", "worker", "async", "load", "cleanup"]
         )
 
     def _get_name(self, node: ast.AST) -> str:
@@ -261,7 +299,9 @@ class DependencyAnalyzer:
         else:
             return str(node)
 
-    def _calculate_overall_risk(self, complexity: float, async_risk: int, qt_risk: int, signal_risk: int) -> str:
+    def _calculate_overall_risk(
+        self, complexity: float, async_risk: int, qt_risk: int, signal_risk: int
+    ) -> str:
         """総合リスクレベルを計算"""
         risk_score = 0
 
@@ -294,13 +334,14 @@ class DependencyAnalyzer:
             risk_score += 1
 
         if risk_score >= 10:
-            return 'CRITICAL'
+            return "CRITICAL"
         elif risk_score >= 8:
-            return 'HIGH'
+            return "HIGH"
         elif risk_score >= 6:
-            return 'MEDIUM'
+            return "MEDIUM"
         else:
-            return 'LOW'
+            return "LOW"
+
 
 def main():
     """メイン実行関数"""
@@ -314,15 +355,13 @@ def main():
 
     # 結果をJSONファイルに保存
     output_file = "folder_tree_dependencies.json"
-    with open(output_file, 'w', encoding='utf-8') as f:
+    with open(output_file, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
     # サマリーレポート出力
 
-
-
-    for risk_type, risk_data in results['risk_assessment'].items():
-        if risk_type != 'overall_risk' and isinstance(risk_data, dict):
+    for risk_type, risk_data in results["risk_assessment"].items():
+        if risk_type != "overall_risk" and isinstance(risk_data, dict):
             pass
 
 

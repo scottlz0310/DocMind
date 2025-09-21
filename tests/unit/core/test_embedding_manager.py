@@ -14,7 +14,6 @@ import numpy as np
 import pytest
 
 from src.core.embedding_manager import EmbeddingManager
-from src.utils.exceptions import EmbeddingError
 
 
 class TestEmbeddingManager:
@@ -254,14 +253,16 @@ class TestEmbeddingManager:
     def test_model_loading_with_mock(self, temp_cache_dir):
         """モデル読み込みテスト"""
         from unittest.mock import Mock, patch
-        
-        with patch("src.core.embedding_manager.SentenceTransformer") as mock_transformer:
+
+        with patch(
+            "src.core.embedding_manager.SentenceTransformer"
+        ) as mock_transformer:
             mock_model = Mock()
             mock_transformer.return_value = mock_model
-            
+
             embeddings_path = str(temp_cache_dir / "embeddings.pkl")
             manager = EmbeddingManager(embeddings_path=embeddings_path)
-            
+
             # モデルが正しく設定されていることを確認
             assert manager.model is not None
 
@@ -312,7 +313,7 @@ class TestEmbeddingManager:
         manager.add_document_embedding("meta_doc", sample_texts[0])
 
         # メタデータの確認
-        if hasattr(manager, 'get_embedding_stats'):
+        if hasattr(manager, "get_embedding_stats"):
             stats = manager.get_embedding_stats()
             assert isinstance(stats, dict)
             assert "total_embeddings" in stats or "total_documents" in stats

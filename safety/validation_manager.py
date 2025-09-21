@@ -23,7 +23,7 @@ class ValidationManager:
             "src/gui/main_window.py",
             "src/gui/search_interface.py",
             "REFACTORING_STATUS.md",
-            "PHASE4_PROGRESS_TRACKER.md"
+            "PHASE4_PROGRESS_TRACKER.md",
         ]
 
         all_exist = True
@@ -44,12 +44,11 @@ class ValidationManager:
             return False
 
         try:
-            with open(deps_file, encoding='utf-8') as f:
+            with open(deps_file, encoding="utf-8") as f:
                 deps_data = json.load(f)
 
-            deps_data.get('imports', [])
-            deps_data.get('external_dependencies', [])
-
+            deps_data.get("imports", [])
+            deps_data.get("external_dependencies", [])
 
             return True
         except Exception:
@@ -61,14 +60,14 @@ class ValidationManager:
         files_to_check = {
             "folder_tree.py": "src/gui/folder_tree.py",
             "main_window.py": "src/gui/main_window.py",
-            "search_interface.py": "src/gui/search_interface.py"
+            "search_interface.py": "src/gui/search_interface.py",
         }
 
         line_counts = {}
         for name, path in files_to_check.items():
             full_path = self.project_root / path
             if full_path.exists():
-                with open(full_path, encoding='utf-8') as f:
+                with open(full_path, encoding="utf-8") as f:
                     lines = len(f.readlines())
                 line_counts[name] = lines
             else:
@@ -83,30 +82,29 @@ class ValidationManager:
             "validation_date": datetime.now().isoformat(),
             "file_structure_ok": self.validate_file_structure(),
             "dependencies_ok": self.validate_dependencies(),
-            "line_counts": self.validate_line_counts()
+            "line_counts": self.validate_line_counts(),
         }
 
         # レポートファイルに保存
         report_file = self.project_root / "PHASE4_VALIDATION_REPORT.json"
-        with open(report_file, 'w', encoding='utf-8') as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
         return report
+
 
 def main():
     """検証管理のメイン関数"""
     manager = ValidationManager()
     report = manager.generate_validation_report()
 
-    all_ok = (
-        report['file_structure_ok'] and
-        report['dependencies_ok']
-    )
+    all_ok = report["file_structure_ok"] and report["dependencies_ok"]
 
     if all_ok:
         return True
     else:
         return False
+
 
 if __name__ == "__main__":
     success = main()

@@ -252,7 +252,9 @@ class GracefulDegradationManager:
             "overall_health": (
                 "healthy"
                 if failed_count == 0 and degraded_count == 0
-                else "degraded" if failed_count == 0 else "critical"
+                else "degraded"
+                if failed_count == 0
+                else "critical"
             ),
             "components": {
                 name: {

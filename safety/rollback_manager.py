@@ -46,6 +46,7 @@ class RollbackManager:
         latest_backup = backups[0]
         return self.rollback_from_backup(str(latest_backup))
 
+
 def main():
     """ロールバック管理のメイン関数"""
     manager = RollbackManager()
@@ -56,6 +57,7 @@ def main():
             pass
     else:
         pass
+
 
 if __name__ == "__main__":
     main()

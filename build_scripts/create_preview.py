@@ -21,10 +21,7 @@ def svg_to_png(svg_path, png_path, size=512):
     """
     # SVGをPNGに変換
     cairosvg.svg2png(
-        url=svg_path,
-        write_to=str(png_path),
-        output_width=size,
-        output_height=size
+        url=svg_path, write_to=str(png_path), output_width=size, output_height=size
     )
 
 
@@ -53,9 +50,9 @@ def main():
         if png_path.exists():
             png_path.stat().st_size / 1024
 
-
     except Exception:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

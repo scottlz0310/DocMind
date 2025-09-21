@@ -14,34 +14,42 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def setup_logging():
     """ログ設定"""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
-            logging.FileHandler('phase4_week2_day2_optimization.log'),
-            logging.StreamHandler()
-        ]
+            logging.FileHandler("phase4_week2_day2_optimization.log"),
+            logging.StreamHandler(),
+        ],
     )
     return logging.getLogger(__name__)
+
 
 def analyze_current_state():
     """現在の状態を分析"""
     logger = logging.getLogger(__name__)
 
-    folder_tree_path = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    folder_tree_path = (
+        project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    )
 
     if not folder_tree_path.exists():
         logger.error(f"ファイルが見つかりません: {folder_tree_path}")
         return None
 
-    with open(folder_tree_path, encoding='utf-8') as f:
+    with open(folder_tree_path, encoding="utf-8") as f:
         content = f.read()
 
-    lines = content.split('\n')
-    methods = [line for line in lines if line.strip().startswith('def ')]
-    imports = [line for line in lines if line.strip().startswith('import ') or line.strip().startswith('from ')]
+    lines = content.split("\n")
+    methods = [line for line in lines if line.strip().startswith("def ")]
+    imports = [
+        line
+        for line in lines
+        if line.strip().startswith("import ") or line.strip().startswith("from ")
+    ]
 
     logger.info("現在の状況:")
     logger.info(f"  - 行数: {len(lines)}")
@@ -49,19 +57,22 @@ def analyze_current_state():
     logger.info(f"  - インポート数: {len(imports)}")
 
     return {
-        'lines': len(lines),
-        'methods': len(methods),
-        'imports': len(imports),
-        'content': content
+        "lines": len(lines),
+        "methods": len(methods),
+        "imports": len(imports),
+        "content": content,
     }
+
 
 def optimize_imports():
     """インポート文の最適化"""
     logger = logging.getLogger(__name__)
 
-    folder_tree_path = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    folder_tree_path = (
+        project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    )
 
-    with open(folder_tree_path, encoding='utf-8') as f:
+    with open(folder_tree_path, encoding="utf-8") as f:
         content = f.read()
 
     # 最適化されたインポート文
@@ -93,7 +104,7 @@ from .event_handling import EventHandlerManager, SignalManager, ActionManager
 '''
 
     # インポート部分を置換
-    lines = content.split('\n')
+    lines = content.split("\n")
 
     # docstringの終了位置を見つける
     docstring_end = 0
@@ -112,72 +123,88 @@ from .event_handling import EventHandlerManager, SignalManager, ActionManager
 
     for i in range(import_start, len(lines)):
         line = lines[i].strip()
-        if line and not (line.startswith('import ') or line.startswith('from ') or line.startswith('#')):
+        if line and not (
+            line.startswith("import ")
+            or line.startswith("from ")
+            or line.startswith("#")
+        ):
             import_end = i
             break
 
     # 新しいコンテンツを作成
     new_lines = []
-    new_lines.extend(optimized_imports.split('\n'))
+    new_lines.extend(optimized_imports.split("\n"))
     new_lines.extend(lines[import_end:])
 
-    new_content = '\n'.join(new_lines)
+    new_content = "\n".join(new_lines)
 
     # ファイルに書き込み
-    with open(folder_tree_path, 'w', encoding='utf-8') as f:
+    with open(folder_tree_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
     logger.info("インポート文の最適化完了")
     return True
 
+
 def remove_duplicate_code():
     """重複コードの削除"""
     logger = logging.getLogger(__name__)
 
-    folder_tree_path = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    folder_tree_path = (
+        project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    )
 
-    with open(folder_tree_path, encoding='utf-8') as f:
+    with open(folder_tree_path, encoding="utf-8") as f:
         content = f.read()
 
     # 重複している空のメソッド定義を削除
-    lines = content.split('\n')
+    lines = content.split("\n")
     new_lines = []
 
     for i, line in enumerate(lines):
         # 空のメソッド定義をスキップ
-        if line.strip() == '':
+        if line.strip() == "":
             # 連続する空行は1つだけ残す
-            if i > 0 and lines[i-1].strip() != '':
+            if i > 0 and lines[i - 1].strip() != "":
                 new_lines.append(line)
-        elif line.strip().startswith('# ') and ('イベントハンドラー' in line or 'コンテキストメニュー' in line or 'アクション関連' in line):
+        elif line.strip().startswith("# ") and (
+            "イベントハンドラー" in line
+            or "コンテキストメニュー" in line
+            or "アクション関連" in line
+        ):
             # 空のセクションコメントをスキップ
             continue
         else:
             new_lines.append(line)
 
-    new_content = '\n'.join(new_lines)
+    new_content = "\n".join(new_lines)
 
     # ファイルに書き込み
-    with open(folder_tree_path, 'w', encoding='utf-8') as f:
+    with open(folder_tree_path, "w", encoding="utf-8") as f:
         f.write(new_content)
 
     logger.info("重複コードの削除完了")
     return True
 
+
 def optimize_method_calls():
     """メソッド呼び出しの最適化"""
     logger = logging.getLogger(__name__)
 
-    folder_tree_path = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    folder_tree_path = (
+        project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    )
 
-    with open(folder_tree_path, encoding='utf-8') as f:
+    with open(folder_tree_path, encoding="utf-8") as f:
         content = f.read()
 
     # 最適化: 直接的なマネージャー呼び出しに変更
     optimizations = [
         # UI設定の統合
-        ('self.ui_setup_manager.setup_tree_widget()\n        self.context_menu_manager.setup_context_menu()\n        self.signal_manager.setup_shortcuts()\n        self.signal_manager.setup_tree_signals()\n        self.signal_manager.setup_async_signals()',
-         'self._setup_all_components()'),
+        (
+            "self.ui_setup_manager.setup_tree_widget()\n        self.context_menu_manager.setup_context_menu()\n        self.signal_manager.setup_shortcuts()\n        self.signal_manager.setup_tree_signals()\n        self.signal_manager.setup_async_signals()",
+            "self._setup_all_components()",
+        ),
     ]
 
     for old, new in optimizations:
@@ -198,40 +225,55 @@ def optimize_method_calls():
 '''
 
     # __init__メソッドの後に追加
-    init_end = content.find('self.logger.info("フォルダツリーウィジェットが初期化されました")')
+    init_end = content.find(
+        'self.logger.info("フォルダツリーウィジェットが初期化されました")'
+    )
     if init_end != -1:
-        insert_pos = content.find('\n    \n', init_end) + 1
+        insert_pos = content.find("\n    \n", init_end) + 1
         content = content[:insert_pos] + setup_method + content[insert_pos:]
 
     # ファイルに書き込み
-    with open(folder_tree_path, 'w', encoding='utf-8') as f:
+    with open(folder_tree_path, "w", encoding="utf-8") as f:
         f.write(content)
 
     logger.info("メソッド呼び出しの最適化完了")
     return True
 
+
 def optimize_memory_usage():
     """メモリ使用量の最適化"""
     logger = logging.getLogger(__name__)
 
-    folder_tree_path = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    folder_tree_path = (
+        project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    )
 
-    with open(folder_tree_path, encoding='utf-8') as f:
+    with open(folder_tree_path, encoding="utf-8") as f:
         content = f.read()
 
     # メモリ効率的な初期化
     memory_optimizations = [
         # セットの初期化を遅延化
-        ('self.expanded_paths: Set[str] = set()',
-         'self.expanded_paths: Optional[Set[str]] = None'),
-        ('self.indexing_paths: Set[str] = set()',
-         'self.indexing_paths: Optional[Set[str]] = None'),
-        ('self.indexed_paths: Set[str] = set()',
-         'self.indexed_paths: Optional[Set[str]] = None'),
-        ('self.excluded_paths: Set[str] = set()',
-         'self.excluded_paths: Optional[Set[str]] = None'),
-        ('self.error_paths: Set[str] = set()',
-         'self.error_paths: Optional[Set[str]] = None'),
+        (
+            "self.expanded_paths: Set[str] = set()",
+            "self.expanded_paths: Optional[Set[str]] = None",
+        ),
+        (
+            "self.indexing_paths: Set[str] = set()",
+            "self.indexing_paths: Optional[Set[str]] = None",
+        ),
+        (
+            "self.indexed_paths: Set[str] = set()",
+            "self.indexed_paths: Optional[Set[str]] = None",
+        ),
+        (
+            "self.excluded_paths: Set[str] = set()",
+            "self.excluded_paths: Optional[Set[str]] = None",
+        ),
+        (
+            "self.error_paths: Set[str] = set()",
+            "self.error_paths: Optional[Set[str]] = None",
+        ),
     ]
 
     for old, new in memory_optimizations:
@@ -254,40 +296,43 @@ def optimize_memory_usage():
 '''
 
     # _setup_all_componentsメソッドの後に追加
-    setup_end = content.find('self.signal_manager.setup_async_signals()')
+    setup_end = content.find("self.signal_manager.setup_async_signals()")
     if setup_end != -1:
-        insert_pos = content.find('\n    \n', setup_end) + 1
+        insert_pos = content.find("\n    \n", setup_end) + 1
         content = content[:insert_pos] + lazy_init_method + content[insert_pos:]
 
     # パスセット使用箇所に遅延初期化を追加
     path_set_usages = [
-        'self.expanded_paths.discard',
-        'self.indexing_paths.add',
-        'self.indexing_paths.discard',
-        'self.indexed_paths.add',
-        'self.indexed_paths.discard',
-        'self.excluded_paths.add',
-        'self.excluded_paths.discard',
-        'self.error_paths.add',
-        'self.error_paths.discard',
+        "self.expanded_paths.discard",
+        "self.indexing_paths.add",
+        "self.indexing_paths.discard",
+        "self.indexed_paths.add",
+        "self.indexed_paths.discard",
+        "self.excluded_paths.add",
+        "self.excluded_paths.discard",
+        "self.error_paths.add",
+        "self.error_paths.discard",
     ]
 
     for usage in path_set_usages:
-        content = content.replace(usage, f'self._ensure_path_sets()\n        {usage}')
+        content = content.replace(usage, f"self._ensure_path_sets()\n        {usage}")
 
     # ファイルに書き込み
-    with open(folder_tree_path, 'w', encoding='utf-8') as f:
+    with open(folder_tree_path, "w", encoding="utf-8") as f:
         f.write(content)
 
     logger.info("メモリ使用量の最適化完了")
     return True
+
 
 def create_performance_optimized_methods():
     """パフォーマンス最適化メソッドの作成"""
     logger = logging.getLogger(__name__)
 
     # パフォーマンス最適化用のヘルパーメソッドファイルを作成
-    helper_path = project_root / "src" / "gui" / "folder_tree" / "performance_helpers.py"
+    helper_path = (
+        project_root / "src" / "gui" / "folder_tree" / "performance_helpers.py"
+    )
 
     helper_content = '''#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -394,63 +439,75 @@ class BatchProcessor:
         self._pending_operations.clear()
 '''
 
-    with open(helper_path, 'w', encoding='utf-8') as f:
+    with open(helper_path, "w", encoding="utf-8") as f:
         f.write(helper_content)
 
     logger.info(f"パフォーマンス最適化ヘルパー作成完了: {helper_path}")
     return True
 
+
 def integrate_performance_helpers():
     """パフォーマンスヘルパーの統合"""
     logger = logging.getLogger(__name__)
 
-    folder_tree_path = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    folder_tree_path = (
+        project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    )
 
-    with open(folder_tree_path, encoding='utf-8') as f:
+    with open(folder_tree_path, encoding="utf-8") as f:
         content = f.read()
 
     # パフォーマンスヘルパーのインポートを追加
-    import_addition = "from .performance_helpers import PathOptimizer, SetManager, BatchProcessor\n"
+    import_addition = (
+        "from .performance_helpers import PathOptimizer, SetManager, BatchProcessor\n"
+    )
 
     # インポート部分の最後に追加
-    import_end = content.find('from .event_handling import EventHandlerManager, SignalManager, ActionManager')
+    import_end = content.find(
+        "from .event_handling import EventHandlerManager, SignalManager, ActionManager"
+    )
     if import_end != -1:
-        insert_pos = content.find('\n', import_end) + 1
+        insert_pos = content.find("\n", import_end) + 1
         content = content[:insert_pos] + import_addition + content[insert_pos:]
 
     # __init__メソッドにパフォーマンスヘルパーを追加
-    init_addition = '''
+    init_addition = """
         # パフォーマンス最適化コンポーネント
         self.path_optimizer = PathOptimizer()
         self.set_manager = SetManager()
         self.batch_processor = BatchProcessor()
-'''
+"""
 
-    init_pos = content.find('# イベント処理コンポーネント')
+    init_pos = content.find("# イベント処理コンポーネント")
     if init_pos != -1:
-        content = content[:init_pos] + init_addition + '\n        ' + content[init_pos:]
+        content = content[:init_pos] + init_addition + "\n        " + content[init_pos:]
 
     # ファイルに書き込み
-    with open(folder_tree_path, 'w', encoding='utf-8') as f:
+    with open(folder_tree_path, "w", encoding="utf-8") as f:
         f.write(content)
 
     logger.info("パフォーマンスヘルパーの統合完了")
     return True
 
+
 def run_syntax_check():
     """構文チェック実行"""
     logger = logging.getLogger(__name__)
 
-    folder_tree_path = project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    folder_tree_path = (
+        project_root / "src" / "gui" / "folder_tree" / "folder_tree_widget.py"
+    )
 
     try:
         import py_compile
+
         py_compile.compile(folder_tree_path, doraise=True)
         logger.info("✅ 構文チェック成功")
         return True
     except py_compile.PyCompileError as e:
         logger.error(f"❌ 構文エラー: {e}")
         return False
+
 
 def measure_performance():
     """パフォーマンス測定"""
@@ -477,14 +534,12 @@ def measure_performance():
         # クリーンアップ
         widget.deleteLater()
 
-        return {
-            'import_time': import_time,
-            'init_time': init_time
-        }
+        return {"import_time": import_time, "init_time": init_time}
 
     except Exception as e:
         logger.error(f"パフォーマンス測定エラー: {e}")
         return None
+
 
 def main():
     """メイン実行関数"""
@@ -555,9 +610,15 @@ def main():
     # 結果レポート
     logger.info("🎉 Phase4 Week 2 Day 2: 統合・最適化完了")
     logger.info("📊 最適化結果:")
-    logger.info(f"  - 行数: {initial_state['lines']} → {final_state['lines']} ({((initial_state['lines'] - final_state['lines']) / initial_state['lines'] * 100):.1f}%削減)")
-    logger.info(f"  - メソッド数: {initial_state['methods']} → {final_state['methods']}")
-    logger.info(f"  - インポート数: {initial_state['imports']} → {final_state['imports']}")
+    logger.info(
+        f"  - 行数: {initial_state['lines']} → {final_state['lines']} ({((initial_state['lines'] - final_state['lines']) / initial_state['lines'] * 100):.1f}%削減)"
+    )
+    logger.info(
+        f"  - メソッド数: {initial_state['methods']} → {final_state['methods']}"
+    )
+    logger.info(
+        f"  - インポート数: {initial_state['imports']} → {final_state['imports']}"
+    )
 
     if performance:
         logger.info(f"  - インポート時間: {performance['import_time']:.3f}秒")
@@ -565,6 +626,7 @@ def main():
 
     logger.info("✅ 全ての最適化が正常に完了しました")
     return True
+
 
 if __name__ == "__main__":
     success = main()

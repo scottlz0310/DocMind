@@ -15,17 +15,19 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+
 def setup_logging():
     """ログ設定"""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(levelname)s - %(message)s",
         handlers=[
-            logging.FileHandler('phase4_week3_day1_integration.log'),
-            logging.StreamHandler()
-        ]
+            logging.FileHandler("phase4_week3_day1_integration.log"),
+            logging.StreamHandler(),
+        ],
     )
     return logging.getLogger(__name__)
+
 
 def test_component_imports():
     """全コンポーネントのインポートテスト"""
@@ -57,6 +59,7 @@ def test_component_imports():
         logger.error(f"❌ インポートエラー: {e}")
         logger.error(traceback.format_exc())
         return False
+
 
 def test_widget_initialization():
     """ウィジェット初期化テスト"""
@@ -98,6 +101,7 @@ def test_widget_initialization():
         logger.error(f"❌ 初期化エラー: {e}")
         logger.error(traceback.format_exc())
         return False, 0, 0
+
 
 def test_memory_usage():
     """メモリ使用量テスト"""
@@ -156,6 +160,7 @@ def test_memory_usage():
         tracemalloc.stop()
         return False, 0, 0
 
+
 def test_performance_benchmarks():
     """パフォーマンスベンチマークテスト"""
     logger = logging.getLogger(__name__)
@@ -180,20 +185,20 @@ def test_performance_benchmarks():
         start_time = time.time()
         for _i in range(100):
             container.get_selected_folder()
-        results['folder_selection'] = time.time() - start_time
+        results["folder_selection"] = time.time() - start_time
 
         # 2. 状態設定テスト
         start_time = time.time()
         test_paths = [f"/test/path/{i}" for i in range(50)]
         container.set_indexed_folders(test_paths)
-        results['state_setting'] = time.time() - start_time
+        results["state_setting"] = time.time() - start_time
 
         # 3. 状態取得テスト
         start_time = time.time()
         for _i in range(100):
             container.get_indexed_folders()
             container.get_excluded_folders()
-        results['state_getting'] = time.time() - start_time
+        results["state_getting"] = time.time() - start_time
 
         # クリーンアップ
         container.deleteLater()
@@ -208,6 +213,7 @@ def test_performance_benchmarks():
         logger.error(f"❌ パフォーマンステストエラー: {e}")
         logger.error(traceback.format_exc())
         return False, {}
+
 
 def test_component_integration():
     """コンポーネント統合テスト"""
@@ -286,7 +292,9 @@ def test_component_integration():
             logger.error(f"❌ クリーンアップテスト: {e}")
 
         success_rate = tests_passed / total_tests
-        logger.info(f"✅ 統合テスト成功率: {success_rate:.1%} ({tests_passed}/{total_tests})")
+        logger.info(
+            f"✅ 統合テスト成功率: {success_rate:.1%} ({tests_passed}/{total_tests})"
+        )
 
         return success_rate >= 0.8, success_rate
 
@@ -294,6 +302,7 @@ def test_component_integration():
         logger.error(f"❌ 統合テストエラー: {e}")
         logger.error(traceback.format_exc())
         return False, 0.0
+
 
 def generate_integration_report(results):
     """統合テスト結果レポート生成"""
@@ -305,23 +314,23 @@ def generate_integration_report(results):
 ## 📊 テスト結果サマリー
 
 ### ✅ 成功項目
-- コンポーネントインポート: {'✅ 成功' if results['imports'] else '❌ 失敗'}
-- ウィジェット初期化: {'✅ 成功' if results['initialization'][0] else '❌ 失敗'}
-- メモリ使用量: {'✅ 成功' if results['memory'][0] else '❌ 失敗'}
-- パフォーマンス: {'✅ 成功' if results['performance'][0] else '❌ 失敗'}
-- コンポーネント統合: {'✅ 成功' if results['integration'][0] else '❌ 失敗'}
+- コンポーネントインポート: {"✅ 成功" if results["imports"] else "❌ 失敗"}
+- ウィジェット初期化: {"✅ 成功" if results["initialization"][0] else "❌ 失敗"}
+- メモリ使用量: {"✅ 成功" if results["memory"][0] else "❌ 失敗"}
+- パフォーマンス: {"✅ 成功" if results["performance"][0] else "❌ 失敗"}
+- コンポーネント統合: {"✅ 成功" if results["integration"][0] else "❌ 失敗"}
 
 ### 📈 パフォーマンス指標
-- FolderTreeWidget初期化: {results['initialization'][1]:.3f}秒
-- FolderTreeContainer初期化: {results['initialization'][2]:.3f}秒
-- メモリ増加: {results['memory'][1]:.2f} MB
-- メモリリーク: {results['memory'][2]:.2f} MB
-- 統合テスト成功率: {results['integration'][1]:.1%}
+- FolderTreeWidget初期化: {results["initialization"][1]:.3f}秒
+- FolderTreeContainer初期化: {results["initialization"][2]:.3f}秒
+- メモリ増加: {results["memory"][1]:.2f} MB
+- メモリリーク: {results["memory"][2]:.2f} MB
+- 統合テスト成功率: {results["integration"][1]:.1%}
 
 ### 🎯 品質評価
-- 全体成功率: {sum([results['imports'], results['initialization'][0], results['memory'][0], results['performance'][0], results['integration'][0]]) / 5:.1%}
-- パフォーマンス: {'良好' if results['initialization'][1] < 1.0 else '要改善'}
-- メモリ効率: {'良好' if results['memory'][2] < 1.0 else '要改善'}
+- 全体成功率: {sum([results["imports"], results["initialization"][0], results["memory"][0], results["performance"][0], results["integration"][0]]) / 5:.1%}
+- パフォーマンス: {"良好" if results["initialization"][1] < 1.0 else "要改善"}
+- メモリ効率: {"良好" if results["memory"][2] < 1.0 else "要改善"}
 
 ## 📋 次回作業項目
 - Week 3 Day 2: パフォーマンス最適化
@@ -329,15 +338,16 @@ def generate_integration_report(results):
 - Week 4: 最終検証・完了
 
 ---
-作成日時: {time.strftime('%Y-%m-%d %H:%M:%S')}
+作成日時: {time.strftime("%Y-%m-%d %H:%M:%S")}
 """
 
     # レポートファイルに保存
-    with open('PHASE4_WEEK3_DAY1_INTEGRATION_REPORT.md', 'w', encoding='utf-8') as f:
+    with open("PHASE4_WEEK3_DAY1_INTEGRATION_REPORT.md", "w", encoding="utf-8") as f:
         f.write(report)
 
     logger.info("✅ 統合テスト結果レポートを生成しました")
     return report
+
 
 def main():
     """メイン実行関数"""
@@ -347,31 +357,33 @@ def main():
     results = {}
 
     # 1. コンポーネントインポートテスト
-    results['imports'] = test_component_imports()
+    results["imports"] = test_component_imports()
 
     # 2. ウィジェット初期化テスト
-    results['initialization'] = test_widget_initialization()
+    results["initialization"] = test_widget_initialization()
 
     # 3. メモリ使用量テスト
-    results['memory'] = test_memory_usage()
+    results["memory"] = test_memory_usage()
 
     # 4. パフォーマンステスト
-    results['performance'] = test_performance_benchmarks()
+    results["performance"] = test_performance_benchmarks()
 
     # 5. コンポーネント統合テスト
-    results['integration'] = test_component_integration()
+    results["integration"] = test_component_integration()
 
     # 6. 結果レポート生成
     generate_integration_report(results)
 
     # 総合評価
-    overall_success = all([
-        results['imports'],
-        results['initialization'][0],
-        results['memory'][0],
-        results['performance'][0],
-        results['integration'][0]
-    ])
+    overall_success = all(
+        [
+            results["imports"],
+            results["initialization"][0],
+            results["memory"][0],
+            results["performance"][0],
+            results["integration"][0],
+        ]
+    )
 
     if overall_success:
         logger.info("🎉 Phase4 Week 3 Day 1: 最終統合テスト完全成功!")
@@ -379,6 +391,7 @@ def main():
     else:
         logger.error("❌ Phase4 Week 3 Day 1: 統合テストで問題が発生しました")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

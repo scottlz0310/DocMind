@@ -25,11 +25,11 @@ INSTALLER_DIR = PROJECT_ROOT / "installer"
 # ログ設定
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler(PROJECT_ROOT / "build.log", encoding='utf-8')
-    ]
+        logging.FileHandler(PROJECT_ROOT / "build.log", encoding="utf-8"),
+    ],
 )
 logger = logging.getLogger(__name__)
 
@@ -47,37 +47,37 @@ def check_requirements() -> bool:
 
     # 必要なパッケージのチェック
     required_packages = [
-        'PyInstaller',
-        'PySide6',
-        'sentence-transformers',
-        'Whoosh',
-        'PyMuPDF',
-        'python-docx',
-        'openpyxl',
-        'watchdog',
-        'chardet',
-        'psutil',
-        'scipy'
+        "PyInstaller",
+        "PySide6",
+        "sentence-transformers",
+        "Whoosh",
+        "PyMuPDF",
+        "python-docx",
+        "openpyxl",
+        "watchdog",
+        "chardet",
+        "psutil",
+        "scipy",
     ]
 
     missing_packages = []
     import_map = {
-        'PyInstaller': 'PyInstaller',
-        'PySide6': 'PySide6',
-        'sentence-transformers': 'sentence_transformers',
-        'Whoosh': 'whoosh',
-        'PyMuPDF': 'fitz',
-        'python-docx': 'docx',
-        'openpyxl': 'openpyxl',
-        'watchdog': 'watchdog',
-        'chardet': 'chardet',
-        'psutil': 'psutil',
-        'scipy': 'scipy'
+        "PyInstaller": "PyInstaller",
+        "PySide6": "PySide6",
+        "sentence-transformers": "sentence_transformers",
+        "Whoosh": "whoosh",
+        "PyMuPDF": "fitz",
+        "python-docx": "docx",
+        "openpyxl": "openpyxl",
+        "watchdog": "watchdog",
+        "chardet": "chardet",
+        "psutil": "psutil",
+        "scipy": "scipy",
     }
-    
+
     for package in required_packages:
         try:
-            import_name = import_map.get(package, package.lower().replace('-', '_'))
+            import_name = import_map.get(package, package.lower().replace("-", "_"))
             __import__(import_name)
         except ImportError:
             missing_packages.append(package)
@@ -91,7 +91,7 @@ def check_requirements() -> bool:
     required_files = [
         PROJECT_ROOT / "main.py",
         PROJECT_ROOT / "pyproject.toml",
-        PROJECT_ROOT / "build_scripts" / "docmind.spec"
+        PROJECT_ROOT / "build_scripts" / "docmind.spec",
     ]
 
     missing_files = [f for f in required_files if not f.exists()]
@@ -115,14 +115,14 @@ def clean_build_directories() -> None:
         if directory.exists():
             try:
                 # Windowsでの権限問題を回避するため、読み取り専用属性を削除
-                import stat
                 import os
-                
+                import stat
+
                 def remove_readonly(func, path, _):
                     """読み取り専用ファイルを削除可能にする"""
                     os.chmod(path, stat.S_IWRITE)
                     func(path)
-                
+
                 shutil.rmtree(directory, onerror=remove_readonly)
                 logger.info(f"削除完了: {directory}")
             except Exception as e:
@@ -150,8 +150,9 @@ def create_assets() -> None:
         # 簡単なダミーアイコンファイルを作成（実際のプロジェクトでは適切なアイコンを用意）
         try:
             from PIL import Image
-            img = Image.new('RGB', (32, 32), color='blue')
-            img.save(icon_path, format='ICO')
+
+            img = Image.new("RGB", (32, 32), color="blue")
+            img.save(icon_path, format="ICO")
         except ImportError:
             logger.warning("PILが利用できないため、アイコンファイルをスキップします")
 
@@ -173,12 +174,13 @@ def create_default_config() -> None:
         "embedding_model": "all-MiniLM-L6-v2",
         "ui_language": "ja",
         "auto_index": True,
-        "watch_directories": []
+        "watch_directories": [],
     }
 
     import json
+
     config_path = config_dir / "default_config.json"
-    with open(config_path, 'w', encoding='utf-8') as f:
+    with open(config_path, "w", encoding="utf-8") as f:
         json.dump(default_config, f, indent=2, ensure_ascii=False)
 
     logger.info(f"デフォルト設定ファイルを作成: {config_path}")
@@ -196,13 +198,15 @@ def run_pyinstaller() -> bool:
     spec_file = PROJECT_ROOT / "build_scripts" / "docmind.spec"
 
     cmd = [
-        sys.executable, "-m", "PyInstaller",
+        sys.executable,
+        "-m",
+        "PyInstaller",
         "--clean",
         "--noconfirm",
         "--log-level=INFO",
         f"--workpath={BUILD_DIR}",
         f"--distpath={DIST_DIR}",
-        str(spec_file)
+        str(spec_file),
     ]
 
     try:
@@ -211,8 +215,8 @@ def run_pyinstaller() -> bool:
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
-            encoding='utf-8',
-            errors='replace'  # エンコーディングエラーを置換文字で処理
+            encoding="utf-8",
+            errors="replace",  # エンコーディングエラーを置換文字で処理
         )
 
         if result.returncode == 0:
@@ -248,18 +252,18 @@ def prepare_distribution() -> None:
 
     # 実行ファイルをコピー
     shutil.copy2(exe_path, distribution_dir / "DocMind.exe")
-    
+
     # _internalディレクトリをコピー
     internal_src = exe_path.parent / "_internal"
     internal_dst = distribution_dir / "_internal"
     if internal_src.exists():
         shutil.copytree(internal_src, internal_dst)
         logger.info(f"_internalディレクトリをコピー: {internal_dst}")
-    
+
     # データディレクトリを作成
     data_dir = distribution_dir / "docmind_data"
     data_dir.mkdir(exist_ok=True)
-    
+
     logger.info("実行可能ファイルをコピーしました")
 
     # 追加ファイルをコピー
@@ -278,7 +282,7 @@ def prepare_distribution() -> None:
 
     # アンインストールスクリプトを作成
     create_uninstall_script(distribution_dir)
-    
+
     # ZIPアーカイブを作成（サイレントインストール用）
     create_zip_archive()
 
@@ -310,7 +314,7 @@ pause
 """
 
     script_path = distribution_dir / "start_docmind.bat"
-    with open(script_path, 'w', encoding='shift_jis') as f:
+    with open(script_path, "w", encoding="shift_jis") as f:
         f.write(startup_script)
 
     logger.info(f"スタートアップスクリプトを作成: {script_path}")
@@ -358,13 +362,10 @@ pause
 """
 
     script_path = distribution_dir / "uninstall.bat"
-    with open(script_path, 'w', encoding='shift_jis') as f:
+    with open(script_path, "w", encoding="shift_jis") as f:
         f.write(uninstall_script)
 
     logger.info(f"アンインストールスクリプトを作成: {script_path}")
-
-
-
 
 
 def create_zip_archive() -> None:
@@ -372,22 +373,22 @@ def create_zip_archive() -> None:
     ZIPアーカイブを作成（サイレントインストール用）
     """
     import zipfile
-    
+
     logger.info("ZIPアーカイブを作成中...")
-    
+
     distribution_dir = INSTALLER_DIR / "DocMind"
-    
+
     # インストーラー名を.exeにしてGitHub Actionsと互換性を保つ
-    installer_name = f"DocMind_Setup_v1.0.0.exe"
+    installer_name = "DocMind_Setup_v1.0.0.exe"
     installer_path = INSTALLER_DIR / installer_name
-    
+
     # 実際はZIPファイルだが、.exe拡張子で保存
-    with zipfile.ZipFile(installer_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for file_path in distribution_dir.rglob('*'):
+    with zipfile.ZipFile(installer_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+        for file_path in distribution_dir.rglob("*"):
             if file_path.is_file():
                 arcname = file_path.relative_to(distribution_dir)
                 zipf.write(file_path, arcname)
-    
+
     logger.info(f"サイレントインストーラーを作成: {installer_path}")
     logger.info("注意: このファイルは実際はZIPアーカイブです")
 

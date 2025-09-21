@@ -17,9 +17,11 @@ project_root = Path(__file__).parent.parent
 src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 
+
 def log_message(message, level="INFO"):
     """ログメッセージを出力"""
     datetime.now().strftime("%H:%M:%S")
+
 
 def test_direct_startup():
     """直接起動テスト"""
@@ -38,19 +40,21 @@ def test_direct_startup():
             cwd=str(project_root),
             timeout=3,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         execution_time = time.time() - start_time
 
         # タイムアウトは正常（アプリが起動している証拠）
         if result.returncode == -15 or result.returncode == 124:  # SIGTERM or timeout
-            log_message(f"✅ アプリケーション正常起動 (実行時間: {execution_time:.3f}秒)")
+            log_message(
+                f"✅ アプリケーション正常起動 (実行時間: {execution_time:.3f}秒)"
+            )
             log_message("   - タイムアウトで終了（正常動作）")
             return {
                 "status": "success",
                 "execution_time": round(execution_time, 3),
-                "note": "正常起動、タイムアウトで終了"
+                "note": "正常起動、タイムアウトで終了",
             }
         else:
             log_message(f"⚠️ 予期しない終了コード: {result.returncode}")
@@ -60,7 +64,7 @@ def test_direct_startup():
                 "status": "warning",
                 "execution_time": round(execution_time, 3),
                 "return_code": result.returncode,
-                "stderr": result.stderr[:200] if result.stderr else None
+                "stderr": result.stderr[:200] if result.stderr else None,
             }
 
     except subprocess.TimeoutExpired:
@@ -70,14 +74,12 @@ def test_direct_startup():
         return {
             "status": "success",
             "execution_time": round(execution_time, 3),
-            "note": "正常起動、3秒タイムアウト"
+            "note": "正常起動、3秒タイムアウト",
         }
     except Exception as e:
         log_message(f"❌ 起動テストエラー: {e}")
-        return {
-            "status": "failed",
-            "error": str(e)
-        }
+        return {"status": "failed", "error": str(e)}
+
 
 def test_component_structure():
     """コンポーネント構造テスト"""
@@ -105,7 +107,7 @@ def test_component_structure():
             "event_handling/event_handler_manager.py",
             "event_handling/signal_manager.py",
             "event_handling/action_manager.py",
-            "performance_helpers.py"
+            "performance_helpers.py",
         ]
 
         existing_files = []
@@ -129,15 +131,15 @@ def test_component_structure():
             "existing_files": len(existing_files),
             "total_expected": len(expected_files),
             "missing_files": missing_files,
-            "completion_rate": round((len(existing_files) / len(expected_files)) * 100, 1)
+            "completion_rate": round(
+                (len(existing_files) / len(expected_files)) * 100, 1
+            ),
         }
 
     except Exception as e:
         log_message(f"❌ 構造テストエラー: {e}")
-        return {
-            "status": "failed",
-            "error": str(e)
-        }
+        return {"status": "failed", "error": str(e)}
+
 
 def test_file_metrics():
     """ファイルメトリクステスト"""
@@ -149,18 +151,21 @@ def test_file_metrics():
         widget_file = src_path / "gui" / "folder_tree" / "folder_tree_widget.py"
 
         if not widget_file.exists():
-            return {
-                "status": "failed",
-                "error": "folder_tree_widget.py not found"
-            }
+            return {"status": "failed", "error": "folder_tree_widget.py not found"}
 
-        with open(widget_file, encoding='utf-8') as f:
+        with open(widget_file, encoding="utf-8") as f:
             lines = f.readlines()
 
         total_lines = len(lines)
-        len([line for line in lines if line.strip() and not line.strip().startswith('#')])
-        method_count = len([line for line in lines if 'def ' in line])
-        class_count = len([line for line in lines if line.strip().startswith('class ')])
+        len(
+            [
+                line
+                for line in lines
+                if line.strip() and not line.strip().startswith("#")
+            ]
+        )
+        method_count = len([line for line in lines if "def " in line])
+        class_count = len([line for line in lines if line.strip().startswith("class ")])
 
         # 元の値
         original_lines = 1408
@@ -186,15 +191,13 @@ def test_file_metrics():
             "original_methods": original_methods,
             "method_reduction_percent": round(method_reduction, 1),
             "class_count": class_count,
-            "target_achieved": line_reduction >= 50.0
+            "target_achieved": line_reduction >= 50.0,
         }
 
     except Exception as e:
         log_message(f"❌ メトリクステストエラー: {e}")
-        return {
-            "status": "failed",
-            "error": str(e)
-        }
+        return {"status": "failed", "error": str(e)}
+
 
 def test_memory_usage():
     """メモリ使用量テスト"""
@@ -213,6 +216,7 @@ def test_memory_usage():
             from gui.folder_tree.async_operations.async_operation_manager import (
                 AsyncOperationManager,
             )
+
             from gui.folder_tree.folder_tree_widget import FolderTreeWidget
             from gui.folder_tree.performance_helpers import PathOptimizer
         except ImportError as e:
@@ -231,15 +235,13 @@ def test_memory_usage():
             "baseline_memory_mb": round(baseline_memory, 2),
             "import_memory_mb": round(import_memory, 2),
             "memory_increase_mb": round(memory_increase, 2),
-            "memory_efficient": memory_increase < 10.0
+            "memory_efficient": memory_increase < 10.0,
         }
 
     except Exception as e:
         log_message(f"❌ メモリテストエラー: {e}")
-        return {
-            "status": "failed",
-            "error": str(e)
-        }
+        return {"status": "failed", "error": str(e)}
+
 
 def main():
     """メイン実行関数"""
@@ -249,32 +251,34 @@ def main():
     results = {
         "test_date": datetime.now().isoformat(),
         "phase": "Phase4 完了後",
-        "tests": {}
+        "tests": {},
     }
 
     try:
         # 1. 直接起動テスト
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         results["tests"]["startup_test"] = test_direct_startup()
 
         # 2. コンポーネント構造テスト
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         results["tests"]["structure_test"] = test_component_structure()
 
         # 3. ファイルメトリクステスト
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         results["tests"]["metrics_test"] = test_file_metrics()
 
         # 4. メモリ使用量テスト
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         results["tests"]["memory_test"] = test_memory_usage()
 
         # 総合評価
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         log_message("🎯 Phase4完了後 起動テスト結果サマリー")
-        log_message("="*50)
+        log_message("=" * 50)
 
-        success_count = sum(1 for test in results["tests"].values() if test.get("status") == "success")
+        success_count = sum(
+            1 for test in results["tests"].values() if test.get("status") == "success"
+        )
         total_tests = len(results["tests"])
 
         if success_count == total_tests:
@@ -299,11 +303,18 @@ def main():
             log_message(f"{status_icon} {test_name}: {status}")
 
         # 重要な指標の表示
-        if "metrics_test" in results["tests"] and results["tests"]["metrics_test"].get("status") == "success":
+        if (
+            "metrics_test" in results["tests"]
+            and results["tests"]["metrics_test"].get("status") == "success"
+        ):
             metrics = results["tests"]["metrics_test"]
             log_message("\n📊 Phase4成果指標:")
-            log_message(f"   - 行数削減: {metrics['line_reduction_percent']}% ({metrics['original_lines']}→{metrics['current_lines']}行)")
-            log_message(f"   - メソッド削減: {metrics['method_reduction_percent']}% ({metrics['original_methods']}→{metrics['current_methods']}個)")
+            log_message(
+                f"   - 行数削減: {metrics['line_reduction_percent']}% ({metrics['original_lines']}→{metrics['current_lines']}行)"
+            )
+            log_message(
+                f"   - メソッド削減: {metrics['method_reduction_percent']}% ({metrics['original_methods']}→{metrics['current_methods']}個)"
+            )
 
         return results
 
@@ -312,6 +323,7 @@ def main():
         results["overall_status"] = "failed"
         results["error"] = str(e)
         return results
+
 
 if __name__ == "__main__":
     import json
@@ -322,4 +334,3 @@ if __name__ == "__main__":
     log_file = "phase4_startup_test_results_fixed.json"
     with open(log_file, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
-

@@ -425,7 +425,9 @@ class BackgroundProcessor(LoggerMixin):
 
             # 進捗トラッカーを作成
             progress_tracker = ProgressTracker(
-                task.task_id, 100, task.progress_callback  # デフォルトの総ステップ数
+                task.task_id,
+                100,
+                task.progress_callback,  # デフォルトの総ステップ数
             )
 
             # タスクの引数に進捗トラッカーを追加（関数がサポートしている場合のみ）

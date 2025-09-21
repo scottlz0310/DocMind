@@ -1,440 +1,65 @@
-name: リリース
+name: Release
 
 on:
   push:
     tags:
       - 'v*'
 
-permissions:
-  contents: write
-  packages: write
-  actions: read
-
-env:
-  PYTHON_VERSION: '3.13.7'
-
 jobs:
-  # ドキュメント整合性チェック
-  documentation-check:
-    name: ドキュメント整合性チェック
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    
-    steps:
-    - name: リポジトリのチェックアウト
-      uses: actions/checkout@v4
-    
-    - name: ドキュメント整合性チェック
-      shell: bash
-      run: |
-        echo "ドキュメント整合性チェック開始"
-        
-        # バージョン整合性チェック
-        tag="${{ github.ref_name }}"
-        version="${tag#v}"
-        echo "リリースバージョン: $version"
-        
-        # pyproject.tomlのバージョンチェック
-        pyproject_version=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
-        if [ "$pyproject_version" != "$version" ]; then
-          echo "エラー: pyproject.tomlのバージョン($pyproject_version)がタグ($version)と一致しません"
-          exit 1
-        fi
-        echo "pyproject.tomlバージョン確認: $pyproject_version"
-        
-        # version.txtのバージョンチェック
-        if [ -f version.txt ]; then
-          version_txt=$(cat version.txt | tr -d '\n\r')
-          if [ "$version_txt" != "$version" ]; then
-            echo "エラー: version.txtのバージョン($version_txt)がタグ($version)と一致しません"
-            exit 1
-          fi
-        fi
-        
-        # 必須ドキュメントファイルの存在チェック
-        required_docs=(
-          "README.md"
-          "docs/FEATURES.md" 
-          "docs/RELEASE_NOTES.md"
-          "docs/USER_MANUAL.md"
-          "docs/TROUBLESHOOTING_GUIDE.md"
-          "LICENSE"
-        )
-        
-        for doc in "${required_docs[@]}"; do
-          if [ ! -f "$doc" ]; then
-            echo "エラー: 必須ドキュメント $doc が見つかりません"
-            exit 1
-          fi
-        done
-        
-        # RELEASE_NOTES.mdに現在のバージョンが記載されているかチェック
-        if ! grep -q "バージョン $version\|Version $version\|v$version" docs/RELEASE_NOTES.md; then
-          echo "エラー: docs/RELEASE_NOTES.mdにバージョン $version の記載がありません"
-          exit 1
-        fi
-        
-        # README.mdのバージョン参照チェック
-        if ! grep -q "$version" README.md; then
-          echo "警告: README.mdにバージョン $version の記載がありません"
-        fi
-        
-        echo "ドキュメント整合性チェック完了"
+  build-and-release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
-  # 品質ゲートチェック
-  quality-gate:
-    name: 品質ゲートチェック
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: [documentation-check]
-    
     steps:
-    - name: リポジトリのチェックアウト
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
       with:
-        fetch-depth: 0
-    
-    - name: Python環境のセットアップ
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-    
-    - name: Qt依存関係のセットアップ
+        version: "latest"
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install dependencies
+      run: uv sync --extra build
+
+    - name: Build package
+      run: uv build
+
+    - name: Build executable (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        uv run pyinstaller build_scripts/docmind.spec
+        cd dist
+        7z a DocMind-${{ github.ref_name }}-windows.zip DocMind/
+
+    - name: Build executable (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        uv run pyinstaller build_scripts/docmind.spec
+        cd dist
+        tar -czf DocMind-${{ github.ref_name }}-macos.tar.gz DocMind.app/
+
+    - name: Build executable (Linux)
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y xvfb libegl1 libxkbcommon-x11-0 libxcb-xinerama0
-        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-        sleep 3
-    
-    - name: 依存関係のインストール
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev,security,performance]
-    
-    - name: コード品質チェック
-      run: |
-        echo "コード品質チェック実行"
-        
-        # 構文チェック
-        python -m py_compile main.py
-        find src -name "*.py" -exec python -m py_compile {} \;
-        
-        # 型チェック
-        mypy src/ --ignore-missing-imports
-        
-        # コードスタイルチェック
-        black --check --diff src/ tests/
-        isort --check-only --diff src/ tests/
-        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503,E501
-        
-        # セキュリティチェック
-        mkdir -p reports
-        bandit -r src/ -f json -o reports/bandit-report.json || true
-        safety check --json --output reports/safety-report.json || true
-        
-        echo "コード品質チェック完了"
-    
-    - name: テスト実行
-      run: |
-        echo "テスト実行開始"
-        
-        # 全テスト実行（CI.ymlと同じ設定）
-        pytest tests/ -v --tb=short \
-          --cov=src \
-          --cov-report=xml:reports/coverage.xml \
-          --cov-report=term-missing \
-          --junit-xml=reports/test-results.xml \
-          --maxfail=3 --timeout=120
-        
-        # カバレッジレポート生成（リリース用は閾値チェックなし）
-        coverage report
-        
-        echo "テスト実行完了"
-      env:
-        DISPLAY: :99
-        QT_QPA_PLATFORM: offscreen
-        QT_LOGGING_RULES: "*.debug=false"
-    
-    - name: 品質メトリクス確認
-      run: |
-        echo "品質メトリクス確認"
-        
-        # ファイルサイズチェック（1000行以下）
-        find src -name "*.py" -exec wc -l {} + | grep -v "total" | awk '$1 > 1000 {print "警告: " $2 " が1000行を超えています (" $1 "行)"; exit_code=1} END {exit exit_code}'
-        
-        # 循環依存チェック
-        python -c "
-        import ast
-        import os
-        from collections import defaultdict
-        
-        def check_circular_imports():
-            imports = defaultdict(set)
-            for root, dirs, files in os.walk('src'):
-                for file in files:
-                    if file.endswith('.py'):
-                        filepath = os.path.join(root, file)
-                        with open(filepath, 'r', encoding='utf-8') as f:
-                            try:
-                                tree = ast.parse(f.read())
-                                module = filepath.replace('src/', '').replace('/', '.').replace('.py', '')
-                                for node in ast.walk(tree):
-                                    if isinstance(node, ast.Import):
-                                        for alias in node.names:
-                                            if alias.name.startswith('src.'):
-                                                imports[module].add(alias.name.replace('src.', ''))
-                                    elif isinstance(node, ast.ImportFrom):
-                                        if node.module and node.module.startswith('src.'):
-                                            imports[module].add(node.module.replace('src.', ''))
-                            except:
-                                pass
-            
-            # 簡単な循環依存チェック
-            for module, deps in imports.items():
-                for dep in deps:
-                    if module in imports.get(dep, set()):
-                        print(f'警告: 循環依存を検出: {module} <-> {dep}')
-        
-        check_circular_imports()
-        "
-        
-        echo "品質メトリクス確認完了"
-    
-    - name: 品質レポートのアップロード
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: quality-reports
-        path: reports/
+        sudo apt-get install -y xvfb libegl1 libxkbcommon-x11-0
+        uv run pyinstaller build_scripts/docmind.spec
+        cd dist
+        tar -czf DocMind-${{ github.ref_name }}-linux.tar.gz DocMind/
 
-  # ビルドとテスト
-  build-and-test:
-    name: ビルドとテスト
-    runs-on: windows-latest
-    timeout-minutes: 60
-    needs: [quality-gate]
-    
-    steps:
-    - name: リポジトリのチェックアウト
-      uses: actions/checkout@v4
-    
-    - name: Python環境のセットアップ
-      uses: actions/setup-python@v4
+    - name: Upload Release Assets
+      uses: softprops/action-gh-release@v2
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
-    
-    - name: 依存関係のインストール
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e .[build,dev]
-    
-    - name: アプリケーションビルド
-      run: |
-        echo "アプリケーションビルド開始"
-        cd build_scripts
-        python build_windows.py
-        echo "アプリケーションビルド完了"
-    
-    - name: ビルド成果物の確認
-      run: |
-        echo "ビルド成果物の確認"
-        
-        # インストーラーファイルの存在確認
-        $version = "${{ github.ref_name }}" -replace '^v', ''
-        $installerPath = "installer/DocMind_Setup_v$version.exe"
-        
-        if (Test-Path $installerPath) {
-          $fileSize = (Get-Item $installerPath).Length
-          echo "✅ インストーラー確認: $installerPath"
-          echo "📦 インストーラーサイズ: $([math]::Round($fileSize / 1MB, 2)) MB"
-          
-          if ($fileSize -lt 50MB) {
-            echo "⚠️ 警告: インストーラーサイズが小さすぎます ($([math]::Round($fileSize / 1MB, 2)) MB)"
-            exit 1
-          }
-          
-          # DocMindフォルダの確認
-          if (Test-Path "installer/DocMind/DocMind.exe") {
-            echo "✅ 実行ファイル確認: installer/DocMind/DocMind.exe"
-          } else {
-            echo "❌ エラー: DocMind.exeが見つかりません"
-            exit 1
-          }
-          
-        } else {
-          echo "❌ エラー: インストーラーファイルが見つかりません: $installerPath"
-          
-          # デバッグ情報の出力
-          echo "📁 installerディレクトリの内容:"
-          if (Test-Path "installer") {
-            Get-ChildItem -Path "installer" -Recurse | Select-Object Name, Length, FullName
-          } else {
-            echo "installerディレクトリが存在しません"
-          }
-          
-          echo "📁 distディレクトリの内容:"
-          if (Test-Path "dist") {
-            Get-ChildItem -Path "dist" -Recurse | Select-Object Name, Length, FullName
-          } else {
-            echo "distディレクトリが存在しません"
-          }
-          
-          exit 1
-        }
-    
-
-    
-    - name: インストールテスト
-      run: |
-        echo "インストールテスト開始"
-        
-        # インストーラーの存在確認
-        $version = "${{ github.ref_name }}" -replace '^v', ''
-        $installerPath = "installer/DocMind_Setup_v$version.exe"
-        
-        if (-not (Test-Path $installerPath)) {
-          echo "❌ エラー: インストーラーが見つかりません: $installerPath"
-          exit 1
-        }
-        
-        echo "📦 インストーラー実行: $installerPath"
-        
-        # ZIPファイルの展開テスト（実際はZIPアーカイブ）
-        try {
-          $extractPath = "$env:TEMP\DocMind_Test"
-          if (Test-Path $extractPath) {
-            Remove-Item -Path $extractPath -Recurse -Force
-          }
-          
-          # PowerShellでZIPファイルを展開
-          Expand-Archive -Path $installerPath -DestinationPath $extractPath -Force
-          
-          # 展開されたファイルの確認
-          $extractedExe = "$extractPath\DocMind.exe"
-          if (Test-Path $extractedExe) {
-            echo "✅ ZIPファイル展開成功: $extractedExe"
-            
-            # ファイルサイズ確認
-            $exeSize = (Get-Item $extractedExe).Length
-            echo "📊 実行ファイルサイズ: $([math]::Round($exeSize / 1MB, 2)) MB"
-            
-            # テスト用ディレクトリを削除
-            Remove-Item -Path $extractPath -Recurse -Force
-          } else {
-            echo "❌ エラー: 展開されたファイルが見つかりません"
-            echo "📁 展開先の内容:"
-            Get-ChildItem -Path $extractPath -Recurse -ErrorAction SilentlyContinue
-            exit 1
-          }
-        } catch {
-          echo "❌ エラー: ファイル展開中に例外が発生しました: $($_.Exception.Message)"
-          exit 1
-        }
-        
-        echo "✅ ファイル展開テスト完了"
-    
-    - name: ビルド成果物のアップロード
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows-installer
-        path: installer/DocMind_Setup_v*.exe
-
-  # リリース作成
-  create-release:
-    name: リリース作成
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [build-and-test]
-    
-    steps:
-    - name: リポジトリのチェックアウト
-      uses: actions/checkout@v4
-    
-    - name: ビルド成果物のダウンロード
-      uses: actions/download-artifact@v4
-      with:
-        name: windows-installer
-        path: ./artifacts/
-    
-    - name: リリースノートの準備
-      run: |
-        echo "リリースノートの準備"
-        
-        # docs/RELEASE_NOTES.mdから該当バージョンの内容を抽出
-        version="${{ github.ref_name }}"
-        version_clean="${version#v}"
-        
-        # リリースノートの抽出（簡易版）
-        awk "/## バージョン $version_clean/,/## バージョン|$/" docs/RELEASE_NOTES.md > release_notes_current.md
-        
-        # ファイルサイズ情報の追加
-        installer_size=$(stat -c%s "artifacts/DocMind_Setup_v$version_clean.exe" | awk '{print int($1/1024/1024) " MB"}')
-        echo "" >> release_notes_current.md
-        echo "### ダウンロード情報" >> release_notes_current.md
-        echo "- **インストーラーサイズ**: $installer_size" >> release_notes_current.md
-        echo "- **対応OS**: Windows 10/11 (64-bit)" >> release_notes_current.md
-        echo "- **必要メモリ**: 4GB以上（8GB推奨）" >> release_notes_current.md
-    
-    - name: GitHubリリースの作成
-      uses: softprops/action-gh-release@v1
-      with:
-        name: DocMind ${{ github.ref_name }}
-        body_path: release_notes_current.md
         files: |
-          artifacts/DocMind_Setup_v*.exe
+          dist/*.whl
+          dist/*.tar.gz
+          dist/*.zip
         draft: false
-        prerelease: false
-        generate_release_notes: true
+        prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: リリース完了通知
-      run: |
-        echo "🎉 DocMind ${{ github.ref_name }} のリリースが完了しました！"
-        echo "📦 ダウンロード: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
-
-  # リリース後の検証
-  post-release-validation:
-    name: リリース後検証
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [create-release]
-    if: always()
-    
-    steps:
-    - name: リリース状況の確認
-      run: |
-        echo "リリース状況の確認"
-        
-        # GitHub APIでリリース情報を取得
-        release_info=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.ref_name }}")
-        
-        # リリースが正常に作成されたか確認
-        if echo "$release_info" | grep -q '"draft": false'; then
-          echo "✅ リリースが正常に公開されました"
-        else
-          echo "❌ リリースの公開に問題があります"
-          exit 1
-        fi
-        
-        # アセットが正常にアップロードされたか確認
-        version_clean="${{ github.ref_name }}" | sed 's/^v//'
-        if echo "$release_info" | grep -q "DocMind_Setup_v.*\.exe"; then
-          echo "✅ インストーラーが正常にアップロードされました"
-          # アップロードされたファイル名を表示
-          echo "$release_info" | grep -o "DocMind_Setup_v.*\.exe" | head -1
-        else
-          echo "❌ インストーラーのアップロードに問題があります"
-          echo "デバッグ: リリース情報の一部"
-          echo "$release_info" | grep -A5 -B5 "assets" || echo "アセット情報が見つかりません"
-          exit 1
-        fi
-    
-    - name: 次期開発準備の提案
-      run: |
-        echo "🚀 次期開発準備の提案"
-        echo "1. 開発ブランチの作成を検討してください"
-        echo "2. 次期バージョンの計画を立ててください"
-        echo "3. ユーザーフィードバックの収集を開始してください"
-        echo "4. 既知の問題の修正を計画してください"

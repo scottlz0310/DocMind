@@ -67,13 +67,13 @@ class ProgressManager:
         self.progress_bar.setStyleSheet(
             f"""
             QProgressBar {{
-                border: 2px solid {color_info['border']};
+                border: 2px solid {color_info["border"]};
                 border-radius: 5px;
                 text-align: center;
-                background-color: {color_info['background']};
+                background-color: {color_info["background"]};
             }}
             QProgressBar::chunk {{
-                background-color: {color_info['chunk']};
+                background-color: {color_info["chunk"]};
                 border-radius: 3px;
             }}
         """

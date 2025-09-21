@@ -15,10 +15,13 @@ from pathlib import Path
 
 def check_virtual_environment():
     """仮想環境の確認"""
-    if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+    if hasattr(sys, "real_prefix") or (
+        hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
+    ):
         return True
     else:
         return False
+
 
 def check_safety_measures():
     """安全対策の確認"""
@@ -31,7 +34,7 @@ def check_safety_measures():
         "safety/backup_manager.py",
         "safety/rollback_manager.py",
         "safety/test_runner.py",
-        "safety/validation_manager.py"
+        "safety/validation_manager.py",
     ]
 
     all_exist = True
@@ -43,6 +46,7 @@ def check_safety_measures():
 
     return all_exist
 
+
 def check_phase4_target():
     """Phase4対象ファイルの確認"""
 
@@ -51,15 +55,15 @@ def check_phase4_target():
         return False
 
     # ファイルサイズ確認
-    with open(target_file, encoding='utf-8') as f:
+    with open(target_file, encoding="utf-8") as f:
         lines = f.readlines()
         line_count = len(lines)
-
 
     if line_count > 1000:
         return True
     else:
         return True
+
 
 def check_dependencies():
     """依存関係分析結果の確認"""
@@ -69,12 +73,13 @@ def check_dependencies():
         return False
 
     try:
-        with open(deps_file, encoding='utf-8') as f:
+        with open(deps_file, encoding="utf-8") as f:
             json.load(f)
 
         return True
     except Exception:
         return False
+
 
 def check_backup_system():
     """バックアップシステムの確認"""
@@ -91,15 +96,22 @@ def check_backup_system():
     else:
         return False
 
+
 def check_test_environment():
     """テスト環境の確認"""
 
     try:
         # 基本的なimportテスト
-        result = subprocess.run([
-            sys.executable, "-c",
-            "import sys; sys.path.insert(0, 'src'); from gui.folder_tree import FolderTreeWidget; print('✅ folder_tree.py import成功')"
-        ], capture_output=True, text=True, timeout=10)
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                "import sys; sys.path.insert(0, 'src'); from gui.folder_tree import FolderTreeWidget; print('✅ folder_tree.py import成功')",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
 
         if result.returncode == 0:
             return True
@@ -108,13 +120,14 @@ def check_test_environment():
     except Exception:
         return False
 
+
 def check_progress_tracking():
     """進捗追跡システムの確認"""
 
     required_files = [
         "PHASE4_PROGRESS_TRACKER.md",
         "PHASE4_SAFETY_PLAN.md",
-        "FOLDER_TREE_ANALYSIS.md"
+        "FOLDER_TREE_ANALYSIS.md",
     ]
 
     all_exist = True
@@ -126,6 +139,7 @@ def check_progress_tracking():
 
     return all_exist
 
+
 def generate_final_report():
     """最終確認レポートの生成"""
 
@@ -134,16 +148,16 @@ def generate_final_report():
         "phase": "Phase4準備完了確認",
         "target_file": "src/gui/folder_tree.py",
         "status": "準備完了",
-        "next_action": "Phase4 Week1開始可能"
+        "next_action": "Phase4 Week1開始可能",
     }
 
     report_file = Path("PHASE4_FINAL_PREPARATION_REPORT.md")
-    with open(report_file, 'w', encoding='utf-8') as f:
+    with open(report_file, "w", encoding="utf-8") as f:
         f.write(f"""# Phase4最終準備確認レポート
 
-**確認日時**: {report['check_date']}
-**対象フェーズ**: {report['phase']}
-**対象ファイル**: {report['target_file']}
+**確認日時**: {report["check_date"]}
+**対象フェーズ**: {report["phase"]}
+**対象ファイル**: {report["target_file"]}
 
 ## 確認結果
 
@@ -151,13 +165,14 @@ def generate_final_report():
 
 ## 次回アクション
 
-{report['next_action']}
+{report["next_action"]}
 
 ---
 自動生成: scripts/final_preparation_check.py
 """)
 
     return True
+
 
 def main():
     """メイン実行関数"""
@@ -169,7 +184,7 @@ def main():
         ("依存関係分析", check_dependencies),
         ("バックアップシステム", check_backup_system),
         ("テスト環境", check_test_environment),
-        ("進捗追跡システム", check_progress_tracking)
+        ("進捗追跡システム", check_progress_tracking),
     ]
 
     results = []
@@ -180,18 +195,17 @@ def main():
         except Exception:
             results.append((name, False))
 
-
     success_count = 0
     for name, result in results:
         if result:
             success_count += 1
-
 
     if success_count == len(results):
         generate_final_report()
         return True
     else:
         return False
+
 
 if __name__ == "__main__":
     success = main()

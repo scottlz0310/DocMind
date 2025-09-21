@@ -20,6 +20,7 @@ from typing import Any
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
+
 class BehaviorRecorder:
     """現在動作記録システム"""
 
@@ -32,7 +33,7 @@ class BehaviorRecorder:
             "tests": {},
             "performance": {},
             "errors": [],
-            "warnings": []
+            "warnings": [],
         }
 
     def _setup_logger(self) -> logging.Logger:
@@ -43,7 +44,7 @@ class BehaviorRecorder:
         if not logger.handlers:
             handler = logging.StreamHandler()
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
             handler.setFormatter(formatter)
             logger.addHandler(handler)
@@ -81,11 +82,13 @@ class BehaviorRecorder:
 
         except Exception as e:
             self.logger.error(f"動作記録中にエラー: {e}")
-            self.results["errors"].append({
-                "type": "RecordingError",
-                "message": str(e),
-                "traceback": traceback.format_exc()
-            })
+            self.results["errors"].append(
+                {
+                    "type": "RecordingError",
+                    "message": str(e),
+                    "traceback": traceback.format_exc(),
+                }
+            )
             return self.results
 
     def _record_environment(self):
@@ -102,7 +105,9 @@ class BehaviorRecorder:
             }
 
             # 仮想環境チェック
-            if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+            if hasattr(sys, "real_prefix") or (
+                hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
+            ):
                 env_info["virtual_env"] = True
                 env_info["virtual_env_path"] = sys.prefix
             else:
@@ -125,10 +130,7 @@ class BehaviorRecorder:
             self.logger.info("環境情報記録完了")
 
         except Exception as e:
-            self.results["errors"].append({
-                "test": "environment",
-                "error": str(e)
-            })
+            self.results["errors"].append({"test": "environment", "error": str(e)})
 
     def _record_import_tests(self):
         """インポートテストを記録"""
@@ -144,7 +146,11 @@ class BehaviorRecorder:
             import_tests["folder_tree_direct"] = {
                 "status": "SUCCESS",
                 "import_time": import_time,
-                "classes": ["FolderTreeWidget", "FolderTreeContainer", "FolderLoadWorker"]
+                "classes": [
+                    "FolderTreeWidget",
+                    "FolderTreeContainer",
+                    "FolderLoadWorker",
+                ],
             }
             self.logger.info(f"folder_tree.py直接インポート成功 ({import_time:.3f}秒)")
 
@@ -152,7 +158,7 @@ class BehaviorRecorder:
             import_tests["folder_tree_direct"] = {
                 "status": "ERROR",
                 "error": str(e),
-                "traceback": traceback.format_exc()
+                "traceback": traceback.format_exc(),
             }
             self.logger.error(f"folder_tree.py直接インポートエラー: {e}")
 
@@ -163,7 +169,7 @@ class BehaviorRecorder:
             "PySide6.QtGui",
             "logging",
             "os",
-            "pathlib"
+            "pathlib",
         ]
 
         for dep in dependencies:
@@ -174,14 +180,11 @@ class BehaviorRecorder:
 
                 import_tests[f"dependency_{dep}"] = {
                     "status": "SUCCESS",
-                    "import_time": import_time
+                    "import_time": import_time,
                 }
 
             except Exception as e:
-                import_tests[f"dependency_{dep}"] = {
-                    "status": "ERROR",
-                    "error": str(e)
-                }
+                import_tests[f"dependency_{dep}"] = {"status": "ERROR", "error": str(e)}
 
         self.results["tests"]["imports"] = import_tests
         self.logger.info("インポートテスト完了")
@@ -218,8 +221,8 @@ class BehaviorRecorder:
                     "attributes": {
                         "root_path": worker.root_path,
                         "max_depth": worker.max_depth,
-                        "should_stop": worker.should_stop
-                    }
+                        "should_stop": worker.should_stop,
+                    },
                 }
 
                 # クリーンアップ
@@ -229,7 +232,7 @@ class BehaviorRecorder:
                 init_tests["FolderLoadWorker"] = {
                     "status": "ERROR",
                     "error": str(e),
-                    "traceback": traceback.format_exc()
+                    "traceback": traceback.format_exc(),
                 }
 
             # 2. FolderTreeWidget初期化
@@ -246,8 +249,10 @@ class BehaviorRecorder:
                     "attributes": {
                         "root_paths_count": len(widget.root_paths),
                         "item_map_count": len(widget.item_map),
-                        "header_label": widget.headerItem().text(0) if widget.headerItem() else None
-                    }
+                        "header_label": widget.headerItem().text(0)
+                        if widget.headerItem()
+                        else None,
+                    },
                 }
 
                 # クリーンアップ
@@ -257,7 +262,7 @@ class BehaviorRecorder:
                 init_tests["FolderTreeWidget"] = {
                     "status": "ERROR",
                     "error": str(e),
-                    "traceback": traceback.format_exc()
+                    "traceback": traceback.format_exc(),
                 }
 
             # 3. FolderTreeContainer初期化
@@ -271,8 +276,8 @@ class BehaviorRecorder:
                 init_tests["FolderTreeContainer"] = {
                     "status": "SUCCESS",
                     "init_time": init_time,
-                    "has_tree_widget": hasattr(container, 'tree_widget'),
-                    "has_filter_input": hasattr(container, 'filter_input')
+                    "has_tree_widget": hasattr(container, "tree_widget"),
+                    "has_filter_input": hasattr(container, "filter_input"),
                 }
 
                 # クリーンアップ
@@ -282,7 +287,7 @@ class BehaviorRecorder:
                 init_tests["FolderTreeContainer"] = {
                     "status": "ERROR",
                     "error": str(e),
-                    "traceback": traceback.format_exc()
+                    "traceback": traceback.format_exc(),
                 }
 
             # QApplicationクリーンアップ
@@ -293,7 +298,7 @@ class BehaviorRecorder:
             init_tests["general_error"] = {
                 "status": "ERROR",
                 "error": str(e),
-                "traceback": traceback.format_exc()
+                "traceback": traceback.format_exc(),
             }
 
         self.results["tests"]["initialization"] = init_tests
@@ -335,7 +340,7 @@ class BehaviorRecorder:
                     "status": "SUCCESS",
                     "load_time": load_time,
                     "root_paths_count": len(widget.root_paths),
-                    "item_map_count": len(widget.item_map)
+                    "item_map_count": len(widget.item_map),
                 }
 
                 widget.deleteLater()
@@ -343,7 +348,7 @@ class BehaviorRecorder:
             except Exception as e:
                 func_tests["load_folder_structure"] = {
                     "status": "ERROR",
-                    "error": str(e)
+                    "error": str(e),
                 }
 
             # 2. 状態管理テスト
@@ -358,16 +363,13 @@ class BehaviorRecorder:
                 func_tests["state_management"] = {
                     "status": "SUCCESS",
                     "indexed_folders": len(widget.get_indexed_folders()),
-                    "indexing_folders": len(widget.get_indexing_folders())
+                    "indexing_folders": len(widget.get_indexing_folders()),
                 }
 
                 widget.deleteLater()
 
             except Exception as e:
-                func_tests["state_management"] = {
-                    "status": "ERROR",
-                    "error": str(e)
-                }
+                func_tests["state_management"] = {"status": "ERROR", "error": str(e)}
 
             # 3. フィルタリングテスト
             try:
@@ -380,19 +382,17 @@ class BehaviorRecorder:
 
                 func_tests["filtering"] = {
                     "status": "SUCCESS",
-                    "filter_time": filter_time
+                    "filter_time": filter_time,
                 }
 
                 widget.deleteLater()
 
             except Exception as e:
-                func_tests["filtering"] = {
-                    "status": "ERROR",
-                    "error": str(e)
-                }
+                func_tests["filtering"] = {"status": "ERROR", "error": str(e)}
 
             # テストディレクトリクリーンアップ
             import shutil
+
             shutil.rmtree(test_dir, ignore_errors=True)
 
             if app_created:
@@ -402,7 +402,7 @@ class BehaviorRecorder:
             func_tests["general_error"] = {
                 "status": "ERROR",
                 "error": str(e),
-                "traceback": traceback.format_exc()
+                "traceback": traceback.format_exc(),
             }
 
         self.results["tests"]["functionality"] = func_tests
@@ -420,12 +420,10 @@ class BehaviorRecorder:
             from gui.folder_tree import (
                 FolderTreeWidget,
             )
+
             import_time = time.time() - start_time
 
-            perf_tests["import_time"] = {
-                "total_time": import_time,
-                "status": "SUCCESS"
-            }
+            perf_tests["import_time"] = {"total_time": import_time, "status": "SUCCESS"}
 
             # 2. 初期化時間測定
             from PySide6.QtWidgets import QApplication
@@ -443,7 +441,7 @@ class BehaviorRecorder:
 
             perf_tests["initialization_time"] = {
                 "widget_init_time": init_time,
-                "status": "SUCCESS"
+                "status": "SUCCESS",
             }
 
             # 3. 大量フォルダ処理時間（シミュレーション）
@@ -461,12 +459,13 @@ class BehaviorRecorder:
             perf_tests["bulk_load_time"] = {
                 "folders_count": 10,
                 "load_time": load_time,
-                "status": "SUCCESS"
+                "status": "SUCCESS",
             }
 
             # クリーンアップ
             widget.deleteLater()
             import shutil
+
             shutil.rmtree(test_dir, ignore_errors=True)
 
             if app_created:
@@ -476,7 +475,7 @@ class BehaviorRecorder:
             perf_tests["error"] = {
                 "status": "ERROR",
                 "error": str(e),
-                "traceback": traceback.format_exc()
+                "traceback": traceback.format_exc(),
             }
 
         self.results["performance"] = perf_tests
@@ -490,6 +489,7 @@ class BehaviorRecorder:
 
         try:
             import psutil
+
             process = psutil.Process()
 
             # 1. 初期メモリ使用量
@@ -497,6 +497,7 @@ class BehaviorRecorder:
 
             # 2. インポート後メモリ使用量
             from gui.folder_tree import FolderTreeContainer, FolderTreeWidget
+
             import_memory = process.memory_info().rss / 1024 / 1024  # MB
 
             # 3. 初期化後メモリ使用量
@@ -518,7 +519,7 @@ class BehaviorRecorder:
                 "init_memory_mb": init_memory,
                 "import_overhead_mb": import_memory - initial_memory,
                 "init_overhead_mb": init_memory - import_memory,
-                "status": "SUCCESS"
+                "status": "SUCCESS",
             }
 
             # クリーンアップ
@@ -527,15 +528,9 @@ class BehaviorRecorder:
                 app.quit()
 
         except ImportError:
-            memory_tests = {
-                "status": "SKIPPED",
-                "reason": "psutil not available"
-            }
+            memory_tests = {"status": "SKIPPED", "reason": "psutil not available"}
         except Exception as e:
-            memory_tests = {
-                "status": "ERROR",
-                "error": str(e)
-            }
+            memory_tests = {"status": "ERROR", "error": str(e)}
 
         self.results["tests"]["memory"] = memory_tests
         self.logger.info("メモリ使用量テスト完了")
@@ -552,12 +547,12 @@ class BehaviorRecorder:
         results_file = results_dir / f"phase4_baseline_{timestamp}.json"
 
         # 結果保存
-        with open(results_file, 'w', encoding='utf-8') as f:
+        with open(results_file, "w", encoding="utf-8") as f:
             json.dump(self.results, f, indent=2, ensure_ascii=False)
 
         # 最新結果として別名保存
         latest_file = results_dir / "phase4_baseline_latest.json"
-        with open(latest_file, 'w', encoding='utf-8') as f:
+        with open(latest_file, "w", encoding="utf-8") as f:
             json.dump(self.results, f, indent=2, ensure_ascii=False)
 
         self.logger.info(f"結果保存完了: {results_file}")
@@ -615,12 +610,14 @@ class BehaviorRecorder:
             pass
 
 
-
 def main():
     """メイン実行関数"""
 
     # 仮想環境チェック
-    if not (hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)):
+    if not (
+        hasattr(sys, "real_prefix")
+        or (hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix)
+    ):
         pass
 
     # 記録実行

@@ -25,6 +25,7 @@ class QualityGate:
         baseline_file = self.project_root / "safety" / "baseline_performance.json"
         if baseline_file.exists():
             import json
+
             self.baseline_performance = json.loads(baseline_file.read_text())
 
     def check_functionality(self):
@@ -32,12 +33,18 @@ class QualityGate:
 
         try:
             # 基本インポートテスト
-            result = subprocess.run([
-                sys.executable, "-c",
-                "import sys; sys.path.append('src'); "
-                "from gui.folder_tree import FolderTreeWidget; "
-                "print('基本機能OK')"
-            ], capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-c",
+                    "import sys; sys.path.append('src'); "
+                    "from gui.folder_tree import FolderTreeWidget; "
+                    "print('基本機能OK')",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
 
             if result.returncode == 0:
                 return True
@@ -53,20 +60,25 @@ class QualityGate:
         try:
             # インポート時間測定
             start_time = time.time()
-            result = subprocess.run([
-                sys.executable, "-c",
-                "import sys; sys.path.append('src'); "
-                "from gui.folder_tree import FolderTreeWidget"
-            ], capture_output=True, text=True, timeout=30)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-c",
+                    "import sys; sys.path.append('src'); "
+                    "from gui.folder_tree import FolderTreeWidget",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
             import_time = time.time() - start_time
 
             if result.returncode != 0:
                 return False
 
             # 基準値と比較
-            baseline_import = self.baseline_performance.get('import_time', 1.0)
+            baseline_import = self.baseline_performance.get("import_time", 1.0)
             performance_ratio = import_time / baseline_import
-
 
             if performance_ratio <= 1.05:  # 5%以内の劣化は許容
                 return True
@@ -85,9 +97,8 @@ class QualityGate:
             memory_mb = process.memory_info().rss / 1024 / 1024
 
             # 基準値と比較
-            baseline_memory = self.baseline_performance.get('memory_mb', 100.0)
+            baseline_memory = self.baseline_performance.get("memory_mb", 100.0)
             memory_ratio = memory_mb / baseline_memory
-
 
             if memory_ratio <= 1.20:  # 20%以内の増加は許容
                 return True
@@ -107,8 +118,7 @@ class QualityGate:
         try:
             # ファイルサイズチェック
             target_file.stat().st_size
-            line_count = len(target_file.read_text(encoding='utf-8').splitlines())
-
+            line_count = len(target_file.read_text(encoding="utf-8").splitlines())
 
             # 品質基準
             if line_count <= 1500:  # 目標に向けた段階的改善
@@ -119,6 +129,7 @@ class QualityGate:
         except Exception:
             return False
 
+
 def main():
     """メイン処理"""
 
@@ -128,7 +139,7 @@ def main():
         ("機能性", gate.check_functionality),
         ("性能", gate.check_performance),
         ("メモリ使用量", gate.check_memory_usage),
-        ("コード品質", gate.check_code_quality)
+        ("コード品質", gate.check_code_quality),
     ]
 
     results = []
@@ -142,13 +153,13 @@ def main():
         if result:
             passed_count += 1
 
-
     if passed_count == len(results):
         return 0
     elif passed_count >= len(results) * 0.75:  # 75%以上で条件付き合格
         return 0
     else:
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

@@ -6,7 +6,6 @@ DocMind ツールバー管理マネージャー
 検索、インデックス、設定などの主要機能への素早いアクセスを提供します。
 """
 
-
 from PySide6.QtCore import QObject, QSize, Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QMainWindow, QToolBar

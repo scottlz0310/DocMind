@@ -17,6 +17,7 @@ from typing import Any
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
+
 class ArchitectureDesigner:
     """アーキテクチャ設計システム"""
 
@@ -30,7 +31,7 @@ class ArchitectureDesigner:
             "separation_domains": {},
             "interfaces": {},
             "migration_strategy": {},
-            "risk_mitigation": {}
+            "risk_mitigation": {},
         }
 
     def _setup_logger(self) -> logging.Logger:
@@ -41,7 +42,7 @@ class ArchitectureDesigner:
         if not logger.handlers:
             handler = logging.StreamHandler()
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
             )
             handler.setFormatter(formatter)
             logger.addHandler(handler)
@@ -86,10 +87,10 @@ class ArchitectureDesigner:
         folder_tree_path = project_root / "src" / "gui" / "folder_tree.py"
 
         if folder_tree_path.exists():
-            with open(folder_tree_path, encoding='utf-8') as f:
+            with open(folder_tree_path, encoding="utf-8") as f:
                 content = f.read()
 
-            lines = content.split('\n')
+            lines = content.split("\n")
 
             # 基本統計
             self.design["current_analysis"] = {
@@ -98,7 +99,7 @@ class ArchitectureDesigner:
                 "methods": self._extract_methods(content),
                 "imports": self._extract_imports(content),
                 "signals": self._extract_signals(content),
-                "complexity_indicators": self._analyze_complexity(content)
+                "complexity_indicators": self._analyze_complexity(content),
             }
 
         self.logger.info("現在の構造分析完了")
@@ -106,11 +107,13 @@ class ArchitectureDesigner:
     def _extract_classes(self, content: str) -> list[dict[str, Any]]:
         """クラス情報を抽出"""
         classes = []
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         for i, line in enumerate(lines):
-            if line.strip().startswith('class '):
-                class_name = line.strip().split('class ')[1].split('(')[0].split(':')[0].strip()
+            if line.strip().startswith("class "):
+                class_name = (
+                    line.strip().split("class ")[1].split("(")[0].split(":")[0].strip()
+                )
 
                 # クラスのメソッド数を計算
                 method_count = 0
@@ -118,56 +121,62 @@ class ArchitectureDesigner:
                 indent_level = len(line) - len(line.lstrip())
 
                 for j in range(i + 1, len(lines)):
-                    if lines[j].strip() == '':
+                    if lines[j].strip() == "":
                         continue
                     current_indent = len(lines[j]) - len(lines[j].lstrip())
 
                     if current_indent <= indent_level and lines[j].strip():
                         break
 
-                    if lines[j].strip().startswith('def '):
+                    if lines[j].strip().startswith("def "):
                         method_count += 1
                     class_lines += 1
 
-                classes.append({
-                    "name": class_name,
-                    "line_number": i + 1,
-                    "method_count": method_count,
-                    "estimated_lines": class_lines
-                })
+                classes.append(
+                    {
+                        "name": class_name,
+                        "line_number": i + 1,
+                        "method_count": method_count,
+                        "estimated_lines": class_lines,
+                    }
+                )
 
         return classes
 
     def _extract_methods(self, content: str) -> list[dict[str, Any]]:
         """メソッド情報を抽出"""
         methods = []
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         current_class = None
 
         for i, line in enumerate(lines):
-            if line.strip().startswith('class '):
-                current_class = line.strip().split('class ')[1].split('(')[0].split(':')[0].strip()
-            elif line.strip().startswith('def '):
-                method_name = line.strip().split('def ')[1].split('(')[0].strip()
-                methods.append({
-                    "name": method_name,
-                    "class": current_class,
-                    "line_number": i + 1,
-                    "is_private": method_name.startswith('_'),
-                    "is_dunder": method_name.startswith('__')
-                })
+            if line.strip().startswith("class "):
+                current_class = (
+                    line.strip().split("class ")[1].split("(")[0].split(":")[0].strip()
+                )
+            elif line.strip().startswith("def "):
+                method_name = line.strip().split("def ")[1].split("(")[0].strip()
+                methods.append(
+                    {
+                        "name": method_name,
+                        "class": current_class,
+                        "line_number": i + 1,
+                        "is_private": method_name.startswith("_"),
+                        "is_dunder": method_name.startswith("__"),
+                    }
+                )
 
         return methods
 
     def _extract_imports(self, content: str) -> list[str]:
         """インポート情報を抽出"""
         imports = []
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         for line in lines:
             line = line.strip()
-            if line.startswith('import ') or line.startswith('from '):
+            if line.startswith("import ") or line.startswith("from "):
                 imports.append(line)
 
         return imports
@@ -175,33 +184,37 @@ class ArchitectureDesigner:
     def _extract_signals(self, content: str) -> list[dict[str, Any]]:
         """シグナル情報を抽出"""
         signals = []
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         for i, line in enumerate(lines):
-            if 'Signal(' in line:
-                signal_name = line.split('=')[0].strip() if '=' in line else 'unknown'
-                signals.append({
-                    "name": signal_name,
-                    "line_number": i + 1,
-                    "definition": line.strip()
-                })
+            if "Signal(" in line:
+                signal_name = line.split("=")[0].strip() if "=" in line else "unknown"
+                signals.append(
+                    {
+                        "name": signal_name,
+                        "line_number": i + 1,
+                        "definition": line.strip(),
+                    }
+                )
 
         return signals
 
     def _analyze_complexity(self, content: str) -> dict[str, Any]:
         """複雑度指標を分析"""
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         return {
             "total_lines": len(lines),
-            "code_lines": len([l for l in lines if l.strip() and not l.strip().startswith('#')]),
-            "comment_lines": len([l for l in lines if l.strip().startswith('#')]),
+            "code_lines": len(
+                [l for l in lines if l.strip() and not l.strip().startswith("#")]
+            ),
+            "comment_lines": len([l for l in lines if l.strip().startswith("#")]),
             "docstring_lines": content.count('"""') + content.count("'''"),
-            "if_statements": content.count('if '),
-            "for_loops": content.count('for '),
-            "while_loops": content.count('while '),
-            "try_blocks": content.count('try:'),
-            "except_blocks": content.count('except ')
+            "if_statements": content.count("if "),
+            "for_loops": content.count("for "),
+            "while_loops": content.count("while "),
+            "try_blocks": content.count("try:"),
+            "except_blocks": content.count("except "),
         }
 
     def _design_separation_domains(self):
@@ -218,36 +231,34 @@ class ArchitectureDesigner:
                         "name": "FolderLoadWorker",
                         "file": "folder_load_worker.py",
                         "responsibility": "フォルダ構造の非同期読み込み",
-                        "methods": [
-                            "do_work", "stop", "_load_folder_recursive"
-                        ],
-                        "estimated_lines": 150
+                        "methods": ["do_work", "stop", "_load_folder_recursive"],
+                        "estimated_lines": 150,
                     },
                     {
                         "name": "AsyncManager",
                         "file": "async_manager.py",
                         "responsibility": "非同期処理の統合管理",
                         "methods": [
-                            "_load_subfolders_async", "_cleanup_worker",
-                            "_on_folder_loaded", "_on_load_error", "_on_load_finished"
+                            "_load_subfolders_async",
+                            "_cleanup_worker",
+                            "_on_folder_loaded",
+                            "_on_load_error",
+                            "_on_load_finished",
                         ],
-                        "estimated_lines": 120
+                        "estimated_lines": 120,
                     },
                     {
                         "name": "ThreadCoordinator",
                         "file": "thread_coordinator.py",
                         "responsibility": "スレッド調整とライフサイクル管理",
-                        "methods": [
-                            "start_worker", "stop_worker", "cleanup_threads"
-                        ],
-                        "estimated_lines": 80
-                    }
+                        "methods": ["start_worker", "stop_worker", "cleanup_threads"],
+                        "estimated_lines": 80,
+                    },
                 ],
                 "total_estimated_lines": 350,
                 "risk_level": "HIGH",
-                "migration_priority": 1
+                "migration_priority": 1,
             },
-
             "state_management": {
                 "name": "状態管理領域",
                 "description": "フォルダ状態とパス管理",
@@ -258,37 +269,42 @@ class ArchitectureDesigner:
                         "file": "folder_state_manager.py",
                         "responsibility": "フォルダ状態の統一管理",
                         "methods": [
-                            "set_folder_indexing", "set_folder_indexed",
-                            "set_folder_error", "clear_folder_state"
+                            "set_folder_indexing",
+                            "set_folder_indexed",
+                            "set_folder_error",
+                            "clear_folder_state",
                         ],
-                        "estimated_lines": 100
+                        "estimated_lines": 100,
                     },
                     {
                         "name": "PathTracker",
                         "file": "path_tracker.py",
                         "responsibility": "パス集合の管理",
                         "methods": [
-                            "add_path", "remove_path", "get_paths_by_type",
-                            "update_path_status"
+                            "add_path",
+                            "remove_path",
+                            "get_paths_by_type",
+                            "update_path_status",
                         ],
-                        "estimated_lines": 80
+                        "estimated_lines": 80,
                     },
                     {
                         "name": "ItemMapper",
                         "file": "item_mapper.py",
                         "responsibility": "パス→アイテムマッピング管理",
                         "methods": [
-                            "register_item", "unregister_item", "get_item",
-                            "update_item_display"
+                            "register_item",
+                            "unregister_item",
+                            "get_item",
+                            "update_item_display",
                         ],
-                        "estimated_lines": 70
-                    }
+                        "estimated_lines": 70,
+                    },
                 ],
                 "total_estimated_lines": 250,
                 "risk_level": "MEDIUM",
-                "migration_priority": 2
+                "migration_priority": 2,
             },
-
             "ui_management": {
                 "name": "UI管理領域",
                 "description": "ツリーウィジェットとUI表示管理",
@@ -299,37 +315,42 @@ class ArchitectureDesigner:
                         "file": "tree_widget_manager.py",
                         "responsibility": "QTreeWidgetの基本管理",
                         "methods": [
-                            "_setup_tree_widget", "_update_statistics",
-                            "expand_to_path", "filter_folders"
+                            "_setup_tree_widget",
+                            "_update_statistics",
+                            "expand_to_path",
+                            "filter_folders",
                         ],
-                        "estimated_lines": 120
+                        "estimated_lines": 120,
                     },
                     {
                         "name": "ItemFactory",
                         "file": "item_factory.py",
                         "responsibility": "FolderTreeItemの生成・管理",
                         "methods": [
-                            "create_item", "update_item_icon", "update_item_text",
-                            "set_item_properties"
+                            "create_item",
+                            "update_item_icon",
+                            "update_item_text",
+                            "set_item_properties",
                         ],
-                        "estimated_lines": 90
+                        "estimated_lines": 90,
                     },
                     {
                         "name": "DisplayCoordinator",
                         "file": "display_coordinator.py",
                         "responsibility": "表示状態の調整",
                         "methods": [
-                            "_show_all_items", "_hide_all_items",
-                            "_show_item_and_parents", "_update_item_types"
+                            "_show_all_items",
+                            "_hide_all_items",
+                            "_show_item_and_parents",
+                            "_update_item_types",
                         ],
-                        "estimated_lines": 80
-                    }
+                        "estimated_lines": 80,
+                    },
                 ],
                 "total_estimated_lines": 290,
                 "risk_level": "MEDIUM",
-                "migration_priority": 3
+                "migration_priority": 3,
             },
-
             "event_handling": {
                 "name": "イベント処理領域",
                 "description": "ユーザーイベントとシグナル管理",
@@ -340,46 +361,55 @@ class ArchitectureDesigner:
                         "file": "tree_event_handler.py",
                         "responsibility": "ツリーイベントの処理",
                         "methods": [
-                            "_on_selection_changed", "_on_item_expanded",
-                            "_on_item_collapsed", "_on_item_double_clicked"
+                            "_on_selection_changed",
+                            "_on_item_expanded",
+                            "_on_item_collapsed",
+                            "_on_item_double_clicked",
                         ],
-                        "estimated_lines": 100
+                        "estimated_lines": 100,
                     },
                     {
                         "name": "ContextMenuManager",
                         "file": "context_menu_manager.py",
                         "responsibility": "コンテキストメニュー管理",
                         "methods": [
-                            "_show_context_menu", "_add_folder", "_remove_folder",
-                            "_index_folder", "_exclude_folder", "_show_properties"
+                            "_show_context_menu",
+                            "_add_folder",
+                            "_remove_folder",
+                            "_index_folder",
+                            "_exclude_folder",
+                            "_show_properties",
                         ],
-                        "estimated_lines": 150
+                        "estimated_lines": 150,
                     },
                     {
                         "name": "ShortcutManager",
                         "file": "shortcut_manager.py",
                         "responsibility": "キーボードショートカット管理",
                         "methods": [
-                            "_setup_shortcuts", "_refresh_folder",
-                            "_select_current_folder"
+                            "_setup_shortcuts",
+                            "_refresh_folder",
+                            "_select_current_folder",
                         ],
-                        "estimated_lines": 60
+                        "estimated_lines": 60,
                     },
                     {
                         "name": "SignalCoordinator",
                         "file": "signal_coordinator.py",
                         "responsibility": "シグナル接続の統合管理",
                         "methods": [
-                            "connect_all_signals", "disconnect_all_signals",
-                            "emit_folder_selected", "emit_folder_indexed"
+                            "connect_all_signals",
+                            "disconnect_all_signals",
+                            "emit_folder_selected",
+                            "emit_folder_indexed",
                         ],
-                        "estimated_lines": 80
-                    }
+                        "estimated_lines": 80,
+                    },
                 ],
                 "total_estimated_lines": 390,
                 "risk_level": "LOW",
-                "migration_priority": 4
-            }
+                "migration_priority": 4,
+            },
         }
 
         self.logger.info("専門領域設計完了")
@@ -397,10 +427,9 @@ class ArchitectureDesigner:
                     "load_folder_structure(path: str) -> None",
                     "get_selected_folder() -> Optional[str]",
                     "set_folder_state(path: str, state: FolderState) -> None",
-                    "refresh_folder(path: str) -> None"
-                ]
+                    "refresh_folder(path: str) -> None",
+                ],
             },
-
             "async_interface": {
                 "name": "AsyncProcessingInterface",
                 "file": "src/gui/folder_tree/interfaces/async_interface.py",
@@ -409,10 +438,9 @@ class ArchitectureDesigner:
                     "start_async_load(path: str) -> None",
                     "stop_async_load() -> None",
                     "is_loading() -> bool",
-                    "get_load_progress() -> float"
-                ]
+                    "get_load_progress() -> float",
+                ],
             },
-
             "state_interface": {
                 "name": "StateManagementInterface",
                 "file": "src/gui/folder_tree/interfaces/state_interface.py",
@@ -421,10 +449,9 @@ class ArchitectureDesigner:
                     "get_indexed_folders() -> List[str]",
                     "get_excluded_folders() -> List[str]",
                     "update_folder_status(path: str, status: str) -> None",
-                    "clear_all_states() -> None"
-                ]
+                    "clear_all_states() -> None",
+                ],
             },
-
             "ui_interface": {
                 "name": "UIManagementInterface",
                 "file": "src/gui/folder_tree/interfaces/ui_interface.py",
@@ -433,10 +460,9 @@ class ArchitectureDesigner:
                     "update_display() -> None",
                     "filter_items(filter_text: str) -> None",
                     "expand_to_path(path: str) -> None",
-                    "refresh_ui() -> None"
-                ]
+                    "refresh_ui() -> None",
+                ],
             },
-
             "event_interface": {
                 "name": "EventHandlingInterface",
                 "file": "src/gui/folder_tree/interfaces/event_interface.py",
@@ -444,9 +470,9 @@ class ArchitectureDesigner:
                 "methods": [
                     "handle_selection_change(path: str) -> None",
                     "handle_context_menu(position: QPoint) -> None",
-                    "emit_folder_signal(signal_type: str, path: str) -> None"
-                ]
-            }
+                    "emit_folder_signal(signal_type: str, path: str) -> None",
+                ],
+            },
         }
 
         self.logger.info("インターフェース設計完了")
@@ -464,62 +490,59 @@ class ArchitectureDesigner:
                         "week": 1,
                         "focus": "非同期処理分離",
                         "risk": "HIGH",
-                        "validation": "非同期処理専用テスト"
+                        "validation": "非同期処理専用テスト",
                     },
                     {
                         "week": 2,
                         "focus": "状態管理分離",
                         "risk": "MEDIUM",
-                        "validation": "状態整合性テスト"
+                        "validation": "状態整合性テスト",
                     },
                     {
                         "week": 3,
                         "focus": "UI管理分離",
                         "risk": "MEDIUM",
-                        "validation": "UI表示テスト"
+                        "validation": "UI表示テスト",
                     },
                     {
                         "week": 4,
                         "focus": "イベント処理分離",
                         "risk": "LOW",
-                        "validation": "イベント処理テスト"
+                        "validation": "イベント処理テスト",
                     },
                     {
                         "week": 5,
                         "focus": "統合・最適化",
                         "risk": "MEDIUM",
-                        "validation": "統合テスト"
+                        "validation": "統合テスト",
                     },
                     {
                         "week": 6,
                         "focus": "品質保証・完了",
                         "risk": "LOW",
-                        "validation": "最終品質テスト"
-                    }
-                ]
+                        "validation": "最終品質テスト",
+                    },
+                ],
             },
-
             "daily_workflow": {
                 "day_1": "分析・設計",
                 "day_2_3": "新モジュール実装・単体テスト",
                 "day_4": "統合・結合テスト",
-                "day_5": "全機能確認・性能テスト"
+                "day_5": "全機能確認・性能テスト",
             },
-
             "validation_gates": {
                 "syntax_check": "構文エラーなし",
                 "import_check": "インポート依存関係正常",
                 "function_test": "基本機能正常動作",
                 "performance_test": "性能劣化なし（±5%以内）",
-                "memory_test": "メモリリークなし"
+                "memory_test": "メモリリークなし",
             },
-
             "rollback_strategy": {
                 "level_1": "軽微な問題 → 即座修正・継続",
                 "level_2": "中程度の問題 → 当日作業停止・翌日修正",
                 "level_3": "重大な問題 → 週単位停止・前週状態復旧",
-                "level_4": "致命的な問題 → Phase4全体停止・Phase1-3状態復旧"
-            }
+                "level_4": "致命的な問題 → Phase4全体停止・Phase1-3状態復旧",
+            },
         }
 
         self.logger.info("移行戦略設計完了")
@@ -534,57 +557,44 @@ class ArchitectureDesigner:
                     "risks": [
                         "QThread管理の複雑性",
                         "シグナル・スロット接続エラー",
-                        "メモリリーク・リソースリーク"
+                        "メモリリーク・リソースリーク",
                     ],
                     "mitigations": [
                         "非同期処理専用テストスイート作成",
                         "安全なワーカークリーンアップ実装",
-                        "シグナル接続の自動検証"
-                    ]
-                },
-
-                "state_management": {
-                    "risks": [
-                        "状態不整合",
-                        "競合状態",
-                        "データ破損"
+                        "シグナル接続の自動検証",
                     ],
+                },
+                "state_management": {
+                    "risks": ["状態不整合", "競合状態", "データ破損"],
                     "mitigations": [
                         "原子的状態変更の実装",
                         "状態変更の検証機能",
-                        "自動バックアップ・復旧機能"
-                    ]
-                }
+                        "自動バックアップ・復旧機能",
+                    ],
+                },
             },
-
             "safety_mechanisms": {
                 "backup_strategy": {
                     "frequency": "各段階開始前",
                     "method": "Gitタグ作成",
-                    "retention": "全段階のバックアップ保持"
+                    "retention": "全段階のバックアップ保持",
                 },
-
                 "validation_automation": {
                     "daily_checks": [
                         "構文チェック",
                         "インポートチェック",
                         "基本機能テスト",
-                        "性能テスト"
+                        "性能テスト",
                     ],
-                    "weekly_checks": [
-                        "統合テスト",
-                        "メモリテスト",
-                        "ストレステスト"
-                    ]
+                    "weekly_checks": ["統合テスト", "メモリテスト", "ストレステスト"],
                 },
-
                 "monitoring_system": {
                     "performance_tracking": "基準値との比較",
                     "error_tracking": "エラー発生率監視",
-                    "quality_metrics": "コード品質指標追跡"
-                }
+                    "quality_metrics": "コード品質指標追跡",
+                },
             },
-
             "emergency_procedures": {
                 "immediate_rollback": "git checkout [previous-tag]",
                 "partial_rollback": "git revert [specific-commit]",
@@ -593,9 +603,9 @@ class ArchitectureDesigner:
                     "基本機能停止",
                     "性能劣化20%以上",
                     "メモリリーク検出",
-                    "データ破損検出"
-                ]
-            }
+                    "データ破損検出",
+                ],
+            },
         }
 
         self.logger.info("リスク軽減策設計完了")
@@ -612,12 +622,12 @@ class ArchitectureDesigner:
         design_file = design_dir / f"phase4_architecture_{timestamp}.json"
 
         # 設計書保存
-        with open(design_file, 'w', encoding='utf-8') as f:
+        with open(design_file, "w", encoding="utf-8") as f:
             json.dump(self.design, f, indent=2, ensure_ascii=False)
 
         # 最新設計書として別名保存
         latest_file = design_dir / "phase4_architecture_latest.json"
-        with open(latest_file, 'w', encoding='utf-8') as f:
+        with open(latest_file, "w", encoding="utf-8") as f:
             json.dump(self.design, f, indent=2, ensure_ascii=False)
 
         # Markdown形式でも保存
@@ -632,7 +642,7 @@ class ArchitectureDesigner:
         """Markdown形式で設計書を保存"""
         md_file = design_dir / "PHASE4_ARCHITECTURE_DESIGN.md"
 
-        with open(md_file, 'w', encoding='utf-8') as f:
+        with open(md_file, "w", encoding="utf-8") as f:
             f.write("# Phase4 アーキテクチャ設計書\n\n")
             f.write(f"**作成日**: {self.design['timestamp']}\n")
             f.write(f"**対象**: {self.design['target_file']}\n\n")
@@ -658,7 +668,7 @@ class ArchitectureDesigner:
                     f.write(f"**移行優先度**: {domain['migration_priority']}\n\n")
 
                     f.write("**コンポーネント**:\n")
-                    for comp in domain['components']:
+                    for comp in domain["components"]:
                         f.write(f"- **{comp['name']}** (`{comp['file']}`)\n")
                         f.write(f"  - 責務: {comp['responsibility']}\n")
                         f.write(f"  - 推定行数: {comp['estimated_lines']}行\n\n")
@@ -671,7 +681,7 @@ class ArchitectureDesigner:
                     f.write(f"**ファイル**: `{interface['file']}`\n")
                     f.write(f"**説明**: {interface['description']}\n\n")
                     f.write("**メソッド**:\n")
-                    for method in interface['methods']:
+                    for method in interface["methods"]:
                         f.write(f"- `{method}`\n")
                     f.write("\n")
 
@@ -687,7 +697,7 @@ class ArchitectureDesigner:
         # 分離領域
         if "separation_domains" in self.design:
             domains = self.design["separation_domains"]
-            sum(d.get('total_estimated_lines', 0) for d in domains.values())
+            sum(d.get("total_estimated_lines", 0) for d in domains.values())
 
             for _domain_key, _domain in domains.items():
                 pass
@@ -701,7 +711,6 @@ class ArchitectureDesigner:
             strategy = self.design["migration_strategy"]
             if "overall_approach" in strategy:
                 strategy["overall_approach"]
-
 
 
 def main():

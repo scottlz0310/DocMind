@@ -16,9 +16,11 @@ import psutil
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
+
 def log_message(message, level="INFO"):
     """ログメッセージを出力"""
     datetime.now().strftime("%H:%M:%S")
+
 
 def test_component_imports():
     """コンポーネントインポートテスト"""
@@ -38,7 +40,7 @@ def test_component_imports():
         import_results = {
             "status": "success",
             "import_time": round(import_time, 3),
-            "components_loaded": 8
+            "components_loaded": 8,
         }
 
         log_message(f"✅ 全コンポーネントインポート成功 (時間: {import_time:.3f}秒)")
@@ -47,11 +49,12 @@ def test_component_imports():
         import_results = {
             "status": "failed",
             "error": str(e),
-            "import_time": time.time() - start_time
+            "import_time": time.time() - start_time,
         }
         log_message(f"❌ インポートエラー: {e}")
 
     return import_results
+
 
 def test_application_startup():
     """アプリケーション起動テスト"""
@@ -93,26 +96,26 @@ def test_application_startup():
             "status": "success",
             "creation_time": round(creation_time, 3),
             "memory_usage_mb": round(memory_after - memory_before, 2),
-            "window_visible": main_window.isVisible()
+            "window_visible": main_window.isVisible(),
         }
 
         log_message("✅ アプリケーション起動成功")
         log_message(f"   - 作成時間: {creation_time:.3f}秒")
         log_message(f"   - メモリ使用量: {memory_after - memory_before:.2f}MB")
-        log_message(f"   - ウィンドウ表示: {'成功' if main_window.isVisible() else '失敗'}")
+        log_message(
+            f"   - ウィンドウ表示: {'成功' if main_window.isVisible() else '失敗'}"
+        )
 
         # クリーンアップ
         main_window.close()
         app.quit()
 
     except Exception as e:
-        startup_results = {
-            "status": "failed",
-            "error": str(e)
-        }
+        startup_results = {"status": "failed", "error": str(e)}
         log_message(f"❌ 起動エラー: {e}")
 
     return startup_results
+
 
 def test_folder_tree_functionality():
     """フォルダツリー機能テスト"""
@@ -140,9 +143,9 @@ def test_folder_tree_functionality():
         log_message("2. 基本機能テスト中...")
 
         # 基本メソッドの存在確認
-        has_set_root_path = hasattr(folder_tree, 'set_root_path')
-        has_get_selected_path = hasattr(folder_tree, 'get_selected_path')
-        has_refresh = hasattr(folder_tree, 'refresh')
+        has_set_root_path = hasattr(folder_tree, "set_root_path")
+        has_get_selected_path = hasattr(folder_tree, "get_selected_path")
+        has_refresh = hasattr(folder_tree, "refresh")
 
         functionality_results = {
             "status": "success",
@@ -150,27 +153,27 @@ def test_folder_tree_functionality():
             "basic_methods": {
                 "set_root_path": has_set_root_path,
                 "get_selected_path": has_get_selected_path,
-                "refresh": has_refresh
+                "refresh": has_refresh,
             },
-            "widget_created": True
+            "widget_created": True,
         }
 
         log_message("✅ フォルダツリー機能テスト成功")
         log_message(f"   - 作成時間: {creation_time:.3f}秒")
-        log_message(f"   - 基本メソッド: {'全て存在' if all([has_set_root_path, has_get_selected_path, has_refresh]) else '一部不足'}")
+        log_message(
+            f"   - 基本メソッド: {'全て存在' if all([has_set_root_path, has_get_selected_path, has_refresh]) else '一部不足'}"
+        )
 
         # クリーンアップ
         folder_tree.deleteLater()
         parent.deleteLater()
 
     except Exception as e:
-        functionality_results = {
-            "status": "failed",
-            "error": str(e)
-        }
+        functionality_results = {"status": "failed", "error": str(e)}
         log_message(f"❌ 機能テストエラー: {e}")
 
     return functionality_results
+
 
 def test_performance_metrics():
     """パフォーマンス指標テスト"""
@@ -210,26 +213,28 @@ def test_performance_metrics():
             "max_creation_time": round(max_creation_time, 6),
             "min_creation_time": round(min_creation_time, 6),
             "consistency": max_creation_time - min_creation_time < 0.01,
-            "performance_target": avg_creation_time < 0.1
+            "performance_target": avg_creation_time < 0.1,
         }
 
         log_message("✅ パフォーマンステスト完了")
         log_message(f"   - 平均作成時間: {avg_creation_time:.6f}秒")
         log_message(f"   - 最大作成時間: {max_creation_time:.6f}秒")
         log_message(f"   - 最小作成時間: {min_creation_time:.6f}秒")
-        log_message(f"   - 一貫性: {'良好' if performance_results['consistency'] else '要改善'}")
-        log_message(f"   - 目標達成: {'✅' if performance_results['performance_target'] else '❌'}")
+        log_message(
+            f"   - 一貫性: {'良好' if performance_results['consistency'] else '要改善'}"
+        )
+        log_message(
+            f"   - 目標達成: {'✅' if performance_results['performance_target'] else '❌'}"
+        )
 
         parent.deleteLater()
 
     except Exception as e:
-        performance_results = {
-            "status": "failed",
-            "error": str(e)
-        }
+        performance_results = {"status": "failed", "error": str(e)}
         log_message(f"❌ パフォーマンステストエラー: {e}")
 
     return performance_results
+
 
 def main():
     """メイン実行関数"""
@@ -239,30 +244,30 @@ def main():
     results = {
         "test_date": datetime.now().isoformat(),
         "phase": "Phase4 完了後",
-        "tests": {}
+        "tests": {},
     }
 
     try:
         # 1. コンポーネントインポートテスト
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         results["tests"]["import_test"] = test_component_imports()
 
         # 2. アプリケーション起動テスト
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         results["tests"]["startup_test"] = test_application_startup()
 
         # 3. フォルダツリー機能テスト
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         results["tests"]["functionality_test"] = test_folder_tree_functionality()
 
         # 4. パフォーマンス指標テスト
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         results["tests"]["performance_test"] = test_performance_metrics()
 
         # 総合評価
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         log_message("🎯 Phase4完了後 起動テスト結果サマリー")
-        log_message("="*50)
+        log_message("=" * 50)
 
         all_success = all(
             test_result.get("status") == "success"
@@ -279,7 +284,9 @@ def main():
         # 各テスト結果の詳細
         for test_name, test_result in results["tests"].items():
             status_icon = "✅" if test_result.get("status") == "success" else "❌"
-            log_message(f"{status_icon} {test_name}: {test_result.get('status', 'unknown')}")
+            log_message(
+                f"{status_icon} {test_name}: {test_result.get('status', 'unknown')}"
+            )
 
         return results
 
@@ -288,6 +295,7 @@ def main():
         results["overall_status"] = "failed"
         results["error"] = str(e)
         return results
+
 
 if __name__ == "__main__":
     import json
@@ -298,4 +306,3 @@ if __name__ == "__main__":
     log_file = "phase4_startup_test_results.json"
     with open(log_file, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
-

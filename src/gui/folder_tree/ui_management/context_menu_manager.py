@@ -322,10 +322,10 @@ class ContextMenuManager:
   フォルダ数: {dir_count:,}
   合計サイズ: {format_size(total_size)}
 
-最終更新: {modified_time.strftime('%Y/%m/%d %H:%M:%S')}
+最終更新: {modified_time.strftime("%Y/%m/%d %H:%M:%S")}
 
-インデックス状態: {'インデックス済み' if folder_path in self.tree_widget.indexed_paths else '未インデックス'}
-除外状態: {'除外中' if folder_path in self.tree_widget.excluded_paths else '対象'}
+インデックス状態: {"インデックス済み" if folder_path in self.tree_widget.indexed_paths else "未インデックス"}
+除外状態: {"除外中" if folder_path in self.tree_widget.excluded_paths else "対象"}
             """.strip()
 
             QMessageBox.information(

@@ -448,9 +448,7 @@ class RebuildProgress:
     要件2.2に対応。
     """
 
-    stage: str = (
-        "idle"  # 処理段階: "idle", "scanning", "processing", "indexing", "completed", "error"
-    )
+    stage: str = "idle"  # 処理段階: "idle", "scanning", "processing", "indexing", "completed", "error"
     current_file: str = ""  # 現在処理中のファイル名
     files_processed: int = 0  # 処理済みファイル数
     total_files: int = 0  # 総ファイル数

@@ -31,7 +31,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow
@@ -54,7 +53,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow
@@ -91,7 +89,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow
@@ -115,7 +112,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow
@@ -143,7 +139,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow
@@ -170,7 +165,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow
@@ -204,7 +198,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow
@@ -234,7 +227,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow
@@ -263,7 +255,6 @@ class TestMainWindow:
             patch("src.core.document_processor.DocumentProcessor"),
             patch("src.data.database.DatabaseManager"),
         ):
-
             # モックウィジェットを作成
             window = Mock()
             window.__class__ = MainWindow

@@ -10,7 +10,6 @@ PySide6を使用した3ペインレイアウトのメインアプリケーショ
 包括的エラーハンドリングと優雅な劣化機能を統合しています。
 """
 
-
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QMainWindow, QWidget
 

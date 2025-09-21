@@ -7,16 +7,16 @@ Phase1とPhase7の機能を統合し、現在のSearchQueryベースのAPIに対
 
 import tempfile
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 
 from src.core.embedding_manager import EmbeddingManager
 from src.core.index_manager import IndexManager
 from src.core.search_manager import SearchManager
-from src.data.models import Document, FileType, SearchQuery, SearchResult, SearchType
+from src.data.models import FileType, SearchQuery, SearchResult, SearchType
 from src.utils.exceptions import SearchError
 from tests.fixtures.mock_models import create_mock_document, create_mock_documents
 
@@ -98,9 +98,7 @@ class TestSearchManager:
             search_manager.index_manager.add_document(doc)
 
         query = SearchQuery(
-            query_text="機械学習",
-            search_type=SearchType.FULL_TEXT,
-            limit=10
+            query_text="機械学習", search_type=SearchType.FULL_TEXT, limit=10
         )
 
         results = search_manager.search(query)
@@ -112,7 +110,9 @@ class TestSearchManager:
             assert all(result.score >= 0 for result in results)
 
     @patch("src.core.embedding_manager.EmbeddingManager.search_similar")
-    def test_semantic_search(self, mock_search_similar, search_manager, sample_documents):
+    def test_semantic_search(
+        self, mock_search_similar, search_manager, sample_documents
+    ):
         """検証対象: セマンティック検索機能
         目的: SearchQueryを使用したセマンティック検索が正常に動作することを確認"""
         # モックの設定
@@ -123,9 +123,7 @@ class TestSearchManager:
             search_manager.index_manager.add_document(doc)
 
         query = SearchQuery(
-            query_text="機械学習",
-            search_type=SearchType.SEMANTIC,
-            limit=10
+            query_text="機械学習", search_type=SearchType.SEMANTIC, limit=10
         )
 
         results = search_manager.search(query)
@@ -150,7 +148,7 @@ class TestSearchManager:
             query_text="機械学習",
             search_type=SearchType.HYBRID,
             limit=10,
-            weights={"full_text": 0.6, "semantic": 0.4}
+            weights={"full_text": 0.6, "semantic": 0.4},
         )
 
         results = search_manager.search(query)
@@ -177,7 +175,7 @@ class TestSearchManager:
             query_text="機械学習",
             search_type=SearchType.FULL_TEXT,
             file_types=[FileType.PDF],
-            limit=10
+            limit=10,
         )
 
         results = search_manager.search(query)
@@ -190,7 +188,7 @@ class TestSearchManager:
         """検証対象: 日付範囲フィルター付き検索
         目的: 特定の日付範囲内のドキュメントのみを検索対象とする機能が正常に動作することを確認"""
         # 異なる日付を設定
-        base_date = datetime(2024, 1, 1, tzinfo=timezone.utc)
+        base_date = datetime(2024, 1, 1, tzinfo=UTC)
         for i, doc in enumerate(sample_documents):
             doc.modified_date = base_date.replace(day=i + 1)
             search_manager.index_manager.add_document(doc)
@@ -198,9 +196,9 @@ class TestSearchManager:
         query = SearchQuery(
             query_text="機械学習",
             search_type=SearchType.FULL_TEXT,
-            date_from=datetime(2024, 1, 1, tzinfo=timezone.utc),
-            date_to=datetime(2024, 1, 2, tzinfo=timezone.utc),
-            limit=10
+            date_from=datetime(2024, 1, 1, tzinfo=UTC),
+            date_to=datetime(2024, 1, 2, tzinfo=UTC),
+            limit=10,
         )
 
         results = search_manager.search(query)
@@ -223,7 +221,7 @@ class TestSearchManager:
             query_text="機械学習",
             search_type=SearchType.FULL_TEXT,
             folder_paths=["folder1"],
-            limit=10
+            limit=10,
         )
 
         results = search_manager.search(query)
@@ -256,11 +254,7 @@ class TestSearchManager:
         目的: 空の検索クエリが適切にエラーとして処理されることを確認"""
         # SearchQueryは空クエリを拒否するため、ValueErrorが発生することを確認
         with pytest.raises(ValueError, match="検索クエリは空にできません"):
-            SearchQuery(
-                query_text="",
-                search_type=SearchType.FULL_TEXT,
-                limit=10
-            )
+            SearchQuery(query_text="", search_type=SearchType.FULL_TEXT, limit=10)
 
     def test_error_handling_invalid_search_type(self, search_manager):
         """検証対象: 無効な検索タイプのエラーハンドリング
@@ -270,7 +264,7 @@ class TestSearchManager:
         query = SearchQuery(
             query_text="テスト",
             search_type=SearchType.FULL_TEXT,  # 有効なタイプを使用
-            limit=10
+            limit=10,
         )
 
         # 正常なケースでエラーが発生しないことを確認
@@ -305,7 +299,7 @@ class TestSearchManager:
             full_text_weight=0.7,
             semantic_weight=0.3,
             min_semantic_similarity=0.2,
-            snippet_max_length=150
+            snippet_max_length=150,
         )
 
         # 更新された設定を確認
@@ -336,9 +330,7 @@ class TestSearchManager:
             search_manager.index_manager.add_document(doc)
 
         query = SearchQuery(
-            query_text="テスト",
-            search_type=SearchType.FULL_TEXT,
-            limit=20
+            query_text="テスト", search_type=SearchType.FULL_TEXT, limit=20
         )
 
         start_time = time.time()

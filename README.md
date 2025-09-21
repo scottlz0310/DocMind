@@ -2,158 +2,178 @@
 
 DocMindは、ローカルPC上に保存された様々なドキュメント形式（PDF、Word、Excel、Markdown、テキストファイル）に対する包括的な検索機能を持つローカルAI搭載デスクトップアプリケーションです。従来の全文検索とローカルAIモデルを使用したセマンティック検索を組み合わせ、外部API依存なしに完全なオフライン機能を保証します。
 
-このPoC版は、UIの美観よりも検索精度とローカルパフォーマンスを優先し、将来のAPIベースAIサービスをサポートする拡張性を考慮したアーキテクチャで設計されています。
+## 🚀 クイックスタート
 
-## 主要機能
+### 前提条件
+- Python 3.11以上
+- [uv](https://docs.astral.sh/uv/) パッケージマネージャー
 
-- **完全オフライン動作**: 外部API依存なし、すべての処理がローカルで実行
-- **ハイブリッド検索**: Whoosh全文検索とsentence-transformersセマンティック検索の組み合わせ
-- **マルチフォーマット対応**: PDF、Word、Excel、Markdown、テキストファイルの処理
-- **リアルタイムインデックス**: 増分ファイルシステム監視とインデックス更新
-- **3ペインUI**: フォルダツリー、検索結果、ドキュメントプレビューインターフェース
-
-## 対象ユーザー
-
-完全なプライバシーとオフライン機能を維持しながら、大量のローカルドキュメントコレクションを検索する必要がある開発者、研究者、ナレッジワーカー。
-
-## 現在のステータス
-
-これはPoC（概念実証）実装であり、UIの美観よりも検索精度とローカルパフォーマンスを優先しています。2025年8月にPhase4リファクタリングが完了し、主要GUIコンポーネントの責務分離とモジュール化が実現されました。アーキテクチャは、完全なローカル機能を維持しながら、将来のAPIベースのAIサービスをサポートする拡張性を考慮して設計されています。
-
-### リファクタリング成果（Phase1-4完了）
-- **main_window.py**: 3,605行 → 395行（89.0%削減）
-- **search_interface.py**: 1,504行 → 215行（85.7%削減）
-- **folder_tree関連**: 完全な責務分離とモジュール化
-- **保守性**: 大幅な向上（各コンポーネントが独立してテスト・修正可能）
-- **拡張性**: 新機能追加時の影響範囲を最小化
-
-## パフォーマンス目標
-
-- 最大50,000ドキュメントを5秒以内で検索
-- Windows 10/11での10秒以内のアプリケーション起動
-- バックグラウンド処理中のレスポンシブUI
-
-## インストール
-
-### 開発環境でのインストール
-
-1. リポジトリをクローン
-2. 仮想環境を作成: `python -m venv venv`
-3. 仮想環境をアクティベート: `venv\Scripts\activate` (Windows)
-4. 依存関係をインストール: `pip install -e .`
-5. アプリケーションを実行: `python main.py`
-
-### Windows向けバイナリインストール
-
-1. [リリースページ](https://github.com/docmind/docmind/releases)から最新のインストーラーをダウンロード
-2. `DocMind_Setup_v1.0.0.exe` を右クリックして「管理者として実行」
-3. インストールウィザードに従ってインストール
-4. スタートメニューまたはデスクトップショートカットからDocMindを起動
-
-## 使用方法
-
-1. DocMindを起動
-2. フォルダツリーを使用してインデックス対象フォルダを選択
-3. 初回インデックス作成の完了を待機
-4. 検索ボックスを使用してドキュメントを検索
-5. 検索タイプを選択（全文検索/セマンティック検索/ハイブリッド）
-6. 結果を確認し、ドキュメントをプレビュー
-
-## アーキテクチャ
-
-アプリケーションは、データアクセス、ビジネスロジック、プレゼンテーション層間の明確な分離を持つレイヤードアーキテクチャに従います。Phase4リファクタリングにより、各コンポーネントの責務が明確に分離され、高い保守性と拡張性を実現しています。
-
-### レイヤー構成
-- **GUIレイヤー**: PySide6ベースの3ペインインターフェース
-  - `src/gui/managers/`: UI管理コンポーネント（レイアウト、進捗、シグナル等）
-  - `src/gui/controllers/`: ビジネスロジック制御（インデックス、検索等）
-  - `src/gui/dialogs/`: ダイアログ管理
-  - `src/gui/search/`: 検索機能の専用モジュール
-  - `src/gui/folder_tree/`: フォルダツリー機能の専用モジュール
-- **ビジネスロジック**: 検索、インデックス、埋め込み、ファイル処理コンポーネント
-  - `src/core/`: コア機能（ドキュメント処理、検索管理、インデックス管理等）
-  - `src/utils/`: ユーティリティ（設定、ログ、エラーハンドリング等）
-- **データレイヤー**: メタデータ用SQLite、埋め込み用pickle、テキストインデックス用Whoosh
-  - `src/data/`: データアクセス層（データベース、リポジトリ、モデル等）
-
-### 設計原則
-- **単一責任原則**: 各コンポーネントは明確な単一の責務を持つ
-- **依存性注入**: 疎結合な設計により、テストと保守が容易
-- **インターフェース分離**: 必要な機能のみを公開
-- **段階的リファクタリング**: 既存機能を保持しながら段階的に改善
-
-## 技術スタック
-
-- **言語**: Python 3.11-3.13
-- **GUIフレームワーク**: クロスプラットフォームデスクトップインターフェース用PySide6
-- **検索エンジン**: 全文検索インデックス用Whoosh
-- **AI/ML**: セマンティック検索用sentence-transformers（all-MiniLM-L6-v2モデル）
-- **データベース**: メタデータストレージ用SQLite
-- **ファイル処理ライブラリ**:
-  - PDFテキスト抽出用PyMuPDF
-  - Wordドキュメント処理用python-docx
-  - Excelファイル処理用openpyxl
-
-## ビルドとデプロイメント
-
-### 開発者向けビルド手順
-
-1. 開発環境をセットアップ
-2. ビルドスクリプトを実行: `build_scripts\build_all.bat`
-3. 生成されたインストーラーをテスト
-
-### 自動ビルドプロセス
+### インストール
 
 ```bash
-# 完全ビルドプロセス
-cd build_scripts
-python build_windows.py
+# uvのインストール（未インストールの場合）
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# デプロイメントテスト
-python test_deployment.py installer/DocMind_Setup_v1.0.0.exe
+# プロジェクトのクローン
+git clone https://github.com/docmind/docmind.git
+cd docmind
+
+# 開発環境のセットアップ
+make bootstrap
+
+# アプリケーションの実行
+make run
 ```
 
-### システム要件
+## 📋 開発コマンド
 
-- **OS**: Windows 10 (64-bit) 以降
-- **CPU**: Intel Core i3以上推奨
-- **メモリ**: 4GB以上（8GB推奨）
-- **ストレージ**: 2GB以上の空き容量
+### セットアップ
+```bash
+make sync        # 依存関係の同期
+make dev         # 開発依存関係のインストール
+make bootstrap   # 完全な開発環境セットアップ
+```
 
-## トラブルシューティング
+### テスト
+```bash
+make test        # 全テスト実行
+make test-unit   # ユニットテストのみ
+make test-int    # 統合テストのみ
+make test-cov    # カバレッジ付きテスト
+make test-fast   # 高速テスト（fail-fast）
+```
 
-### よくある問題
+### コード品質
+```bash
+make format      # コードフォーマット
+make lint        # リント実行
+make type-check  # 型チェック
+make security    # セキュリティチェック
+```
 
-1. **起動しない場合**
-   - Windows Defenderの除外設定を確認
-   - 管理者権限で実行
-   - イベントビューアーでエラーログを確認
+### ワークフロー
+```bash
+make check       # 全品質チェック
+make fix         # 自動修正
+make ci          # CI相当の実行
+```
 
-2. **検索結果が表示されない場合**
-   - インデックス作成の完了を確認
-   - 検索対象フォルダの設定を確認
-   - ファイル形式の対応状況を確認
+### パッケージ管理
+```bash
+make add PACKAGE=requests          # パッケージ追加
+make add-dev PACKAGE=pytest       # 開発依存関係追加
+make remove PACKAGE=requests      # パッケージ削除
+```
 
-3. **パフォーマンスが遅い場合**
-   - 利用可能メモリを確認
-   - 検索対象ファイル数を制限
-   - キャッシュ設定を調整
+## 🏗️ アーキテクチャ
 
-## 貢献
+### 技術スタック
+- **パッケージ管理**: [uv](https://docs.astral.sh/uv/) - 高速なPythonパッケージマネージャー
+- **ビルドシステム**: [Hatchling](https://hatch.pypa.io/) - モダンなPythonビルドバックエンド
+- **GUI**: PySide6 - クロスプラットフォームデスクトップUI
+- **検索**: Whoosh + sentence-transformers - ハイブリッド検索
+- **コード品質**: Ruff + MyPy - 高速リント・型チェック
 
-プロジェクトへの貢献を歓迎します：
+### プロジェクト構造
+```
+DocMind/
+├── src/                    # ソースコード
+│   ├── core/              # コアロジック
+│   ├── gui/               # GUI コンポーネント
+│   ├── data/              # データ層
+│   └── utils/             # ユーティリティ
+├── tests/                 # テストコード
+│   ├── unit/              # ユニットテスト
+│   ├── integration/       # 統合テスト
+│   └── performance/       # パフォーマンステスト
+├── pyproject.toml         # プロジェクト設定
+├── uv.lock               # 依存関係ロック
+└── Makefile              # 開発コマンド
+```
 
-1. Issueを作成して問題を報告
-2. Pull Requestで改善を提案
-3. ドキュメントの改善
-4. テストケースの追加
+## 🔧 開発環境
 
-## ライセンス
+### uv を使った開発
+このプロジェクトは[uv](https://docs.astral.sh/uv/)を使用してパッケージ管理を行います。
 
-MIT License - 詳細はLICENSEファイルを参照してください。
+```bash
+# 仮想環境の作成と依存関係インストール
+uv sync
 
-## サポート
+# 開発依存関係を含むインストール
+uv sync --extra dev
 
-- **ドキュメント**: `installer/docs/` ディレクトリ内のマニュアルを参照
-- **Issue報告**: GitHubのIssueページで問題を報告
-- **ディスカッション**: GitHubのDiscussionsで質問や提案を投稿
+# パッケージの追加
+uv add requests
+
+# 開発依存関係の追加
+uv add --dev pytest
+
+# スクリプトの実行
+uv run python main.py
+uv run pytest
+```
+
+### 設定ファイル
+- `pyproject.toml`: プロジェクト設定、依存関係、ツール設定
+- `uv.lock`: 依存関係のロックファイル
+- `.uvignore`: uvが無視するファイル・ディレクトリ
+
+## 🧪 テスト
+
+### テスト実行
+```bash
+# 全テスト
+make test
+
+# 特定のテストマーカー
+uv run pytest -m unit        # ユニットテストのみ
+uv run pytest -m integration # 統合テストのみ
+uv run pytest -m "not slow"  # 高速テストのみ
+```
+
+### カバレッジ
+```bash
+make test-cov
+# または
+uv run pytest --cov=src --cov-report=html
+```
+
+## 📦 ビルドとリリース
+
+### パッケージビルド
+```bash
+make build
+# または
+uv build
+```
+
+### リリース
+GitHubでタグを作成すると、自動的にリリースが作成されます：
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+## 🤝 貢献
+
+1. フォークを作成
+2. フィーチャーブランチを作成: `git checkout -b feature/amazing-feature`
+3. 変更をコミット: `git commit -m 'Add amazing feature'`
+4. ブランチにプッシュ: `git push origin feature/amazing-feature`
+5. プルリクエストを作成
+
+### 開発ガイドライン
+- コードは`make check`を通すこと
+- テストは`make test`を通すこと
+- コミット前に`make fix`で自動修正を実行
+
+## 📄 ライセンス
+
+MIT License - 詳細は[LICENSE](LICENSE)ファイルを参照してください。
+
+## 🆘 サポート
+
+- **Issue報告**: [GitHub Issues](https://github.com/docmind/docmind/issues)
+- **ディスカッション**: [GitHub Discussions](https://github.com/docmind/docmind/discussions)
+- **ドキュメント**: [Wiki](https://github.com/docmind/docmind/wiki)

@@ -6,7 +6,6 @@ DocMind ステータス管理マネージャー
 ステータスメッセージ、システム情報、進捗状況の統合管理を提供します。
 """
 
-
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QLabel, QMainWindow, QProgressBar, QStatusBar
 

@@ -1,88 +1,143 @@
-# DocMind プロジェクト管理用Makefile
+# DocMind Makefile - uv最適化版
 
-.PHONY: help install test test-unit test-integration test-performance test-gui clean lint format
+.PHONY: help install test lint format type-check security clean build ci dev sync
 
 # デフォルトターゲット
 help:
-	@echo "DocMind プロジェクト管理コマンド"
-	@echo "================================"
-	@echo "install          - 依存関係のインストール"
-	@echo "test             - 全テスト実行"
-	@echo "test-unit        - ユニットテスト実行"
-	@echo "test-integration - 統合テスト実行"
-	@echo "test-performance - パフォーマンステスト実行"
-	@echo "test-gui         - GUIテスト実行"
-	@echo "lint             - コード品質チェック"
-	@echo "format           - コード自動整形"
-	@echo "clean            - 一時ファイル削除"
+	@echo "DocMind Development Commands (uv-optimized)"
+	@echo ""
+	@echo "Setup:"
+	@echo "  sync        Sync dependencies with uv"
+	@echo "  install     Install project in development mode"
+	@echo "  dev         Install with dev dependencies"
+	@echo ""
+	@echo "Testing:"
+	@echo "  test        Run all tests"
+	@echo "  test-unit   Run unit tests only"
+	@echo "  test-int    Run integration tests only"
+	@echo "  test-cov    Run tests with coverage report"
+	@echo "  test-fast   Run tests with fail-fast"
+	@echo ""
+	@echo "Code Quality:"
+	@echo "  format      Format code with ruff"
+	@echo "  lint        Lint code with ruff"
+	@echo "  type-check  Type check with mypy"
+	@echo "  security    Run security checks"
+	@echo ""
+	@echo "Workflows:"
+	@echo "  check       Run all quality checks"
+	@echo "  fix         Auto-fix code issues"
+	@echo "  ci          Run full CI pipeline"
+	@echo ""
+	@echo "Build & Deploy:"
+	@echo "  build       Build package"
+	@echo "  clean       Clean build artifacts"
+	@echo "  reset       Reset environment"
 
-# 仮想環境の確認
-check-venv:
-	@if [ -z "$$VIRTUAL_ENV" ]; then \
-		echo "❌ 仮想環境がアクティベートされていません"; \
-		echo "以下のコマンドで仮想環境をアクティベートしてください:"; \
-		echo "source venv/bin/activate"; \
-		exit 1; \
-	fi
+# セットアップ
+sync:
+	uv sync
 
-# 依存関係のインストール
-install: check-venv
-	@echo "📦 依存関係をインストール中..."
-	pip install --upgrade pip
-	pip install -e ."[build,dev]"
-	pip install pytest-qt pytest-benchmark pytest-cov ruff black isort
+install: sync
+	uv pip install -e .
 
-# 全テスト実行
-test: check-venv
-	@echo "🧪 全テスト実行中..."
-	python scripts/run_tests.py
+dev:
+	uv sync --extra dev --extra security
 
-# ユニットテスト実行
-test-unit: check-venv
-	@echo "🔬 ユニットテスト実行中..."
-	python scripts/run_tests.py unit
+# テスト
+test:
+	uv run pytest
 
-# 統合テスト実行
-test-integration: check-venv
-	@echo "🔗 統合テスト実行中..."
-	python scripts/run_tests.py integration
+test-unit:
+	uv run pytest tests/unit -v
 
-# パフォーマンステスト実行
-test-performance: check-venv
-	@echo "⚡ パフォーマンステスト実行中..."
-	python scripts/run_tests.py performance
+test-int:
+	uv run pytest tests/integration -v
 
-# GUIテスト実行
-test-gui: check-venv
-	@echo "🖥️ GUIテスト実行中..."
-	python scripts/run_tests.py gui
+test-cov:
+	uv run pytest --cov=src --cov-report=term-missing --cov-report=html
 
-# コード品質チェック
-lint: check-venv
-	@echo "🔍 コード品質チェック中..."
-	ruff check src/ tests/
-	black --check src/ tests/
-	isort --check-only src/ tests/
+test-fast:
+	uv run pytest -x --ff --tb=short
 
-# コード自動整形
-format: check-venv
-	@echo "✨ コード自動整形中..."
-	black src/ tests/
-	isort src/ tests/
-	ruff check --fix src/ tests/
+# コード品質
+format:
+	uv run ruff format .
 
-# 一時ファイル削除
+format-check:
+	uv run ruff format --check .
+
+lint:
+	uv run ruff check .
+
+lint-fix:
+	uv run ruff check --fix .
+
+type-check:
+	uv run mypy src tests
+
+# セキュリティ
+security:
+	uv run bandit -r src/
+	uv run safety check
+
+# ワークフロー
+check: format-check lint type-check
+
+fix: format lint-fix
+
+ci: check security test-cov
+
+# ビルド・クリーンアップ
+build:
+	uv build
+
 clean:
-	@echo "🧹 一時ファイル削除中..."
+	rm -rf build/ dist/ *.egg-info/ .coverage htmlcov/ .pytest_cache/ .mypy_cache/ .ruff_cache/
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name ".coverage" -delete 2>/dev/null || true
-	find . -type f -name "coverage.xml" -delete 2>/dev/null || true
-	@echo "✅ クリーンアップ完了"
 
-# 開発環境セットアップ
-setup: check-venv install
-	@echo "🚀 開発環境セットアップ完了"
-	@echo "以下のコマンドでテストを実行できます:"
-	@echo "make test"
+# 環境管理
+reset: clean
+	rm -rf .venv/
+	uv sync --extra dev
+
+# 開発用ショートカット
+run:
+	uv run python main.py
+
+debug:
+	uv run python -m pdb main.py
+
+# パッケージ管理
+add:
+	@echo "Usage: make add PACKAGE=package_name"
+	@if [ -n "$(PACKAGE)" ]; then uv add $(PACKAGE); fi
+
+add-dev:
+	@echo "Usage: make add-dev PACKAGE=package_name"
+	@if [ -n "$(PACKAGE)" ]; then uv add --dev $(PACKAGE); fi
+
+remove:
+	@echo "Usage: make remove PACKAGE=package_name"
+	@if [ -n "$(PACKAGE)" ]; then uv remove $(PACKAGE); fi
+
+# 情報表示
+info:
+	@echo "=== uv Environment Info ==="
+	uv --version
+	uv python list
+	@echo ""
+	@echo "=== Project Info ==="
+	uv tree --depth 1
+	@echo ""
+	@echo "=== Virtual Environment ==="
+	uv venv --help | head -5
+
+# プロジェクト初期化（新規開発者向け）
+bootstrap: dev
+	@echo "=== DocMind Development Environment Setup Complete ==="
+	@echo "Next steps:"
+	@echo "  1. Run 'make test' to verify setup"
+	@echo "  2. Run 'make run' to start the application"
+	@echo "  3. See 'make help' for available commands"

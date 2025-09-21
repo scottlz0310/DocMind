@@ -34,14 +34,17 @@ class TestRunner:
         """ユニットテストを実行"""
 
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             str(self.test_dir),
-            "-m", "unit",
+            "-m",
+            "unit",
             "--cov=src",
             "--cov-report=html",
             "--cov-report=term-missing",
             "--cov-report=xml",
-            f"--junit-xml={self.results_dir}/unit_tests.xml"
+            f"--junit-xml={self.results_dir}/unit_tests.xml",
         ]
 
         if verbose:
@@ -57,17 +60,20 @@ class TestRunner:
             "execution_time": execution_time,
             "stdout": result.stdout,
             "stderr": result.stderr,
-            "return_code": result.returncode
+            "return_code": result.returncode,
         }
 
     def run_integration_tests(self, verbose: bool = True) -> dict[str, Any]:
         """統合テストを実行"""
 
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             str(self.test_dir),
-            "-m", "integration",
-            f"--junit-xml={self.results_dir}/integration_tests.xml"
+            "-m",
+            "integration",
+            f"--junit-xml={self.results_dir}/integration_tests.xml",
         ]
 
         if verbose:
@@ -83,18 +89,21 @@ class TestRunner:
             "execution_time": execution_time,
             "stdout": result.stdout,
             "stderr": result.stderr,
-            "return_code": result.returncode
+            "return_code": result.returncode,
         }
 
     def run_performance_tests(self, verbose: bool = True) -> dict[str, Any]:
         """パフォーマンステストを実行"""
 
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             str(self.test_dir),
-            "-m", "performance",
+            "-m",
+            "performance",
             "--tb=short",
-            f"--junit-xml={self.results_dir}/performance_tests.xml"
+            f"--junit-xml={self.results_dir}/performance_tests.xml",
         ]
 
         if verbose:
@@ -110,7 +119,7 @@ class TestRunner:
             "execution_time": execution_time,
             "stdout": result.stdout,
             "stderr": result.stderr,
-            "return_code": result.returncode
+            "return_code": result.returncode,
         }
 
     def run_gui_tests(self, verbose: bool = True) -> dict[str, Any]:
@@ -127,14 +136,17 @@ class TestRunner:
                 "stdout": "PySide6が利用できないためスキップ",
                 "stderr": "",
                 "return_code": 0,
-                "skipped": True
+                "skipped": True,
             }
 
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             str(self.test_dir),
-            "-m", "gui",
-            f"--junit-xml={self.results_dir}/gui_tests.xml"
+            "-m",
+            "gui",
+            f"--junit-xml={self.results_dir}/gui_tests.xml",
         ]
 
         if verbose:
@@ -150,20 +162,24 @@ class TestRunner:
             "execution_time": execution_time,
             "stdout": result.stdout,
             "stderr": result.stderr,
-            "return_code": result.returncode
+            "return_code": result.returncode,
         }
 
-    def run_all_tests(self, verbose: bool = True, skip_slow: bool = False) -> list[dict[str, Any]]:
+    def run_all_tests(
+        self, verbose: bool = True, skip_slow: bool = False
+    ) -> list[dict[str, Any]]:
         """すべてのテストを実行"""
 
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             str(self.test_dir),
             "--cov=src",
             "--cov-report=html",
             "--cov-report=term-missing",
             "--cov-report=xml",
-            f"--junit-xml={self.results_dir}/all_tests.xml"
+            f"--junit-xml={self.results_dir}/all_tests.xml",
         ]
 
         if verbose:
@@ -176,23 +192,30 @@ class TestRunner:
         result = subprocess.run(cmd, capture_output=True, text=True)
         execution_time = time.time() - start_time
 
-        return [{
-            "type": "all",
-            "success": result.returncode == 0,
-            "execution_time": execution_time,
-            "stdout": result.stdout,
-            "stderr": result.stderr,
-            "return_code": result.returncode
-        }]
+        return [
+            {
+                "type": "all",
+                "success": result.returncode == 0,
+                "execution_time": execution_time,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "return_code": result.returncode,
+            }
+        ]
 
-    def run_specific_tests(self, test_pattern: str, verbose: bool = True) -> dict[str, Any]:
+    def run_specific_tests(
+        self, test_pattern: str, verbose: bool = True
+    ) -> dict[str, Any]:
         """特定のテストパターンを実行"""
 
         cmd = [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             str(self.test_dir),
-            "-k", test_pattern,
-            f"--junit-xml={self.results_dir}/specific_tests.xml"
+            "-k",
+            test_pattern,
+            f"--junit-xml={self.results_dir}/specific_tests.xml",
         ]
 
         if verbose:
@@ -209,7 +232,7 @@ class TestRunner:
             "execution_time": execution_time,
             "stdout": result.stdout,
             "stderr": result.stderr,
-            "return_code": result.returncode
+            "return_code": result.returncode,
         }
 
     def generate_coverage_report(self) -> bool:
@@ -242,13 +265,12 @@ class TestRunner:
             "successful_tests": sum(1 for r in results if r["success"]),
             "failed_tests": sum(1 for r in results if not r["success"]),
             "total_execution_time": sum(r["execution_time"] for r in results),
-            "results": results
+            "results": results,
         }
 
         summary_file = self.results_dir / "test_summary.json"
         with open(summary_file, "w", encoding="utf-8") as f:
             json.dump(summary, f, indent=2, ensure_ascii=False)
-
 
     def print_summary(self, results: list[dict[str, Any]]) -> None:
         """テスト結果サマリーを表示"""
@@ -258,7 +280,6 @@ class TestRunner:
         total_tests - successful_tests
         sum(r["execution_time"] for r in results)
 
-
         for result in results:
             "✅" if result["success"] else "❌"
             result["type"].upper()
@@ -267,10 +288,8 @@ class TestRunner:
             if result.get("skipped"):
                 pass
             else:
-
                 if not result["success"] and result["stderr"]:
                     pass
-
 
         # カバレッジ情報の表示
         coverage_file = self.project_root / "coverage.xml"
@@ -292,26 +311,41 @@ def main():
   python run_tests.py --gui                    # GUIテストのみ実行
   python run_tests.py --pattern "search"       # 特定のパターンのテストを実行
   python run_tests.py --all --skip-slow        # 高速テストのみ実行
-        """
+        """,
     )
 
     # テストタイプオプション
     parser.add_argument("--all", action="store_true", help="すべてのテストを実行")
     parser.add_argument("--unit", action="store_true", help="ユニットテストを実行")
     parser.add_argument("--integration", action="store_true", help="統合テストを実行")
-    parser.add_argument("--performance", action="store_true", help="パフォーマンステストを実行")
+    parser.add_argument(
+        "--performance", action="store_true", help="パフォーマンステストを実行"
+    )
     parser.add_argument("--gui", action="store_true", help="GUIテストを実行")
     parser.add_argument("--pattern", type=str, help="特定のテストパターンを実行")
 
     # オプション
-    parser.add_argument("--skip-slow", action="store_true", help="時間のかかるテストをスキップ")
+    parser.add_argument(
+        "--skip-slow", action="store_true", help="時間のかかるテストをスキップ"
+    )
     parser.add_argument("--quiet", "-q", action="store_true", help="詳細出力を抑制")
-    parser.add_argument("--no-coverage", action="store_true", help="カバレッジレポートを生成しない")
+    parser.add_argument(
+        "--no-coverage", action="store_true", help="カバレッジレポートを生成しない"
+    )
 
     args = parser.parse_args()
 
     # 引数チェック
-    if not any([args.all, args.unit, args.integration, args.performance, args.gui, args.pattern]):
+    if not any(
+        [
+            args.all,
+            args.unit,
+            args.integration,
+            args.performance,
+            args.gui,
+            args.pattern,
+        ]
+    ):
         parser.print_help()
         sys.exit(1)
 

@@ -11,7 +11,7 @@ import sys
 import tempfile
 
 # プロジェクトルートをパスに追加
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
@@ -49,7 +49,9 @@ def test_folder_load_worker():
 
         def on_folder_loaded(path, subdirs):
             loaded_paths.append((path, subdirs))
-            logger.info(f"フォルダ読み込み: {path} -> {len(subdirs)}個のサブディレクトリ")
+            logger.info(
+                f"フォルダ読み込み: {path} -> {len(subdirs)}個のサブディレクトリ"
+            )
 
         def on_load_error(path, error):
             error_messages.append((path, error))
@@ -105,7 +107,9 @@ def test_async_operation_manager():
 
         def on_folder_loaded(path, subdirs):
             loaded_paths.append((path, subdirs))
-            logger.info(f"フォルダ読み込み: {path} -> {len(subdirs)}個のサブディレクトリ")
+            logger.info(
+                f"フォルダ読み込み: {path} -> {len(subdirs)}個のサブディレクトリ"
+            )
 
         def on_load_error(path, error):
             error_messages.append((path, error))
@@ -197,6 +201,7 @@ def main():
     except Exception as e:
         logger.error(f"❌ テスト失敗: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

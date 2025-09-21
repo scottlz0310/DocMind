@@ -59,10 +59,7 @@ def main():
         config = Config()
 
         # ログの設定
-        setup_logging(
-            level=config.get_log_level(),
-            log_file=config.get_log_file_path()
-        )
+        setup_logging(level=config.get_log_level(), log_file=config.get_log_file_path())
         logger = logging.getLogger(__name__)
         logger.info("DocMindアプリケーションを開始しています...")
 
@@ -102,6 +99,7 @@ def main():
         # メインウィンドウの作成と表示
         try:
             from src.gui.main_window import MainWindow
+
             main_window = MainWindow()
 
             # 更新マネージャーは将来の機能として保持
@@ -114,7 +112,7 @@ def main():
             _show_critical_error_dialog(
                 "GUI初期化エラー",
                 f"ユーザーインターフェースの初期化に失敗しました。\n\n詳細: {gui_error}",
-                app
+                app,
             )
             return 1
 
@@ -129,7 +127,7 @@ def main():
         logger.info("DocMindアプリケーションを終了しています...")
 
         # メインウィンドウの強制クリーンアップ（GUIスレッドをブロックしないように）
-        if 'main_window' in locals() and main_window:
+        if "main_window" in locals() and main_window:
             try:
                 # GUIコンポーネントを先にクリーンアップ
                 main_window._cleanup_all_components()
@@ -173,16 +171,14 @@ def main():
                 e,
                 "アプリケーション初期化",
                 "アプリケーションの起動に失敗しました。システム管理者にお問い合わせください。",
-                attempt_recovery=False
+                attempt_recovery=False,
             )
         except:
             pass
 
         # ユーザーにエラーダイアログを表示
         _show_critical_error_dialog(
-            "起動エラー",
-            f"DocMindの起動に失敗しました。\n\n{error_msg}",
-            app
+            "起動エラー", f"DocMindの起動に失敗しました。\n\n{error_msg}", app
         )
 
         return 1
@@ -202,7 +198,7 @@ def _ensure_directories_exist(data_dir: Path, logger: logging.Logger) -> None:
         data_dir / "models",
         data_dir / "whoosh_index",
         data_dir / "error_reports",
-        data_dir / "cache"
+        data_dir / "cache",
     ]
 
     for directory in directories:
@@ -230,6 +226,7 @@ def _setup_application_recovery_handlers(error_handler, logger: logging.Logger) 
             logger.info("設定エラーからの回復を試行中...")
             # デフォルト設定で再初期化を試行
             from src.utils.config import Config
+
             config = Config()
             config.reset_to_defaults()
             logger.info("設定をデフォルト値にリセットしました")
@@ -244,6 +241,7 @@ def _setup_application_recovery_handlers(error_handler, logger: logging.Logger) 
             logger.info("ファイルシステムエラーからの回復を試行中...")
             # 基本ディレクトリの再作成を試行
             from src.utils.config import Config
+
             config = Config()
             data_dir = Path(config.get_data_directory())
             _ensure_directories_exist(data_dir, logger)
@@ -254,7 +252,9 @@ def _setup_application_recovery_handlers(error_handler, logger: logging.Logger) 
             return False
 
     error_handler.register_recovery_handler(ConfigurationError, config_recovery_handler)
-    error_handler.register_recovery_handler(FileSystemError, filesystem_recovery_handler)
+    error_handler.register_recovery_handler(
+        FileSystemError, filesystem_recovery_handler
+    )
 
     logger.info("アプリケーション回復ハンドラーを設定しました")
 
@@ -277,14 +277,18 @@ def _perform_initial_health_check(logger: logging.Logger) -> None:
         logger.info(f"  - 失敗: {health['failed']}")
         logger.info(f"  - 全体的な健全性: {health['overall_health']}")
 
-        if health['overall_health'] != 'healthy':
-            logger.warning("一部のコンポーネントに問題があります。機能が制限される可能性があります。")
+        if health["overall_health"] != "healthy":
+            logger.warning(
+                "一部のコンポーネントに問題があります。機能が制限される可能性があります。"
+            )
 
     except Exception as e:
         logger.error(f"健全性チェックに失敗: {e}")
 
 
-def _show_critical_error_dialog(title: str, message: str, app: QApplication = None) -> None:
+def _show_critical_error_dialog(
+    title: str, message: str, app: QApplication = None
+) -> None:
     """
     重大なエラーダイアログを表示
 

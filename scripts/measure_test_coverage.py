@@ -14,9 +14,11 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
+
 def log_message(message, level="INFO"):
     """ログメッセージを出力"""
     datetime.now().strftime("%H:%M:%S")
+
 
 def check_coverage_tools():
     """カバレッジツールの確認・インストール"""
@@ -25,6 +27,7 @@ def check_coverage_tools():
     try:
         # coverageパッケージの確認
         import coverage
+
         log_message("✅ coverage パッケージ利用可能")
         return True
     except ImportError:
@@ -32,13 +35,17 @@ def check_coverage_tools():
         log_message("インストール中...")
 
         try:
-            subprocess.run([sys.executable, "-m", "pip", "install", "coverage"],
-                         check=True, capture_output=True)
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "coverage"],
+                check=True,
+                capture_output=True,
+            )
             log_message("✅ coverage パッケージインストール完了")
             return True
         except subprocess.CalledProcessError as e:
             log_message(f"❌ インストール失敗: {e}")
             return False
+
 
 def find_test_files():
     """テストファイルを検索"""
@@ -59,6 +66,7 @@ def find_test_files():
         log_message(f"  - {rel_path}")
 
     return test_files
+
 
 def analyze_source_files():
     """ソースファイルを分析"""
@@ -84,7 +92,7 @@ def analyze_source_files():
         "managers": [],
         "controllers": [],
         "dialogs": [],
-        "other": []
+        "other": [],
     }
 
     for py_file in python_files:
@@ -110,6 +118,7 @@ def analyze_source_files():
             log_message(f"  {component}: {len(files)}ファイル")
 
     return python_files, components
+
 
 def create_basic_tests():
     """基本的なテストファイルを作成"""
@@ -175,6 +184,7 @@ if __name__ == "__main__":
 
     return [import_test_file]
 
+
 def run_coverage_analysis():
     """カバレッジ分析を実行"""
     log_message("=== カバレッジ分析実行 ===")
@@ -197,9 +207,14 @@ def run_coverage_analysis():
 
         # coverage runコマンドを構築
         coverage_cmd = [
-            sys.executable, "-m", "coverage", "run",
-            "--source", str(project_root / "src"),
-            "--omit", "*/test*,*/__pycache__/*"
+            sys.executable,
+            "-m",
+            "coverage",
+            "run",
+            "--source",
+            str(project_root / "src"),
+            "--omit",
+            "*/test*,*/__pycache__/*",
         ]
 
         # 最初のテストファイルを実行
@@ -209,10 +224,7 @@ def run_coverage_analysis():
         log_message(f"実行コマンド: {' '.join(coverage_cmd)}")
 
         result = subprocess.run(
-            coverage_cmd,
-            cwd=str(project_root),
-            capture_output=True,
-            text=True
+            coverage_cmd, cwd=str(project_root), capture_output=True, text=True
         )
 
         if result.returncode == 0:
@@ -223,7 +235,7 @@ def run_coverage_analysis():
                 [sys.executable, "-m", "coverage", "report"],
                 cwd=str(project_root),
                 capture_output=True,
-                text=True
+                text=True,
             )
 
             if report_result.returncode == 0:
@@ -240,6 +252,7 @@ def run_coverage_analysis():
         log_message(f"❌ カバレッジ分析エラー: {e}")
         return None
 
+
 def analyze_coverage_gaps():
     """カバレッジギャップを分析"""
     log_message("=== カバレッジギャップ分析 ===")
@@ -252,13 +265,13 @@ def analyze_coverage_gaps():
         "folder_tree/event_handling/",
         "folder_tree/state_management/",
         "folder_tree/ui_management/",
-        "folder_tree/performance_helpers.py"
+        "folder_tree/performance_helpers.py",
     ]
 
     coverage_gaps = {
         "untested_files": [],
         "phase4_components": [],
-        "critical_components": []
+        "critical_components": [],
     }
 
     src_dir = project_root / "src"
@@ -274,20 +287,22 @@ def analyze_coverage_gaps():
                     coverage_gaps["phase4_components"].append(py_file)
 
     # 重要コンポーネントの特定
-    critical_files = [
-        "gui/main_window.py",
-        "gui/search_interface.py"
-    ]
+    critical_files = ["gui/main_window.py", "gui/search_interface.py"]
 
     for critical_file in critical_files:
         full_path = src_dir / critical_file
         if full_path.exists():
             coverage_gaps["critical_components"].append(full_path)
 
-    log_message(f"Phase4コンポーネント: {len(coverage_gaps['phase4_components'])}ファイル")
-    log_message(f"重要コンポーネント: {len(coverage_gaps['critical_components'])}ファイル")
+    log_message(
+        f"Phase4コンポーネント: {len(coverage_gaps['phase4_components'])}ファイル"
+    )
+    log_message(
+        f"重要コンポーネント: {len(coverage_gaps['critical_components'])}ファイル"
+    )
 
     return coverage_gaps
+
 
 def generate_coverage_report():
     """カバレッジレポートを生成"""
@@ -297,7 +312,7 @@ def generate_coverage_report():
 
 ## 📊 実行サマリー
 
-**測定日時**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**測定日時**: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 **測定者**: AI Assistant
 
 ## 🔍 現在のテスト状況
@@ -401,11 +416,12 @@ def generate_coverage_report():
 
     # レポートファイル保存
     report_file = project_root / "TEST_COVERAGE_REPORT.md"
-    with open(report_file, 'w', encoding='utf-8') as f:
+    with open(report_file, "w", encoding="utf-8") as f:
         f.write(report_content)
 
     log_message(f"✅ カバレッジレポート作成完了: {report_file}")
     return str(report_file)
+
 
 def main():
     """メイン実行関数"""
@@ -414,29 +430,29 @@ def main():
 
     try:
         # 1. カバレッジツール確認
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         if not check_coverage_tools():
             log_message("❌ カバレッジツールの準備に失敗しました")
             return False
 
         # 2. ソースファイル分析
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         python_files, components = analyze_source_files()
 
         # 3. テストファイル検索・作成
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         test_files = find_test_files()
         if not test_files:
             test_files = create_basic_tests()
 
         # 4. カバレッジレポート生成
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         report_file = generate_coverage_report()
 
         # 5. 結果サマリー
-        log_message("\n" + "="*50)
+        log_message("\n" + "=" * 50)
         log_message("🎯 テストカバレッジ測定完了")
-        log_message("="*50)
+        log_message("=" * 50)
 
         log_message(f"✅ Pythonファイル: {len(python_files)}個")
         log_message(f"✅ テストファイル: {len(test_files)}個")
@@ -453,6 +469,7 @@ def main():
     except Exception as e:
         log_message(f"テストカバレッジ測定中にエラー発生: {e}", "ERROR")
         return False
+
 
 if __name__ == "__main__":
     success = main()

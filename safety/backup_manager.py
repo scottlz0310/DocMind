@@ -31,7 +31,7 @@ class BackupManager:
                 "src/gui/main_window.py",
                 "src/gui/search_interface.py",
                 "REFACTORING_STATUS.md",
-                "PHASE4_PROGRESS_TRACKER.md"
+                "PHASE4_PROGRESS_TRACKER.md",
             ]
 
             for path in important_paths:
@@ -41,10 +41,12 @@ class BackupManager:
 
         return str(backup_file)
 
+
 def main():
     """バックアップ作成のメイン関数"""
     manager = BackupManager()
     manager.create_backup()
+
 
 if __name__ == "__main__":
     main()
