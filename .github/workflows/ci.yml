@@ -6,22 +6,32 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  UV_CACHE_DIR: /tmp/.uv-cache
+
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.11, 3.12, 3.13]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        enable-cache: true
+        cache-dependency-glob: "**/pyproject.toml"
 
-    - name: Setup Qt dependencies
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Setup Qt dependencies (Linux)
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y xvfb libegl1 libxkbcommon-x11-0 libxcb-xinerama0
@@ -29,30 +39,61 @@ jobs:
         sleep 3
 
     - name: Install dependencies
+      run: uv sync --extra dev --extra security
+
+    - name: Run linting
       run: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev,security]
-        pip install pytest-cov pytest-benchmark pytest-xdist
+        uv run ruff check .
+        uv run ruff format --check .
+
+    - name: Run type checking
+      run: uv run mypy src tests
+
+    - name: Run security checks
+      run: |
+        uv run bandit -r src/
+        uv run safety check
 
     - name: Run tests
-      run: |
-        pytest tests/ -v --cov=src --cov-report=xml --maxfail=3 --timeout=120 --tb=short -x
-      timeout-minutes: 5
+      run: uv run pytest -n auto --maxfail=3 --timeout=120 --tb=short
+      timeout-minutes: 15
       env:
         DISPLAY: :99
         QT_QPA_PLATFORM: offscreen
         QT_LOGGING_RULES: "*.debug=false"
 
-    - name: Code quality check
-      run: |
-        bandit -r src/ -c .bandit || true
-        safety check --policy-file .safety-policy.yml || true
-        ruff check src/ || true
-
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
-      if: matrix.python-version == '3.11'
+      if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
-        slug: scottlz0310/DocMind
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        enable-cache: true
+        cache-dependency-glob: "**/pyproject.toml"
+
+    - name: Set up Python
+      run: uv python install 3.11
+
+    - name: Install build dependencies
+      run: uv sync --extra build
+
+    - name: Build package
+      run: uv build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/

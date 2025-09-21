@@ -96,7 +96,7 @@ include = [
 [tool.hatch.metadata]
 allow-direct-references = true
 
-# uvスクリプト設定
+# uv設定
 [tool.uv]
 dev-dependencies = [
     "docmind[dev]"
@@ -105,36 +105,12 @@ dev-dependencies = [
 [tool.uv.workspace]
 members = ["."]
 
-# 開発用スクリプト
-[tool.uv.scripts]
-# テスト関連
-test = "pytest"
-test-unit = "pytest tests/unit -m unit"
-test-integration = "pytest tests/integration -m integration"
-test-cov = "pytest --cov=src --cov-report=term-missing"
-test-fast = "pytest -x --ff"
-# コード品質
-fmt = "ruff format ."
-fmt-check = "ruff format --check ."
-lint = "ruff check ."
-lint-fix = "ruff check --fix ."
-type-check = "mypy src tests"
-# セキュリティ
-security = "bandit -r src"
-safety-check = "safety check"
-# 統合コマンド
-check = ["fmt-check", "lint", "type-check"]
-fix = ["fmt", "lint-fix"]
-ci = ["check", "test-cov", "security"]
-# ビルド
-build = "python -m build"
-clean = "rm -rf build/ dist/ *.egg-info/ .coverage htmlcov/ .pytest_cache/ .mypy_cache/ .ruff_cache/"
-
 # pytest設定
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = [
     "-v",
+    "-n", "auto",
     "--strict-markers",
     "--strict-config",
     "--tb=short",
