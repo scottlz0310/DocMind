@@ -9,4 +9,4 @@ from .action_manager import ActionManager
 from .event_handler_manager import EventHandlerManager
 from .signal_manager import SignalManager
 
-__all__ = ["EventHandlerManager", "SignalManager", "ActionManager"]
+__all__ = ["ActionManager", "EventHandlerManager", "SignalManager"]

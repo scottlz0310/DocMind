@@ -101,9 +101,7 @@ class FolderLoadWorker(QObject):
                 self.load_error.emit(path, f"OSエラー: {e}")
         except Exception as e:
             if not self.should_stop:
-                self.load_error.emit(
-                    path, f"予期しないエラー: {type(e).__name__}: {str(e)}"
-                )
+                self.load_error.emit(path, f"予期しないエラー: {type(e).__name__}: {e!s}")
 
     def _check_memory_limits(self, path: str, depth: int) -> bool:
         """
@@ -119,14 +117,14 @@ class FolderLoadWorker(QObject):
         try:
             items = os.listdir(path)
 
-            # ファイル数制限（メモリ保護）
+            # ファイル数制限(メモリ保護)
             if len(items) > 10000:
-                self.load_error.emit(path, "ファイル数が多すぎます（10,000件以上）")
+                self.load_error.emit(path, "ファイル数が多すぎます(10,000件以上)")
                 return False
 
             # 深さ制限によるメモリ保護
             if depth > 5:
-                self.load_error.emit(path, "フォルダの深さが深すぎます（5レベル以上）")
+                self.load_error.emit(path, "フォルダの深さが深すぎます(5レベル以上)")
                 return False
 
             return True

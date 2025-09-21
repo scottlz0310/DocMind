@@ -4,9 +4,9 @@
 実際のファイル存在チェックを回避したテスト専用のモデルクラスを提供します。
 """
 
-import hashlib
 from dataclasses import dataclass, field
 from datetime import datetime
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -36,7 +36,7 @@ class MockDocument:
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
-        """初期化後の処理（ファイル存在チェックなし）"""
+        """初期化後の処理(ファイル存在チェックなし)"""
         self._validate_fields_without_file_check()
         self._generate_content_hash()
         self._set_default_title()
@@ -85,7 +85,7 @@ class MockDocument:
             return summary + "..."
 
     def is_modified_since_indexing(self) -> bool:
-        """テスト用：常にFalseを返す"""
+        """テスト用:常にFalseを返す"""
         return False
 
 

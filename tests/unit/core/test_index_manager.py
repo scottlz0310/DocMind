@@ -5,10 +5,10 @@ IndexManager強化テスト
 Phase7強化版の内容を統合済み。
 """
 
+from pathlib import Path
 import shutil
 import tempfile
 import time
-from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -29,7 +29,7 @@ class TestIndexManager:
 
     @pytest.fixture
     def large_document_set(self):
-        """大規模ドキュメントセット（モック）"""
+        """大規模ドキュメントセット(モック)"""
         documents = []
         for i in range(1000):
             doc = Mock()
@@ -116,13 +116,11 @@ class TestIndexManager:
         # 新しいドキュメントを準備
         new_documents = []
         for i in range(50):
-            new_documents.append(
-                {
-                    "path": f"/new/doc_{i}.txt",
-                    "content": f"新規ドキュメント{i}の内容",
-                    "metadata": {"file_type": "txt"},
-                }
-            )
+            new_documents.append({
+                "path": f"/new/doc_{i}.txt",
+                "content": f"新規ドキュメント{i}の内容",
+                "metadata": {"file_type": "txt"},
+            })
 
         start_time = time.time()
 
@@ -157,7 +155,7 @@ class TestIndexManager:
         """インデックス最適化パフォーマンステスト"""
         manager = existing_index
 
-        # optimize_indexメソッドをテスト（実装済み）
+        # optimize_indexメソッドをテスト(実装済み)
         start_time = time.time()
         manager.optimize_index()
         end_time = time.time()
@@ -193,7 +191,7 @@ class TestIndexManager:
         # インデックスを閉じる
         manager.close()
 
-        # インデックスファイルを完全に破損（バイナリデータで上書き）
+        # インデックスファイルを完全に破損(バイナリデータで上書き)
         import shutil
 
         # インデックスディレクトリを削除して無効なファイルで置き換え
@@ -250,7 +248,7 @@ class TestIndexManager:
         """インデックス統計情報精度テスト"""
         manager = existing_index
 
-        # get_index_statsメソッドをテスト（実装済み）
+        # get_index_statsメソッドをテスト(実装済み)
         stats = manager.get_index_stats()
 
         # 統計情報の検証

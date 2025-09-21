@@ -45,9 +45,7 @@ class SearchOptionsManager(QObject):
 
             # 日付範囲
             if "date_from" in options and "date_to" in options:
-                self._apply_date_range(
-                    options["date_from"], options["date_to"], advanced_options
-                )
+                self._apply_date_range(options["date_from"], options["date_to"], advanced_options)
 
             # 結果数制限
             if "limit" in options:

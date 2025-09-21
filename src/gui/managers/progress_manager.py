@@ -34,15 +34,13 @@ class ProgressManager:
         self.progress_hide_timer.setSingleShot(True)
         self.progress_hide_timer.timeout.connect(self._actually_hide_progress)
 
-    def show_progress(
-        self, message: str, value: int, current: int = 0, total: int = 0
-    ) -> None:
+    def show_progress(self, message: str, value: int, current: int = 0, total: int = 0) -> None:
         """
         進捗バーを表示し、メッセージと値を設定
 
         Args:
             message: 表示するメッセージ
-            value: 進捗値（0-100）
+            value: 進捗値(0-100)
             current: 現在の処理数
             total: 総処理数
         """
@@ -129,9 +127,7 @@ class ProgressManager:
         else:
             return {"border": "#6c757d", "background": "#f8f9fa", "chunk": "#6c757d"}
 
-    def _create_progress_tooltip(
-        self, message: str, value: int, current: int, total: int
-    ) -> str:
+    def _create_progress_tooltip(self, message: str, value: int, current: int, total: int) -> str:
         """
         進捗ツールチップを作成
 
@@ -156,7 +152,7 @@ class ProgressManager:
 
     def hide_progress(self, completion_message: str = "") -> None:
         """
-        進捗バーを非表示にする（遅延実行）
+        進捗バーを非表示にする(遅延実行)
 
         Args:
             completion_message: 完了メッセージ

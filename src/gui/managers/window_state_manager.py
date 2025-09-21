@@ -49,7 +49,7 @@ class WindowStateManager(QObject, LoggerMixin):
             # 保存された設定を復元
             self.restore_window_state()
 
-            # ウィンドウを画面中央に配置（初回起動時）
+            # ウィンドウを画面中央に配置(初回起動時)
             if not self.settings.contains("geometry"):
                 self._center_window()
 
@@ -63,9 +63,7 @@ class WindowStateManager(QObject, LoggerMixin):
         """キーボードショートカットを設定"""
         try:
             # Escキーでプレビューペインをクリア
-            self.shortcuts["clear_preview"] = QShortcut(
-                QKeySequence("Escape"), self.main_window
-            )
+            self.shortcuts["clear_preview"] = QShortcut(QKeySequence("Escape"), self.main_window)
             self.shortcuts["clear_preview"].activated.connect(self._clear_preview)
 
             # F5キーでリフレッシュ
@@ -83,26 +81,18 @@ class WindowStateManager(QObject, LoggerMixin):
         try:
             # ウィンドウのアクセシブル名と説明を設定
             self.main_window.setAccessibleName("DocMind メインウィンドウ")
-            self.main_window.setAccessibleDescription(
-                "ローカルドキュメント検索アプリケーションのメインウィンドウ"
-            )
+            self.main_window.setAccessibleDescription("ローカルドキュメント検索アプリケーションのメインウィンドウ")
 
             # 各ペインにアクセシブル名を設定
             if hasattr(self.main_window, "folder_tree_container"):
-                self.main_window.folder_tree_container.setAccessibleName(
-                    "フォルダツリーペイン"
-                )
+                self.main_window.folder_tree_container.setAccessibleName("フォルダツリーペイン")
                 self.main_window.folder_tree_container.setAccessibleDescription(
                     "検索対象フォルダの階層構造を表示します"
                 )
 
             if hasattr(self.main_window, "search_results_widget"):
-                self.main_window.search_results_widget.setAccessibleName(
-                    "検索結果ペイン"
-                )
-                self.main_window.search_results_widget.setAccessibleDescription(
-                    "検索結果の一覧を表示します"
-                )
+                self.main_window.search_results_widget.setAccessibleName("検索結果ペイン")
+                self.main_window.search_results_widget.setAccessibleDescription("検索結果の一覧を表示します")
 
             if hasattr(self.main_window, "preview_widget"):
                 self.main_window.preview_widget.setAccessibleName("プレビューペイン")
@@ -110,7 +100,7 @@ class WindowStateManager(QObject, LoggerMixin):
                     "選択されたドキュメントの内容をプレビュー表示します"
                 )
 
-            # タブオーダーの設定（キーボードナビゲーション用）
+            # タブオーダーの設定(キーボードナビゲーション用)
             if all(
                 hasattr(self.main_window, attr)
                 for attr in [
@@ -158,7 +148,7 @@ class WindowStateManager(QObject, LoggerMixin):
             if window_state:
                 self.main_window.restoreState(window_state)
 
-            # サイズと位置を復元（フォールバック）
+            # サイズと位置を復元(フォールバック)
             size = self.settings.value("size", QSize(1200, 800))
             position = self.settings.value("position")
 
@@ -180,12 +170,12 @@ class WindowStateManager(QObject, LoggerMixin):
         UIテーマを適用
 
         Args:
-            theme: テーマ名（'light', 'dark', 'system'）
+            theme: テーマ名('light', 'dark', 'system')
         """
         try:
             if theme == "dark":
-                # ダークテーマの適用（将来の拡張用）
-                self.logger.info("ダークテーマが選択されました（実装予定）")
+                # ダークテーマの適用(将来の拡張用)
+                self.logger.info("ダークテーマが選択されました(実装予定)")
             elif theme == "light":
                 # ライトテーマの適用
                 self.logger.info("ライトテーマが適用されました")
@@ -219,9 +209,7 @@ class WindowStateManager(QObject, LoggerMixin):
                 self.settings.setValue("font_family", font_family)
                 self.settings.setValue("font_size", font_size)
 
-                self.logger.info(
-                    f"フォント設定を適用しました: {font_family}, {font_size}pt"
-                )
+                self.logger.info(f"フォント設定を適用しました: {font_family}, {font_size}pt")
 
         except Exception as e:
             self.logger.error(f"フォント設定適用中にエラーが発生: {e}")
@@ -280,6 +268,4 @@ class WindowStateManager(QObject, LoggerMixin):
             self.logger.debug("ウィンドウ状態管理マネージャーをクリーンアップしました")
 
         except Exception as e:
-            self.logger.error(
-                f"ウィンドウ状態管理マネージャーのクリーンアップ中にエラー: {e}"
-            )
+            self.logger.error(f"ウィンドウ状態管理マネージャーのクリーンアップ中にエラー: {e}")

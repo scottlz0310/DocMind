@@ -5,13 +5,13 @@
 メモリ使用量の監視、制限、最適化を行います。
 """
 
+from collections.abc import Callable
+from dataclasses import dataclass
+from enum import Enum
 import gc
 import logging
 import threading
 import time
-from collections.abc import Callable
-from dataclasses import dataclass
-from enum import Enum
 from typing import Any
 
 import psutil
@@ -61,7 +61,7 @@ class MemoryMonitor(LoggerMixin):
         メモリモニターを初期化
 
         Args:
-            check_interval: 監視間隔（秒）
+            check_interval: 監視間隔(秒)
         """
         self.check_interval = check_interval
         self._monitoring = False
@@ -69,7 +69,7 @@ class MemoryMonitor(LoggerMixin):
         self._callbacks: list[Callable[[MemoryStats], None]] = []
         self._lock = threading.RLock()
 
-        # メモリ圧迫レベルの閾値（パーセント）
+        # メモリ圧迫レベルの閾値(パーセント)
         self.thresholds = {
             MemoryPressureLevel.LOW: 60,
             MemoryPressureLevel.MEDIUM: 75,
@@ -93,9 +93,7 @@ class MemoryMonitor(LoggerMixin):
                 return
 
             self._monitoring = True
-            self._monitor_thread = threading.Thread(
-                target=self._monitor_loop, daemon=True
-            )
+            self._monitor_thread = threading.Thread(target=self._monitor_loop, daemon=True)
             self._monitor_thread.start()
 
             self.logger.info("メモリ監視を開始しました")
@@ -199,7 +197,7 @@ class MemoryManager(LoggerMixin):
         メモリマネージャーを初期化
 
         Args:
-            max_memory_mb: 最大メモリ使用量（MB）、Noneの場合は自動設定
+            max_memory_mb: 最大メモリ使用量(MB)、Noneの場合は自動設定
         """
         self.monitor = MemoryMonitor()
 
@@ -221,9 +219,7 @@ class MemoryManager(LoggerMixin):
         # メモリ監視コールバックを登録
         self.monitor.add_callback(self._on_memory_stats_updated)
 
-        self.logger.info(
-            f"メモリマネージャーを初期化: 最大メモリ使用量={self.max_memory_mb:.1f}MB"
-        )
+        self.logger.info(f"メモリマネージャーを初期化: 最大メモリ使用量={self.max_memory_mb:.1f}MB")
 
     def start(self) -> None:
         """メモリ管理を開始"""
@@ -264,9 +260,7 @@ class MemoryManager(LoggerMixin):
 
         # 統計情報をログ出力
         total_collected = sum(collected.values())
-        self.logger.info(
-            f"ガベージコレクション完了: {total_collected}オブジェクトを回収"
-        )
+        self.logger.info(f"ガベージコレクション完了: {total_collected}オブジェクトを回収")
 
         return collected
 
@@ -293,7 +287,7 @@ class MemoryManager(LoggerMixin):
         return stats.process_memory_mb <= self.max_memory_mb
 
     def get_memory_usage_ratio(self) -> float:
-        """メモリ使用率を取得（0.0-1.0）"""
+        """メモリ使用率を取得(0.0-1.0)"""
         stats = self.monitor.get_memory_stats()
         return stats.process_memory_mb / self.max_memory_mb
 
@@ -361,9 +355,7 @@ class MemoryOptimizer(LoggerMixin):
                 # メモリ使用量が目標を超えている場合、キャッシュをクリア
                 reduction_needed = current_memory_mb - target_memory_mb
 
-                logger.info(
-                    f"キャッシュサイズ最適化: {reduction_needed:.1f}MB削減が必要"
-                )
+                logger.info(f"キャッシュサイズ最適化: {reduction_needed:.1f}MB削減が必要")
 
                 # 検索キャッシュをクリア
                 cache_manager.search_cache.invalidate_cache()
@@ -395,11 +387,9 @@ class MemoryOptimizer(LoggerMixin):
                     # 古い埋め込みを削除
                     excess_count = current_count - max_embeddings
 
-                    logger.info(
-                        f"埋め込みキャッシュ最適化: {excess_count}件の埋め込みを削除"
-                    )
+                    logger.info(f"埋め込みキャッシュ最適化: {excess_count}件の埋め込みを削除")
 
-                    # 最も古い埋め込みを削除（実装は埋め込みマネージャーに依存）
+                    # 最も古い埋め込みを削除(実装は埋め込みマネージャーに依存)
                     if hasattr(embedding_manager, "cleanup_old_embeddings"):
                         embedding_manager.cleanup_old_embeddings(excess_count)
 

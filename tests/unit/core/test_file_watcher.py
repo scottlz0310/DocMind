@@ -6,9 +6,9 @@ Phase7強化版の内容を統合済み。
 """
 
 import os
+from pathlib import Path
 import tempfile
 import time
-from pathlib import Path
 from unittest.mock import Mock
 
 import pytest
@@ -48,9 +48,7 @@ class TestFileWatcher:
     @pytest.fixture
     def file_watcher(self, mock_index_manager, mock_embedding_manager):
         """FileWatcherインスタンスを作成"""
-        return FileWatcher(
-            index_manager=mock_index_manager, embedding_manager=mock_embedding_manager
-        )
+        return FileWatcher(index_manager=mock_index_manager, embedding_manager=mock_embedding_manager)
 
     def test_initialization(self, file_watcher):
         """初期化テスト"""
@@ -91,10 +89,7 @@ class TestFileWatcher:
         file_watcher.add_watch_path(temp_watch_dir)
         file_watcher.remove_watch_path(temp_watch_dir)
         abs_path = os.path.abspath(temp_watch_dir)
-        assert (
-            temp_watch_dir not in file_watcher.watched_paths
-            and abs_path not in file_watcher.watched_paths
-        )
+        assert temp_watch_dir not in file_watcher.watched_paths and abs_path not in file_watcher.watched_paths
 
     def test_get_stats(self, file_watcher):
         """統計情報取得テスト"""
@@ -127,13 +122,9 @@ class TestFileWatcher:
         result = file_watcher.wait_for_queue_empty(timeout=1.0)
         assert result is True
 
-    def test_watch_nonexistent_directory(
-        self, mock_index_manager, mock_embedding_manager
-    ):
+    def test_watch_nonexistent_directory(self, mock_index_manager, mock_embedding_manager):
         """存在しないディレクトリの監視テスト"""
-        file_watcher = FileWatcher(
-            index_manager=mock_index_manager, embedding_manager=mock_embedding_manager
-        )
+        file_watcher = FileWatcher(index_manager=mock_index_manager, embedding_manager=mock_embedding_manager)
 
         with pytest.raises(Exception):  # FileSystemErrorまたは似たようなエラー
             file_watcher.add_watch_path("/nonexistent/directory")

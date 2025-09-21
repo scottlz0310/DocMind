@@ -35,7 +35,7 @@ graph TB
 
 ### 主要コンポーネント
 
-#### 1. MainWindow（メインウィンドウ）
+#### 1. MainWindow(メインウィンドウ)
 - **役割**: UI制御とコンポーネント間の調整
 - **ファイル**: `src/gui/main_window.py`
 - **主要メソッド**:
@@ -45,7 +45,7 @@ graph TB
   - `_on_rebuild_error()`: エラー処理
   - `_handle_rebuild_timeout()`: タイムアウト処理
 
-#### 2. IndexingThreadManager（スレッド管理）
+#### 2. IndexingThreadManager(スレッド管理)
 - **役割**: バックグラウンドスレッドの管理
 - **ファイル**: `src/core/thread_manager.py`
 - **機能**:
@@ -53,7 +53,7 @@ graph TB
   - スレッドライフサイクル管理
   - 進捗シグナルの中継
 
-#### 3. RebuildTimeoutManager（タイムアウト管理）
+#### 3. RebuildTimeoutManager(タイムアウト管理)
 - **役割**: 長時間実行処理のタイムアウト監視
 - **ファイル**: `src/core/rebuild_timeout_manager.py`
 - **機能**:
@@ -61,7 +61,7 @@ graph TB
   - タイムアウト発生時のシグナル送信
   - 複数スレッドの同時監視
 
-#### 4. IndexingWorker（インデックス処理）
+#### 4. IndexingWorker(インデックス処理)
 - **役割**: 実際のドキュメント処理とインデックス作成
 - **ファイル**: `src/core/indexing_worker.py`
 - **機能**:
@@ -245,13 +245,13 @@ def _on_rebuild_completed(self, thread_id: str, statistics: dict) -> None:
         # 1. タイムアウト監視のキャンセル
         self.timeout_manager.cancel_timeout(thread_id)
 
-        # 2. 検索キャッシュのクリア（要件5.3）
+        # 2. 検索キャッシュのクリア(要件5.3)
         self.search_manager.clear_suggestion_cache()
 
-        # 3. システム情報の更新（要件5.1）
+        # 3. システム情報の更新(要件5.1)
         self._update_system_info_after_rebuild(statistics)
 
-        # 4. フォルダツリーの状態更新（要件5.4）
+        # 4. フォルダツリーの状態更新(要件5.4)
         self._update_folder_tree_status()
 
         # 5. 進捗表示の完了

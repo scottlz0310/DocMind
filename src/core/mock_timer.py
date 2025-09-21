@@ -5,8 +5,8 @@ QApplicationが存在しない環境でもタイマー機能をテストでき�
 モックタイマーを提供します。
 """
 
-import threading
 from collections.abc import Callable
+import threading
 
 
 class MockTimer:
@@ -43,7 +43,7 @@ class MockTimer:
         """タイマーを開始
 
         Args:
-            interval (int): インターバル（ミリ秒）
+            interval (int): インターバル(ミリ秒)
         """
         self.stop()  # 既存のタイマーを停止
 
@@ -118,7 +118,7 @@ class MockSignal:
         """コールバックを切断
 
         Args:
-            callback (Callable, optional): 切断するコールバック（Noneの場合は全て切断）
+            callback (Callable, optional): 切断するコールバック(Noneの場合は全て切断)
         """
         if callback is None:
             self._callbacks.clear()

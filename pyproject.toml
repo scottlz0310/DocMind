@@ -190,49 +190,93 @@ output = "coverage.xml"
 
 # Ruff設定
 [tool.ruff]
-target-version = "py311"
-line-length = 120  # 現代的な標準（88→120に変更）
+target-version = "py313"
+line-length = 120  # 現代的な標準(88→120に変更)
 exclude = [
     "archive/",
     "scripts/archive/",
 ]
 
 [tool.ruff.lint]
+# 品質ルール準拠の推奨ルールセット
 select = [
-    "E",  # pycodestyle errors
-    "W",  # pycodestyle warnings
-    "F",  # pyflakes
-    "I",  # isort
-    "B",  # flake8-bugbear
-    "C4", # flake8-comprehensions
-    "UP", # pyupgrade
-    "T20", # flake8-print
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import order)
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "C90", # mccabe complexity
+    "UP",  # pyupgrade
+    "T20", # flake8-print (品質ルールでprint禁止)
+    "N",   # pep8-naming
+    "ERA", # eradicate (commented code)
+    "PL",  # pylint
+    "RUF", # ruff-specific rules
 ]
 ignore = [
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
-    "B017",  # pytest.raises(Exception) is too broad
+    "B008",   # do not perform function calls in argument defaults
+    "C901",   # too complex (段階的に有効化)
+    "B017",   # pytest.raises(Exception) is too broad
+    "PLR0913", # too many arguments
+    "PLR0912", # too many branches
+    "PLR0915", # too many statements
+    "N806",   # variable in function should be lowercase (一時的に緩和)
+    "ERA001", # eradicate commented code (開発中は将来参考のため許可)
+    # E501は意図的に有効化(行長制限120文字)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-"tests/*" = ["T20", "F841", "S101"]  # Allow print, unused vars, assert in tests
-"scripts/*" = ["T20"]  # Allow print in scripts
+"__init__.py" = ["F401", "F403"]  # Allow unused imports and star imports
+"tests/*" = ["T20", "F841", "S101", "PLR2004"]  # Allow print, unused vars, assert, magic values in tests
+"scripts/*" = ["T20", "PLR2004"]  # Allow print and magic values in scripts
+"main.py" = ["T20"]  # Allow print in entry point
+
+# isort設定 (品質ルール準拠)
+[tool.ruff.lint.isort]
+known-first-party = ["docmind"]
+known-third-party = ["PySide6", "whoosh", "sentence_transformers", "fitz", "docx", "openpyxl", "watchdog"]
+split-on-trailing-comma = true
+force-single-line = false
+force-sort-within-sections = true
+combine-as-imports = true
 
 [tool.ruff.format]
+# 品質ルール準拠の詳細設定
 quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
+skip-magic-trailing-comma = false
+# Docstring formatting
+docstring-code-format = true
+docstring-code-line-length = 88  # Docstring内コードは88文字制限
+# Preview features for better formatting
+preview = true
 
 # MyPy設定
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.13"
+# 基本設定
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false
 check_untyped_defs = true
 strict_optional = true
 
+# 品質ルール準拠の推奨設定
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+strict_equality = true
+
+# 段階的厳格化(現在はprototype段階)
+disallow_untyped_defs = false
+disallow_any_generics = false
+# staging段階で有効化予定:
+# disallow_untyped_defs = true
+# production段階で有効化予定:
+# disallow_any_generics = true
+
+# モジュール別設定
 [[tool.mypy.overrides]]
 module = [
     "sentence_transformers.*",
@@ -241,8 +285,21 @@ module = [
     "docx.*",
     "openpyxl.*",
     "watchdog.*",
+    "chardet.*",
+    "psutil.*",
 ]
 ignore_missing_imports = true
+
+# テストファイルは緩いチェック
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+check_untyped_defs = false
+
+# エントリポイントは除外
+[[tool.mypy.overrides]]
+module = "main"
+ignore_errors = true
 
 # Bandit設定
 [tool.bandit]

@@ -129,7 +129,7 @@ def test_async_operation_manager():
         # 読み込み開始
         manager.start_folder_loading(temp_dir, max_depth=1)
 
-        # タイムアウト設定（5秒）
+        # タイムアウト設定(5秒)
         timeout_timer = QTimer()
         timeout_timer.setSingleShot(True)
         timeout_timer.timeout.connect(lambda: app.quit())
@@ -142,7 +142,7 @@ def test_async_operation_manager():
         manager.cleanup_workers()
 
         # 結果確認
-        assert finished, "読み込みが完了していません（タイムアウト）"
+        assert finished, "読み込みが完了していません(タイムアウト)"
         assert len(loaded_paths) > 0, "フォルダが読み込まれていません"
         assert len(error_messages) == 0, f"エラーが発生しました: {error_messages}"
 
@@ -180,7 +180,7 @@ def test_error_handling():
 
     # 結果確認
     assert finished, "処理が完了していません"
-    # 存在しないパスの場合、エラーは発生しない（単に何も読み込まれない）
+    # 存在しないパスの場合、エラーは発生しない(単に何も読み込まれない)
 
     logger.info("✅ エラーハンドリングテスト成功")
 
@@ -195,7 +195,7 @@ def main():
         test_async_operation_manager()
         test_error_handling()
 
-        logger.info("🎉 すべてのテストが成功しました！")
+        logger.info("🎉 すべてのテストが成功しました!")
         return True
 
     except Exception as e:

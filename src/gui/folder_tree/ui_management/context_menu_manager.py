@@ -5,9 +5,9 @@ DocMind フォルダツリーコンテキストメニューマネージャー
 フォルダツリーのコンテキストメニュー機能を管理します。
 """
 
+from datetime import datetime
 import logging
 import os
-from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -140,9 +140,7 @@ class ContextMenuManager:
         is_root = folder_path in self.tree_widget.root_paths
 
         # アクション状態を設定
-        self.actions["index_folder"].setEnabled(
-            not is_indexing and not is_indexed and not is_excluded
-        )
+        self.actions["index_folder"].setEnabled(not is_indexing and not is_indexed and not is_excluded)
         self.actions["exclude_folder"].setEnabled(not is_indexing and not is_excluded)
         self.actions["remove_folder"].setEnabled(is_root)
 
@@ -163,9 +161,7 @@ class ContextMenuManager:
                 self.logger.info(f"フォルダが追加されました: {folder_path}")
         except Exception as e:
             self.logger.error(f"フォルダ追加中にエラーが発生しました: {e}")
-            QMessageBox.critical(
-                self.tree_widget, "エラー", f"フォルダの追加に失敗しました:\n{str(e)}"
-            )
+            QMessageBox.critical(self.tree_widget, "エラー", f"フォルダの追加に失敗しました:\n{e!s}")
 
     def _remove_folder(self):
         """選択されたフォルダを削除します"""
@@ -177,16 +173,13 @@ class ContextMenuManager:
 
         folder_path = current_item.folder_path
         if folder_path not in self.tree_widget.root_paths:
-            QMessageBox.information(
-                self.tree_widget, "情報", "ルートフォルダのみ削除できます。"
-            )
+            QMessageBox.information(self.tree_widget, "情報", "ルートフォルダのみ削除できます。")
             return
 
         reply = QMessageBox.question(
             self.tree_widget,
             "フォルダ削除",
-            f"以下のフォルダをツリーから削除しますか?\n\n{folder_path}\n\n"
-            "※ファイルシステムからは削除されません。",
+            f"以下のフォルダをツリーから削除しますか?\n\n{folder_path}\n\n※ファイルシステムからは削除されません。",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )
@@ -250,9 +243,7 @@ class ContextMenuManager:
 
         if reply == QMessageBox.Yes:
             self.tree_widget.excluded_paths.add(folder_path)
-            self.tree_widget.indexed_paths.discard(
-                folder_path
-            )  # インデックスリストから削除
+            self.tree_widget.indexed_paths.discard(folder_path)  # インデックスリストから削除
 
             # アイテムの表示を更新
             current_item.item_type = FolderItemType.EXCLUDED
@@ -328,15 +319,13 @@ class ContextMenuManager:
 除外状態: {"除外中" if folder_path in self.tree_widget.excluded_paths else "対象"}
             """.strip()
 
-            QMessageBox.information(
-                self.tree_widget, "フォルダプロパティ", properties_text
-            )
+            QMessageBox.information(self.tree_widget, "フォルダプロパティ", properties_text)
 
         except Exception as e:
             QMessageBox.warning(
                 self.tree_widget,
                 "エラー",
-                f"フォルダ情報の取得に失敗しました:\n{str(e)}",
+                f"フォルダ情報の取得に失敗しました:\n{e!s}",
             )
 
     def cleanup(self):

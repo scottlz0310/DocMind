@@ -41,17 +41,12 @@ class SettingsHandlerManager(QObject, LoggerMixin):
         """
         try:
             # ログ設定の更新
-            if any(
-                key in settings
-                for key in ["log_level", "console_logging", "file_logging"]
-            ):
+            if any(key in settings for key in ["log_level", "console_logging", "file_logging"]):
                 self._update_logging_config(settings)
 
             # ウィンドウサイズの更新
             if "window_width" in settings and "window_height" in settings:
-                self.main_window.resize(
-                    settings["window_width"], settings["window_height"]
-                )
+                self.main_window.resize(settings["window_width"], settings["window_height"])
 
             # UIテーマの更新
             if "ui_theme" in settings:
@@ -94,20 +89,19 @@ class SettingsHandlerManager(QObject, LoggerMixin):
         """UIテーマを適用
 
         Args:
-            theme: テーマ名（'light', 'dark', 'system'）
+            theme: テーマ名('light', 'dark', 'system')
         """
         try:
             # window_state_managerに委譲
             if hasattr(self.main_window, "window_state_manager"):
                 self.main_window.window_state_manager.apply_theme(theme)
-            else:
-                # フォールバック処理
-                if theme == "dark":
-                    self.logger.info("ダークテーマが選択されました（実装予定）")
-                elif theme == "light":
-                    self.logger.info("ライトテーマが適用されました")
-                elif theme == "system":
-                    self.logger.info("システムテーマが適用されました")
+            # フォールバック処理
+            elif theme == "dark":
+                self.logger.info("ダークテーマが選択されました(実装予定)")
+            elif theme == "light":
+                self.logger.info("ライトテーマが適用されました")
+            elif theme == "system":
+                self.logger.info("システムテーマが適用されました")
 
         except Exception as e:
             self.logger.error(f"テーマ適用中にエラーが発生: {e}")
@@ -124,18 +118,13 @@ class SettingsHandlerManager(QObject, LoggerMixin):
 
             # window_state_managerに委譲
             if hasattr(self.main_window, "window_state_manager"):
-                self.main_window.window_state_manager.apply_font_settings(
-                    font_family, font_size
-                )
-            else:
-                # フォールバック処理
-                if font_family != "システムデフォルト":
-                    font = QFont(font_family, font_size)
-                    self.main_window.setFont(font)
-                    QApplication.instance().setFont(font)
-                    self.logger.info(
-                        f"フォント設定を適用しました: {font_family}, {font_size}pt"
-                    )
+                self.main_window.window_state_manager.apply_font_settings(font_family, font_size)
+            # フォールバック処理
+            elif font_family != "システムデフォルト":
+                font = QFont(font_family, font_size)
+                self.main_window.setFont(font)
+                QApplication.instance().setFont(font)
+                self.logger.info(f"フォント設定を適用しました: {font_family}, {font_size}pt")
 
         except Exception as e:
             self.logger.error(f"フォント設定適用中にエラーが発生: {e}")
@@ -159,9 +148,7 @@ class SettingsHandlerManager(QObject, LoggerMixin):
         import os
 
         self.logger.info(f"フォルダがインデックスに追加されました: {folder_path}")
-        self.main_window.show_status_message(
-            f"インデックスに追加: {os.path.basename(folder_path)}", 3000
-        )
+        self.main_window.show_status_message(f"インデックスに追加: {os.path.basename(folder_path)}", 3000)
 
         # 実際のインデックス処理を開始
         self.main_window.index_controller.start_indexing_process(folder_path)
@@ -175,17 +162,11 @@ class SettingsHandlerManager(QObject, LoggerMixin):
         import os
 
         self.logger.info(f"フォルダが除外されました: {folder_path}")
-        self.main_window.show_status_message(
-            f"除外: {os.path.basename(folder_path)}", 3000
-        )
+        self.main_window.show_status_message(f"除外: {os.path.basename(folder_path)}", 3000)
 
         # システム情報を更新
-        indexed_count = len(
-            self.main_window.folder_tree_container.get_indexed_folders()
-        )
-        excluded_count = len(
-            self.main_window.folder_tree_container.get_excluded_folders()
-        )
+        indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
+        excluded_count = len(self.main_window.folder_tree_container.get_excluded_folders())
         info_text = f"インデックス: {indexed_count}フォルダ"
         if excluded_count > 0:
             info_text += f", 除外: {excluded_count}フォルダ"
@@ -197,12 +178,8 @@ class SettingsHandlerManager(QObject, LoggerMixin):
         self.main_window.show_status_message("フォルダツリーを更新しました", 2000)
 
         # システム情報を更新
-        indexed_count = len(
-            self.main_window.folder_tree_container.get_indexed_folders()
-        )
-        excluded_count = len(
-            self.main_window.folder_tree_container.get_excluded_folders()
-        )
+        indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
+        excluded_count = len(self.main_window.folder_tree_container.get_excluded_folders())
         info_text = f"インデックス: {indexed_count}フォルダ"
         if excluded_count > 0:
             info_text += f", 除外: {excluded_count}フォルダ"
@@ -216,9 +193,7 @@ class SettingsHandlerManager(QObject, LoggerMixin):
         """
         # システム情報にスレッド状態を追加
         try:
-            indexed_count = len(
-                self.main_window.folder_tree_container.get_indexed_folders()
-            )
+            indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
             active_threads = (
                 self.main_window.thread_manager.get_active_thread_count()
                 if hasattr(self.main_window, "thread_manager")
@@ -241,6 +216,4 @@ class SettingsHandlerManager(QObject, LoggerMixin):
             self.logger.debug("設定変更ハンドラーマネージャーをクリーンアップしました")
 
         except Exception as e:
-            self.logger.error(
-                f"設定変更ハンドラーマネージャーのクリーンアップ中にエラー: {e}"
-            )
+            self.logger.error(f"設定変更ハンドラーマネージャーのクリーンアップ中にエラー: {e}")

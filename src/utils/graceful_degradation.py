@@ -1,5 +1,5 @@
 """
-優雅な劣化（Graceful Degradation）機能
+優雅な劣化(Graceful Degradation)機能
 
 コンポーネントが失敗した場合に、アプリケーション全体を停止させることなく、
 機能を段階的に縮退させる仕組みを提供します。
@@ -51,9 +51,7 @@ class GracefulDegradationManager:
         self._fallback_handlers: dict[str, Callable] = {}
         self._health_checkers: dict[str, Callable] = {}
 
-    def register_component(
-        self, name: str, capabilities: dict[str, bool] = None, max_retries: int = 3
-    ) -> None:
+    def register_component(self, name: str, capabilities: dict[str, bool] = None, max_retries: int = 3) -> None:
         """
         コンポーネントを登録
 
@@ -62,9 +60,7 @@ class GracefulDegradationManager:
             capabilities: コンポーネントの機能一覧
             max_retries: 最大リトライ回数
         """
-        self._components[name] = ComponentState(
-            name=name, capabilities=capabilities or {}, max_retries=max_retries
-        )
+        self._components[name] = ComponentState(name=name, capabilities=capabilities or {}, max_retries=max_retries)
         self.logger.debug(f"コンポーネントを登録: {name}")
 
     def register_fallback_handler(self, component_name: str, handler: Callable) -> None:
@@ -234,15 +230,9 @@ class GracefulDegradationManager:
             システム健全性の情報
         """
         total_components = len(self._components)
-        healthy_count = sum(
-            1 for c in self._components.values() if c.status == ComponentStatus.HEALTHY
-        )
-        degraded_count = sum(
-            1 for c in self._components.values() if c.status == ComponentStatus.DEGRADED
-        )
-        failed_count = sum(
-            1 for c in self._components.values() if c.status == ComponentStatus.FAILED
-        )
+        healthy_count = sum(1 for c in self._components.values() if c.status == ComponentStatus.HEALTHY)
+        degraded_count = sum(1 for c in self._components.values() if c.status == ComponentStatus.DEGRADED)
+        failed_count = sum(1 for c in self._components.values() if c.status == ComponentStatus.FAILED)
 
         return {
             "total_components": total_components,
@@ -331,16 +321,12 @@ class GracefulDegradationManager:
                 self.logger.info(f"フォールバック処理成功: {component_name}")
                 return True
         except Exception as fallback_error:
-            self.logger.error(
-                f"フォールバック処理失敗: {component_name} - {fallback_error}"
-            )
+            self.logger.error(f"フォールバック処理失敗: {component_name} - {fallback_error}")
 
         return False
 
 
-def with_graceful_degradation(
-    component_name: str, disable_capabilities: list[str] = None, fallback_return=None
-):
+def with_graceful_degradation(component_name: str, disable_capabilities: list[str] = None, fallback_return=None):
     """
     優雅な劣化デコレータ
 
@@ -359,9 +345,7 @@ def with_graceful_degradation(
                 return func(*args, **kwargs)
             except Exception as e:
                 # コンポーネントを失敗状態にマーク
-                fallback_success = degradation_manager.mark_component_failed(
-                    component_name, e, disable_capabilities
-                )
+                fallback_success = degradation_manager.mark_component_failed(component_name, e, disable_capabilities)
 
                 if fallback_success:
                     return fallback_return
@@ -398,15 +382,13 @@ def setup_component_monitoring():
     """
     manager = get_global_degradation_manager()
 
-    # 主要コンポーネントを登録（デフォルトで健全状態）
+    # 主要コンポーネントを登録(デフォルトで健全状態)
     manager.register_component(
         "search_manager",
         {"full_text_search": True, "semantic_search": True, "hybrid_search": True},
     )
 
-    manager.register_component(
-        "index_manager", {"indexing": True, "incremental_update": True, "search": True}
-    )
+    manager.register_component("index_manager", {"indexing": True, "incremental_update": True, "search": True})
 
     manager.register_component(
         "embedding_manager",
@@ -428,9 +410,7 @@ def setup_component_monitoring():
         },
     )
 
-    manager.register_component(
-        "file_watcher", {"file_monitoring": True, "incremental_indexing": True}
-    )
+    manager.register_component("file_watcher", {"file_monitoring": True, "incremental_indexing": True})
 
     manager.register_component(
         "database",

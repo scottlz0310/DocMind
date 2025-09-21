@@ -7,10 +7,10 @@ DocMindアプリケーションの包括的なテストスイートを実行す�
 
 import argparse
 import json
+from pathlib import Path
 import subprocess
 import sys
 import time
-from pathlib import Path
 from typing import Any
 
 
@@ -51,7 +51,7 @@ class TestRunner:
             cmd.append("-v")
 
         start_time = time.time()
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
         execution_time = time.time() - start_time
 
         return {
@@ -80,7 +80,7 @@ class TestRunner:
             cmd.append("-v")
 
         start_time = time.time()
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
         execution_time = time.time() - start_time
 
         return {
@@ -110,7 +110,7 @@ class TestRunner:
             cmd.append("-v")
 
         start_time = time.time()
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
         execution_time = time.time() - start_time
 
         return {
@@ -153,7 +153,7 @@ class TestRunner:
             cmd.append("-v")
 
         start_time = time.time()
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
         execution_time = time.time() - start_time
 
         return {
@@ -165,9 +165,7 @@ class TestRunner:
             "return_code": result.returncode,
         }
 
-    def run_all_tests(
-        self, verbose: bool = True, skip_slow: bool = False
-    ) -> list[dict[str, Any]]:
+    def run_all_tests(self, verbose: bool = True, skip_slow: bool = False) -> list[dict[str, Any]]:
         """すべてのテストを実行"""
 
         cmd = [
@@ -189,7 +187,7 @@ class TestRunner:
             cmd.extend(["-m", "not slow"])
 
         start_time = time.time()
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
         execution_time = time.time() - start_time
 
         return [
@@ -203,9 +201,7 @@ class TestRunner:
             }
         ]
 
-    def run_specific_tests(
-        self, test_pattern: str, verbose: bool = True
-    ) -> dict[str, Any]:
+    def run_specific_tests(self, test_pattern: str, verbose: bool = True) -> dict[str, Any]:
         """特定のテストパターンを実行"""
 
         cmd = [
@@ -222,7 +218,7 @@ class TestRunner:
             cmd.append("-v")
 
         start_time = time.time()
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True)
         execution_time = time.time() - start_time
 
         return {
@@ -247,7 +243,7 @@ class TestRunner:
 
             # カバレッジレポートを手動で生成
             cmd = [sys.executable, "-m", "coverage", "html"]
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=False, capture_output=True, text=True)
 
             if result.returncode == 0:
                 return True
@@ -287,9 +283,8 @@ class TestRunner:
 
             if result.get("skipped"):
                 pass
-            else:
-                if not result["success"] and result["stderr"]:
-                    pass
+            elif not result["success"] and result["stderr"]:
+                pass
 
         # カバレッジ情報の表示
         coverage_file = self.project_root / "coverage.xml"
@@ -318,34 +313,26 @@ def main():
     parser.add_argument("--all", action="store_true", help="すべてのテストを実行")
     parser.add_argument("--unit", action="store_true", help="ユニットテストを実行")
     parser.add_argument("--integration", action="store_true", help="統合テストを実行")
-    parser.add_argument(
-        "--performance", action="store_true", help="パフォーマンステストを実行"
-    )
+    parser.add_argument("--performance", action="store_true", help="パフォーマンステストを実行")
     parser.add_argument("--gui", action="store_true", help="GUIテストを実行")
     parser.add_argument("--pattern", type=str, help="特定のテストパターンを実行")
 
     # オプション
-    parser.add_argument(
-        "--skip-slow", action="store_true", help="時間のかかるテストをスキップ"
-    )
+    parser.add_argument("--skip-slow", action="store_true", help="時間のかかるテストをスキップ")
     parser.add_argument("--quiet", "-q", action="store_true", help="詳細出力を抑制")
-    parser.add_argument(
-        "--no-coverage", action="store_true", help="カバレッジレポートを生成しない"
-    )
+    parser.add_argument("--no-coverage", action="store_true", help="カバレッジレポートを生成しない")
 
     args = parser.parse_args()
 
     # 引数チェック
-    if not any(
-        [
-            args.all,
-            args.unit,
-            args.integration,
-            args.performance,
-            args.gui,
-            args.pattern,
-        ]
-    ):
+    if not any([
+        args.all,
+        args.unit,
+        args.integration,
+        args.performance,
+        args.gui,
+        args.pattern,
+    ]):
         parser.print_help()
         sys.exit(1)
 

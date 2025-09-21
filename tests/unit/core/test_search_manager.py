@@ -5,10 +5,10 @@ SearchManager統合テスト
 Phase1とPhase7の機能を統合し、現在のSearchQueryベースのAPIに対応
 """
 
-import tempfile
-import time
 from datetime import UTC, datetime
 from pathlib import Path
+import tempfile
+import time
 from unittest.mock import patch
 
 import pytest
@@ -97,9 +97,7 @@ class TestSearchManager:
         for doc in sample_documents:
             search_manager.index_manager.add_document(doc)
 
-        query = SearchQuery(
-            query_text="機械学習", search_type=SearchType.FULL_TEXT, limit=10
-        )
+        query = SearchQuery(query_text="機械学習", search_type=SearchType.FULL_TEXT, limit=10)
 
         results = search_manager.search(query)
 
@@ -110,9 +108,7 @@ class TestSearchManager:
             assert all(result.score >= 0 for result in results)
 
     @patch("src.core.embedding_manager.EmbeddingManager.search_similar")
-    def test_semantic_search(
-        self, mock_search_similar, search_manager, sample_documents
-    ):
+    def test_semantic_search(self, mock_search_similar, search_manager, sample_documents):
         """検証対象: セマンティック検索機能
         目的: SearchQueryを使用したセマンティック検索が正常に動作することを確認"""
         # モックの設定
@@ -122,9 +118,7 @@ class TestSearchManager:
         for doc in sample_documents:
             search_manager.index_manager.add_document(doc)
 
-        query = SearchQuery(
-            query_text="機械学習", search_type=SearchType.SEMANTIC, limit=10
-        )
+        query = SearchQuery(query_text="機械学習", search_type=SearchType.SEMANTIC, limit=10)
 
         results = search_manager.search(query)
 
@@ -204,7 +198,7 @@ class TestSearchManager:
         results = search_manager.search(query)
 
         assert isinstance(results, list)
-        # 日付フィルターが適用されることを確認（結果の詳細検証は実装に依存）
+        # 日付フィルターが適用されることを確認(結果の詳細検証は実装に依存)
 
     def test_search_with_folder_paths(self, search_manager, sample_documents):
         """検証対象: フォルダパスフィルター付き検索
@@ -272,7 +266,7 @@ class TestSearchManager:
             results = search_manager.search(query)
             assert isinstance(results, list)
         except SearchError:
-            # SearchErrorが発生した場合も正常（劣化機能による）
+            # SearchErrorが発生した場合も正常(劣化機能による)
             pass
 
     def test_search_stats(self, search_manager):
@@ -329,14 +323,12 @@ class TestSearchManager:
         for doc in large_documents[:10]:  # テスト用に数を制限
             search_manager.index_manager.add_document(doc)
 
-        query = SearchQuery(
-            query_text="テスト", search_type=SearchType.FULL_TEXT, limit=20
-        )
+        query = SearchQuery(query_text="テスト", search_type=SearchType.FULL_TEXT, limit=20)
 
         start_time = time.time()
         results = search_manager.search(query)
         end_time = time.time()
 
-        # パフォーマンス検証（5秒以内）
+        # パフォーマンス検証(5秒以内)
         assert (end_time - start_time) < 5.0
         assert isinstance(results, list)

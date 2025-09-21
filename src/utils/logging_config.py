@@ -23,9 +23,9 @@ def setup_logging(
     アプリケーションのログ設定を初期化
 
     Args:
-        level: ログレベル（DEBUG, INFO, WARNING, ERROR, CRITICAL）
-        log_file: ログファイルのパス（省略時はデフォルトパスを使用）
-        max_bytes: ログファイルの最大サイズ（バイト）
+        level: ログレベル(DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        log_file: ログファイルのパス(省略時はデフォルトパスを使用)
+        max_bytes: ログファイルの最大サイズ(バイト)
         backup_count: 保持するバックアップファイル数
         enable_console: コンソール出力を有効にするか
         enable_file: ファイル出力を有効にするか
@@ -34,16 +34,14 @@ def setup_logging(
     # ログレベルの設定
     log_level = getattr(logging, level.upper(), logging.INFO)
 
-    # 改善されたログフォーマットの定義（インデックス再構築機能対応）
+    # 改善されたログフォーマットの定義(インデックス再構築機能対応)
     detailed_formatter = logging.Formatter(
         fmt="%(asctime)s - %(name)s - %(levelname)s - [%(funcName)s:%(lineno)d] - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
     # コンソール用の簡潔なフォーマット
-    console_formatter = logging.Formatter(
-        fmt="%(asctime)s - %(levelname)s - %(message)s", datefmt="%H:%M:%S"
-    )
+    console_formatter = logging.Formatter(fmt="%(asctime)s - %(levelname)s - %(message)s", datefmt="%H:%M:%S")
 
     # ルートロガーの設定
     root_logger = logging.getLogger()
@@ -166,8 +164,7 @@ def reconfigure_logging(
 
         # 必要に応じて新しいハンドラーを追加
         if enable_console is True and not any(
-            isinstance(h, logging.StreamHandler)
-            and not isinstance(h, logging.handlers.RotatingFileHandler)
+            isinstance(h, logging.StreamHandler) and not isinstance(h, logging.handlers.RotatingFileHandler)
             for h in root_logger.handlers
         ):
             formatter = logging.Formatter(
@@ -185,7 +182,7 @@ def get_logger(name: str) -> logging.Logger:
     指定された名前のロガーを取得
 
     Args:
-        name: ロガー名（通常は__name__を使用）
+        name: ロガー名(通常は__name__を使用)
 
     Returns:
         ロガーインスタンス
@@ -209,14 +206,10 @@ class LoggerMixin:
             ロガーインスタンス
         """
         if not hasattr(self, "_logger"):
-            self._logger = logging.getLogger(
-                f"{self.__class__.__module__}.{self.__class__.__name__}"
-            )
+            self._logger = logging.getLogger(f"{self.__class__.__module__}.{self.__class__.__name__}")
         return self._logger
 
-    def log_rebuild_operation(
-        self, operation: str, thread_id: str = "", **kwargs
-    ) -> None:
+    def log_rebuild_operation(self, operation: str, thread_id: str = "", **kwargs) -> None:
         """
         インデックス再構築操作の詳細ログを記録
 
@@ -236,9 +229,7 @@ class LoggerMixin:
 
         self.logger.info(message)
 
-    def log_rebuild_progress(
-        self, thread_id: str, current: int, total: int, message: str = ""
-    ) -> None:
+    def log_rebuild_progress(self, thread_id: str, current: int, total: int, message: str = "") -> None:
         """
         インデックス再構築の進捗ログを記録
 
@@ -249,18 +240,14 @@ class LoggerMixin:
             message: 追加メッセージ
         """
         percentage = (current / total * 100) if total > 0 else 0
-        progress_message = (
-            f"📊 PROGRESS [{thread_id}] {current:,}/{total:,} ({percentage:.1f}%)"
-        )
+        progress_message = f"📊 PROGRESS [{thread_id}] {current:,}/{total:,} ({percentage:.1f}%)"
 
         if message:
             progress_message += f" | {message}"
 
         self.logger.debug(progress_message)
 
-    def log_rebuild_error(
-        self, thread_id: str, error_type: str, error_message: str, **context
-    ) -> None:
+    def log_rebuild_error(self, thread_id: str, error_type: str, error_message: str, **context) -> None:
         """
         インデックス再構築エラーの詳細ログを記録
 
@@ -271,24 +258,20 @@ class LoggerMixin:
             **context: エラーコンテキスト
         """
         context_info = " | ".join([f"{k}={v}" for k, v in context.items()])
-        error_log = (
-            f"❌ ERROR [{thread_id}] Type: {error_type} | Message: {error_message}"
-        )
+        error_log = f"❌ ERROR [{thread_id}] Type: {error_type} | Message: {error_message}"
 
         if context_info:
             error_log += f" | Context: {context_info}"
 
         self.logger.error(error_log)
 
-    def log_rebuild_timeout(
-        self, thread_id: str, timeout_minutes: int, **details
-    ) -> None:
+    def log_rebuild_timeout(self, thread_id: str, timeout_minutes: int, **details) -> None:
         """
         インデックス再構築タイムアウトの詳細ログを記録
 
         Args:
             thread_id: スレッドID
-            timeout_minutes: タイムアウト時間（分）
+            timeout_minutes: タイムアウト時間(分)
             **details: 詳細情報
         """
         detail_info = " | ".join([f"{k}={v}" for k, v in details.items()])

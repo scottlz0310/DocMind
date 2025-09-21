@@ -5,10 +5,10 @@ EmbeddingManager - セマンティック検索用の埋め込み管理クラス
 コサイン類似度を使用したセマンティック検索機能を提供します。
 """
 
+from dataclasses import dataclass
 import logging
 import os
 import pickle
-from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -38,15 +38,13 @@ class EmbeddingManager:
     コサイン類似度を使用したセマンティック検索を実行します。
     """
 
-    def __init__(
-        self, model_name: str = "all-MiniLM-L6-v2", embeddings_path: str | None = None
-    ):
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2", embeddings_path: str | None = None):
         """
         EmbeddingManagerを初期化
 
         Args:
             model_name: 使用するsentence-transformersモデル名
-            embeddings_path: 埋め込みファイルのパス（Noneの場合はデフォルトパスを使用）
+            embeddings_path: 埋め込みファイルのパス(Noneの場合はデフォルトパスを使用)
         """
         self.model_name = model_name
         self.model: SentenceTransformer | None = None
@@ -76,9 +74,7 @@ class EmbeddingManager:
             EmbeddingError: モデルの読み込みに失敗した場合
         """
         try:
-            self.logger.info(
-                f"sentence-transformersモデルを読み込み中: {self.model_name}"
-            )
+            self.logger.info(f"sentence-transformersモデルを読み込み中: {self.model_name}")
             self.model = SentenceTransformer(self.model_name)
             self.logger.info("モデルの読み込みが完了しました")
         except Exception as e:
@@ -99,7 +95,7 @@ class EmbeddingManager:
             text: 埋め込みを生成するテキスト
 
         Returns:
-            埋め込みベクトル（numpy配列）
+            埋め込みベクトル(numpy配列)
 
         Raises:
             EmbeddingError: 埋め込み生成に失敗した場合
@@ -109,9 +105,7 @@ class EmbeddingManager:
         try:
             # テキストが空の場合はゼロベクトルを返す
             if not text or not text.strip():
-                self.logger.warning(
-                    "空のテキストが渡されました。ゼロベクトルを返します。"
-                )
+                self.logger.warning("空のテキストが渡されました。ゼロベクトルを返します。")
                 return np.zeros(self.model.get_sentence_embedding_dimension())
 
             # 埋め込みを生成
@@ -132,7 +126,7 @@ class EmbeddingManager:
             text: ドキュメントのテキスト内容
         """
         try:
-            # テキストのハッシュを計算（変更検出用）
+            # テキストのハッシュを計算(変更検出用)
             text_hash = str(hash(text))
 
             # 既存の埋め込みがあり、テキストが変更されていない場合はスキップ
@@ -177,19 +171,17 @@ class EmbeddingManager:
             del self.embeddings[doc_id]
             self.logger.info(f"ドキュメント {doc_id} の埋め込みを削除しました")
 
-    def search_similar(
-        self, query_text: str, limit: int = 100, min_similarity: float = 0.0
-    ) -> list[tuple[str, float]]:
+    def search_similar(self, query_text: str, limit: int = 100, min_similarity: float = 0.0) -> list[tuple[str, float]]:
         """
         クエリテキストに類似したドキュメントを検索
 
         Args:
             query_text: 検索クエリテキスト
             limit: 返す結果の最大数
-            min_similarity: 最小類似度スコア（0.0-1.0）
+            min_similarity: 最小類似度スコア(0.0-1.0)
 
         Returns:
-            (ドキュメントID, 類似度スコア)のタプルのリスト（類似度の降順）
+            (ドキュメントID, 類似度スコア)のタプルのリスト(類似度の降順)
         """
         try:
             if not self.embeddings:
@@ -231,7 +223,7 @@ class EmbeddingManager:
             EmbeddingError: 保存に失敗した場合
         """
         try:
-            # 一時ファイルに保存してから移動（原子的操作）
+            # 一時ファイルに保存してから移動(原子的操作)
             temp_path = self.embeddings_path + ".tmp"
 
             with open(temp_path, "wb") as f:
@@ -240,9 +232,7 @@ class EmbeddingManager:
             # 一時ファイルを本来のファイルに移動
             os.replace(temp_path, self.embeddings_path)
 
-            self.logger.info(
-                f"埋め込みキャッシュを保存しました: {self.embeddings_path}"
-            )
+            self.logger.info(f"埋め込みキャッシュを保存しました: {self.embeddings_path}")
 
         except Exception as e:
             error_msg = f"埋め込みキャッシュの保存に失敗しました: {e}"
@@ -260,14 +250,10 @@ class EmbeddingManager:
                 with open(self.embeddings_path, "rb") as f:
                     self.embeddings = pickle.load(f)
 
-                self.logger.info(
-                    f"埋め込みキャッシュを読み込みました: {len(self.embeddings)}件"
-                )
+                self.logger.info(f"埋め込みキャッシュを読み込みました: {len(self.embeddings)}件")
             else:
                 self.embeddings = {}
-                self.logger.info(
-                    "埋め込みキャッシュファイルが存在しません。空のキャッシュで開始します。"
-                )
+                self.logger.info("埋め込みキャッシュファイルが存在しません。空のキャッシュで開始します。")
 
         except Exception as e:
             self.logger.warning(f"埋め込みキャッシュの読み込みに失敗しました: {e}")
@@ -297,14 +283,14 @@ class EmbeddingManager:
 
     def get_cache_statistics(self) -> dict[str, Any]:
         """
-        キャッシュ統計情報を取得（テスト用）
+        キャッシュ統計情報を取得(テスト用)
 
         Returns:
             キャッシュ統計情報の辞書
         """
         total_embeddings = len(self.embeddings)
 
-        # シンプルなヒット率計算（テスト用）
+        # シンプルなヒット率計算(テスト用)
         # 同じコンテンツのドキュメントがある場合、キャッシュヒット率が高くなる
         hit_rate = 0.8 if total_embeddings > 0 else 0.0
 

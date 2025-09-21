@@ -1,4 +1,4 @@
-`methods_map.md` は、巨大化した **main_window.py** を含む DocMind プロジェクトで、将来的に IDE 統合 AI（GPT-5、Claude Sonnet、Cursor など）に対して効率的にリファクタリング指示を出すための基礎資料になります。
+`methods_map.md` は、巨大化した **main_window.py** を含む DocMind プロジェクトで、将来的に IDE 統合 AI(GPT-5、Claude Sonnet、Cursor など)に対して効率的にリファクタリング指示を出すための基礎資料になります。
 
 以下は **methods_map.md** のテンプレート案です。
 このテンプレートでは、**メソッドの概要・責務・依存関係・優先度**を整理し、AI に指示を出す際のベース情報として使えるようにしています。

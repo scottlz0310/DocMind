@@ -5,10 +5,10 @@
 Phase3統合: simplified版とfixed版の機能を統合
 """
 
-import shutil
-import tempfile
 from datetime import datetime
 from pathlib import Path
+import shutil
+import tempfile
 from unittest.mock import Mock, patch
 
 import pytest
@@ -134,11 +134,9 @@ class TestCoreLogicCoverage:
         search_manager.clear_suggestion_cache()
 
         # 検索設定更新
-        search_manager.update_search_settings(
-            full_text_weight=0.7, semantic_weight=0.3, min_semantic_similarity=0.2
-        )
+        search_manager.update_search_settings(full_text_weight=0.7, semantic_weight=0.3, min_semantic_similarity=0.2)
 
-        # 検索提案（空の場合）
+        # 検索提案(空の場合)
         suggestions = search_manager.get_search_suggestions("te")
         assert isinstance(suggestions, list)
 
@@ -251,7 +249,7 @@ class TestCoreLogicCoverage:
         assert stats["document_count"] >= 0
 
     def test_index_manager_batch_operations(self, temp_dir):
-        """IndexManagerのバッチ操作テスト（simplified版から統合）"""
+        """IndexManagerのバッチ操作テスト(simplified版から統合)"""
         index_manager = IndexManager(str(temp_dir / "index"))
 
         # 複数ドキュメント作成
@@ -259,7 +257,7 @@ class TestCoreLogicCoverage:
         for i in range(10):
             from datetime import datetime
 
-            # 実際のファイルを作成（fixed版の改善を採用）
+            # 実際のファイルを作成(fixed版の改善を採用)
             test_file = temp_dir / f"doc_{i}.txt"
             content = f"これはドキュメント{i}の内容です。"
             test_file.write_text(content)
@@ -292,11 +290,9 @@ class TestCoreLogicCoverage:
         assert stats["index_size"] > 0
 
     def test_embedding_manager_real_model_operations(self, temp_dir):
-        """EmbeddingManagerの実モデル操作テスト（fixed版から統合）"""
-        # 実際のモデルを使用したテスト（fixed版の改善を採用）
-        embedding_manager = EmbeddingManager(
-            embeddings_path=str(temp_dir / "embeddings.pkl")
-        )
+        """EmbeddingManagerの実モデル操作テスト(fixed版から統合)"""
+        # 実際のモデルを使用したテスト(fixed版の改善を採用)
+        embedding_manager = EmbeddingManager(embeddings_path=str(temp_dir / "embeddings.pkl"))
 
         # 埋め込み生成テスト
         text = "テスト用のテキストです"
@@ -314,7 +310,7 @@ class TestCoreLogicCoverage:
         assert isinstance(results[0][1], float)  # 類似度スコア
 
     def test_performance_basic(self, temp_dir):
-        """基本的なパフォーマンステスト（simplified版から統合）"""
+        """基本的なパフォーマンステスト(simplified版から統合)"""
         import time
 
         index_manager = IndexManager(str(temp_dir / "index"))
@@ -325,7 +321,7 @@ class TestCoreLogicCoverage:
         for i in range(100):
             from datetime import datetime
 
-            # 実際のファイルを作成（fixed版の改善を採用）
+            # 実際のファイルを作成(fixed版の改善を採用)
             test_file = temp_dir / f"perf_doc_{i}.txt"
             content = f"これはパフォーマンステスト用のドキュメント{i}です。" * 5
             test_file.write_text(content)
@@ -359,7 +355,7 @@ class TestCoreLogicCoverage:
         assert len(results) > 0
 
     def test_memory_usage_basic(self, temp_dir):
-        """基本的なメモリ使用量テスト（simplified版から統合）"""
+        """基本的なメモリ使用量テスト(simplified版から統合)"""
         import os
 
         import psutil
@@ -373,7 +369,7 @@ class TestCoreLogicCoverage:
         for i in range(500):
             from datetime import datetime
 
-            # 実際のファイルを作成（fixed版の改善を採用）
+            # 実際のファイルを作成(fixed版の改善を採用)
             test_file = temp_dir / f"mem_doc_{i}.txt"
             content = f"メモリテスト用コンテンツ{i}です。" * 20
             test_file.write_text(content)

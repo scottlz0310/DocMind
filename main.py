@@ -9,8 +9,8 @@ DocMind - ローカルAI搭載ドキュメント検索アプリケーション
 """
 
 import logging
-import sys
 from pathlib import Path
+import sys
 
 # プロジェクトルートをPythonパスに追加
 project_root = Path(__file__).parent
@@ -127,7 +127,7 @@ def main():
         # クリーンアップ処理
         logger.info("DocMindアプリケーションを終了しています...")
 
-        # メインウィンドウの強制クリーンアップ（GUIスレッドをブロックしないように）
+        # メインウィンドウの強制クリーンアップ(GUIスレッドをブロックしないように)
         if "main_window" in locals() and main_window:
             try:
                 # GUIコンポーネントを先にクリーンアップ
@@ -139,7 +139,7 @@ def main():
                 logger.error(f"メインウィンドウクリーンアップエラー: {e}")
         logger.info("メインウィンドウをクリーンアップしました")
 
-        # パフォーマンス最適化コンポーネントの停止（順序重要）
+        # パフォーマンス最適化コンポーネントの停止(順序重要)
         logger.info("バックグラウンドコンポーネントの停止を開始")
         if memory_manager:
             memory_manager.stop()
@@ -159,7 +159,7 @@ def main():
 
     except Exception as e:
         # 重大なエラーが発生した場合の処理
-        error_msg = f"アプリケーションの初期化中に重大なエラーが発生しました: {str(e)}"
+        error_msg = f"アプリケーションの初期化中に重大なエラーが発生しました: {e!s}"
 
         # ログが設定されている場合はログにも記録
         if logger:
@@ -179,9 +179,7 @@ def main():
             pass
 
         # ユーザーにエラーダイアログを表示
-        _show_critical_error_dialog(
-            "起動エラー", f"DocMindの起動に失敗しました。\n\n{error_msg}", app
-        )
+        _show_critical_error_dialog("起動エラー", f"DocMindの起動に失敗しました。\n\n{error_msg}", app)
 
         return 1
 
@@ -254,9 +252,7 @@ def _setup_application_recovery_handlers(error_handler, logger: logging.Logger) 
             return False
 
     error_handler.register_recovery_handler(ConfigurationError, config_recovery_handler)
-    error_handler.register_recovery_handler(
-        FileSystemError, filesystem_recovery_handler
-    )
+    error_handler.register_recovery_handler(FileSystemError, filesystem_recovery_handler)
 
     logger.info("アプリケーション回復ハンドラーを設定しました")
 
@@ -280,17 +276,13 @@ def _perform_initial_health_check(logger: logging.Logger) -> None:
         logger.info(f"  - 全体的な健全性: {health['overall_health']}")
 
         if health["overall_health"] != "healthy":
-            logger.warning(
-                "一部のコンポーネントに問題があります。機能が制限される可能性があります。"
-            )
+            logger.warning("一部のコンポーネントに問題があります。機能が制限される可能性があります。")
 
     except Exception as e:
         logger.error(f"健全性チェックに失敗: {e}")
 
 
-def _show_critical_error_dialog(
-    title: str, message: str, app: QApplication = None
-) -> None:
+def _show_critical_error_dialog(title: str, message: str, app: QApplication = None) -> None:
     """
     重大なエラーダイアログを表示
 

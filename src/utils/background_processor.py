@@ -5,13 +5,13 @@
 進捗追跡、タスクキューイング、並行処理をサポートします。
 """
 
-import queue
-import threading
-import time
 from collections.abc import Callable
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from enum import Enum
+import queue
+import threading
+import time
 from typing import Any
 
 from ..utils.exceptions import BackgroundProcessingError
@@ -75,7 +75,7 @@ class BackgroundTask:
     completion_callback: Callable[["BackgroundTask"], None] | None = None
 
     def __lt__(self, other: "BackgroundTask") -> bool:
-        """優先度による比較（優先度キューで使用）"""
+        """優先度による比較(優先度キューで使用)"""
         return self.priority.value > other.priority.value
 
 
@@ -175,9 +175,7 @@ class BackgroundProcessor(LoggerMixin):
         # ワーカースレッド
         self._worker_thread: threading.Thread | None = None
 
-        self.logger.info(
-            f"バックグラウンドプロセッサーを初期化: ワーカー数={max_workers}"
-        )
+        self.logger.info(f"バックグラウンドプロセッサーを初期化: ワーカー数={max_workers}")
 
     def __del__(self):
         """デストラクタでリソースをクリーンアップ"""
@@ -196,9 +194,7 @@ class BackgroundProcessor(LoggerMixin):
             self._shutdown = False
 
             # ワーカースレッドを開始
-            self._worker_thread = threading.Thread(
-                target=self._worker_loop, daemon=True
-            )
+            self._worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
             self._worker_thread.start()
 
             self.logger.info("バックグラウンド処理を開始しました")
@@ -208,7 +204,7 @@ class BackgroundProcessor(LoggerMixin):
         バックグラウンド処理を停止
 
         Args:
-            timeout: 停止タイムアウト（秒）
+            timeout: 停止タイムアウト(秒)
         """
         with self._lock:
             if not self._running:
@@ -359,20 +355,10 @@ class BackgroundProcessor(LoggerMixin):
     def get_queue_stats(self) -> dict[str, Any]:
         """キューの統計情報を取得"""
         with self._lock:
-            pending_count = sum(
-                1 for task in self._tasks.values() if task.status == TaskStatus.PENDING
-            )
-            running_count = sum(
-                1 for task in self._tasks.values() if task.status == TaskStatus.RUNNING
-            )
-            completed_count = sum(
-                1
-                for task in self._tasks.values()
-                if task.status == TaskStatus.COMPLETED
-            )
-            failed_count = sum(
-                1 for task in self._tasks.values() if task.status == TaskStatus.FAILED
-            )
+            pending_count = sum(1 for task in self._tasks.values() if task.status == TaskStatus.PENDING)
+            running_count = sum(1 for task in self._tasks.values() if task.status == TaskStatus.RUNNING)
+            completed_count = sum(1 for task in self._tasks.values() if task.status == TaskStatus.COMPLETED)
+            failed_count = sum(1 for task in self._tasks.values() if task.status == TaskStatus.FAILED)
 
             return {
                 "queue_size": self._task_queue.qsize(),
@@ -387,12 +373,12 @@ class BackgroundProcessor(LoggerMixin):
             }
 
     def _worker_loop(self) -> None:
-        """ワーカーループ（別スレッドで実行）"""
+        """ワーカーループ(別スレッドで実行)"""
         self.logger.debug("ワーカーループを開始")
 
         while not self._shutdown:
             try:
-                # タスクを取得（タイムアウト付き）
+                # タスクを取得(タイムアウト付き)
                 try:
                     task = self._task_queue.get(timeout=1.0)
                 except queue.Empty:
@@ -430,7 +416,7 @@ class BackgroundProcessor(LoggerMixin):
                 task.progress_callback,  # デフォルトの総ステップ数
             )
 
-            # タスクの引数に進捗トラッカーを追加（関数がサポートしている場合のみ）
+            # タスクの引数に進捗トラッカーを追加(関数がサポートしている場合のみ)
             enhanced_kwargs = task.kwargs.copy()
 
             # 関数のシグネチャをチェックして進捗トラッカーをサポートしているか確認
@@ -577,10 +563,7 @@ class TaskManager(LoggerMixin):
 
     def get_all_stats(self) -> dict[str, Any]:
         """すべてのプロセッサーの統計情報を取得"""
-        return {
-            name: processor.get_queue_stats()
-            for name, processor in self._processors.items()
-        }
+        return {name: processor.get_queue_stats() for name, processor in self._processors.items()}
 
 
 # グローバルタスクマネージャーインスタンス

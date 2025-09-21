@@ -17,7 +17,7 @@ class Config:
     アプリケーション設定管理クラス
 
     設定値の取得、保存、デフォルト値の管理を行います。
-    設定は以下の優先順位で決定されます：
+    設定は以下の優先順位で決定されます:
     1. 環境変数
     2. 設定ファイル
     3. デフォルト値
@@ -28,7 +28,7 @@ class Config:
         設定管理クラスの初期化
 
         Args:
-            config_file: 設定ファイルのパス（省略時はデフォルトパスを使用）
+            config_file: 設定ファイルのパス(省略時はデフォルトパスを使用)
         """
         self.logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ class Config:
             "search_history_limit": 1000,
         }
 
-        # 設定の初期化（デフォルト値で開始）
+        # 設定の初期化(デフォルト値で開始)
         self._config = self._defaults.copy()
 
         # 設定ファイルのパス
@@ -82,7 +82,7 @@ class Config:
             config_file = os.path.join(self.get_data_directory(), "config.json")
         self.config_file = Path(config_file)
 
-        # 設定の読み込み（ファイルが存在する場合）
+        # 設定の読み込み(ファイルが存在する場合)
         self._load_config_from_file()
 
     def _load_config_from_file(self) -> None:
@@ -132,7 +132,7 @@ class Config:
         Returns:
             設定値
         """
-        # 環境変数をチェック（DOCMIND_プレフィックス付き）
+        # 環境変数をチェック(DOCMIND_プレフィックス付き)
         env_key = f"DOCMIND_{key.upper()}"
         env_value = os.getenv(env_key)
         if env_value is not None:
@@ -158,7 +158,7 @@ class Config:
         既存のAPIとの互換性を維持
 
         Returns:
-            データディレクトリのパス（文字列）
+            データディレクトリのパス(文字列)
         """
         return self.get("data_directory")
 
@@ -168,7 +168,7 @@ class Config:
         データディレクトリのパスを取得
 
         Returns:
-            Pathオブジェクト（文字列ではなく）
+            Pathオブジェクト(文字列ではなく)
         """
         return Path(self.get_data_directory())
 
@@ -187,7 +187,7 @@ class Config:
         """インデックスディレクトリのパスを取得
 
         Returns:
-            Pathオブジェクト（文字列ではなく）
+            Pathオブジェクト(文字列ではなく)
         """
         return Path(self.get_index_path())
 
@@ -196,7 +196,7 @@ class Config:
         """ログディレクトリのパスを取得
 
         Returns:
-            Pathオブジェクト（文字列ではなく）
+            Pathオブジェクト(文字列ではなく)
         """
         return self.data_dir / "logs"
 
@@ -336,9 +336,7 @@ class Config:
             # データディレクトリの検証
             data_dir = Path(self.get_data_directory())
             if not data_dir.parent.exists():
-                warnings.append(
-                    f"データディレクトリの親ディレクトリが存在しません: {data_dir.parent}"
-                )
+                warnings.append(f"データディレクトリの親ディレクトリが存在しません: {data_dir.parent}")
 
             # インデックス対象フォルダの検証
             for folder in self.get_indexed_folders():
@@ -361,9 +359,7 @@ class Config:
             # ログファイルの検証
             log_file = Path(self.get_log_file_path())
             if not log_file.parent.exists():
-                warnings.append(
-                    f"ログファイルのディレクトリが存在しません: {log_file.parent}"
-                )
+                warnings.append(f"ログファイルのディレクトリが存在しません: {log_file.parent}")
 
         except Exception as e:
             warnings.append(f"設定の検証中にエラーが発生しました: {e}")
@@ -380,11 +376,7 @@ class Config:
         try:
             export_data = {
                 "version": "1.0",
-                "timestamp": (
-                    Path(file_path).stat().st_mtime
-                    if Path(file_path).exists()
-                    else None
-                ),
+                "timestamp": (Path(file_path).stat().st_mtime if Path(file_path).exists() else None),
                 "settings": self._config.copy(),
             }
 
@@ -405,16 +397,14 @@ class Config:
                 import_data = json.load(f)
 
             if "settings" in import_data:
-                # バージョンチェック（将来の拡張用）
+                # バージョンチェック(将来の拡張用)
                 version = import_data.get("version", "1.0")
                 if version == "1.0":
                     self._config.update(import_data["settings"])
                     self.logger.info(f"設定をインポートしました: {file_path}")
                     return True
                 else:
-                    self.logger.warning(
-                        f"サポートされていない設定ファイルのバージョンです: {version}"
-                    )
+                    self.logger.warning(f"サポートされていない設定ファイルのバージョンです: {version}")
                     return False
             else:
                 self.logger.error("無効な設定ファイル形式です")

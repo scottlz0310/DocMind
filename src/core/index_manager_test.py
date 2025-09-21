@@ -16,11 +16,9 @@ class MockIndexManager(IndexManager):
     検索結果作成時にMockDocumentを使用してファイル存在チェックを回避
     """
 
-    def _create_search_result_from_hit(
-        self, hit: Hit, query_text: str, rank: int
-    ) -> SearchResult:
+    def _create_search_result_from_hit(self, hit: Hit, query_text: str, rank: int) -> SearchResult:
         """
-        Whooshの検索結果からSearchResultオブジェクトを作成（テスト用）
+        Whooshの検索結果からSearchResultオブジェクトを作成(テスト用)
 
         Args:
             hit (Hit): Whooshの検索結果
@@ -44,7 +42,7 @@ class MockIndexManager(IndexManager):
                 self.logger.warning(f"メタデータの復元に失敗しました: {e}")
                 metadata = {}
 
-        # 実際のDocumentオブジェクトを作成（テスト用にファイル存在チェックなし）
+        # 実際のDocumentオブジェクトを作成(テスト用にファイル存在チェックなし)
         from ..data.models import Document
 
         document = Document(
@@ -67,7 +65,7 @@ class MockIndexManager(IndexManager):
         # ハイライト対象の用語を抽出
         highlighted_terms = self._extract_highlighted_terms(query_text)
 
-        # スコアの正規化（Whooshのスコアは0-1の範囲ではないため）
+        # スコアの正規化(Whooshのスコアは0-1の範囲ではないため)
         normalized_score = min(hit.score / 10.0, 1.0)  # 適切な正規化係数を使用
 
         return SearchResult(

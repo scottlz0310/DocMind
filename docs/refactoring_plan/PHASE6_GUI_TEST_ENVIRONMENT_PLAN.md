@@ -3,12 +3,12 @@
 ## 📋 Phase5成果とPhase6への移行
 
 ### Phase5完了成果
-- **テストコード削減**: 51,039行 → 10,247行（79.9%削減達成）
+- **テストコード削減**: 51,039行 → 10,247行(79.9%削減達成)
 - **ユニットテスト基盤**: 8,247行の高品質ユニットテスト構築
 - **統合テスト簡素化**: 2,000行の接続確認レベル統合テスト
-- **実行時間短縮**: 30分 → 5分以内（目標達成）
+- **実行時間短縮**: 30分 → 5分以内(目標達成)
 
-### 残存課題（Phase6で解決）
+### 残存課題(Phase6で解決)
 - **QObject初期化問題**: 44テストがPySide6初期化エラーで未実行
 - **GUIテスト環境**: ヘッドレス環境でのGUIテスト実行基盤未整備
 - **コアロジックテスト**: DocumentProcessor、IndexManager等の重要コンポーネントテスト不足
@@ -19,7 +19,7 @@
 **「包括的品質保証体制の完成」** - GUIテスト環境整備により全テストの実行可能化
 
 ### 具体的成果指標
-- **テスト実行率**: 95% → 100%（44未実行テストの解決）
+- **テスト実行率**: 95% → 100%(44未実行テストの解決)
 - **GUIテスト環境**: ヘッドレス環境での安定実行
 - **コアロジックカバレッジ**: 70% → 90%以上
 - **CI/CD統合**: 自動テスト実行環境の完全構築
@@ -74,7 +74,7 @@ def qtbot(qapp, qtbot):
 
 ## 🏗️ 実装戦略
 
-### Step1: GUIテスト環境基盤整備（3週間）
+### Step1: GUIテスト環境基盤整備(3週間)
 
 #### 1.1 pytest-qt環境構築
 ```python
@@ -117,7 +117,7 @@ class GUITestHelper:
         QApplication.processEvents()
 ```
 
-### Step2: 44未実行テストの修正（4週間）
+### Step2: 44未実行テストの修正(4週間)
 
 #### 2.1 MainWindowテスト修正
 ```python
@@ -182,7 +182,7 @@ class TestSearchController:
         mock_dependencies['search_manager'].search.assert_called_once()
 ```
 
-### Step3: コアロジック強化テスト（3週間）
+### Step3: コアロジック強化テスト(3週間)
 
 #### 3.1 DocumentProcessorテスト
 ```python
@@ -240,7 +240,7 @@ class TestIndexManager:
         assert manager.document_count() == 1
 ```
 
-### Step4: CI/CD統合とパフォーマンス最適化（2週間）
+### Step4: CI/CD統合とパフォーマンス最適化(2週間)
 
 #### 4.1 GitHub Actions設定
 ```yaml
@@ -305,7 +305,7 @@ class TestPerformanceBenchmarks:
         assert result.success is True
 ```
 
-## 📅 実装スケジュール（12週間）
+## 📅 実装スケジュール(12週間)
 
 ### Week 1-3: GUIテスト環境基盤整備
 - [ ] Week 1: pytest-qt環境構築・QApplication管理統一
@@ -313,10 +313,10 @@ class TestPerformanceBenchmarks:
 - [ ] Week 3: GUIテストヘルパー・ユーティリティ作成
 
 ### Week 4-7: 44未実行テスト修正
-- [ ] Week 4: MainWindowテスト修正（15テスト）
-- [ ] Week 5: 検索機能テスト修正（12テスト）
-- [ ] Week 6: フォルダツリーテスト修正（10テスト）
-- [ ] Week 7: その他GUIコンポーネントテスト修正（7テスト）
+- [ ] Week 4: MainWindowテスト修正(15テスト)
+- [ ] Week 5: 検索機能テスト修正(12テスト)
+- [ ] Week 6: フォルダツリーテスト修正(10テスト)
+- [ ] Week 7: その他GUIコンポーネントテスト修正(7テスト)
 
 ### Week 8-10: コアロジック強化テスト
 - [ ] Week 8: DocumentProcessor・FileProcessor強化
@@ -330,8 +330,8 @@ class TestPerformanceBenchmarks:
 ## 📊 品質指標
 
 ### テスト実行率目標
-- **現在**: 95%（44テスト未実行）
-- **目標**: 100%（全テスト実行可能）
+- **現在**: 95%(44テスト未実行)
+- **目標**: 100%(全テスト実行可能)
 
 ### カバレッジ目標
 - **GUIコンポーネント**: 80%以上

@@ -3,7 +3,7 @@
 DocMind - 自動更新システム
 アプリケーションの自動更新機能を提供
 
-このモジュールは以下の機能を提供します：
+このモジュールは以下の機能を提供します:
 - バージョンチェック
 - 更新ファイルのダウンロード
 - 自動インストール
@@ -14,11 +14,11 @@ import hashlib
 import json
 import logging
 import os
+from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import threading
-from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen, urlretrieve
@@ -77,7 +77,7 @@ class UpdateChecker(QObject):
             return "1.0.0"
 
     def check_for_updates(self) -> None:
-        """更新をチェック（非同期）"""
+        """更新をチェック(非同期)"""
         thread = threading.Thread(target=self._check_updates_thread)
         thread.daemon = True
         thread.start()
@@ -104,16 +104,14 @@ class UpdateChecker(QObject):
                         break
 
                 if download_url:
-                    update_info = UpdateInfo(
-                        {
-                            "version": latest_version,
-                            "download_url": download_url,
-                            "changelog": data.get("body", ""),
-                            "file_size": file_size,
-                            "release_date": data.get("published_at", ""),
-                            "required": False,
-                        }
-                    )
+                    update_info = UpdateInfo({
+                        "version": latest_version,
+                        "download_url": download_url,
+                        "changelog": data.get("body", ""),
+                        "file_size": file_size,
+                        "release_date": data.get("published_at", ""),
+                        "required": False,
+                    })
 
                     # バージョン比較
                     if self._is_newer_version(latest_version, self.current_version):
@@ -140,7 +138,7 @@ class UpdateChecker(QObject):
             self.check_failed.emit(f"予期しないエラー: {e}")
 
     def _is_newer_version(self, version1: str, version2: str) -> bool:
-        """バージョン比較（version1 > version2の場合True）"""
+        """バージョン比較(version1 > version2の場合True)"""
         try:
             v1_parts = [int(x) for x in version1.split(".")]
             v2_parts = [int(x) for x in version2.split(".")]
@@ -176,9 +174,7 @@ class UpdateDownloader(QObject):
             return
 
         self.cancel_requested = False
-        self.download_thread = threading.Thread(
-            target=self._download_thread, args=(update_info,)
-        )
+        self.download_thread = threading.Thread(target=self._download_thread, args=(update_info,))
         self.download_thread.daemon = True
         self.download_thread.start()
 
@@ -208,12 +204,10 @@ class UpdateDownloader(QObject):
 
             urlretrieve(update_info.download_url, temp_file, progress_hook)
 
-            # チェックサムの検証（利用可能な場合）
+            # チェックサムの検証(利用可能な場合)
             if update_info.checksum:
                 if not self._verify_checksum(temp_file, update_info.checksum):
-                    raise UpdateError(
-                        "ダウンロードファイルのチェックサムが一致しません"
-                    )
+                    raise UpdateError("ダウンロードファイルのチェックサムが一致しません")
 
             logger.info(f"ダウンロード完了: {temp_file}")
             self.download_completed.emit(temp_file)
@@ -261,12 +255,10 @@ class UpdateInstaller:
                 # MSIインストーラー
                 cmd = ["msiexec", "/i", installer_path, "/quiet", "/norestart"]
             else:
-                raise UpdateError(
-                    f"サポートされていないインストーラー形式: {installer_path}"
-                )
+                raise UpdateError(f"サポートされていないインストーラー形式: {installer_path}")
 
             # インストーラーを実行
-            result = subprocess.run(cmd, capture_output=True, text=True)
+            result = subprocess.run(cmd, check=False, capture_output=True, text=True)
 
             if result.returncode == 0:
                 logger.info("更新のインストールが完了しました")
@@ -373,16 +365,12 @@ class UpdateManager(QObject):
                 except Exception:
                     pass
 
-                self.update_installation_completed.emit(
-                    True, "更新が正常にインストールされました"
-                )
+                self.update_installation_completed.emit(True, "更新が正常にインストールされました")
 
                 # 再起動をスケジュール
                 self.installer.schedule_restart()
             else:
-                self.update_installation_completed.emit(
-                    False, "更新のインストールに失敗しました"
-                )
+                self.update_installation_completed.emit(False, "更新のインストールに失敗しました")
 
         except Exception as e:
             logger.error(f"インストール処理エラー: {e}")
@@ -391,9 +379,7 @@ class UpdateManager(QObject):
     def _on_download_failed(self, error_message: str) -> None:
         """ダウンロード失敗時の処理"""
         logger.error(f"ダウンロード失敗: {error_message}")
-        self.update_installation_completed.emit(
-            False, f"ダウンロードエラー: {error_message}"
-        )
+        self.update_installation_completed.emit(False, f"ダウンロードエラー: {error_message}")
 
 
 def show_update_dialog(parent, update_info: UpdateInfo) -> bool:

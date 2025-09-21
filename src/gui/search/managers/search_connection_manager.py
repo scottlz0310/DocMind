@@ -58,16 +58,12 @@ class SearchConnectionManager(QObject):
         """ウィジェット間の接続を設定"""
         # 検索提案選択
         search_input.suggestion_selected.connect(
-            lambda suggestion: event_manager.handle_suggestion_selected(
-                suggestion, search_input, execute_callback
-            )
+            lambda suggestion: event_manager.handle_suggestion_selected(suggestion, search_input, execute_callback)
         )
 
         # 検索タイプ変更
         search_type_selector.search_type_changed.connect(
-            lambda search_type: event_manager.handle_search_type_changed(
-                search_type, ui_manager, advanced_options
-            )
+            lambda search_type: event_manager.handle_search_type_changed(search_type, ui_manager, advanced_options)
         )
 
         # 高度なオプション変更
@@ -83,17 +79,13 @@ class SearchConnectionManager(QObject):
         history_widget.history_deleted.connect(event_manager.handle_history_deleted)
 
         # 保存された検索
-        history_widget.search_save_requested.connect(
-            event_manager.handle_search_save_requested
-        )
+        history_widget.search_save_requested.connect(event_manager.handle_search_save_requested)
         history_widget.saved_search_selected.connect(
             lambda search_data: event_manager.handle_saved_search_selected(
                 search_data, search_input, search_type_selector, apply_options_callback
             )
         )
-        history_widget.saved_search_deleted.connect(
-            event_manager.handle_saved_search_deleted
-        )
+        history_widget.saved_search_deleted.connect(event_manager.handle_saved_search_deleted)
 
     def setup_controller_connections(
         self,

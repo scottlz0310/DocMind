@@ -47,7 +47,7 @@ class StatusManager(QObject, LoggerMixin):
             self.status_label = QLabel("準備完了")
             self.status_bar.addWidget(self.status_label)
 
-            # 進捗バー（通常は非表示）
+            # 進捗バー(通常は非表示)
             self.progress_bar = QProgressBar()
             self.progress_bar.setVisible(False)
             self.progress_bar.setMaximumWidth(200)
@@ -84,7 +84,7 @@ class StatusManager(QObject, LoggerMixin):
 
         Args:
             message: 表示するメッセージ
-            timeout: 表示時間（ミリ秒、0で永続表示）
+            timeout: 表示時間(ミリ秒、0で永続表示)
         """
         if self.status_bar:
             self.status_bar.showMessage(message, timeout)
@@ -126,7 +126,7 @@ class StatusManager(QObject, LoggerMixin):
         進捗バーの値を設定
 
         Args:
-            value: 進捗値（0-100）
+            value: 進捗値(0-100)
         """
         if self.progress_bar:
             self.progress_bar.setValue(value)
@@ -169,7 +169,7 @@ class StatusManager(QObject, LoggerMixin):
         進捗バーのスタイルを設定
 
         Args:
-            style: スタイル名（'info', 'success', 'warning', 'error'）
+            style: スタイル名('info', 'success', 'warning', 'error')
         """
         if not self.progress_bar:
             return
@@ -260,6 +260,4 @@ class StatusManager(QObject, LoggerMixin):
             self.logger.debug("ステータス管理マネージャーをクリーンアップしました")
 
         except Exception as e:
-            self.logger.error(
-                f"ステータス管理マネージャーのクリーンアップ中にエラー: {e}"
-            )
+            self.logger.error(f"ステータス管理マネージャーのクリーンアップ中にエラー: {e}")

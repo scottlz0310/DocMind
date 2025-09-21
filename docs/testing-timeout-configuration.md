@@ -6,7 +6,7 @@ DocMindプロジェクトでは、テストの実行時間を制御し、無限�
 
 ## 設定内容
 
-### 1. pytest設定（pytest.ini）
+### 1. pytest設定(pytest.ini)
 
 ```ini
 addopts = 
@@ -17,7 +17,7 @@ addopts =
 - **デフォルトタイムアウト**: 60秒
 - **タイムアウト方式**: スレッドベース
 
-### 2. CI/CD設定（.github/workflows/ci.yml）
+### 2. CI/CD設定(.github/workflows/ci.yml)
 
 ```yaml
 - name: Run tests
@@ -26,10 +26,10 @@ addopts =
   timeout-minutes: 10
 ```
 
-- **pytest タイムアウト**: 300秒（5分）
+- **pytest タイムアウト**: 300秒(5分)
 - **GitHub Actions タイムアウト**: 10分
 
-### 3. 依存関係（pyproject.toml）
+### 3. 依存関係(pyproject.toml)
 
 ```toml
 "pytest-timeout>=2.1.0",
@@ -38,8 +38,8 @@ addopts =
 ## タイムアウト設定の階層
 
 1. **個別テスト**: `@pytest.mark.timeout(秒数)` デコレータ
-2. **pytest設定**: `pytest.ini` のデフォルト設定（60秒）
-3. **CI実行**: GitHub Actions の `timeout-minutes`（10分）
+2. **pytest設定**: `pytest.ini` のデフォルト設定(60秒)
+3. **CI実行**: GitHub Actions の `timeout-minutes`(10分)
 4. **システム**: `timeout` コマンドによる強制終了
 
 ## 使用例
@@ -63,7 +63,7 @@ def test_quick_operation():
 ```python
 @pytest.mark.timeout(0)
 def test_no_timeout():
-    # タイムアウトなし（非推奨）
+    # タイムアウトなし(非推奨)
     assert True
 ```
 
@@ -109,7 +109,7 @@ pytest tests/ -v --timeout=60 --timeout-method=thread --tb=long
 
 ## 注意事項
 
-- タイムアウト時間は適切に設定する（短すぎると正常なテストが失敗）
+- タイムアウト時間は適切に設定する(短すぎると正常なテストが失敗)
 - CI環境とローカル環境の性能差を考慮する
 - 重要なテストは複数回実行して安定性を確認する
 - タイムアウトが頻発する場合はテスト設計を見直す

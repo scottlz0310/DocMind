@@ -4,10 +4,10 @@ FileWatcher統合モジュール
 FileWatcherを他のコンポーネントと統合して使用するためのヘルパークラスと関数を提供します。
 """
 
+from collections.abc import Callable
 import logging
 import os
 import threading
-from collections.abc import Callable
 from typing import Any
 
 from ..utils.config import Config
@@ -32,7 +32,7 @@ class DocumentIndexingService:
         サービスを初期化
 
         Args:
-            config: 設定オブジェクト（Noneの場合はデフォルト設定を使用）
+            config: 設定オブジェクト(Noneの場合はデフォルト設定を使用)
         """
         self.config = config or Config()
         self.logger = logging.getLogger(__name__)
@@ -74,9 +74,7 @@ class DocumentIndexingService:
             self.document_processor = DocumentProcessor()
 
             # SearchManagerの初期化
-            self.search_manager = SearchManager(
-                self.index_manager, self.embedding_manager
-            )
+            self.search_manager = SearchManager(self.index_manager, self.embedding_manager)
 
             self.logger.info("すべてのコンポーネントが初期化されました")
 
@@ -99,9 +97,7 @@ class DocumentIndexingService:
             raise FileSystemError(f"ディレクトリが存在しません: {directory_path}")
 
         if not os.path.isdir(directory_path):
-            raise FileSystemError(
-                f"指定されたパスはディレクトリではありません: {directory_path}"
-            )
+            raise FileSystemError(f"指定されたパスはディレクトリではありません: {directory_path}")
 
         self.file_watcher.add_watch_path(directory_path)
         self.logger.info(f"監視対象ディレクトリを追加しました: {directory_path}")
@@ -174,7 +170,7 @@ class DocumentIndexingService:
         初期スキャンを実行
 
         Args:
-            directory_paths: スキャンするディレクトリのリスト（Noneの場合は監視対象すべて）
+            directory_paths: スキャンするディレクトリのリスト(Noneの場合は監視対象すべて)
 
         Returns:
             スキャン結果の統計情報
@@ -186,9 +182,7 @@ class DocumentIndexingService:
             self.logger.warning("スキャン対象のディレクトリが指定されていません")
             return {"processed_files": 0, "errors": 0}
 
-        self.logger.info(
-            f"初期スキャンを開始します: {len(directory_paths)}個のディレクトリ"
-        )
+        self.logger.info(f"初期スキャンを開始します: {len(directory_paths)}個のディレクトリ")
 
         stats = {
             "processed_files": 0,
@@ -228,17 +222,13 @@ class DocumentIndexingService:
                             stats["added_files"] += 1
 
                         # 埋め込みを生成
-                        self.embedding_manager.add_document_embedding(
-                            document.id, document.content
-                        )
+                        self.embedding_manager.add_document_embedding(document.id, document.content)
 
                         stats["processed_files"] += 1
 
                         # 進捗をログ出力
                         if stats["processed_files"] % 100 == 0:
-                            self.logger.info(
-                                f"進捗: {stats['processed_files']}ファイル処理完了"
-                            )
+                            self.logger.info(f"進捗: {stats['processed_files']}ファイル処理完了")
 
                     except Exception as e:
                         self.logger.error(f"ファイル処理中にエラー: {file_path} - {e}")
@@ -267,7 +257,7 @@ class DocumentIndexingService:
         強制再スキャンを実行
 
         Args:
-            directory_path: 再スキャンするディレクトリ（Noneの場合はすべて）
+            directory_path: 再スキャンするディレクトリ(Noneの場合はすべて)
         """
         self.logger.info("強制再スキャンを開始します")
         self.file_watcher.force_rescan(directory_path)
@@ -297,7 +287,7 @@ class DocumentIndexingService:
         処理完了まで待機
 
         Args:
-            timeout: タイムアウト時間（秒）
+            timeout: タイムアウト時間(秒)
 
         Returns:
             処理が完了した場合True、タイムアウトした場合False
@@ -387,7 +377,7 @@ if __name__ == "__main__":
     # サービスを作成
     service = create_document_indexing_service(config)
 
-    # 監視対象ディレクトリを追加（コマンドライン引数から）
+    # 監視対象ディレクトリを追加(コマンドライン引数から)
     if len(sys.argv) > 1:
         for directory in sys.argv[1:]:
             if os.path.exists(directory):
@@ -407,7 +397,7 @@ if __name__ == "__main__":
         # サービス統計を表示
         stats = service.get_service_stats()
 
-        # メインループ（Ctrl+Cで終了）
+        # メインループ(Ctrl+Cで終了)
         try:
             while True:
                 import time

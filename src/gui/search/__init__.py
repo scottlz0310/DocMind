@@ -13,10 +13,10 @@ from .widgets.type_selector import SearchTypeSelector
 from .widgets.worker_thread import SearchWorkerThread
 
 __all__ = [
-    "SearchInputWidget",
-    "SearchTypeSelector",
     "AdvancedSearchOptions",
-    "SearchProgressWidget",
     "SearchHistoryWidget",
+    "SearchInputWidget",
+    "SearchProgressWidget",
+    "SearchTypeSelector",
     "SearchWorkerThread",
 ]

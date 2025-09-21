@@ -5,11 +5,11 @@ DocMindアプリケーション用のデータモデル
 すべてのモデルは型ヒントと検証機能を含み、データの整合性を保証します。
 """
 
-import hashlib
-import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+import hashlib
+import os
 from pathlib import Path
 from typing import Any
 
@@ -20,9 +20,9 @@ class SearchType(Enum):
     アプリケーションでサポートされる検索方法を定義します。
     """
 
-    FULL_TEXT = "full_text"  # 全文検索（Whooshベース）
-    SEMANTIC = "semantic"  # セマンティック検索（埋め込みベース）
-    HYBRID = "hybrid"  # ハイブリッド検索（全文+セマンティック）
+    FULL_TEXT = "full_text"  # 全文検索(Whooshベース)
+    SEMANTIC = "semantic"  # セマンティック検索(埋め込みベース)
+    HYBRID = "hybrid"  # ハイブリッド検索(全文+セマンティック)
 
 
 class FileType(Enum):
@@ -75,7 +75,7 @@ class Document:
     title: str  # ドキュメントのタイトル
     content: str  # 抽出されたテキストコンテンツ
     file_type: FileType  # ファイルタイプ
-    size: int  # ファイルサイズ（バイト）
+    size: int  # ファイルサイズ(バイト)
     created_date: datetime  # ファイル作成日時
     modified_date: datetime  # ファイル最終更新日時
     indexed_date: datetime  # インデックス化日時
@@ -157,9 +157,7 @@ class Document:
         Returns:
             str: 生成されたID
         """
-        return hashlib.sha256(
-            str(Path(file_path).absolute()).encode("utf-8")
-        ).hexdigest()
+        return hashlib.sha256(str(Path(file_path).absolute()).encode("utf-8")).hexdigest()
 
     def is_modified_since_indexing(self) -> bool:
         """インデックス化以降にファイルが変更されたかチェック
@@ -209,7 +207,7 @@ class SearchResult:
 
     # 必須フィールド
     document: Document  # 検索にヒットしたドキュメント
-    score: float  # 関連度スコア（0.0-1.0）
+    score: float  # 関連度スコア(0.0-1.0)
     search_type: SearchType  # 使用された検索タイプ
 
     # オプションフィールド
@@ -276,10 +274,8 @@ class SearchQuery:
     search_type: SearchType  # 検索タイプ
 
     # オプションフィールド
-    limit: int | None = None  # 最大結果数（Noneの場合は設定から取得）
-    file_types: list[FileType] = field(
-        default_factory=list
-    )  # フィルター対象のファイルタイプ
+    limit: int | None = None  # 最大結果数(Noneの場合は設定から取得)
+    file_types: list[FileType] = field(default_factory=list)  # フィルター対象のファイルタイプ
     date_from: datetime | None = None  # 日付範囲の開始
     date_to: datetime | None = None  # 日付範囲の終了
     folder_paths: list[str] = field(default_factory=list)  # 検索対象フォルダ
@@ -317,9 +313,7 @@ class IndexStats:
     total_documents: int = 0  # 総ドキュメント数
     total_size: int = 0  # 総ファイルサイズ
     last_updated: datetime | None = None  # 最終更新日時
-    file_type_counts: dict[FileType, int] = field(
-        default_factory=dict
-    )  # ファイルタイプ別カウント
+    file_type_counts: dict[FileType, int] = field(default_factory=dict)  # ファイルタイプ別カウント
 
     def get_formatted_size(self) -> str:
         """フォーマットされたサイズを取得
@@ -349,7 +343,7 @@ class RebuildState:
     start_time: datetime | None = None  # 処理開始時刻
     folder_path: str | None = None  # 処理対象フォルダパス
     is_active: bool = False  # 処理が実行中かどうか
-    timeout_timer: Any | None = None  # タイムアウト監視用タイマー（QTimer）
+    timeout_timer: Any | None = None  # タイムアウト監視用タイマー(QTimer)
 
     def __post_init__(self):
         """初期化後の検証"""
@@ -370,7 +364,7 @@ class RebuildState:
         """タイムアウトを超過しているかチェック
 
         Args:
-            timeout_minutes (int): タイムアウト時間（分）
+            timeout_minutes (int): タイムアウト時間(分)
 
         Returns:
             bool: タイムアウトを超過している場合True
@@ -385,7 +379,7 @@ class RebuildState:
         """経過時間を秒単位で取得
 
         Returns:
-            Optional[float]: 経過時間（秒）、開始時刻が設定されていない場合はNone
+            Optional[float]: 経過時間(秒)、開始時刻が設定されていない場合はNone
         """
         if not self.start_time:
             return None
@@ -452,7 +446,7 @@ class RebuildProgress:
     current_file: str = ""  # 現在処理中のファイル名
     files_processed: int = 0  # 処理済みファイル数
     total_files: int = 0  # 総ファイル数
-    percentage: int = 0  # 進捗率（0-100）
+    percentage: int = 0  # 進捗率(0-100)
     message: str = ""  # カスタムメッセージ
 
     def __post_init__(self):
@@ -486,9 +480,7 @@ class RebuildProgress:
     def _calculate_percentage(self):
         """進捗率を自動計算"""
         if self.total_files > 0:
-            self.percentage = min(
-                100, int((self.files_processed / self.total_files) * 100)
-            )
+            self.percentage = min(100, int((self.files_processed / self.total_files) * 100))
         elif self.stage == "completed":
             self.percentage = 100
         else:
@@ -520,9 +512,7 @@ class RebuildProgress:
                 return "ドキュメントを処理中..."
         elif self.stage == "indexing":
             if self.files_processed > 0:
-                return (
-                    f"インデックスを作成中... ({self.files_processed}ファイル処理済み)"
-                )
+                return f"インデックスを作成中... ({self.files_processed}ファイル処理済み)"
             else:
                 return "インデックスを作成中..."
         elif self.stage == "completed":

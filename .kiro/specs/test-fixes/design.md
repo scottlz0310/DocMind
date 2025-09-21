@@ -65,7 +65,7 @@ class MainWindow(QMainWindow, LoggerMixin):
         メインウィンドウの初期化
         
         Args:
-            parent: 親ウィジェット（通常はNone）
+            parent: 親ウィジェット(通常はNone)
         """
         super().__init__(parent)
         
@@ -118,7 +118,7 @@ class DatabaseManager(LoggerMixin):
         # 初期化フラグ
         self._initialized = False
         
-        # 自動初期化（既存動作を維持）
+        # 自動初期化(既存動作を維持)
         self.initialize()
     
     def initialize(self) -> None:
@@ -137,7 +137,7 @@ class DatabaseManager(LoggerMixin):
         self.logger.info("データベースが初期化されました")
     
     def _initialize_database(self):
-        """内部的なデータベース初期化処理（既存実装を維持）"""
+        """内部的なデータベース初期化処理(既存実装を維持)"""
         # 既存の実装をそのまま維持
         pass
 ```
@@ -167,7 +167,7 @@ class Config:
         データディレクトリのパスを取得
         
         Returns:
-            Pathオブジェクト（文字列ではなく）
+            Pathオブジェクト(文字列ではなく)
         """
         return Path(self._data_directory)
     
@@ -178,7 +178,7 @@ class Config:
         既存のAPIとの互換性を維持
         
         Returns:
-            データディレクトリのパス（文字列）
+            データディレクトリのパス(文字列)
         """
         return self._data_directory
 ```
@@ -186,7 +186,7 @@ class Config:
 #### 影響範囲
 - `src/utils/config.py`の`data_dir`プロパティの型を修正
 - 既存の`get_data_directory()`メソッドは文字列を返すため互換性維持
-- テストコードは修正不要（適切な型が返される）
+- テストコードは修正不要(適切な型が返される)
 
 ### 4. テストスイート安定性向上
 
@@ -229,16 +229,16 @@ def database_manager(test_config):
 ### 修正検証手順
 
 ```bash
-# 1. 修正前のテスト実行（失敗確認）
+# 1. 修正前のテスト実行(失敗確認)
 python run_tests.py --integration
 
 # 2. 修正実施
 # MainWindow, DatabaseManager, Config の修正
 
-# 3. 修正後のテスト実行（成功確認）
+# 3. 修正後のテスト実行(成功確認)
 python run_tests.py --integration
 
-# 4. 全テストスイート実行（回帰テスト）
+# 4. 全テストスイート実行(回帰テスト)
 python run_tests.py --all
 
 # 5. アプリケーション動作確認
@@ -265,9 +265,9 @@ python main.py
 
 ### 修正による影響
 
-1. **MainWindow修正**: 性能影響なし（ログ取得方法の変更のみ）
-2. **DatabaseManager修正**: 最小限の影響（初期化フラグチェック追加）
-3. **Config修正**: 最小限の影響（Path変換処理追加）
+1. **MainWindow修正**: 性能影響なし(ログ取得方法の変更のみ)
+2. **DatabaseManager修正**: 最小限の影響(初期化フラグチェック追加)
+3. **Config修正**: 最小限の影響(Path変換処理追加)
 
 ### 最適化戦略
 

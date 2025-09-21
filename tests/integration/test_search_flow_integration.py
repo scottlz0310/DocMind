@@ -6,8 +6,8 @@ Phase5テスト環境 - 検索パイプライン全体の接続確認
 
 from unittest.mock import Mock, patch
 
-import pytest
 from PySide6.QtWidgets import QApplication
+import pytest
 
 from src.gui.preview_widget import PreviewWidget
 from src.gui.search_interface import SearchInterface
@@ -53,9 +53,7 @@ class TestSearchFlowIntegration:
         preview = PreviewWidget(mock_main_window)
         yield preview
 
-    def test_search_pipeline_connection(
-        self, search_interface, search_results, preview_widget
-    ):
+    def test_search_pipeline_connection(self, search_interface, search_results, preview_widget):
         """検索パイプライン全体の接続確認"""
         try:
             # SearchInterface → SearchController の接続確認
@@ -89,10 +87,8 @@ class TestSearchFlowIntegration:
             # 検索コントローラーが存在することを確認
             assert search_interface.search_controller is not None
 
-            # 基本的な検索実行をテスト（詳細な結果検証はしない）
-            with patch.object(
-                search_interface.search_controller, "execute_search"
-            ) as mock_search:
+            # 基本的な検索実行をテスト(詳細な結果検証はしない)
+            with patch.object(search_interface.search_controller, "execute_search") as mock_search:
                 mock_search.return_value = Mock(success=True, results=[])
 
                 # 検索実行が呼び出されることを確認
@@ -210,10 +206,8 @@ class TestSearchFlowIntegration:
             if hasattr(search_interface, "search_controller"):
                 controller = search_interface.search_controller
 
-                # 候補機能をテスト（詳細な検証はしない）
-                with patch.object(
-                    controller, "get_search_suggestions"
-                ) as mock_suggestions:
+                # 候補機能をテスト(詳細な検証はしない)
+                with patch.object(controller, "get_search_suggestions") as mock_suggestions:
                     mock_suggestions.return_value = ["suggestion1", "suggestion2"]
 
                     controller.get_search_suggestions("test")

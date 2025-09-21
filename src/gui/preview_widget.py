@@ -107,9 +107,7 @@ class DocumentSyntaxHighlighter(QSyntaxHighlighter):
         # メールアドレス
         email_format = QTextCharFormat()
         email_format.setForeground(QColor("#0066CC"))
-        self.highlighting_rules.append(
-            (r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", email_format)
-        )
+        self.highlighting_rules.append((r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", email_format))
 
     def highlightBlock(self, text: str):
         """テキストブロックのハイライト処理"""
@@ -231,7 +229,7 @@ class DocumentSummarizer(QObject):
     def _split_into_sentences(self, text: str) -> list[str]:
         """テキストを文に分割"""
         # 日本語と英語の文区切りに対応
-        sentence_endings = r"[。！？.!?]"
+        sentence_endings = r"[。!?.!?]"
         sentences = re.split(sentence_endings, text)
         return [s.strip() for s in sentences if s.strip()]
 
@@ -240,13 +238,13 @@ class DocumentSummarizer(QObject):
         if not sentences:
             return ""
 
-        # 文の重要度を計算（長さと位置を考慮）
+        # 文の重要度を計算(長さと位置を考慮)
         scored_sentences = []
         for i, sentence in enumerate(sentences):
-            # 位置スコア（最初と最後の文を重視）
+            # 位置スコア(最初と最後の文を重視)
             position_score = 1.0 if i == 0 or i == len(sentences) - 1 else 0.5
 
-            # 長さスコア（適度な長さの文を重視）
+            # 長さスコア(適度な長さの文を重視)
             length_score = min(len(sentence) / 100, 1.0)
 
             total_score = position_score + length_score
@@ -266,20 +264,14 @@ class DocumentSummarizer(QObject):
             else:
                 break
 
-        return (
-            "。".join(selected_sentences) + "。"
-            if selected_sentences
-            else sentences[0][:max_length]
-        )
+        return "。".join(selected_sentences) + "。" if selected_sentences else sentences[0][:max_length]
 
-    def _select_important_paragraphs(
-        self, paragraphs: list[str], max_length: int
-    ) -> str:
+    def _select_important_paragraphs(self, paragraphs: list[str], max_length: int) -> str:
         """重要な段落を選択して要約を作成"""
         if not paragraphs:
             return ""
 
-        # 最初の段落は常に含める（ただし長すぎる場合は切り取る）
+        # 最初の段落は常に含める(ただし長すぎる場合は切り取る)
         first_paragraph = paragraphs[0]
         if len(first_paragraph) > max_length // 2:
             first_paragraph = first_paragraph[: max_length // 2] + "..."
@@ -404,7 +396,7 @@ class PreviewWidget(QWidget):
 
     def _create_content_area(self) -> QWidget:
         """メインコンテンツエリアを作成"""
-        # スプリッターで分割（将来的に詳細情報パネルを追加可能）
+        # スプリッターで分割(将来的に詳細情報パネルを追加可能)
         splitter = QSplitter(Qt.Vertical)
 
         # メインプレビューエリア
@@ -421,11 +413,11 @@ class PreviewWidget(QWidget):
 
         splitter.addWidget(self.text_browser)
 
-        # 詳細情報パネル（折りたたみ可能）
+        # 詳細情報パネル(折りたたみ可能)
         self.details_panel = self._create_details_panel()
         splitter.addWidget(self.details_panel)
 
-        # 初期サイズ比率（メイン80%, 詳細20%）
+        # 初期サイズ比率(メイン80%, 詳細20%)
         splitter.setSizes([400, 100])
         splitter.setCollapsible(1, True)
 
@@ -563,7 +555,7 @@ class PreviewWidget(QWidget):
 
         except Exception as e:
             self.logger.error(f"ドキュメント表示エラー: {e}")
-            self._display_error(f"ドキュメントの表示中にエラーが発生しました: {str(e)}")
+            self._display_error(f"ドキュメントの表示中にエラーが発生しました: {e!s}")
 
     def display_summary(self, text: str):
         """
@@ -581,7 +573,7 @@ class PreviewWidget(QWidget):
 
         except Exception as e:
             self.logger.error(f"要約表示エラー: {e}")
-            self._display_error(f"要約の表示中にエラーが発生しました: {str(e)}")
+            self._display_error(f"要約の表示中にエラーが発生しました: {e!s}")
 
     def highlight_search_terms(self, terms: list[str]):
         """
@@ -613,7 +605,7 @@ class PreviewWidget(QWidget):
         ズームレベルを設定
 
         Args:
-            zoom_percent: ズームレベル（パーセント）
+            zoom_percent: ズームレベル(パーセント)
         """
         try:
             zoom_percent = max(50, min(200, zoom_percent))  # 50-200%に制限
@@ -627,7 +619,7 @@ class PreviewWidget(QWidget):
         現在のズームレベルを取得
 
         Returns:
-            int: 現在のズームレベル（パーセント）
+            int: 現在のズームレベル(パーセント)
         """
         return self.current_zoom
 
@@ -687,9 +679,7 @@ class PreviewWidget(QWidget):
 
         # 大きなファイルの場合は要約を生成
         if len(self.current_document.content) > 1000:
-            summary = self.summarizer.generate_summary(
-                self.current_document.content, max_length=500
-            )
+            summary = self.summarizer.generate_summary(self.current_document.content, max_length=500)
             self.text_browser.setPlainText(summary)
         else:
             # 小さなファイルはそのまま表示

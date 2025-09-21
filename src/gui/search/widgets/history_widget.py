@@ -158,14 +158,10 @@ class SearchHistoryWidget(QWidget):
 
         # コンテキストメニュー
         self.recent_list.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.recent_list.customContextMenuRequested.connect(
-            self._show_recent_context_menu
-        )
+        self.recent_list.customContextMenuRequested.connect(self._show_recent_context_menu)
 
         self.saved_list.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.saved_list.customContextMenuRequested.connect(
-            self._show_saved_context_menu
-        )
+        self.saved_list.customContextMenuRequested.connect(self._show_saved_context_menu)
 
     def update_recent_searches(self, searches: list[dict[str, Any]]) -> None:
         """最近の検索を更新"""
@@ -177,9 +173,7 @@ class SearchHistoryWidget(QWidget):
             timestamp = search["timestamp"]
             result_count = search["result_count"]
 
-            item_text = (
-                f"{query} ({result_count}件) - {timestamp.strftime('%m/%d %H:%M')}"
-            )
+            item_text = f"{query} ({result_count}件) - {timestamp.strftime('%m/%d %H:%M')}"
             item = QListWidgetItem(item_text)
             item.setData(Qt.UserRole, query)
             item.setToolTip(f"検索: {query}\n結果: {result_count}件\n日時: {timestamp}")
@@ -201,9 +195,7 @@ class SearchHistoryWidget(QWidget):
             item_text = f"{query} ({search_count}回, 平均{avg_results:.0f}件)"
             item = QListWidgetItem(item_text)
             item.setData(Qt.UserRole, query)
-            item.setToolTip(
-                f"検索: {query}\n検索回数: {search_count}回\n平均結果数: {avg_results:.1f}件"
-            )
+            item.setToolTip(f"検索: {query}\n検索回数: {search_count}回\n平均結果数: {avg_results:.1f}件")
 
             self.popular_list.addItem(item)
 
@@ -223,9 +215,7 @@ class SearchHistoryWidget(QWidget):
             item_text = f"{name} - {query} ({use_count}回使用)"
             item = QListWidgetItem(item_text)
             item.setData(Qt.UserRole, search)
-            item.setToolTip(
-                f"名前: {name}\n検索: {query}\n種類: {search_type.value}\n使用回数: {use_count}回"
-            )
+            item.setToolTip(f"名前: {name}\n検索: {query}\n種類: {search_type.value}\n使用回数: {use_count}回")
 
             self.saved_list.addItem(item)
 
@@ -254,7 +244,7 @@ class SearchHistoryWidget(QWidget):
 
     def _on_save_search_clicked(self) -> None:
         """検索保存ボタンクリック時の処理"""
-        # 現在の検索テキストを取得（親ウィジェットから）
+        # 現在の検索テキストを取得(親ウィジェットから)
         parent_interface = self.parent()
         while parent_interface and not hasattr(parent_interface, "get_search_text"):
             parent_interface = parent_interface.parent()
@@ -264,13 +254,9 @@ class SearchHistoryWidget(QWidget):
             if current_query.strip():
                 self.search_save_requested.emit(current_query)
             else:
-                QMessageBox.warning(
-                    self, "保存エラー", "保存する検索キーワードを入力してください。"
-                )
+                QMessageBox.warning(self, "保存エラー", "保存する検索キーワードを入力してください。")
         else:
-            QMessageBox.warning(
-                self, "保存エラー", "現在の検索を取得できませんでした。"
-            )
+            QMessageBox.warning(self, "保存エラー", "現在の検索を取得できませんでした。")
 
     def _show_recent_context_menu(self, position: QPoint) -> None:
         """最近の検索のコンテキストメニュー表示"""
@@ -332,7 +318,7 @@ class SearchHistoryWidget(QWidget):
             reply = QMessageBox.question(
                 self,
                 "履歴削除",
-                f"検索履歴「{query}」を削除しますか？",
+                f"検索履歴「{query}」を削除しますか?",
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No,
             )
@@ -347,9 +333,7 @@ class SearchHistoryWidget(QWidget):
         from PySide6.QtWidgets import QInputDialog
 
         current_name = search_data["name"]
-        new_name, ok = QInputDialog.getText(
-            self, "名前変更", "新しい名前を入力してください:", text=current_name
-        )
+        new_name, ok = QInputDialog.getText(self, "名前変更", "新しい名前を入力してください:", text=current_name)
 
         if ok and new_name.strip() and new_name != current_name:
             # TODO: 実際の名前変更処理を実装
@@ -360,7 +344,7 @@ class SearchHistoryWidget(QWidget):
         reply = QMessageBox.question(
             self,
             "検索削除",
-            f"保存された検索「{search_data['name']}」を削除しますか？",
+            f"保存された検索「{search_data['name']}」を削除しますか?",
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.No,
         )

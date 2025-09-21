@@ -16,9 +16,9 @@ from .models import (
 
 __all__ = [
     "Document",
-    "SearchResult",
-    "SearchQuery",
-    "SearchType",
     "FileType",
     "IndexStats",
+    "SearchQuery",
+    "SearchResult",
+    "SearchType",
 ]

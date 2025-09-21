@@ -5,10 +5,10 @@ DocMind テストカバレッジ測定スクリプト
 現在のテスト状況とカバレッジを分析
 """
 
-import subprocess
-import sys
 from datetime import datetime
 from pathlib import Path
+import subprocess
+import sys
 
 # プロジェクトルートを設定
 project_root = Path(__file__).parent.parent
@@ -223,9 +223,7 @@ def run_coverage_analysis():
 
         log_message(f"実行コマンド: {' '.join(coverage_cmd)}")
 
-        result = subprocess.run(
-            coverage_cmd, cwd=str(project_root), capture_output=True, text=True
-        )
+        result = subprocess.run(coverage_cmd, check=False, cwd=str(project_root), capture_output=True, text=True)
 
         if result.returncode == 0:
             log_message("✅ カバレッジ測定完了")
@@ -233,6 +231,7 @@ def run_coverage_analysis():
             # カバレッジレポート生成
             report_result = subprocess.run(
                 [sys.executable, "-m", "coverage", "report"],
+                check=False,
                 cwd=str(project_root),
                 capture_output=True,
                 text=True,
@@ -294,12 +293,8 @@ def analyze_coverage_gaps():
         if full_path.exists():
             coverage_gaps["critical_components"].append(full_path)
 
-    log_message(
-        f"Phase4コンポーネント: {len(coverage_gaps['phase4_components'])}ファイル"
-    )
-    log_message(
-        f"重要コンポーネント: {len(coverage_gaps['critical_components'])}ファイル"
-    )
+    log_message(f"Phase4コンポーネント: {len(coverage_gaps['phase4_components'])}ファイル")
+    log_message(f"重要コンポーネント: {len(coverage_gaps['critical_components'])}ファイル")
 
     return coverage_gaps
 
@@ -362,7 +357,7 @@ def generate_coverage_report():
     report_content += """## 🎯 テストカバレッジ改善提案
 
 ### Phase4新規コンポーネント
-以下のPhase4で作成されたコンポーネントにテストを追加することを推奨：
+以下のPhase4で作成されたコンポーネントにテストを追加することを推奨:
 
 """
 
@@ -375,7 +370,7 @@ def generate_coverage_report():
 
     report_content += """
 ### 重要コンポーネント
-以下の重要コンポーネントの包括的テストを推奨：
+以下の重要コンポーネントの包括的テストを推奨:
 
 """
 

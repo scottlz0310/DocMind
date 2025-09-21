@@ -35,8 +35,8 @@ DocMindの初回安定版リリースです。完全オフラインで動作す�
 ### 🏗️ アーキテクチャ
 
 #### Phase4リファクタリング完了
-- **main_window.py**: 3,605行 → 395行（89.0%削減）
-- **search_interface.py**: 1,504行 → 215行（85.7%削減）
+- **main_window.py**: 3,605行 → 395行(89.0%削減)
+- **search_interface.py**: 1,504行 → 215行(85.7%削減)
 - **完全な責務分離**: 46個の専用コンポーネントに分離
 - **高い保守性**: 各コンポーネントが独立してテスト・修正可能
 - **拡張性**: 新機能追加時の影響範囲を最小化
@@ -45,7 +45,7 @@ DocMindの初回安定版リリースです。完全オフラインで動作す�
 - **言語**: Python 3.11-3.13
 - **GUIフレームワーク**: PySide6
 - **検索エンジン**: Whoosh
-- **AI/ML**: sentence-transformers（all-MiniLM-L6-v2モデル）
+- **AI/ML**: sentence-transformers(all-MiniLM-L6-v2モデル)
 - **データベース**: SQLite
 - **ファイル処理**: PyMuPDF、python-docx、openpyxl
 

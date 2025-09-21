@@ -34,9 +34,7 @@ class RebuildHandlerManager(QObject, LoggerMixin):
 
         self.logger.debug("インデックス再構築ハンドラーマネージャーが初期化されました")
 
-    def handle_rebuild_progress(
-        self, thread_id: str, message: str, current: int, total: int
-    ) -> None:
+    def handle_rebuild_progress(self, thread_id: str, message: str, current: int, total: int) -> None:
         """インデックス再構築専用の進捗更新処理
 
         Args:
@@ -51,10 +49,7 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             folder_name = "不明"
             folder_path = ""
 
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
                 thread_info = self.main_window.thread_manager.get_thread_info(thread_id)
                 if thread_info:
                     folder_path = thread_info.folder_path
@@ -64,34 +59,26 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             stage = self._determine_rebuild_stage(message, current, total)
 
             # 段階別進捗メッセージを生成
-            formatted_message = self._format_rebuild_progress_message(
-                stage, message, folder_name, current, total
-            )
+            formatted_message = self._format_rebuild_progress_message(stage, message, folder_name, current, total)
 
             # 進捗表示を更新
             if stage == "scanning":
-                # スキャン段階：不定進捗
+                # スキャン段階:不定進捗
                 self.main_window.show_progress(formatted_message, 0)
                 self.logger.info(f"インデックス再構築 - スキャン段階: {folder_name}")
 
             elif stage == "processing":
-                # 処理段階：定進捗
+                # 処理段階:定進捗
                 if total > 0:
                     percentage = min(100, max(0, int((current / total) * 100)))
-                    self.main_window.show_progress(
-                        formatted_message, percentage, current, total
-                    )
+                    self.main_window.show_progress(formatted_message, percentage, current, total)
 
                     # 処理完了に近い場合は次の段階への準備
                     if current >= total:
                         # 全ファイル処理完了、インデックス作成段階へ移行
                         indexing_message = f"[{folder_name}] 🔍 インデックスを作成中... ({current}ファイル処理済み)"
-                        self.main_window.show_progress(
-                            indexing_message, 0
-                        )  # 不定進捗でインデックス作成
-                        self.logger.info(
-                            f"インデックス再構築 - ファイル処理完了、インデックス作成開始: {folder_name}"
-                        )
+                        self.main_window.show_progress(indexing_message, 0)  # 不定進捗でインデックス作成
+                        self.logger.info(f"インデックス再構築 - ファイル処理完了、インデックス作成開始: {folder_name}")
                 else:
                     self.main_window.show_progress(formatted_message, 0)
 
@@ -100,18 +87,16 @@ class RebuildHandlerManager(QObject, LoggerMixin):
                     self.logger.debug(f"インデックス再構築 - 処理中: {message}")
 
             elif stage == "indexing":
-                # インデックス段階：不定進捗（インデックス作成中）
+                # インデックス段階:不定進捗(インデックス作成中)
                 self.main_window.show_progress(formatted_message, 0)
-                self.logger.info(
-                    f"インデックス再構築 - インデックス作成段階: {folder_name}"
-                )
+                self.logger.info(f"インデックス再構築 - インデックス作成段階: {folder_name}")
 
             elif stage == "completed":
-                # 完了段階：100%進捗で一時的に表示
+                # 完了段階:100%進捗で一時的に表示
                 self.main_window.show_progress(formatted_message, 100, current, total)
                 self.logger.info(f"インデックス再構築 - 完了段階: {folder_name}")
 
-            # システム情報を更新（再構築専用の情報を含む）
+            # システム情報を更新(再構築専用の情報を含む)
             self._update_rebuild_system_info(folder_name, stage, current, total)
 
             # ステータスメッセージを更新
@@ -139,17 +124,11 @@ class RebuildHandlerManager(QObject, LoggerMixin):
         """
         try:
             # タイムアウト監視をキャンセル
-            if (
-                hasattr(self.main_window, "timeout_manager")
-                and self.main_window.timeout_manager
-            ):
+            if hasattr(self.main_window, "timeout_manager") and self.main_window.timeout_manager:
                 self.main_window.timeout_manager.cancel_timeout(thread_id)
 
             # SearchManagerのキャッシュをクリア
-            if (
-                hasattr(self.main_window, "search_manager")
-                and self.main_window.search_manager
-            ):
+            if hasattr(self.main_window, "search_manager") and self.main_window.search_manager:
                 self.main_window.search_manager.clear_suggestion_cache()
                 self.logger.info("検索提案キャッシュをクリアしました")
 
@@ -164,10 +143,8 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             statistics.get("documents_added", 0)
             statistics.get("processing_time", 0)
 
-            # 完了通知（ステータスメッセージとして表示）
-            self.main_window.show_status_message(
-                f"インデックス再構築完了 ({files_processed}ファイル処理)", 5000
-            )
+            # 完了通知(ステータスメッセージとして表示)
+            self.main_window.show_status_message(f"インデックス再構築完了 ({files_processed}ファイル処理)", 5000)
 
             self.logger.info(f"インデックス再構築完了: {thread_id}")
             self.logger.info(f"統計情報: {statistics}")
@@ -185,9 +162,7 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             self.logger.warning(f"インデックス再構築タイムアウト: {thread_id}")
 
             # 改善されたタイムアウトダイアログを表示
-            reply = self.main_window.dialog_manager.show_improved_timeout_dialog(
-                thread_id
-            )
+            reply = self.main_window.dialog_manager.show_improved_timeout_dialog(thread_id)
 
             if reply == QMessageBox.Yes:
                 # 強制停止処理
@@ -213,9 +188,7 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             error_message: エラーメッセージ
         """
         try:
-            self.logger.error(
-                f"インデックス再構築エラー発生: {thread_id} - {error_message}"
-            )
+            self.logger.error(f"インデックス再構築エラー発生: {thread_id} - {error_message}")
 
             # タイムアウト監視をキャンセル
             if hasattr(self.main_window, "timeout_manager"):
@@ -264,9 +237,7 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             return "scanning"
         elif "処理中:" in message or "processing" in message_lower:
             return "processing"
-        elif "インデックス" in message and (
-            "作成" in message or "creating" in message_lower
-        ):
+        elif "インデックス" in message and ("作成" in message or "creating" in message_lower):
             return "indexing"
         elif current > 0 and total > 0 and current >= total:
             return "completed"
@@ -316,20 +287,13 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             # フォールバック
             return f"{folder_prefix}{original_message}"
 
-    def _update_rebuild_system_info(
-        self, folder_name: str, stage: str, current: int, total: int
-    ) -> None:
+    def _update_rebuild_system_info(self, folder_name: str, stage: str, current: int, total: int) -> None:
         """インデックス再構築用のシステム情報を更新"""
         try:
             # アクティブなスレッド数を取得
             active_threads = 0
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
-                active_threads = (
-                    self.main_window.thread_manager.get_active_thread_count()
-                )
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
+                active_threads = self.main_window.thread_manager.get_active_thread_count()
 
             # 段階別のシステム情報を生成
             if stage == "scanning":
@@ -342,14 +306,10 @@ class RebuildHandlerManager(QObject, LoggerMixin):
                         f"アクティブ: {active_threads}スレッド"
                     )
                 else:
-                    system_info = (
-                        f"インデックス再構築: {folder_name} (処理中) | "
-                        f"アクティブ: {active_threads}スレッド"
-                    )
+                    system_info = f"インデックス再構築: {folder_name} (処理中) | アクティブ: {active_threads}スレッド"
             elif stage == "indexing":
                 system_info = (
-                    f"インデックス再構築: {folder_name} (インデックス作成中) | "
-                    f"アクティブ: {active_threads}スレッド"
+                    f"インデックス再構築: {folder_name} (インデックス作成中) | アクティブ: {active_threads}スレッド"
                 )
             elif stage == "completed":
                 system_info = (
@@ -364,19 +324,14 @@ class RebuildHandlerManager(QObject, LoggerMixin):
         except Exception as e:
             self.logger.error(f"再構築システム情報更新中にエラーが発生: {e}")
             # エラーが発生してもシステム情報は基本情報を表示
-            self.main_window.update_system_info(
-                f"インデックス再構築: エラー - {str(e)[:30]}..."
-            )
+            self.main_window.update_system_info(f"インデックス再構築: エラー - {str(e)[:30]}...")
 
     def _analyze_error_type(self, error_message: str) -> str:
         """エラーメッセージを分析してエラータイプを特定"""
         error_lower = error_message.lower()
 
         # タイムアウト関連
-        if any(
-            keyword in error_lower
-            for keyword in ["timeout", "タイムアウト", "応答なし"]
-        ):
+        if any(keyword in error_lower for keyword in ["timeout", "タイムアウト", "応答なし"]):
             return "timeout"
         # ファイルアクセス関連
         elif any(
@@ -400,21 +355,13 @@ class RebuildHandlerManager(QObject, LoggerMixin):
         ):
             return "permission"
         # ディスク容量関連
-        elif any(
-            keyword in error_lower
-            for keyword in ["no space", "disk full", "容量不足", "ディスク"]
-        ):
+        elif any(keyword in error_lower for keyword in ["no space", "disk full", "容量不足", "ディスク"]):
             return "disk_space"
         # リソース関連
-        elif any(
-            keyword in error_lower
-            for keyword in ["memory", "メモリ", "resource", "リソース", "out of memory"]
-        ):
+        elif any(keyword in error_lower for keyword in ["memory", "メモリ", "resource", "リソース", "out of memory"]):
             return "resource"
         # データ破損関連
-        elif any(
-            keyword in error_lower for keyword in ["corrupt", "破損", "invalid", "不正"]
-        ):
+        elif any(keyword in error_lower for keyword in ["corrupt", "破損", "invalid", "不正"]):
             return "corruption"
         else:
             return "system"
@@ -428,20 +375,14 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             self.main_window.thread_manager.stop_thread(thread_id)
 
             # タイムアウト監視をキャンセル
-            if (
-                hasattr(self.main_window, "timeout_manager")
-                and self.main_window.timeout_manager
-            ):
+            if hasattr(self.main_window, "timeout_manager") and self.main_window.timeout_manager:
                 self.main_window.timeout_manager.cancel_timeout(thread_id)
 
             # 部分的なインデックスをクリア
             self.main_window.index_manager.clear_index()
 
             # 検索キャッシュもクリア
-            if (
-                hasattr(self.main_window, "search_manager")
-                and self.main_window.search_manager
-            ):
+            if hasattr(self.main_window, "search_manager") and self.main_window.search_manager:
                 self.main_window.search_manager.clear_suggestion_cache()
 
             # 進捗表示を非表示
@@ -466,7 +407,7 @@ class RebuildHandlerManager(QObject, LoggerMixin):
             QMessageBox.critical(
                 self.main_window,
                 "エラー",
-                f"インデックス再構築の停止処理でエラーが発生しました:\\n{str(e)}",
+                f"インデックス再構築の停止処理でエラーが発生しました:\\n{e!s}",
             )
 
     def _reset_rebuild_state(self) -> None:
@@ -498,11 +439,7 @@ class RebuildHandlerManager(QObject, LoggerMixin):
     def cleanup(self) -> None:
         """インデックス再構築ハンドラーマネージャーのクリーンアップ"""
         try:
-            self.logger.debug(
-                "インデックス再構築ハンドラーマネージャーをクリーンアップしました"
-            )
+            self.logger.debug("インデックス再構築ハンドラーマネージャーをクリーンアップしました")
 
         except Exception as e:
-            self.logger.error(
-                f"インデックス再構築ハンドラーマネージャーのクリーンアップ中にエラー: {e}"
-            )
+            self.logger.error(f"インデックス再構築ハンドラーマネージャーのクリーンアップ中にエラー: {e}")

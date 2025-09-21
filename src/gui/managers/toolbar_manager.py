@@ -65,61 +65,37 @@ class ToolbarManager(QObject, LoggerMixin):
     def _add_folder_actions(self) -> None:
         """フォルダ関連のアクションを追加"""
         # フォルダを開くアクション
-        self.toolbar_actions["open_folder"] = QAction(
-            get_app_icon(), "フォルダを開く", self.main_window
-        )
-        self.toolbar_actions["open_folder"].setStatusTip(
-            "検索対象のフォルダを選択します"
-        )
-        self.toolbar_actions["open_folder"].triggered.connect(
-            self.main_window.dialog_manager.open_folder_dialog
-        )
+        self.toolbar_actions["open_folder"] = QAction(get_app_icon(), "フォルダを開く", self.main_window)
+        self.toolbar_actions["open_folder"].setStatusTip("検索対象のフォルダを選択します")
+        self.toolbar_actions["open_folder"].triggered.connect(self.main_window.dialog_manager.open_folder_dialog)
         self.toolbar.addAction(self.toolbar_actions["open_folder"])
 
     def _add_search_actions(self) -> None:
         """検索関連のアクションを追加"""
         # 検索アクション
-        self.toolbar_actions["search"] = QAction(
-            get_search_icon(), "検索", self.main_window
-        )
+        self.toolbar_actions["search"] = QAction(get_search_icon(), "検索", self.main_window)
         self.toolbar_actions["search"].setStatusTip("ドキュメント検索を実行します")
-        self.toolbar_actions["search"].triggered.connect(
-            self.main_window.dialog_manager.show_search_dialog
-        )
+        self.toolbar_actions["search"].triggered.connect(self.main_window.dialog_manager.show_search_dialog)
         self.toolbar.addAction(self.toolbar_actions["search"])
 
     def _add_index_actions(self) -> None:
         """インデックス関連のアクションを追加"""
         # インデックス再構築アクション
-        self.toolbar_actions["rebuild_index"] = QAction(
-            QIcon(), "インデックス再構築", self.main_window
-        )
-        self.toolbar_actions["rebuild_index"].setStatusTip(
-            "検索インデックスを再構築します"
-        )
-        self.toolbar_actions["rebuild_index"].triggered.connect(
-            self.main_window.index_controller.rebuild_index
-        )
+        self.toolbar_actions["rebuild_index"] = QAction(QIcon(), "インデックス再構築", self.main_window)
+        self.toolbar_actions["rebuild_index"].setStatusTip("検索インデックスを再構築します")
+        self.toolbar_actions["rebuild_index"].triggered.connect(self.main_window.index_controller.rebuild_index)
         self.toolbar.addAction(self.toolbar_actions["rebuild_index"])
 
         # インデックスクリアアクション
-        self.toolbar_actions["clear_index"] = QAction(
-            QIcon(), "インデックスクリア", self.main_window
-        )
-        self.toolbar_actions["clear_index"].setStatusTip(
-            "検索インデックスをクリアします"
-        )
-        self.toolbar_actions["clear_index"].triggered.connect(
-            self.main_window.index_controller.clear_index
-        )
+        self.toolbar_actions["clear_index"] = QAction(QIcon(), "インデックスクリア", self.main_window)
+        self.toolbar_actions["clear_index"].setStatusTip("検索インデックスをクリアします")
+        self.toolbar_actions["clear_index"].triggered.connect(self.main_window.index_controller.clear_index)
         self.toolbar.addAction(self.toolbar_actions["clear_index"])
 
     def _add_settings_actions(self) -> None:
         """設定関連のアクションを追加"""
         # 設定アクション
-        self.toolbar_actions["settings"] = QAction(
-            get_settings_icon(), "設定", self.main_window
-        )
+        self.toolbar_actions["settings"] = QAction(get_settings_icon(), "設定", self.main_window)
         self.toolbar_actions["settings"].setStatusTip("アプリケーション設定を開きます")
         self.toolbar_actions["settings"].triggered.connect(self._show_settings_dialog)
         self.toolbar.addAction(self.toolbar_actions["settings"])
@@ -152,9 +128,7 @@ class ToolbarManager(QObject, LoggerMixin):
         action = self.get_toolbar_action(action_name)
         if action:
             action.setEnabled(enabled)
-            self.logger.debug(
-                f"ツールバーアクション '{action_name}' を{'有効' if enabled else '無効'}にしました"
-            )
+            self.logger.debug(f"ツールバーアクション '{action_name}' を{'有効' if enabled else '無効'}にしました")
 
     def set_toolbar_visible(self, visible: bool = True) -> None:
         """
@@ -165,9 +139,7 @@ class ToolbarManager(QObject, LoggerMixin):
         """
         if self.toolbar:
             self.toolbar.setVisible(visible)
-            self.logger.debug(
-                f"ツールバーを{'表示' if visible else '非表示'}にしました"
-            )
+            self.logger.debug(f"ツールバーを{'表示' if visible else '非表示'}にしました")
 
     def cleanup(self) -> None:
         """ツールバー管理マネージャーのクリーンアップ"""
@@ -183,6 +155,4 @@ class ToolbarManager(QObject, LoggerMixin):
             self.logger.debug("ツールバー管理マネージャーをクリーンアップしました")
 
         except Exception as e:
-            self.logger.error(
-                f"ツールバー管理マネージャーのクリーンアップ中にエラー: {e}"
-            )
+            self.logger.error(f"ツールバー管理マネージャーのクリーンアップ中にエラー: {e}")

@@ -4,8 +4,8 @@ SVGファイルをPNGプレビュー用に変換するスクリプト
 DocMindプロジェクト用のアイコンファイルを生成します
 """
 
-import sys
 from pathlib import Path
+import sys
 
 import cairosvg
 
@@ -17,12 +17,10 @@ def svg_to_png(svg_path, png_path, size=512):
     Args:
         svg_path (str): 入力SVGファイルのパス
         png_path (str): 出力PNGファイルのパス
-        size (int): 出力サイズ（幅×高さ）
+        size (int): 出力サイズ(幅x高さ)
     """
     # SVGをPNGに変換
-    cairosvg.svg2png(
-        url=svg_path, write_to=str(png_path), output_width=size, output_height=size
-    )
+    cairosvg.svg2png(url=svg_path, write_to=str(png_path), output_width=size, output_height=size)
 
 
 def main():

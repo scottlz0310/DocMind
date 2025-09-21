@@ -3,7 +3,7 @@
 DocMind - Windows向けビルドスクリプト
 PyInstallerを使用してWindows実行可能ファイルを生成
 
-このスクリプトは以下の処理を実行します：
+このスクリプトは以下の処理を実行します:
 1. 依存関係の確認
 2. PyInstallerによる実行可能ファイルの生成
 3. 必要なファイルのコピー
@@ -11,10 +11,10 @@ PyInstallerを使用してWindows実行可能ファイルを生成
 """
 
 import logging
+from pathlib import Path
 import shutil
 import subprocess
 import sys
-from pathlib import Path
 
 # プロジェクトルートの設定
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -147,7 +147,7 @@ def create_assets() -> None:
     icon_path = assets_dir / "docmind.ico"
     if not icon_path.exists():
         logger.info("アイコンファイルが見つからないため、ダミーアイコンを作成します")
-        # 簡単なダミーアイコンファイルを作成（実際のプロジェクトでは適切なアイコンを用意）
+        # 簡単なダミーアイコンファイルを作成(実際のプロジェクトでは適切なアイコンを用意)
         try:
             from PIL import Image
 
@@ -212,6 +212,7 @@ def run_pyinstaller() -> bool:
     try:
         result = subprocess.run(
             cmd,
+            check=False,
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
@@ -239,7 +240,7 @@ def prepare_distribution() -> None:
     """
     logger.info("配布用ファイルを準備中...")
 
-    # 実行可能ファイルの場所（PyInstallerの出力先）
+    # 実行可能ファイルの場所(PyInstallerの出力先)
     exe_path = DIST_DIR / "DocMind" / "DocMind.exe"
 
     if not exe_path.exists():
@@ -283,7 +284,7 @@ def prepare_distribution() -> None:
     # アンインストールスクリプトを作成
     create_uninstall_script(distribution_dir)
 
-    # ZIPアーカイブを作成（サイレントインストール用）
+    # ZIPアーカイブを作成(サイレントインストール用)
     create_zip_archive()
 
 
@@ -337,7 +338,7 @@ REM プロセスの終了
 taskkill /f /im DocMind.exe 2>nul
 
 REM ユーザーデータの削除確認
-set /p confirm="ユーザーデータも削除しますか？ (y/N): "
+set /p confirm="ユーザーデータも削除しますか? (y/N): "
 if /i "%confirm%"=="y" (
     if exist "%USERPROFILE%\\DocMind" (
         rmdir /s /q "%USERPROFILE%\\DocMind"
@@ -370,7 +371,7 @@ pause
 
 def create_zip_archive() -> None:
     """
-    ZIPアーカイブを作成（サイレントインストール用）
+    ZIPアーカイブを作成(サイレントインストール用)
     """
     import zipfile
 

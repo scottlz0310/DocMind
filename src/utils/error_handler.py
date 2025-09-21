@@ -5,14 +5,14 @@
 診断情報収集を提供します。
 """
 
-import json
-import platform
-import sys
-import traceback
 from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
+import json
 from pathlib import Path
+import platform
+import sys
+import traceback
 from typing import Any
 
 import psutil
@@ -46,9 +46,7 @@ class ErrorHandler:
         # システム情報キャッシュ
         self._system_info: dict[str, Any] | None = None
 
-    def register_recovery_handler(
-        self, exception_type: type[Exception], handler: Callable
-    ) -> None:
+    def register_recovery_handler(self, exception_type: type[Exception], handler: Callable) -> None:
         """
         特定の例外タイプに対する回復ハンドラーを登録
 
@@ -126,8 +124,7 @@ class ErrorHandler:
                 "custom_attributes": {
                     attr: getattr(exc, attr)
                     for attr in dir(exc)
-                    if not attr.startswith("_")
-                    and attr not in ["args", "message", "details"]
+                    if not attr.startswith("_") and attr not in ["args", "message", "details"]
                 },
             }
 
@@ -135,7 +132,7 @@ class ErrorHandler:
 
     def _get_system_info(self) -> dict[str, Any]:
         """
-        システム情報を取得（キャッシュ付き）
+        システム情報を取得(キャッシュ付き)
 
         Returns:
             システム情報の辞書
@@ -183,11 +180,7 @@ class ErrorHandler:
             data_dir_size = 0
             if data_dir_exists:
                 try:
-                    data_dir_size = sum(
-                        f.stat().st_size
-                        for f in self.data_dir.rglob("*")
-                        if f.is_file()
-                    )
+                    data_dir_size = sum(f.stat().st_size for f in self.data_dir.rglob("*") if f.is_file())
                 except Exception:
                     data_dir_size = -1
 
@@ -204,9 +197,7 @@ class ErrorHandler:
             self.logger.warning(f"アプリケーション状態の取得に失敗: {e}")
             return {"error": "アプリケーション状態取得失敗"}
 
-    def _log_error(
-        self, exc: Exception, error_info: dict[str, Any], context: str
-    ) -> None:
+    def _log_error(self, exc: Exception, error_info: dict[str, Any], context: str) -> None:
         """
         エラーをログに記録
 
@@ -234,9 +225,7 @@ class ErrorHandler:
                 extra={"error_type": type(exc).__name__, "context": context},
             )
 
-    def _generate_error_report(
-        self, exc: Exception, error_info: dict[str, Any], context: str
-    ) -> Path:
+    def _generate_error_report(self, exc: Exception, error_info: dict[str, Any], context: str) -> Path:
         """
         詳細なエラーレポートを生成
 
@@ -270,7 +259,7 @@ class ErrorHandler:
             message: 表示するメッセージ
             exc: 発生した例外
         """
-        # ここではログに記録するだけ（GUIでの表示は別途実装）
+        # ここではログに記録するだけ(GUIでの表示は別途実装)
         self.logger.info(f"ユーザーメッセージ: {message}")
 
     def _attempt_recovery(self, exc: Exception, error_info: dict[str, Any]) -> bool:
@@ -310,7 +299,7 @@ class ErrorHandler:
         Returns:
             回復に成功した場合True
         """
-        # 基本的な回復処理（ディレクトリの作成など）
+        # 基本的な回復処理(ディレクトリの作成など)
         try:
             # データディレクトリが存在しない場合は作成
             if not self.data_dir.exists():

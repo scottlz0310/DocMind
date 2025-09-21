@@ -5,8 +5,8 @@
 検索処理を別スレッドで実行するワーカークラスを提供します。
 """
 
-import logging
 from datetime import datetime
+import logging
 
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import QWidget
@@ -27,9 +27,7 @@ class SearchWorkerThread(QThread):
     search_completed = Signal(list, float)  # 検索完了 (結果, 実行時間)
     search_error = Signal(str)  # 検索エラー (エラーメッセージ)
 
-    def __init__(
-        self, search_manager, query: SearchQuery, parent: QWidget | None = None
-    ):
+    def __init__(self, search_manager, query: SearchQuery, parent: QWidget | None = None):
         """
         検索ワーカーを初期化
 

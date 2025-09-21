@@ -3,7 +3,7 @@
 
 security:
   ignore-vulnerabilities:
-    # transformers 4.36.2 関連の脆弱性（動作確認済みバージョンを維持）
+    # transformers 4.36.2 関連の脆弱性(動作確認済みバージョンを維持)
     - 64402  # Shell injection vulnerability
     - 74882  # Standalone conversion scripts vulnerability
     - 76262  # Regular Expression Denial of Service (ReDoS)
@@ -15,7 +15,7 @@ security:
     - 77714  # preprocess_string() function vulnerability
     - 71601  # Arbitrary code execution through deserialization
     
-    # sentence-transformers 2.7.0 関連の脆弱性（動作確認済みバージョンを維持）
+    # sentence-transformers 2.7.0 関連の脆弱性(動作確認済みバージョンを維持)
     - 73169  # Arbitrary code execution when loading PyTorch model files
 
   ignore-cvss-severity-below: 0.0

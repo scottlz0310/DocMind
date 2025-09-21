@@ -63,7 +63,7 @@ if %errorLevel% neq 0 (
     exit /b 1
 )
 
-REM テストの実行（オプション）
+REM テストの実行(オプション)
 set /p run_tests="テストを実行しますか？ (y/N): "
 if /i "%run_tests%"=="y" (
     echo テストを実行中...
@@ -87,7 +87,7 @@ if %errorLevel% neq 0 (
     exit /b 1
 )
 
-REM Inno Setupインストーラーの作成（オプション）
+REM Inno Setupインストーラーの作成(オプション)
 set /p create_installer="Inno Setupインストーラーを作成しますか？ (y/N): "
 if /i "%create_installer%"=="y" (
     echo Inno Setupインストーラーを作成中...
@@ -113,7 +113,7 @@ if /i "%create_installer%"=="y" (
 )
 :skip_inno
 
-REM デプロイメントテストの実行（オプション）
+REM デプロイメントテストの実行(オプション)
 set /p run_deployment_test="デプロイメントテストを実行しますか？ (y/N): "
 if /i "%run_deployment_test%"=="y" (
     echo デプロイメントテストを実行中...

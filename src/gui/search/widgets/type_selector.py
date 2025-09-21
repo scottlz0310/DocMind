@@ -65,7 +65,7 @@ class SearchTypeSelector(QWidget):
         self.button_group.addButton(self.semantic_radio, 1)
         layout.addWidget(self.semantic_radio)
 
-        # ハイブリッド検索ラジオボタン（デフォルト選択）
+        # ハイブリッド検索ラジオボタン(デフォルト選択)
         self.hybrid_radio = QRadioButton("ハイブリッド検索")
         self.hybrid_radio.setToolTip("全文検索とセマンティック検索の組み合わせ")
         self.hybrid_radio.setChecked(True)

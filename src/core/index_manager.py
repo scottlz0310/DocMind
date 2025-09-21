@@ -5,8 +5,8 @@ Whoosh全文検索インデックス管理モジュール
 作成、更新、検索機能を提供します。
 """
 
-import logging
 from datetime import datetime
+import logging
 from pathlib import Path
 from typing import Any
 
@@ -59,29 +59,29 @@ class IndexManager:
             fields.Schema: 作成されたスキーマ
         """
         return fields.Schema(
-            # ドキュメント識別子（主キー）
+            # ドキュメント識別子(主キー)
             id=fields.ID(stored=True, unique=True),
-            # ファイルパス（検索可能、保存）
+            # ファイルパス(検索可能、保存)
             file_path=fields.TEXT(stored=True, analyzer=self.analyzer),
-            # ドキュメントタイトル（検索可能、保存、重み付け高）
+            # ドキュメントタイトル(検索可能、保存、重み付け高)
             title=fields.TEXT(stored=True, analyzer=self.analyzer, field_boost=2.0),
-            # メインコンテンツ（検索可能、保存）
+            # メインコンテンツ(検索可能、保存)
             content=fields.TEXT(stored=True, analyzer=self.analyzer),
-            # N-gram検索用コンテンツ（部分一致検索用）
+            # N-gram検索用コンテンツ(部分一致検索用)
             content_ngram=fields.TEXT(analyzer=self.ngram_analyzer),
-            # ファイルタイプ（フィルタリング用）
+            # ファイルタイプ(フィルタリング用)
             file_type=fields.KEYWORD(stored=True),
-            # ファイルサイズ（数値検索用）
+            # ファイルサイズ(数値検索用)
             size=fields.NUMERIC(stored=True),
-            # 作成日時（日付範囲検索用）
+            # 作成日時(日付範囲検索用)
             created_date=fields.DATETIME(stored=True),
-            # 更新日時（日付範囲検索用）
+            # 更新日時(日付範囲検索用)
             modified_date=fields.DATETIME(stored=True),
-            # インデックス化日時（管理用）
+            # インデックス化日時(管理用)
             indexed_date=fields.DATETIME(stored=True),
-            # コンテンツハッシュ（重複検出用）
+            # コンテンツハッシュ(重複検出用)
             content_hash=fields.ID(stored=True),
-            # メタデータ（JSON形式で保存）
+            # メタデータ(JSON形式で保存)
             metadata=fields.TEXT(stored=True),
         )
 
@@ -109,7 +109,7 @@ class IndexManager:
 
     def create_index(self) -> None:
         """
-        新しいインデックスを作成（既存のインデックスを削除）
+        新しいインデックスを作成(既存のインデックスを削除)
         """
         try:
             # 既存のインデックスファイルを削除
@@ -171,7 +171,7 @@ class IndexManager:
 
     def update_document(self, doc: Document) -> None:
         """
-        ドキュメントを更新（既存のドキュメントを削除して再追加）
+        ドキュメントを更新(既存のドキュメントを削除して再追加)
 
         Args:
             doc (Document): 更新するドキュメント
@@ -246,7 +246,7 @@ class IndexManager:
             if not self._index:
                 raise IndexingError("インデックスが初期化されていません")
 
-            # 方法1: インデックスを再作成（推奨）
+            # 方法1: インデックスを再作成(推奨)
             try:
                 # 既存のインデックスを閉じる
                 if self._index:
@@ -262,7 +262,7 @@ class IndexManager:
                 # インデックスを再初期化
                 self._initialize_index()
 
-                self.logger.info("インデックス全体をクリアしました（再作成方式）")
+                self.logger.info("インデックス全体をクリアしました(再作成方式)")
                 return
 
             except Exception as e:
@@ -270,7 +270,7 @@ class IndexManager:
                 # フォールバック: 個別削除方式
                 pass
 
-            # 方法2: 個別ドキュメント削除（フォールバック）
+            # 方法2: 個別ドキュメント削除(フォールバック)
             writer = self._index.writer()
             try:
                 # すべてのドキュメントIDを取得して削除
@@ -282,9 +282,7 @@ class IndexManager:
                     writer.delete_by_term("id", doc_id)
 
                 writer.commit()
-                self.logger.info(
-                    f"インデックス全体をクリアしました（個別削除方式）: {len(doc_ids)}件"
-                )
+                self.logger.info(f"インデックス全体をクリアしました(個別削除方式): {len(doc_ids)}件")
 
             except Exception as e:
                 writer.cancel()
@@ -333,14 +331,10 @@ class IndexManager:
                 # 検索結果をSearchResultオブジェクトに変換
                 search_results = []
                 for i, hit in enumerate(results):
-                    search_result = self._create_search_result_from_hit(
-                        hit, query_text, i + 1
-                    )
+                    search_result = self._create_search_result_from_hit(hit, query_text, i + 1)
                     search_results.append(search_result)
 
-                self.logger.info(
-                    f"検索完了: クエリ='{query_text}', 結果数={len(search_results)}"
-                )
+                self.logger.info(f"検索完了: クエリ='{query_text}', 結果数={len(search_results)}")
                 return search_results
 
         except Exception as e:
@@ -367,10 +361,8 @@ class IndexManager:
         Returns:
             Query: 構築されたクエリ
         """
-        # メインの検索クエリ（タイトルとコンテンツを対象）
-        parser = MultifieldParser(
-            ["title", "content", "content_ngram"], self._index.schema
-        )
+        # メインの検索クエリ(タイトルとコンテンツを対象)
+        parser = MultifieldParser(["title", "content", "content_ngram"], self._index.schema)
         main_query = parser.parse(query_text)
 
         # フィルター条件を追加
@@ -398,9 +390,7 @@ class IndexManager:
 
         return main_query
 
-    def _create_search_result_from_hit(
-        self, hit: Hit, query_text: str, rank: int
-    ) -> SearchResult:
+    def _create_search_result_from_hit(self, hit: Hit, query_text: str, rank: int) -> SearchResult:
         """
         Whooshの検索結果からSearchResultオブジェクトを作成
 
@@ -447,7 +437,7 @@ class IndexManager:
         # ハイライト対象の用語を抽出
         highlighted_terms = self._extract_highlighted_terms(query_text)
 
-        # スコアの正規化（Whooshのスコアは0-1の範囲ではないため）
+        # スコアの正規化(Whooshのスコアは0-1の範囲ではないため)
         normalized_score = min(hit.score / 10.0, 1.0)  # 適切な正規化係数を使用
 
         return SearchResult(
@@ -498,9 +488,7 @@ class IndexManager:
                 import re
 
                 snippet = re.sub(r"<[^>]+>", "", highlighted)
-                return (
-                    snippet[:max_chars] + "..." if len(snippet) > max_chars else snippet
-                )
+                return snippet[:max_chars] + "..." if len(snippet) > max_chars else snippet
 
             # コンテンツがない場合はタイトルを使用
             return hit.get("title", "")[:max_chars]
@@ -525,9 +513,7 @@ class IndexManager:
         terms = []
         for term in query_text.split():
             # 特殊文字を除去
-            clean_term = "".join(
-                c for c in term if c.isalnum() or c in "ひらがなカタカナ漢字"
-            )
+            clean_term = "".join(c for c in term if c.isalnum() or c in "ひらがなカタカナ漢字")
             if clean_term and len(clean_term) > 1:
                 terms.append(clean_term)
 
@@ -541,9 +527,7 @@ class IndexManager:
             documents (List[Document]): インデックス化するドキュメントのリスト
         """
         try:
-            self.logger.info(
-                f"インデックスの再構築を開始します: {len(documents)}件のドキュメント"
-            )
+            self.logger.info(f"インデックスの再構築を開始します: {len(documents)}件のドキュメント")
 
             # 新しいインデックスを作成
             self.create_index()
@@ -553,9 +537,7 @@ class IndexManager:
             for i in range(0, len(documents), batch_size):
                 batch = documents[i : i + batch_size]
                 self._add_documents_batch(batch)
-                self.logger.info(
-                    f"進捗: {min(i + batch_size, len(documents))}/{len(documents)}"
-                )
+                self.logger.info(f"進捗: {min(i + batch_size, len(documents))}/{len(documents)}")
 
             # インデックスの最適化
             self.optimize_index()
@@ -602,7 +584,7 @@ class IndexManager:
 
     def optimize_index(self) -> None:
         """
-        インデックスを最適化（パフォーマンス向上のため）
+        インデックスを最適化(パフォーマンス向上のため)
         """
         try:
             if not self._index:
@@ -686,7 +668,7 @@ class IndexManager:
         インデックスファイルの合計サイズを取得
 
         Returns:
-            int: サイズ（バイト）
+            int: サイズ(バイト)
         """
         total_size = 0
         try:

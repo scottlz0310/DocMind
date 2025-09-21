@@ -5,9 +5,9 @@ Phase6 GUIテスト用ヘルパークラス
 タイムアウト設定でハングアップを防止
 """
 
+from collections.abc import Callable
 import logging
 import time
-from collections.abc import Callable
 from typing import Any
 from unittest.mock import Mock
 
@@ -23,22 +23,20 @@ except ImportError:
 class GUITestHelper:
     """GUIテスト用ヘルパークラス"""
 
-    DEFAULT_TIMEOUT = 5.0  # デフォルトタイムアウト（秒）
+    DEFAULT_TIMEOUT = 5.0  # デフォルトタイムアウト(秒)
 
     @staticmethod
-    def create_test_widget(
-        widget_class, timeout: float = DEFAULT_TIMEOUT, **kwargs
-    ) -> QWidget | None:
+    def create_test_widget(widget_class, timeout: float = DEFAULT_TIMEOUT, **kwargs) -> QWidget | None:
         """
         テスト用ウィジェット作成
 
         Args:
             widget_class: ウィジェットクラス
-            timeout: タイムアウト時間（秒）
+            timeout: タイムアウト時間(秒)
             **kwargs: ウィジェット初期化引数
 
         Returns:
-            作成されたウィジェット（失敗時はNone）
+            作成されたウィジェット(失敗時はNone)
         """
         if not GUI_AVAILABLE:
             return None
@@ -56,9 +54,7 @@ class GUITestHelper:
             if GUITestHelper._execute_with_timeout(create_widget, timeout):
                 return widget
             else:
-                logging.warning(
-                    f"ウィジェット作成がタイムアウトしました: {widget_class.__name__}"
-                )
+                logging.warning(f"ウィジェット作成がタイムアウトしました: {widget_class.__name__}")
                 return None
 
         except Exception as e:
@@ -66,16 +62,14 @@ class GUITestHelper:
             return None
 
     @staticmethod
-    def simulate_user_interaction(
-        widget: QWidget, action: str, timeout: float = DEFAULT_TIMEOUT, *args
-    ) -> bool:
+    def simulate_user_interaction(widget: QWidget, action: str, timeout: float = DEFAULT_TIMEOUT, *args) -> bool:
         """
         ユーザー操作シミュレーション
 
         Args:
             widget: 対象ウィジェット
             action: 実行するアクション名
-            timeout: タイムアウト時間（秒）
+            timeout: タイムアウト時間(秒)
             *args: アクション引数
 
         Returns:
@@ -109,9 +103,9 @@ class GUITestHelper:
         条件が満たされるまで待機
 
         Args:
-            condition: 待機条件（True/Falseを返す関数）
-            timeout: タイムアウト時間（秒）
-            interval: チェック間隔（秒）
+            condition: 待機条件(True/Falseを返す関数)
+            timeout: タイムアウト時間(秒)
+            interval: チェック間隔(秒)
 
         Returns:
             条件が満たされた場合True、タイムアウト時False
@@ -141,7 +135,7 @@ class GUITestHelper:
 
         Args:
             widget: クリーンアップ対象ウィジェット
-            timeout: タイムアウト時間（秒）
+            timeout: タイムアウト時間(秒)
 
         Returns:
             成功時True、失敗時False
@@ -170,7 +164,7 @@ class GUITestHelper:
 
         Args:
             func: 実行する関数
-            timeout: タイムアウト時間（秒）
+            timeout: タイムアウト時間(秒)
 
         Returns:
             成功時True、タイムアウト時False
@@ -227,18 +221,14 @@ class MockGUITestHelper:
         return mock_widget
 
     @staticmethod
-    def simulate_user_interaction(
-        widget: Any, action: str, timeout: float = 5.0, *args
-    ) -> bool:
+    def simulate_user_interaction(widget: Any, action: str, timeout: float = 5.0, *args) -> bool:
         """モックユーザー操作"""
         if hasattr(widget, action):
             getattr(widget, action)(*args)
         return True
 
     @staticmethod
-    def wait_for_condition(
-        condition: Callable[[], bool], timeout: float = 5.0, interval: float = 0.1
-    ) -> bool:
+    def wait_for_condition(condition: Callable[[], bool], timeout: float = 5.0, interval: float = 0.1) -> bool:
         """モック条件待機"""
         try:
             return condition()

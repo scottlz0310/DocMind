@@ -5,9 +5,9 @@
 ユーザーの検索パターンの分析や検索提案機能をサポートします。
 """
 
+from datetime import datetime, timedelta
 import json
 import logging
-from datetime import datetime, timedelta
 from typing import Any
 
 from ..utils.exceptions import DatabaseError
@@ -44,7 +44,7 @@ class SearchHistoryRepository:
             query (str): 検索クエリ
             search_type (SearchType): 検索タイプ
             result_count (int): 結果数
-            execution_time_ms (int): 実行時間（ミリ秒）
+            execution_time_ms (int): 実行時間(ミリ秒)
 
         Returns:
             bool: 成功した場合True
@@ -106,13 +106,11 @@ class SearchHistoryRepository:
             self.logger.error(f"最近の検索履歴取得エラー: {e}")
             raise DatabaseError(f"検索履歴の取得に失敗しました: {e}") from e
 
-    def get_popular_queries(
-        self, days: int = 30, limit: int = 20
-    ) -> list[dict[str, Any]]:
+    def get_popular_queries(self, days: int = 30, limit: int = 20) -> list[dict[str, Any]]:
         """人気の検索クエリを取得
 
         Args:
-            days (int): 対象期間（日数）
+            days (int): 対象期間(日数)
             limit (int): 取得する最大件数
 
         Returns:
@@ -184,7 +182,7 @@ class SearchHistoryRepository:
         """検索統計情報を取得
 
         Args:
-            days (int): 対象期間（日数）
+            days (int): 対象期間(日数)
 
         Returns:
             Dict[str, Any]: 統計情報
@@ -309,7 +307,7 @@ class SearchHistoryRepository:
         """検索トレンドを取得
 
         Args:
-            days (int): 対象期間（日数）
+            days (int): 対象期間(日数)
 
         Returns:
             List[Dict[str, Any]]: トレンド情報のリスト
@@ -342,8 +340,7 @@ class SearchHistoryRepository:
                         "active_days": row[2],
                         "avg_results": round(row[3], 1),
                         "last_searched": datetime.fromisoformat(row[4]),
-                        "frequency_score": row[1]
-                        / max(1, days - row[2]),  # 検索頻度スコア
+                        "frequency_score": row[1] / max(1, days - row[2]),  # 検索頻度スコア
                     }
                     for row in cursor.fetchall()
                 ]
@@ -352,13 +349,11 @@ class SearchHistoryRepository:
             self.logger.error(f"検索トレンド取得エラー: {e}")
             raise DatabaseError(f"検索トレンドの取得に失敗しました: {e}") from e
 
-    def get_failed_searches(
-        self, days: int = 7, limit: int = 20
-    ) -> list[dict[str, Any]]:
+    def get_failed_searches(self, days: int = 7, limit: int = 20) -> list[dict[str, Any]]:
         """結果が見つからなかった検索を取得
 
         Args:
-            days (int): 対象期間（日数）
+            days (int): 対象期間(日数)
             limit (int): 取得する最大件数
 
         Returns:
@@ -512,9 +507,7 @@ class SearchHistoryRepository:
                         "query": row[2],
                         "search_type": SearchType(row[3]),
                         "search_options": json.loads(row[4]) if row[4] else {},
-                        "created_date": (
-                            datetime.fromisoformat(row[5]) if row[5] else None
-                        ),
+                        "created_date": (datetime.fromisoformat(row[5]) if row[5] else None),
                         "last_used": datetime.fromisoformat(row[6]) if row[6] else None,
                         "use_count": row[7],
                     }
@@ -526,13 +519,13 @@ class SearchHistoryRepository:
             raise DatabaseError(f"保存された検索の取得に失敗しました: {e}") from e
 
     def use_saved_search(self, search_id: int) -> dict[str, Any] | None:
-        """保存された検索を使用（使用回数を更新）
+        """保存された検索を使用(使用回数を更新)
 
         Args:
             search_id (int): 保存された検索のID
 
         Returns:
-            Optional[Dict[str, Any]]: 検索情報（存在しない場合はNone）
+            Optional[Dict[str, Any]]: 検索情報(存在しない場合はNone)
         """
         try:
             with self.db_manager.get_connection() as conn:
@@ -566,9 +559,7 @@ class SearchHistoryRepository:
                         "query": row[2],
                         "search_type": SearchType(row[3]),
                         "search_options": json.loads(row[4]) if row[4] else {},
-                        "created_date": (
-                            datetime.fromisoformat(row[5]) if row[5] else None
-                        ),
+                        "created_date": (datetime.fromisoformat(row[5]) if row[5] else None),
                         "last_used": datetime.fromisoformat(row[6]) if row[6] else None,
                         "use_count": row[7],
                     }
@@ -604,9 +595,7 @@ class SearchHistoryRepository:
                     self.logger.info(f"保存された検索を削除: ID {search_id}")
                     return True
                 else:
-                    self.logger.warning(
-                        f"削除対象の検索が見つかりません: ID {search_id}"
-                    )
+                    self.logger.warning(f"削除対象の検索が見つかりません: ID {search_id}")
                     return False
 
         except Exception as e:
@@ -636,14 +625,10 @@ class SearchHistoryRepository:
                 conn.commit()
 
                 if updated_count > 0:
-                    self.logger.info(
-                        f"保存された検索の名前を変更: ID {search_id} -> {new_name}"
-                    )
+                    self.logger.info(f"保存された検索の名前を変更: ID {search_id} -> {new_name}")
                     return True
                 else:
-                    self.logger.warning(
-                        f"更新対象の検索が見つかりません: ID {search_id}"
-                    )
+                    self.logger.warning(f"更新対象の検索が見つかりません: ID {search_id}")
                     return False
 
         except Exception as e:

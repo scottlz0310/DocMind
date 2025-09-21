@@ -6,8 +6,8 @@ Phase5テスト環境 - コンポーネント間の接続確認のみ
 
 from unittest.mock import patch
 
-import pytest
 from PySide6.QtWidgets import QApplication
+import pytest
 
 from src.gui.main_window import MainWindow
 
@@ -62,9 +62,7 @@ class TestMainWindowIntegration:
 
             # 基本的なシグナル接続をテスト
             # 詳細な結果検証はしない - 接続確認のみ
-            main_window.signal_manager.connect_signal(
-                main_window, "windowTitleChanged", lambda: None
-            )
+            main_window.signal_manager.connect_signal(main_window, "windowTitleChanged", lambda: None)
 
         except Exception as e:
             pytest.fail(f"Signal connection failed: {e}")
@@ -123,7 +121,7 @@ class TestMainWindowIntegration:
             # クリーンアップマネージャーが存在することを確認
             assert hasattr(main_window, "cleanup_manager")
 
-            # クリーンアップを実行（エラーが発生しないことを確認）
+            # クリーンアップを実行(エラーが発生しないことを確認)
             main_window.cleanup_manager.cleanup()
 
         except Exception as e:

@@ -87,9 +87,7 @@ class SettingsDialog(QDialog):
         self._create_ui_tab()
 
         # ボタンボックス
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Apply
-        )
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Apply)
         button_box.accepted.connect(self._save_and_close)
         button_box.rejected.connect(self.reject)
         button_box.button(QDialogButtonBox.Apply).clicked.connect(self._apply_settings)
@@ -133,9 +131,7 @@ class SettingsDialog(QDialog):
         watch_group = QGroupBox("ファイル監視")
         watch_layout = QFormLayout(watch_group)
 
-        self.enable_file_watching_check = QCheckBox(
-            "ファイル変更の自動監視を有効にする"
-        )
+        self.enable_file_watching_check = QCheckBox("ファイル変更の自動監視を有効にする")
         watch_layout.addRow(self.enable_file_watching_check)
 
         layout.addWidget(watch_group)
@@ -153,14 +149,12 @@ class SettingsDialog(QDialog):
         model_layout = QFormLayout(model_group)
 
         self.embedding_model_combo = QComboBox()
-        self.embedding_model_combo.addItems(
-            [
-                "all-MiniLM-L6-v2",
-                "all-MiniLM-L12-v2",
-                "paraphrase-MiniLM-L6-v2",
-                "distilbert-base-nli-mean-tokens",
-            ]
-        )
+        self.embedding_model_combo.addItems([
+            "all-MiniLM-L6-v2",
+            "all-MiniLM-L12-v2",
+            "paraphrase-MiniLM-L6-v2",
+            "distilbert-base-nli-mean-tokens",
+        ])
         model_layout.addRow("セマンティック検索モデル:", self.embedding_model_combo)
 
         layout.addWidget(model_group)
@@ -180,9 +174,7 @@ class SettingsDialog(QDialog):
         self.semantic_weight_slider.setRange(0, 100)
         self.semantic_weight_slider.setValue(50)
         self.semantic_weight_label = QLabel("50%")
-        self.semantic_weight_slider.valueChanged.connect(
-            lambda v: self.semantic_weight_label.setText(f"{v}%")
-        )
+        self.semantic_weight_slider.valueChanged.connect(lambda v: self.semantic_weight_label.setText(f"{v}%"))
 
         weight_layout = QHBoxLayout()
         weight_layout.addWidget(self.semantic_weight_slider)
@@ -361,16 +353,14 @@ class SettingsDialog(QDialog):
         font_layout = QFormLayout(font_group)
 
         self.font_family_combo = QComboBox()
-        self.font_family_combo.addItems(
-            [
-                "システムデフォルト",
-                "Yu Gothic UI",
-                "Meiryo UI",
-                "MS Gothic",
-                "Arial",
-                "Helvetica",
-            ]
-        )
+        self.font_family_combo.addItems([
+            "システムデフォルト",
+            "Yu Gothic UI",
+            "Meiryo UI",
+            "MS Gothic",
+            "Arial",
+            "Helvetica",
+        ])
         font_layout.addRow("フォントファミリー:", self.font_family_combo)
 
         self.font_size_spin = QSpinBox()
@@ -391,16 +381,12 @@ class SettingsDialog(QDialog):
             self.search_timeout_spin.setValue(self.config.get_search_timeout())
             self.batch_size_spin.setValue(self.config.get_batch_size())
             self.cache_size_spin.setValue(self.config.get_cache_size())
-            self.enable_file_watching_check.setChecked(
-                self.config.is_file_watching_enabled()
-            )
+            self.enable_file_watching_check.setChecked(self.config.is_file_watching_enabled())
 
             # 検索設定
             self.embedding_model_combo.setCurrentText(self.config.get_embedding_model())
             self.max_results_spin.setValue(self.config.get("max_results", 100))
-            self.semantic_weight_slider.setValue(
-                int(self.config.get("semantic_weight", 50))
-            )
+            self.semantic_weight_slider.setValue(int(self.config.get("semantic_weight", 50)))
 
             # フォルダ設定
             indexed_folders = self.config.get("indexed_folders", [])
@@ -418,13 +404,9 @@ class SettingsDialog(QDialog):
 
             # ログ設定
             self.log_level_combo.setCurrentText(self.config.get_log_level())
-            log_file = os.path.join(
-                self.config.get_data_directory(), "logs", "docmind.log"
-            )
+            log_file = os.path.join(self.config.get_data_directory(), "logs", "docmind.log")
             self.log_file_edit.setText(log_file)
-            self.console_logging_check.setChecked(
-                self.config.get("console_logging", True)
-            )
+            self.console_logging_check.setChecked(self.config.get("console_logging", True))
             self.file_logging_check.setChecked(self.config.get("file_logging", True))
 
             # UI設定
@@ -432,9 +414,7 @@ class SettingsDialog(QDialog):
             self.window_width_spin.setValue(width)
             self.window_height_spin.setValue(height)
             self.ui_theme_combo.setCurrentText(self.config.get("ui_theme"))
-            self.font_family_combo.setCurrentText(
-                self.config.get("font_family", "システムデフォルト")
-            )
+            self.font_family_combo.setCurrentText(self.config.get("font_family", "システムデフォルト"))
             self.font_size_spin.setValue(self.config.get("font_size", 10))
 
             # ストレージ情報の更新
@@ -449,9 +429,7 @@ class SettingsDialog(QDialog):
         try:
             data_dir = Path(self.config.get_data_directory())
             if data_dir.exists():
-                total_size = sum(
-                    f.stat().st_size for f in data_dir.rglob("*") if f.is_file()
-                )
+                total_size = sum(f.stat().st_size for f in data_dir.rglob("*") if f.is_file())
                 size_mb = total_size / (1024 * 1024)
                 self.storage_info_label.setText(f"{size_mb:.2f} MB")
             else:
@@ -461,16 +439,12 @@ class SettingsDialog(QDialog):
 
     def _add_folder(self):
         """インデックス対象フォルダを追加"""
-        folder = QFileDialog.getExistingDirectory(
-            self, "インデックス対象フォルダを選択", ""
-        )
+        folder = QFileDialog.getExistingDirectory(self, "インデックス対象フォルダを選択", "")
         if folder:
             # 重複チェック
             for i in range(self.folders_list.count()):
                 if self.folders_list.item(i).text() == folder:
-                    QMessageBox.information(
-                        self, "情報", "このフォルダは既に追加されています。"
-                    )
+                    QMessageBox.information(self, "情報", "このフォルダは既に追加されています。")
                     return
 
             self.folders_list.addItem(folder)
@@ -482,7 +456,7 @@ class SettingsDialog(QDialog):
             reply = QMessageBox.question(
                 self,
                 "確認",
-                f"フォルダ '{current_item.text()}' を削除しますか？",
+                f"フォルダ '{current_item.text()}' を削除しますか?",
                 QMessageBox.Yes | QMessageBox.No,
             )
             if reply == QMessageBox.Yes:
@@ -490,9 +464,7 @@ class SettingsDialog(QDialog):
 
     def _browse_data_directory(self):
         """データディレクトリを参照"""
-        directory = QFileDialog.getExistingDirectory(
-            self, "データディレクトリを選択", self.data_directory_edit.text()
-        )
+        directory = QFileDialog.getExistingDirectory(self, "データディレクトリを選択", self.data_directory_edit.text())
         if directory:
             self.data_directory_edit.setText(directory)
 
@@ -530,9 +502,7 @@ class SettingsDialog(QDialog):
         settings["indexed_folders"] = indexed_folders
 
         exclude_patterns = [
-            line.strip()
-            for line in self.exclude_patterns_text.toPlainText().split("\n")
-            if line.strip()
+            line.strip() for line in self.exclude_patterns_text.toPlainText().split("\n") if line.strip()
         ]
         settings["exclude_patterns"] = exclude_patterns
 
@@ -557,7 +527,7 @@ class SettingsDialog(QDialog):
         return settings
 
     def _apply_settings(self):
-        """設定を適用（保存はしない）"""
+        """設定を適用(保存はしない)"""
         try:
             settings = self._collect_settings()
 
@@ -621,7 +591,7 @@ class SettingsDialog(QDialog):
                     reply = QMessageBox.question(
                         self,
                         "確認",
-                        f"フォルダが存在しません: {folder}\n続行しますか？",
+                        f"フォルダが存在しません: {folder}\n続行しますか?",
                         QMessageBox.Yes | QMessageBox.No,
                     )
                     if reply == QMessageBox.No:
@@ -629,15 +599,11 @@ class SettingsDialog(QDialog):
 
             # 数値範囲の検証
             if settings["max_documents"] < 1000:
-                QMessageBox.warning(
-                    self, "警告", "最大ドキュメント数は1000以上である必要があります。"
-                )
+                QMessageBox.warning(self, "警告", "最大ドキュメント数は1000以上である必要があります。")
                 return False
 
             if settings["search_timeout"] < 1.0:
-                QMessageBox.warning(
-                    self, "警告", "検索タイムアウトは1秒以上である必要があります。"
-                )
+                QMessageBox.warning(self, "警告", "検索タイムアウトは1秒以上である必要があります。")
                 return False
 
             return True

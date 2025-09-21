@@ -33,7 +33,7 @@ added_files = [
     (str(project_root / "README.md"), "."),
 ]
 
-# 隠れたインポートの定義（PyInstallerが自動検出できないモジュール）
+# 隠れたインポートの定義(PyInstallerが自動検出できないモジュール)
 hidden_imports = [
     # PySide6関連
     'PySide6.QtCore',
@@ -62,7 +62,7 @@ hidden_imports = [
     'chardet',
     'psutil',
 
-    # 標準ライブラリの一部（明示的に含める）
+    # 標準ライブラリの一部(明示的に含める)
     'sqlite3',
     'pickle',
     'json',
@@ -71,7 +71,7 @@ hidden_imports = [
     'multiprocessing',
 ]
 
-# 除外するモジュール（不要なライブラリを除外してサイズを削減）
+# 除外するモジュール(不要なライブラリを除外してサイズを削減)
 excluded_modules = [
     'matplotlib',
     'IPython',
@@ -81,10 +81,10 @@ excluded_modules = [
     'scipy',   # 使用していない場合
 ]
 
-# バイナリファイルの除外（不要なバイナリを除外）
+# バイナリファイルの除外(不要なバイナリを除外)
 excluded_binaries = []
 
-# 追加バイナリファイル（scipyなどの重要なライブラリ）
+# 追加バイナリファイル(scipyなどの重要なライブラリ)
 import scipy
 scipy_path = scipy.__path__[0]
 additional_binaries = [
@@ -121,7 +121,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,  # UPX圧縮を有効化（サイズ削減）
+    upx=True,  # UPX圧縮を有効化(サイズ削減)
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,  # コンソールウィンドウを非表示

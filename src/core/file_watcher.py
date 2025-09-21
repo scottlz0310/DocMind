@@ -5,14 +5,14 @@ FileWatcher - ファイルシステム監視と増分更新システム
 ドキュメントのインデックスと埋め込みの増分更新を行います。
 """
 
+from dataclasses import dataclass
+from datetime import datetime
 import hashlib
 import logging
 import os
+from queue import Empty, Queue
 import threading
 import time
-from dataclasses import dataclass
-from datetime import datetime
-from queue import Empty, Queue
 from typing import Any
 
 from watchdog.events import (
@@ -78,8 +78,8 @@ class FileWatcher(FileSystemEventHandler):
         Args:
             index_manager: インデックス管理クラス
             embedding_manager: 埋め込み管理クラス
-            document_processor: ドキュメント処理クラス（Noneの場合は新規作成）
-            config: 設定クラス（Noneの場合はデフォルト設定を使用）
+            document_processor: ドキュメント処理クラス(Noneの場合は新規作成)
+            config: 設定クラス(Noneの場合はデフォルト設定を使用)
         """
         super().__init__()
 
@@ -94,7 +94,7 @@ class FileWatcher(FileSystemEventHandler):
         # 監視対象パスのセット
         self.watched_paths: set[str] = set()
 
-        # ファイルハッシュキャッシュ（重複処理を避けるため）
+        # ファイルハッシュキャッシュ(重複処理を避けるため)
         self.file_hashes: dict[str, FileHashInfo] = {}
 
         # バックグラウンド処理キュー
@@ -117,7 +117,7 @@ class FileWatcher(FileSystemEventHandler):
             "last_activity": None,
         }
 
-        # 除外パターン（処理しないファイル/ディレクトリ）
+        # 除外パターン(処理しないファイル/ディレクトリ)
         self.exclude_patterns = {
             # 隠しファイル・ディレクトリ
             ".*",
@@ -132,7 +132,7 @@ class FileWatcher(FileSystemEventHandler):
             ".DS_Store",
             # ログファイル
             "*.log",
-            # バイナリファイル（画像、動画など）
+            # バイナリファイル(画像、動画など)
             "*.jpg",
             "*.jpeg",
             "*.png",
@@ -172,9 +172,7 @@ class FileWatcher(FileSystemEventHandler):
             raise FileSystemError(f"監視対象パスが存在しません: {path}", path=path)
 
         if not os.path.isdir(path):
-            raise FileSystemError(
-                f"監視対象パスはディレクトリである必要があります: {path}", path=path
-            )
+            raise FileSystemError(f"監視対象パスはディレクトリである必要があります: {path}", path=path)
 
         abs_path = os.path.abspath(path)
         self.watched_paths.add(abs_path)
@@ -259,9 +257,7 @@ class FileWatcher(FileSystemEventHandler):
     def on_created(self, event: FileCreatedEvent) -> None:
         """ファイル作成イベントのハンドラ"""
         if not event.is_directory and self._should_process_file(event.src_path):
-            change_event = FileChangeEvent(
-                event_type="created", file_path=event.src_path
-            )
+            change_event = FileChangeEvent(event_type="created", file_path=event.src_path)
             self.processing_queue.put(change_event)
             self.logger.debug(f"ファイル作成イベント: {event.src_path}")
 
@@ -270,31 +266,23 @@ class FileWatcher(FileSystemEventHandler):
         if not event.is_directory and self._should_process_file(event.src_path):
             # ファイルハッシュをチェックして実際に変更されているかを確認
             if self._is_file_actually_changed(event.src_path):
-                change_event = FileChangeEvent(
-                    event_type="modified", file_path=event.src_path
-                )
+                change_event = FileChangeEvent(event_type="modified", file_path=event.src_path)
                 self.processing_queue.put(change_event)
                 self.logger.debug(f"ファイル変更イベント: {event.src_path}")
 
     def on_deleted(self, event: FileDeletedEvent) -> None:
         """ファイル削除イベントのハンドラ"""
         if not event.is_directory:
-            change_event = FileChangeEvent(
-                event_type="deleted", file_path=event.src_path
-            )
+            change_event = FileChangeEvent(event_type="deleted", file_path=event.src_path)
             self.processing_queue.put(change_event)
             self.logger.debug(f"ファイル削除イベント: {event.src_path}")
 
     def on_moved(self, event: FileMovedEvent) -> None:
         """ファイル移動イベントのハンドラ"""
         if not event.is_directory:
-            change_event = FileChangeEvent(
-                event_type="moved", file_path=event.dest_path, old_path=event.src_path
-            )
+            change_event = FileChangeEvent(event_type="moved", file_path=event.dest_path, old_path=event.src_path)
             self.processing_queue.put(change_event)
-            self.logger.debug(
-                f"ファイル移動イベント: {event.src_path} -> {event.dest_path}"
-            )
+            self.logger.debug(f"ファイル移動イベント: {event.src_path} -> {event.dest_path}")
 
     def _should_process_file(self, file_path: str) -> bool:
         """
@@ -324,7 +312,7 @@ class FileWatcher(FileSystemEventHandler):
 
         Args:
             filename: ファイル名
-            pattern: パターン（*をワイルドカードとして使用）
+            pattern: パターン(*をワイルドカードとして使用)
 
         Returns:
             マッチする場合True
@@ -357,10 +345,7 @@ class FileWatcher(FileSystemEventHandler):
                 cached_info = self.file_hashes[file_path]
 
                 # サイズと更新時刻が同じ場合は変更なしと判定
-                if (
-                    cached_info.file_size == current_size
-                    and cached_info.modified_time == current_mtime
-                ):
+                if cached_info.file_size == current_size and cached_info.modified_time == current_mtime:
                     return False
 
             # ファイルハッシュを計算
@@ -403,7 +388,7 @@ class FileWatcher(FileSystemEventHandler):
             file_path: ファイルパス
 
         Returns:
-            ハッシュ値（SHA-256）
+            ハッシュ値(SHA-256)
         """
         hash_sha256 = hashlib.sha256()
 
@@ -430,7 +415,7 @@ class FileWatcher(FileSystemEventHandler):
 
         while self.is_running:
             try:
-                # キューからイベントを取得（タイムアウト付き）
+                # キューからイベントを取得(タイムアウト付き)
                 event = self.processing_queue.get(timeout=1.0)
 
                 # イベントを処理
@@ -440,7 +425,7 @@ class FileWatcher(FileSystemEventHandler):
                 self.processing_queue.task_done()
 
             except Empty:
-                # タイムアウト（正常）
+                # タイムアウト(正常)
                 continue
             except Exception as e:
                 self.logger.error(f"ワーカーループでエラーが発生: {e}")
@@ -456,9 +441,7 @@ class FileWatcher(FileSystemEventHandler):
             event: 処理するファイル変更イベント
         """
         try:
-            self.logger.info(
-                f"ファイルイベント処理開始: {event.event_type} - {event.file_path}"
-            )
+            self.logger.info(f"ファイルイベント処理開始: {event.event_type} - {event.file_path}")
 
             if event.event_type == "deleted":
                 self._handle_file_deleted(event.file_path)
@@ -471,14 +454,10 @@ class FileWatcher(FileSystemEventHandler):
             self.stats["files_processed"] += 1
             self.stats["last_activity"] = datetime.now()
 
-            self.logger.debug(
-                f"ファイルイベント処理完了: {event.event_type} - {event.file_path}"
-            )
+            self.logger.debug(f"ファイルイベント処理完了: {event.event_type} - {event.file_path}")
 
         except Exception as e:
-            self.logger.error(
-                f"ファイルイベント処理中にエラー: {event.file_path} - {e}"
-            )
+            self.logger.error(f"ファイルイベント処理中にエラー: {event.file_path} - {e}")
             self.stats["processing_errors"] += 1
 
     def _handle_file_deleted(self, file_path: str) -> None:
@@ -523,7 +502,7 @@ class FileWatcher(FileSystemEventHandler):
         # 古いファイルを削除
         self._handle_file_deleted(old_path)
 
-        # 新しいファイルを追加（サポートされている場合のみ）
+        # 新しいファイルを追加(サポートされている場合のみ)
         if self._should_process_file(new_path):
             self._handle_file_created_or_modified(new_path, "created")
 
@@ -533,16 +512,14 @@ class FileWatcher(FileSystemEventHandler):
 
         Args:
             file_path: ファイルパス
-            event_type: イベントタイプ（'created' または 'modified'）
+            event_type: イベントタイプ('created' または 'modified')
         """
         try:
             # ドキュメントを処理
             document = self.document_processor.process_file(file_path)
 
             # インデックスを更新
-            if event_type == "created" or not self.index_manager.document_exists(
-                document.id
-            ):
+            if event_type == "created" or not self.index_manager.document_exists(document.id):
                 self.index_manager.add_document(document)
                 self.stats["files_added"] += 1
                 self.logger.info(f"インデックスにドキュメントを追加: {file_path}")
@@ -556,9 +533,7 @@ class FileWatcher(FileSystemEventHandler):
             self.logger.info(f"埋め込みを更新: {file_path}")
 
         except DocumentProcessingError as e:
-            self.logger.warning(
-                f"ドキュメント処理をスキップ: {file_path} - {e.message}"
-            )
+            self.logger.warning(f"ドキュメント処理をスキップ: {file_path} - {e.message}")
         except Exception as e:
             self.logger.error(f"ファイル処理中にエラー: {file_path} - {e}")
             raise
@@ -571,14 +546,10 @@ class FileWatcher(FileSystemEventHandler):
 
                 with open(self.hash_cache_path, "rb") as f:
                     self.file_hashes = pickle.load(f)
-                self.logger.info(
-                    f"ハッシュキャッシュを読み込み: {len(self.file_hashes)}件"
-                )
+                self.logger.info(f"ハッシュキャッシュを読み込み: {len(self.file_hashes)}件")
             else:
                 self.file_hashes = {}
-                self.logger.info(
-                    "ハッシュキャッシュファイルが存在しません。空のキャッシュで開始します。"
-                )
+                self.logger.info("ハッシュキャッシュファイルが存在しません。空のキャッシュで開始します。")
         except Exception as e:
             self.logger.warning(f"ハッシュキャッシュの読み込みに失敗: {e}")
             self.file_hashes = {}
@@ -590,7 +561,7 @@ class FileWatcher(FileSystemEventHandler):
 
             os.makedirs(os.path.dirname(self.hash_cache_path), exist_ok=True)
 
-            # 一時ファイルに保存してから移動（原子的操作）
+            # 一時ファイルに保存してから移動(原子的操作)
             temp_path = self.hash_cache_path + ".tmp"
             with open(temp_path, "wb") as f:
                 pickle.dump(self.file_hashes, f, protocol=pickle.HIGHEST_PROTOCOL)
@@ -602,10 +573,10 @@ class FileWatcher(FileSystemEventHandler):
 
     def force_rescan(self, path: str | None = None) -> None:
         """
-        指定されたパス（またはすべての監視パス）を強制的に再スキャン
+        指定されたパス(またはすべての監視パス)を強制的に再スキャン
 
         Args:
-            path: 再スキャンするパス（Noneの場合はすべての監視パス）
+            path: 再スキャンするパス(Noneの場合はすべての監視パス)
         """
         scan_paths = [path] if path else list(self.watched_paths)
 
@@ -627,9 +598,7 @@ class FileWatcher(FileSystemEventHandler):
                             del self.file_hashes[file_path]
 
                         # 処理キューに追加
-                        event = FileChangeEvent(
-                            event_type="modified", file_path=file_path
-                        )
+                        event = FileChangeEvent(event_type="modified", file_path=file_path)
                         self.processing_queue.put(event)
 
             self.logger.info(f"強制再スキャン完了: {scan_path}")
@@ -661,7 +630,7 @@ class FileWatcher(FileSystemEventHandler):
         処理キューが空になるまで待機
 
         Args:
-            timeout: タイムアウト時間（秒）
+            timeout: タイムアウト時間(秒)
 
         Returns:
             キューが空になった場合True、タイムアウトした場合False

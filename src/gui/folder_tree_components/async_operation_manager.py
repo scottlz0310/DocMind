@@ -61,7 +61,7 @@ class AsyncOperationManager(QObject):
             # ワーカーをスレッドに移動
             self.folder_worker.moveToThread(self.load_worker)
 
-            # シグナル接続（安全な接続方法）
+            # シグナル接続(安全な接続方法)
             self._connect_worker_signals()
 
             # スレッド開始
@@ -72,7 +72,7 @@ class AsyncOperationManager(QObject):
         except Exception as e:
             self.logger.error(f"フォルダ読み込み開始エラー: {e}")
             self.cleanup_workers()
-            self.load_error.emit(root_path, f"読み込み開始エラー: {str(e)}")
+            self.load_error.emit(root_path, f"読み込み開始エラー: {e!s}")
 
     def _connect_worker_signals(self):
         """ワーカーのシグナルを接続します"""
@@ -80,21 +80,13 @@ class AsyncOperationManager(QObject):
             return
 
         # スレッド管理シグナル
-        self.load_worker.started.connect(
-            self.folder_worker.do_work, Qt.QueuedConnection
-        )
+        self.load_worker.started.connect(self.folder_worker.do_work, Qt.QueuedConnection)
         self.folder_worker.finished.connect(self.load_worker.quit, Qt.QueuedConnection)
-        self.folder_worker.finished.connect(
-            self.folder_worker.deleteLater, Qt.QueuedConnection
-        )
-        self.load_worker.finished.connect(
-            self.load_worker.deleteLater, Qt.QueuedConnection
-        )
+        self.folder_worker.finished.connect(self.folder_worker.deleteLater, Qt.QueuedConnection)
+        self.load_worker.finished.connect(self.load_worker.deleteLater, Qt.QueuedConnection)
 
         # アプリケーションシグナル転送
-        self.folder_worker.folder_loaded.connect(
-            self.folder_loaded.emit, Qt.QueuedConnection
-        )
+        self.folder_worker.folder_loaded.connect(self.folder_loaded.emit, Qt.QueuedConnection)
         self.folder_worker.load_error.connect(self.load_error.emit, Qt.QueuedConnection)
         self.folder_worker.finished.connect(self._on_load_finished, Qt.QueuedConnection)
 
@@ -124,7 +116,7 @@ class AsyncOperationManager(QObject):
                     # スレッドの安全な終了
                     self.load_worker.quit()
 
-                    # スレッドが終了するまで待機（最大3秒）
+                    # スレッドが終了するまで待機(最大3秒)
                     if not self.load_worker.wait(3000):
                         self.logger.warning("ワーカースレッドの終了を強制終了します")
                         self.load_worker.terminate()
@@ -165,11 +157,7 @@ class AsyncOperationManager(QObject):
         Returns:
             読み込み中の場合True
         """
-        return (
-            self.load_worker is not None
-            and self.load_worker.isRunning()
-            and self.folder_worker is not None
-        )
+        return self.load_worker is not None and self.load_worker.isRunning() and self.folder_worker is not None
 
     def __del__(self):
         """デストラクタ"""

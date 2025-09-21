@@ -38,9 +38,7 @@ class SearchController(QObject):
         self.logger = logging.getLogger(__name__)
         self.is_searching = False
 
-    def execute_search(
-        self, query_text: str, search_type: SearchType, search_options: dict[str, Any]
-    ) -> None:
+    def execute_search(self, query_text: str, search_type: SearchType, search_options: dict[str, Any]) -> None:
         """
         検索を実行
 
@@ -54,16 +52,12 @@ class SearchController(QObject):
             return
 
         if not query_text.strip():
-            QMessageBox.warning(
-                None, "検索エラー", "検索キーワードを入力してください。"
-            )
+            QMessageBox.warning(None, "検索エラー", "検索キーワードを入力してください。")
             return
 
         try:
             # 検索クエリを構築
-            search_query = self._build_search_query(
-                query_text, search_type, search_options
-            )
+            search_query = self._build_search_query(query_text, search_type, search_options)
 
             # 検索状態を更新
             self._set_searching_state(True)
@@ -91,7 +85,7 @@ class SearchController(QObject):
 
         Args:
             results: 検索結果
-            execution_time: 実行時間（秒）
+            execution_time: 実行時間(秒)
         """
         self._set_searching_state(False)
         result_count = len(results)
@@ -105,14 +99,10 @@ class SearchController(QObject):
             error_message: エラーメッセージ
         """
         self._set_searching_state(False)
-        QMessageBox.critical(
-            None, "検索エラー", f"検索中にエラーが発生しました:\n{error_message}"
-        )
+        QMessageBox.critical(None, "検索エラー", f"検索中にエラーが発生しました:\n{error_message}")
         self.logger.error(f"検索エラー: {error_message}")
 
-    def _build_search_query(
-        self, query_text: str, search_type: SearchType, options: dict[str, Any]
-    ) -> SearchQuery:
+    def _build_search_query(self, query_text: str, search_type: SearchType, options: dict[str, Any]) -> SearchQuery:
         """
         検索クエリオブジェクトを構築
 

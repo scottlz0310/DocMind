@@ -33,7 +33,7 @@ class FileWatcherError(DocMindException):
 - **成功**: 15/16テスト
 - **失敗**: PDFライブラリ未インストール時のテスト
   - 期待: DocumentProcessingError発生
-  - 実際: 例外が発生しない（警告ログのみ）
+  - 実際: 例外が発生しない(警告ログのみ)
 
 #### EmbeddingManagerテスト  
 - **問題**: Documentモデルのファイル存在チェック

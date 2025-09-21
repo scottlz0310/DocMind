@@ -100,9 +100,7 @@ class TestFolderTreeWidget:
 
     @patch("src.gui.folder_tree.folder_tree_widget.os.path.exists")
     @patch("src.gui.folder_tree.folder_tree_widget.os.path.isdir")
-    def test_load_folder_structure_success(
-        self, mock_isdir, mock_exists, folder_tree_widget
-    ):
+    def test_load_folder_structure_success(self, mock_isdir, mock_exists, folder_tree_widget):
         """フォルダ構造読み込み成功のテスト"""
         mock_exists.return_value = True
         mock_isdir.return_value = True
@@ -136,15 +134,11 @@ class TestFolderTreeWidget:
         folder_tree_widget.addTopLevelItem.assert_called_once()
 
         # 非同期読み込みが開始されることを確認
-        folder_tree_widget._load_subfolders_async.assert_called_once_with(
-            "/test/folder"
-        )
+        folder_tree_widget._load_subfolders_async.assert_called_once_with("/test/folder")
 
     @patch("src.gui.folder_tree.folder_tree_widget.os.path.exists")
     @patch("src.gui.folder_tree.folder_tree_widget.QMessageBox")
-    def test_load_folder_structure_invalid_path(
-        self, mock_msgbox, mock_exists, folder_tree_widget
-    ):
+    def test_load_folder_structure_invalid_path(self, mock_msgbox, mock_exists, folder_tree_widget):
         """無効なパスでのフォルダ構造読み込みのテスト"""
         mock_exists.return_value = False
 
@@ -190,9 +184,7 @@ class TestFolderTreeWidget:
 
         folder_tree_widget._load_subfolders_async("/test/folder")
 
-        folder_tree_widget.async_manager.start_folder_loading.assert_called_once_with(
-            "/test/folder", max_depth=2
-        )
+        folder_tree_widget.async_manager.start_folder_loading.assert_called_once_with("/test/folder", max_depth=2)
 
     def test_cleanup_workers(self, folder_tree_widget):
         """ワーカークリーンアップのテスト"""
@@ -221,9 +213,7 @@ class TestFolderTreeWidget:
 
         folder_tree_widget._show_context_menu(position)
 
-        folder_tree_widget.context_menu_manager.show_context_menu.assert_called_once_with(
-            position
-        )
+        folder_tree_widget.context_menu_manager.show_context_menu.assert_called_once_with(position)
 
     def test_filter_folders(self, folder_tree_widget):
         """フォルダフィルタリングのテスト"""
@@ -240,7 +230,7 @@ class TestFolderTreeWidget:
         folder_tree_widget.filter_manager.filter_folders.assert_called_once_with("test")
 
     def test_get_selected_folder_with_selection(self, folder_tree_widget):
-        """選択されたフォルダ取得のテスト（選択あり）"""
+        """選択されたフォルダ取得のテスト(選択あり)"""
         mock_item = Mock()
         mock_item.folder_path = "/selected/folder"
         folder_tree_widget.currentItem = Mock(return_value=mock_item)
@@ -258,7 +248,7 @@ class TestFolderTreeWidget:
         assert result == "/selected/folder"
 
     def test_get_selected_folder_no_selection(self, folder_tree_widget):
-        """選択されたフォルダ取得のテスト（選択なし）"""
+        """選択されたフォルダ取得のテスト(選択なし)"""
         folder_tree_widget.currentItem = Mock(return_value=None)
 
         # get_selected_folderメソッドをモック化
@@ -416,9 +406,7 @@ class TestFolderTreeWidget:
         assert "/test/folder" in folder_tree_widget.error_paths
         assert "/test/folder" not in folder_tree_widget.indexing_paths
         mock_item.setText.assert_called_once_with(0, "folder (エラー)")
-        mock_item.setToolTip.assert_called_once_with(
-            0, "/test/folder\nエラー: Test error"
-        )
+        mock_item.setToolTip.assert_called_once_with(0, "/test/folder\nエラー: Test error")
 
     def test_clear_folder_state(self, folder_tree_widget):
         """フォルダ状態クリアのテスト"""
@@ -463,9 +451,7 @@ class TestFolderTreeWidget:
 
         folder_tree_widget.expand_to_path("/test/folder")
 
-        folder_tree_widget.action_manager.expand_to_path.assert_called_once_with(
-            "/test/folder"
-        )
+        folder_tree_widget.action_manager.expand_to_path.assert_called_once_with("/test/folder")
 
 
 @pytest.mark.skipif(not GUI_AVAILABLE, reason="GUI環境が利用できません")
@@ -522,16 +508,12 @@ class TestFolderTreeContainer:
 
         folder_tree_container.load_folder_structure("/test/folder")
 
-        folder_tree_container.tree_widget.load_folder_structure.assert_called_once_with(
-            "/test/folder"
-        )
+        folder_tree_container.tree_widget.load_folder_structure.assert_called_once_with("/test/folder")
         folder_tree_container._update_stats.assert_called_once()
 
     def test_get_selected_folder(self, folder_tree_container):
         """選択されたフォルダ取得のテスト"""
-        folder_tree_container.tree_widget.get_selected_folder.return_value = (
-            "/selected/folder"
-        )
+        folder_tree_container.tree_widget.get_selected_folder.return_value = "/selected/folder"
 
         # get_selected_folderメソッドをモック化
         def mock_get_selected_folder():
@@ -575,9 +557,7 @@ class TestFolderTreeContainer:
 
         folder_tree_container.set_folder_indexing("/test/folder")
 
-        folder_tree_container.tree_widget.set_folder_indexing.assert_called_once_with(
-            "/test/folder"
-        )
+        folder_tree_container.tree_widget.set_folder_indexing.assert_called_once_with("/test/folder")
         folder_tree_container._update_stats.assert_called_once()
 
     def test_set_folder_indexed(self, folder_tree_container):
@@ -586,18 +566,14 @@ class TestFolderTreeContainer:
 
         # set_folder_indexedメソッドをモック化
         def mock_set_folder_indexed(path, total_files, indexed_files):
-            folder_tree_container.tree_widget.set_folder_indexed(
-                path, total_files, indexed_files
-            )
+            folder_tree_container.tree_widget.set_folder_indexed(path, total_files, indexed_files)
             folder_tree_container._update_stats()
 
         folder_tree_container.set_folder_indexed = mock_set_folder_indexed
 
         folder_tree_container.set_folder_indexed("/test/folder", 100, 80)
 
-        folder_tree_container.tree_widget.set_folder_indexed.assert_called_once_with(
-            "/test/folder", 100, 80
-        )
+        folder_tree_container.tree_widget.set_folder_indexed.assert_called_once_with("/test/folder", 100, 80)
         folder_tree_container._update_stats.assert_called_once()
 
     def test_clear_filter(self, folder_tree_container):

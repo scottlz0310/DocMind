@@ -2,7 +2,7 @@
 DocMindアプリケーション用のドキュメント処理システム
 
 このモジュールは、様々なファイル形式からテキストを抽出するDocumentProcessorクラスを提供します。
-サポートされる形式：PDF、Word、Excel、Markdown、テキストファイル
+サポートされる形式:PDF、Word、Excel、Markdown、テキストファイル
 """
 
 import logging
@@ -60,9 +60,7 @@ class DocumentProcessor:
             missing_deps.append("openpyxl (Excel処理用)")
 
         if missing_deps:
-            self.logger.warning(
-                f"以下の依存関係が不足しています: {', '.join(missing_deps)}"
-            )
+            self.logger.warning(f"以下の依存関係が不足しています: {', '.join(missing_deps)}")
 
     def process_file(self, file_path: str) -> Document:
         """ファイルを処理してDocumentオブジェクトを作成
@@ -77,16 +75,12 @@ class DocumentProcessor:
             DocumentProcessingError: ファイル処理中にエラーが発生した場合
         """
         if not os.path.exists(file_path):
-            raise DocumentProcessingError(
-                f"ファイルが存在しません: {file_path}", file_path=file_path
-            )
+            raise DocumentProcessingError(f"ファイルが存在しません: {file_path}", file_path=file_path)
 
         try:
             # ファイルタイプを判定
             file_type = FileType.from_extension(file_path)
-            self.logger.info(
-                f"ファイル処理開始: {file_path} (タイプ: {file_type.value})"
-            )
+            self.logger.info(f"ファイル処理開始: {file_path} (タイプ: {file_type.value})")
 
             # ファイルタイプに応じてテキストを抽出
             content = self._extract_text_by_type(file_path, file_type)
@@ -94,14 +88,12 @@ class DocumentProcessor:
             # Documentオブジェクトを作成
             document = Document.create_from_file(file_path, content)
 
-            self.logger.info(
-                f"ファイル処理完了: {file_path} (コンテンツ長: {len(content)}文字)"
-            )
+            self.logger.info(f"ファイル処理完了: {file_path} (コンテンツ長: {len(content)}文字)")
             return document
 
         except Exception as e:
             error_msg = f"ファイル処理中にエラーが発生しました: {file_path}"
-            self.logger.error(f"{error_msg} - {str(e)}")
+            self.logger.error(f"{error_msg} - {e!s}")
             raise DocumentProcessingError(
                 error_msg,
                 file_path=file_path,
@@ -131,9 +123,7 @@ class DocumentProcessor:
             return self.extract_text_file(file_path)
         else:
             # 未知のファイルタイプの場合、テキストファイルとして処理を試行
-            self.logger.warning(
-                f"未知のファイルタイプ: {file_type.value}, テキストファイルとして処理します"
-            )
+            self.logger.warning(f"未知のファイルタイプ: {file_type.value}, テキストファイルとして処理します")
             return self.extract_text_file(file_path)
 
     def extract_pdf_text(self, file_path: str) -> str:
@@ -162,9 +152,7 @@ class DocumentProcessor:
 
             # PDFドキュメントを開く
             with fitz.open(file_path) as pdf_doc:
-                self.logger.debug(
-                    f"PDF処理開始: {file_path} (ページ数: {len(pdf_doc)})"
-                )
+                self.logger.debug(f"PDF処理開始: {file_path} (ページ数: {len(pdf_doc)})")
 
                 # 各ページからテキストを抽出
                 for page_num in range(len(pdf_doc)):
@@ -174,32 +162,24 @@ class DocumentProcessor:
 
                         if page_text.strip():
                             text_content.append(page_text)
-                            self.logger.debug(
-                                f"ページ {page_num + 1}: {len(page_text)}文字抽出"
-                            )
+                            self.logger.debug(f"ページ {page_num + 1}: {len(page_text)}文字抽出")
 
                     except Exception as e:
-                        self.logger.warning(
-                            f"ページ {page_num + 1} の処理中にエラー: {str(e)}"
-                        )
+                        self.logger.warning(f"ページ {page_num + 1} の処理中にエラー: {e!s}")
                         continue
 
             extracted_text = "\n\n".join(text_content)
 
             if not extracted_text.strip():
-                self.logger.warning(
-                    f"PDFからテキストが抽出されませんでした: {file_path}"
-                )
+                self.logger.warning(f"PDFからテキストが抽出されませんでした: {file_path}")
                 return ""
 
-            self.logger.debug(
-                f"PDF処理完了: {file_path} (総文字数: {len(extracted_text)})"
-            )
+            self.logger.debug(f"PDF処理完了: {file_path} (総文字数: {len(extracted_text)})")
             return extracted_text
 
         except Exception as e:
             raise DocumentProcessingError(
-                f"PDF処理中にエラーが発生しました: {str(e)}",
+                f"PDF処理中にエラーが発生しました: {e!s}",
                 file_path=file_path,
                 file_type="pdf",
                 details=str(e),
@@ -251,19 +231,15 @@ class DocumentProcessor:
             extracted_text = "\n".join(text_content)
 
             if not extracted_text.strip():
-                self.logger.warning(
-                    f"Word文書からテキストが抽出されませんでした: {file_path}"
-                )
+                self.logger.warning(f"Word文書からテキストが抽出されませんでした: {file_path}")
                 return ""
 
-            self.logger.debug(
-                f"Word文書処理完了: {file_path} (総文字数: {len(extracted_text)})"
-            )
+            self.logger.debug(f"Word文書処理完了: {file_path} (総文字数: {len(extracted_text)})")
             return extracted_text
 
         except Exception as e:
             raise DocumentProcessingError(
-                f"Word文書処理中にエラーが発生しました: {str(e)}",
+                f"Word文書処理中にエラーが発生しました: {e!s}",
                 file_path=file_path,
                 file_type="word",
                 details=str(e),
@@ -323,14 +299,10 @@ class DocumentProcessor:
 
                     if len(sheet_content) > 1:  # シート名以外にコンテンツがある場合
                         text_content.extend(sheet_content)
-                        self.logger.debug(
-                            f"シート {sheet_name}: {len(sheet_content) - 1}行処理"
-                        )
+                        self.logger.debug(f"シート {sheet_name}: {len(sheet_content) - 1}行処理")
 
                 except Exception as e:
-                    self.logger.warning(
-                        f"シート {sheet_name} の処理中にエラー: {str(e)}"
-                    )
+                    self.logger.warning(f"シート {sheet_name} の処理中にエラー: {e!s}")
                     continue
 
             workbook.close()
@@ -338,19 +310,15 @@ class DocumentProcessor:
             extracted_text = "\n".join(text_content)
 
             if not extracted_text.strip():
-                self.logger.warning(
-                    f"Excelファイルからテキストが抽出されませんでした: {file_path}"
-                )
+                self.logger.warning(f"Excelファイルからテキストが抽出されませんでした: {file_path}")
                 return ""
 
-            self.logger.debug(
-                f"Excel処理完了: {file_path} (総文字数: {len(extracted_text)})"
-            )
+            self.logger.debug(f"Excel処理完了: {file_path} (総文字数: {len(extracted_text)})")
             return extracted_text
 
         except Exception as e:
             raise DocumentProcessingError(
-                f"Excel処理中にエラーが発生しました: {str(e)}",
+                f"Excel処理中にエラーが発生しました: {e!s}",
                 file_path=file_path,
                 file_type="excel",
                 details=str(e),
@@ -383,17 +351,15 @@ class DocumentProcessor:
                 self.logger.warning(f"Markdownファイルが空です: {file_path}")
                 return ""
 
-            # 基本的なMarkdown記法を処理（見出し、リスト、コードブロックなど）
+            # 基本的なMarkdown記法を処理(見出し、リスト、コードブロックなど)
             processed_content = self._process_markdown_content(content)
 
-            self.logger.debug(
-                f"Markdown処理完了: {file_path} (総文字数: {len(processed_content)})"
-            )
+            self.logger.debug(f"Markdown処理完了: {file_path} (総文字数: {len(processed_content)})")
             return processed_content
 
         except Exception as e:
             raise DocumentProcessingError(
-                f"Markdown処理中にエラーが発生しました: {str(e)}",
+                f"Markdown処理中にエラーが発生しました: {e!s}",
                 file_path=file_path,
                 file_type="markdown",
                 details=str(e),
@@ -426,14 +392,12 @@ class DocumentProcessor:
                 self.logger.warning(f"テキストファイルが空です: {file_path}")
                 return ""
 
-            self.logger.debug(
-                f"テキストファイル処理完了: {file_path} (総文字数: {len(content)})"
-            )
+            self.logger.debug(f"テキストファイル処理完了: {file_path} (総文字数: {len(content)})")
             return content
 
         except Exception as e:
             raise DocumentProcessingError(
-                f"テキストファイル処理中にエラーが発生しました: {str(e)}",
+                f"テキストファイル処理中にエラーが発生しました: {e!s}",
                 file_path=file_path,
                 file_type="text",
                 details=str(e),
@@ -458,9 +422,7 @@ class DocumentProcessor:
                 encoding = detected.get("encoding", "utf-8")
                 confidence = detected.get("confidence", 0)
 
-                self.logger.debug(
-                    f"エンコーディング検出: {encoding} (信頼度: {confidence:.2f})"
-                )
+                self.logger.debug(f"エンコーディング検出: {encoding} (信頼度: {confidence:.2f})")
 
                 # 信頼度が低い場合はUTF-8を使用
                 if confidence < 0.7:
@@ -472,9 +434,7 @@ class DocumentProcessor:
                 return "utf-8"
 
         except Exception as e:
-            self.logger.warning(
-                f"エンコーディング検出に失敗: {str(e)}, UTF-8を使用します"
-            )
+            self.logger.warning(f"エンコーディング検出に失敗: {e!s}, UTF-8を使用します")
             return "utf-8"
 
     def _process_markdown_content(self, content: str) -> str:
@@ -505,9 +465,7 @@ class DocumentProcessor:
                     processed_lines.append(f"見出し: {heading_text}")
 
             # リスト記法を処理
-            elif line.startswith(("- ", "* ", "+ ")) or line.lstrip().startswith(
-                ("- ", "* ", "+ ")
-            ):
+            elif line.startswith(("- ", "* ", "+ ")) or line.lstrip().startswith(("- ", "* ", "+ ")):
                 list_text = line.lstrip("- *+").strip()
                 if list_text:
                     processed_lines.append(f"リスト項目: {list_text}")
@@ -520,7 +478,7 @@ class DocumentProcessor:
                     if list_text:
                         processed_lines.append(f"番号付きリスト: {list_text}")
 
-            # コードブロックは除外（```で囲まれた部分）
+            # コードブロックは除外(```で囲まれた部分)
             elif line.startswith("```"):
                 continue
 
@@ -605,5 +563,5 @@ class DocumentProcessor:
                 "is_supported": self.is_supported_file(file_path),
             }
         except Exception as e:
-            self.logger.error(f"ファイル情報取得エラー: {file_path} - {str(e)}")
+            self.logger.error(f"ファイル情報取得エラー: {file_path} - {e!s}")
             return {}

@@ -145,7 +145,7 @@ test-tools:
 test-coverage:
 	uv run python scripts/tools/measure_test_coverage.py
 
-# プロジェクト初期化（新規開発者向け）
+# プロジェクト初期化(新規開発者向け)
 bootstrap: dev
 	@echo "=== DocMind Development Environment Setup Complete ==="
 	@echo "Next steps:"

@@ -28,7 +28,7 @@ class RebuildTimeoutManager(QObject):
         タイムアウトマネージャーを初期化
 
         Args:
-            timeout_minutes: タイムアウト時間（分）、デフォルトは30分
+            timeout_minutes: タイムアウト時間(分)、デフォルトは30分
             parent: 親QObjectオブジェクト
         """
         super().__init__(parent)
@@ -38,9 +38,7 @@ class RebuildTimeoutManager(QObject):
         # アクティブなタイマーを管理する辞書 {thread_id: QTimer}
         self.active_timers: dict[str, QTimer] = {}
 
-        logger.info(
-            f"RebuildTimeoutManager初期化完了: タイムアウト時間={timeout_minutes}分"
-        )
+        logger.info(f"RebuildTimeoutManager初期化完了: タイムアウト時間={timeout_minutes}分")
 
     def start_timeout(self, thread_id: str) -> None:
         """
@@ -117,9 +115,7 @@ class RebuildTimeoutManager(QObject):
         Returns:
             bool: タイムアウト監視がアクティブな場合True
         """
-        return (
-            thread_id in self.active_timers and self.active_timers[thread_id].isActive()
-        )
+        return thread_id in self.active_timers and self.active_timers[thread_id].isActive()
 
     def get_active_timeouts(self) -> list[str]:
         """
@@ -128,11 +124,7 @@ class RebuildTimeoutManager(QObject):
         Returns:
             list[str]: アクティブなスレッドIDのリスト
         """
-        return [
-            thread_id
-            for thread_id, timer in self.active_timers.items()
-            if timer.isActive()
-        ]
+        return [thread_id for thread_id, timer in self.active_timers.items() if timer.isActive()]
 
     def cancel_all_timeouts(self) -> None:
         """
@@ -154,7 +146,7 @@ class RebuildTimeoutManager(QObject):
             thread_id: 対象のスレッドID
 
         Returns:
-            Optional[int]: 残り時間（秒）、タイマーが存在しない場合はNone
+            Optional[int]: 残り時間(秒)、タイマーが存在しない場合はNone
         """
         if thread_id not in self.active_timers:
             return None

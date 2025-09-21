@@ -6,12 +6,12 @@ DocMind スレッド管理モジュール
 リソースクリーンアップを提供します。
 """
 
-import logging
-import threading
-import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+import logging
+import threading
+import time
 from typing import Any
 
 from PySide6.QtCore import QObject, QThread, QTimer, Signal
@@ -48,7 +48,7 @@ class ThreadInfo:
     cleanup_callbacks: list[Callable]  # クリーンアップコールバック
 
     def get_duration(self) -> float:
-        """実行時間を取得（秒）"""
+        """実行時間を取得(秒)"""
         if self.end_time:
             return self.end_time - self.start_time
         else:
@@ -91,7 +91,7 @@ class IndexingThreadManager(QObject):
 
         Args:
             max_concurrent_threads (int): 最大同時実行スレッド数
-            test_mode (bool): テストモード（QApplicationなしでの動作）
+            test_mode (bool): テストモード(QApplicationなしでの動作)
         """
         super().__init__()
 
@@ -104,22 +104,20 @@ class IndexingThreadManager(QObject):
         self.thread_counter = 0
         self.lock = threading.Lock()
 
-        # ログ設定（タイマー設定より前に初期化）
+        # ログ設定(タイマー設定より前に初期化)
         self.logger = logging.getLogger(__name__)
 
-        # クリーンアップタイマー（QApplicationが存在する場合のみ）
+        # クリーンアップタイマー(QApplicationが存在する場合のみ)
         self.cleanup_timer = None
         if not test_mode:
             self._setup_cleanup_timer()
         else:
             self._setup_mock_cleanup_timer()
 
-        self.logger.info(
-            f"IndexingThreadManager初期化完了 (最大同時実行数: {max_concurrent_threads})"
-        )
+        self.logger.info(f"IndexingThreadManager初期化完了 (最大同時実行数: {max_concurrent_threads})")
 
     def _setup_cleanup_timer(self) -> None:
-        """クリーンアップタイマーを設定（QApplicationが存在する場合のみ）"""
+        """クリーンアップタイマーを設定(QApplicationが存在する場合のみ)"""
         try:
             from PySide6.QtWidgets import QApplication
 
@@ -134,9 +132,7 @@ class IndexingThreadManager(QObject):
             else:
                 # QApplicationが存在しない場合はタイマーなし
                 self.cleanup_timer = None
-                self.logger.debug(
-                    "QApplicationが存在しないため、定期クリーンアップタイマーは無効です"
-                )
+                self.logger.debug("QApplicationが存在しないため、定期クリーンアップタイマーは無効です")
 
         except Exception as e:
             self.cleanup_timer = None
@@ -148,9 +144,7 @@ class IndexingThreadManager(QObject):
             # テストモードでは定期クリーンアップタイマーを無効化
             # 短時間のテストでは不要で、ハングの原因となる可能性がある
             self.cleanup_timer = None
-            self.logger.debug(
-                "テストモード: 定期クリーンアップタイマーを無効化しました"
-            )
+            self.logger.debug("テストモード: 定期クリーンアップタイマーを無効化しました")
 
         except Exception as e:
             self.cleanup_timer = None
@@ -158,9 +152,7 @@ class IndexingThreadManager(QObject):
             # エラーの詳細をログに出力
             import traceback
 
-            self.logger.debug(
-                f"モッククリーンアップタイマー設定エラーの詳細: {traceback.format_exc()}"
-            )
+            self.logger.debug(f"モッククリーンアップタイマー設定エラーの詳細: {traceback.format_exc()}")
 
     def _create_mock_thread_info(self, thread_id: str, folder_path: str) -> ThreadInfo:
         """テスト用のモックスレッド情報を作成
@@ -172,7 +164,7 @@ class IndexingThreadManager(QObject):
         Returns:
             ThreadInfo: モックスレッド情報
         """
-        # モックスレッド情報を作成（実際のQThreadやWorkerは使わない）
+        # モックスレッド情報を作成(実際のQThreadやWorkerは使わない)
         thread_info = ThreadInfo(
             thread_id=thread_id,
             folder_path=folder_path,
@@ -185,7 +177,7 @@ class IndexingThreadManager(QObject):
             cleanup_callbacks=[],
         )
 
-        # テストモードでは即座に完了状態にする（同期的に）
+        # テストモードでは即座に完了状態にする(同期的に)
         time.sleep(0.1)  # 短い遅延でシミュレート
         thread_info.state = ThreadState.FINISHED
         thread_info.end_time = time.time()
@@ -210,9 +202,7 @@ class IndexingThreadManager(QObject):
             bool: 新しいスレッドを開始できる場合はTrue
         """
         with self.lock:
-            active_count = sum(
-                1 for info in self.active_threads.values() if info.is_active()
-            )
+            active_count = sum(1 for info in self.active_threads.values() if info.is_active())
             return active_count < self.max_concurrent_threads
 
     def get_active_thread_count(self) -> int:
@@ -231,7 +221,7 @@ class IndexingThreadManager(QObject):
             thread_id (str): スレッドID
 
         Returns:
-            Optional[ThreadInfo]: スレッド情報（存在しない場合はNone）
+            Optional[ThreadInfo]: スレッド情報(存在しない場合はNone)
         """
         with self.lock:
             return self.active_threads.get(thread_id)
@@ -245,9 +235,7 @@ class IndexingThreadManager(QObject):
         with self.lock:
             return list(self.active_threads.values())
 
-    def start_indexing_thread(
-        self, folder_path: str, document_processor, index_manager
-    ) -> str | None:
+    def start_indexing_thread(self, folder_path: str, document_processor, index_manager) -> str | None:
         """インデックス処理スレッドを開始
 
         Args:
@@ -256,7 +244,7 @@ class IndexingThreadManager(QObject):
             index_manager: インデックスマネージャー
 
         Returns:
-            Optional[str]: 開始されたスレッドのID（開始できない場合はNone）
+            Optional[str]: 開始されたスレッドのID(開始できない場合はNone)
 
         Raises:
             ThreadManagementError: スレッド開始に失敗した場合
@@ -265,9 +253,7 @@ class IndexingThreadManager(QObject):
             # 同時実行数チェック
             if not self.can_start_new_thread():
                 active_count = self.get_active_thread_count()
-                self.logger.warning(
-                    f"最大同時実行数に達しています: {active_count}/{self.max_concurrent_threads}"
-                )
+                self.logger.warning(f"最大同時実行数に達しています: {active_count}/{self.max_concurrent_threads}")
                 return None
 
             # 既に同じフォルダが処理中かチェック
@@ -321,16 +307,14 @@ class IndexingThreadManager(QObject):
             with self.lock:
                 self.active_threads[thread_id] = thread_info
 
-            self.logger.info(
-                f"インデックス処理スレッドを開始: {thread_id} ({folder_path})"
-            )
+            self.logger.info(f"インデックス処理スレッドを開始: {thread_id} ({folder_path})")
             self.thread_started.emit(thread_id)
             self._emit_manager_status()
 
             return thread_id
 
         except Exception as e:
-            error_msg = f"インデックス処理スレッドの開始に失敗: {str(e)}"
+            error_msg = f"インデックス処理スレッドの開始に失敗: {e!s}"
             self.logger.error(error_msg, exc_info=True)
             raise ThreadManagementError(error_msg) from e
 
@@ -351,9 +335,7 @@ class IndexingThreadManager(QObject):
                 return False
 
             if not thread_info.is_active():
-                self.logger.warning(
-                    f"スレッドは既に非アクティブです: {thread_id} (状態: {thread_info.state.value})"
-                )
+                self.logger.warning(f"スレッドは既に非アクティブです: {thread_id} (状態: {thread_info.state.value})")
                 return False
 
             self.logger.info(f"スレッド停止を開始: {thread_id} (強制: {force})")
@@ -377,7 +359,7 @@ class IndexingThreadManager(QObject):
 
         except Exception as e:
             self.logger.error(
-                f"スレッド停止処理中にエラーが発生: {thread_id} - {str(e)}",
+                f"スレッド停止処理中にエラーが発生: {thread_id} - {e!s}",
                 exc_info=True,
             )
             return False
@@ -392,20 +374,14 @@ class IndexingThreadManager(QObject):
             int: 停止処理を開始したスレッド数
         """
         with self.lock:
-            active_thread_ids = [
-                thread_id
-                for thread_id, info in self.active_threads.items()
-                if info.is_active()
-            ]
+            active_thread_ids = [thread_id for thread_id, info in self.active_threads.items() if info.is_active()]
 
         stopped_count = 0
         for thread_id in active_thread_ids:
             if self.stop_thread(thread_id, force):
                 stopped_count += 1
 
-        self.logger.info(
-            f"すべてのスレッド停止を開始: {stopped_count}個のスレッド (強制: {force})"
-        )
+        self.logger.info(f"すべてのスレッド停止を開始: {stopped_count}個のスレッド (強制: {force})")
         return stopped_count
 
     def cleanup_finished_threads(self) -> int:
@@ -447,11 +423,11 @@ class IndexingThreadManager(QObject):
                 state = info.state.value
                 state_counts[state] = state_counts.get(state, 0) + 1
 
-                # アクティブスレッド数を直接計算（デッドロック回避）
+                # アクティブスレッド数を直接計算(デッドロック回避)
                 if info.is_active():
                     active_count += 1
 
-            # can_start_new_threadも直接計算（デッドロック回避）
+            # can_start_new_threadも直接計算(デッドロック回避)
             can_start_new = active_count < self.max_concurrent_threads
 
             return {
@@ -494,28 +470,18 @@ class IndexingThreadManager(QObject):
             thread_info (ThreadInfo): スレッド情報
         """
         # スレッドシグナル
-        thread_info.thread.started.connect(
-            lambda: self._on_thread_started(thread_info.thread_id)
-        )
-        thread_info.thread.finished.connect(
-            lambda: self._on_thread_finished(thread_info.thread_id)
-        )
+        thread_info.thread.started.connect(lambda: self._on_thread_started(thread_info.thread_id))
+        thread_info.thread.finished.connect(lambda: self._on_thread_finished(thread_info.thread_id))
 
         # ワーカーシグナル
         thread_info.worker.progress_updated.connect(
-            lambda msg, current, total: self._on_worker_progress(
-                thread_info.thread_id, msg, current, total
-            )
+            lambda msg, current, total: self._on_worker_progress(thread_info.thread_id, msg, current, total)
         )
         thread_info.worker.indexing_completed.connect(
-            lambda folder_path, stats: self._on_worker_completed(
-                thread_info.thread_id, folder_path, stats
-            )
+            lambda folder_path, stats: self._on_worker_completed(thread_info.thread_id, folder_path, stats)
         )
         thread_info.worker.error_occurred.connect(
-            lambda context, error_msg: self._on_worker_error(
-                thread_info.thread_id, context, error_msg
-            )
+            lambda context, error_msg: self._on_worker_error(thread_info.thread_id, context, error_msg)
         )
 
         # ワーカーの処理開始
@@ -548,13 +514,9 @@ class IndexingThreadManager(QObject):
             if thread_info.state != ThreadState.ERROR:
                 thread_info.state = ThreadState.FINISHED
 
-            self.logger.debug(
-                f"スレッド終了: {thread_id} (実行時間: {thread_info.get_duration():.2f}秒)"
-            )
+            self.logger.debug(f"スレッド終了: {thread_id} (実行時間: {thread_info.get_duration():.2f}秒)")
 
-    def _on_worker_progress(
-        self, thread_id: str, message: str, current: int, total: int
-    ) -> None:
+    def _on_worker_progress(self, thread_id: str, message: str, current: int, total: int) -> None:
         """ワーカー進捗更新時の処理
 
         Args:
@@ -565,9 +527,7 @@ class IndexingThreadManager(QObject):
         """
         self.thread_progress.emit(thread_id, message, current, total)
 
-    def _on_worker_completed(
-        self, thread_id: str, folder_path: str, statistics: dict
-    ) -> None:
+    def _on_worker_completed(self, thread_id: str, folder_path: str, statistics: dict) -> None:
         """ワーカー完了時の処理
 
         Args:
@@ -582,9 +542,7 @@ class IndexingThreadManager(QObject):
         self.logger.info(f"ワーカー完了: {thread_id} ({folder_path})")
         self.thread_finished.emit(thread_id, statistics)
 
-    def _on_worker_error(
-        self, thread_id: str, context: str, error_message: str
-    ) -> None:
+    def _on_worker_error(self, thread_id: str, context: str, error_message: str) -> None:
         """ワーカーエラー時の処理
 
         Args:
@@ -621,9 +579,7 @@ class IndexingThreadManager(QObject):
             if thread_info.thread and thread_info.thread.isRunning():
                 thread_info.thread.terminate()
                 if not thread_info.thread.wait(5000):  # 5秒待機
-                    self.logger.warning(
-                        f"スレッドの強制終了がタイムアウト: {thread_info.thread_id}"
-                    )
+                    self.logger.warning(f"スレッドの強制終了がタイムアウト: {thread_info.thread_id}")
 
             thread_info.state = ThreadState.FINISHED
             thread_info.end_time = time.time()
@@ -632,9 +588,7 @@ class IndexingThreadManager(QObject):
             self.logger.warning(f"スレッドを強制停止: {thread_info.thread_id}")
 
         except Exception as e:
-            self.logger.error(
-                f"スレッド強制停止中にエラー: {thread_info.thread_id} - {str(e)}"
-            )
+            self.logger.error(f"スレッド強制停止中にエラー: {thread_info.thread_id} - {e!s}")
 
     def _cleanup_thread(self, thread_id: str) -> bool:
         """スレッドをクリーンアップ
@@ -658,9 +612,7 @@ class IndexingThreadManager(QObject):
                 try:
                     callback()
                 except Exception as e:
-                    self.logger.warning(
-                        f"クリーンアップコールバック実行エラー: {str(e)}"
-                    )
+                    self.logger.warning(f"クリーンアップコールバック実行エラー: {e!s}")
 
             # ワーカーをクリーンアップ
             if thread_info.worker:
@@ -689,9 +641,7 @@ class IndexingThreadManager(QObject):
             return True
 
         except Exception as e:
-            self.logger.error(
-                f"スレッドクリーンアップ中にエラー: {thread_id} - {str(e)}"
-            )
+            self.logger.error(f"スレッドクリーンアップ中にエラー: {thread_id} - {e!s}")
             return False
 
     def _periodic_cleanup(self) -> None:
@@ -704,12 +654,10 @@ class IndexingThreadManager(QObject):
             self._check_long_running_threads()
 
             if cleanup_count > 0:
-                self.logger.debug(
-                    f"定期クリーンアップ実行: {cleanup_count}個のスレッドをクリーンアップ"
-                )
+                self.logger.debug(f"定期クリーンアップ実行: {cleanup_count}個のスレッドをクリーンアップ")
 
         except Exception as e:
-            self.logger.error(f"定期クリーンアップ中にエラー: {str(e)}")
+            self.logger.error(f"定期クリーンアップ中にエラー: {e!s}")
 
     def _check_long_running_threads(self) -> None:
         """長時間実行されているスレッドをチェック"""
@@ -717,9 +665,7 @@ class IndexingThreadManager(QObject):
 
         with self.lock:
             long_running_threads = [
-                info
-                for info in self.active_threads.values()
-                if info.is_active() and info.get_duration() > max_duration
+                info for info in self.active_threads.values() if info.is_active() and info.get_duration() > max_duration
             ]
 
         for thread_info in long_running_threads:
@@ -755,11 +701,8 @@ class IndexingThreadManager(QObject):
             cleanup_count = self.cleanup_finished_threads()
 
             self.logger.info(
-                f"スレッドマネージャーのシャットダウン完了 "
-                f"(停止: {stopped_count}, クリーンアップ: {cleanup_count})"
+                f"スレッドマネージャーのシャットダウン完了 (停止: {stopped_count}, クリーンアップ: {cleanup_count})"
             )
 
         except Exception as e:
-            self.logger.error(
-                f"スレッドマネージャーのシャットダウン中にエラー: {str(e)}"
-            )
+            self.logger.error(f"スレッドマネージャーのシャットダウン中にエラー: {e!s}")

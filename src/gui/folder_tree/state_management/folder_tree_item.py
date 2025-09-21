@@ -41,9 +41,7 @@ class FolderTreeItem(QTreeWidgetItem):
         self.is_expanded_once: bool = False  # 遅延読み込み用フラグ
         self.is_accessible: bool = True  # アクセス可能かどうか
 
-    def set_folder_data(
-        self, path: str, item_type: FolderItemType = FolderItemType.FOLDER
-    ):
+    def set_folder_data(self, path: str, item_type: FolderItemType = FolderItemType.FOLDER):
         """
         フォルダデータを設定します
 
@@ -117,7 +115,7 @@ class FolderTreeItem(QTreeWidgetItem):
         self.file_count = file_count
         self.indexed_count = indexed_count
 
-        # 表示テキストを更新（ファイル数を含む）
+        # 表示テキストを更新(ファイル数を含む)
         base_name = self._get_display_name(self.folder_path)
 
         if file_count > 0:

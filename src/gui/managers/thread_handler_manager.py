@@ -43,14 +43,10 @@ class ThreadHandlerManager(QObject, LoggerMixin):
         thread_info = self.main_window.thread_manager.get_thread_info(thread_id)
         if thread_info:
             folder_name = os.path.basename(thread_info.folder_path)
-            self.logger.info(
-                f"インデックス処理スレッド開始: {thread_id} ({folder_name})"
-            )
+            self.logger.info(f"インデックス処理スレッド開始: {thread_id} ({folder_name})")
 
             # フォルダツリーの状態をINDEXINGに更新
-            self.main_window.folder_tree_container.set_folder_indexing(
-                thread_info.folder_path
-            )
+            self.main_window.folder_tree_container.set_folder_indexing(thread_info.folder_path)
 
             # 初期進捗表示
             start_message = f"📁 インデックス処理開始: {folder_name}"
@@ -59,9 +55,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
 
             # システム情報を更新
             active_count = self.main_window.thread_manager.get_active_thread_count()
-            indexed_count = len(
-                self.main_window.folder_tree_container.get_indexed_folders()
-            )
+            indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
             self.main_window.update_system_info(
                 f"インデックス: {indexed_count}フォルダ, 処理中: {active_count}スレッド"
             )
@@ -88,9 +82,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
             )
 
             # 詳細な完了メッセージを生成
-            completion_message = self._format_detailed_completion_message(
-                folder_name, statistics
-            )
+            completion_message = self._format_detailed_completion_message(folder_name, statistics)
 
             # 進捗バーの表示制御
             active_count = self.main_window.thread_manager.get_active_thread_count() - 1
@@ -98,36 +90,28 @@ class ThreadHandlerManager(QObject, LoggerMixin):
             if active_count > 0:
                 # 他のスレッドがまだ実行中の場合は進捗バーを維持
                 self.main_window.show_status_message(completion_message, 5000)
-                self.logger.info(f"スレッド完了（他のスレッド実行中）: {folder_name}")
+                self.logger.info(f"スレッド完了(他のスレッド実行中): {folder_name}")
             else:
                 # すべてのスレッドが完了した場合のみ進捗バーを非表示
                 self.main_window.hide_progress(completion_message)
                 self.logger.info("全スレッド完了: 進捗バーを非表示")
 
                 # インデックス再構築完了時の追加処理
-                self.main_window.index_controller.handle_rebuild_completed(
-                    thread_id, statistics
-                )
+                self.main_window.index_controller.handle_rebuild_completed(thread_id, statistics)
 
             # システム情報を更新
-            indexed_count = len(
-                self.main_window.folder_tree_container.get_indexed_folders()
-            )
+            indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
 
             if active_count > 0:
                 self.main_window.update_system_info(
                     f"インデックス: {indexed_count}フォルダ, 処理中: {active_count}スレッド"
                 )
             else:
-                self.main_window.update_system_info(
-                    f"インデックス: {indexed_count}フォルダ, 待機中"
-                )
+                self.main_window.update_system_info(f"インデックス: {indexed_count}フォルダ, 待機中")
 
             # 完了ログ
             duration = thread_info.get_duration()
-            self.logger.info(
-                f"インデックス処理完了: {thread_id} ({folder_name}, {duration:.2f}秒)"
-            )
+            self.logger.info(f"インデックス処理完了: {thread_id} ({folder_name}, {duration:.2f}秒)")
             self.logger.info(f"統計情報: {statistics}")
 
     def handle_thread_error(self, thread_id: str, error_message: str) -> None:
@@ -142,9 +126,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
         if thread_info:
             folder_name = os.path.basename(thread_info.folder_path)
             # フォルダツリーの状態をERRORに更新
-            self.main_window.folder_tree_container.set_folder_error(
-                thread_info.folder_path, error_message
-            )
+            self.main_window.folder_tree_container.set_folder_error(thread_info.folder_path, error_message)
 
         # 進捗バーの表示制御
         active_count = self.main_window.thread_manager.get_active_thread_count() - 1
@@ -154,7 +136,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
             self.main_window.set_progress_style("error")
             error_msg = f"エラー発生 ({folder_name}): {error_message}"
             self.main_window.show_status_message(error_msg, 8000)
-            self.logger.warning(f"スレッドエラー（他のスレッド実行中）: {folder_name}")
+            self.logger.warning(f"スレッドエラー(他のスレッド実行中): {folder_name}")
         else:
             # すべてのスレッドが完了/エラーした場合のみ進捗バーを非表示
             self.main_window.hide_progress("")
@@ -163,29 +145,21 @@ class ThreadHandlerManager(QObject, LoggerMixin):
             self.logger.error("全スレッド完了/エラー: 進捗バーを非表示")
 
             # インデックス再構築エラー時の追加処理
-            self.main_window.index_controller.handle_rebuild_error(
-                thread_id, error_message
-            )
+            self.main_window.index_controller.handle_rebuild_error(thread_id, error_message)
 
         # エラーログ
         self.logger.error(f"スレッドエラー: {thread_id} - {error_message}")
 
         # システム情報を更新
-        indexed_count = len(
-            self.main_window.folder_tree_container.get_indexed_folders()
-        )
+        indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
         if active_count > 0:
             self.main_window.update_system_info(
                 f"インデックス: {indexed_count}フォルダ, 処理中: {active_count}スレッド (エラー発生)"
             )
         else:
-            self.main_window.update_system_info(
-                f"インデックス: {indexed_count}フォルダ, エラーで停止"
-            )
+            self.main_window.update_system_info(f"インデックス: {indexed_count}フォルダ, エラーで停止")
 
-    def handle_thread_progress(
-        self, thread_id: str, message: str, current: int, total: int
-    ) -> None:
+    def handle_thread_progress(self, thread_id: str, message: str, current: int, total: int) -> None:
         """スレッド進捗更新時の処理
 
         Args:
@@ -199,10 +173,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
             thread_info = None
             folder_name = "不明"
 
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
                 thread_info = self.main_window.thread_manager.get_thread_info(thread_id)
                 if thread_info:
                     folder_name = os.path.basename(thread_info.folder_path)
@@ -218,21 +189,19 @@ class ThreadHandlerManager(QObject, LoggerMixin):
                 # 正確な進捗率計算を使用
                 self.main_window.update_progress(current, total, full_message)
 
-                # システム情報を更新（詳細な進捗情報を含む）
+                # システム情報を更新(詳細な進捗情報を含む)
                 self._update_system_info_with_progress(
                     folder_name, current, total, self.main_window.get_progress_value()
                 )
             else:
-                # 不定進捗の場合（スキャン中など）
+                # 不定進捗の場合(スキャン中など)
                 self.main_window.set_progress_indeterminate(full_message)
                 self._update_system_info_with_progress(folder_name, current, total, 0)
 
             # ステータスメッセージを更新
             self.main_window.show_status_message(full_message, 0)
 
-            self.logger.debug(
-                f"スレッド進捗更新: {thread_id} - {full_message} ({current}/{total})"
-            )
+            self.logger.debug(f"スレッド進捗更新: {thread_id} - {full_message} ({current}/{total})")
 
         except Exception as e:
             self.logger.error(f"進捗更新処理中にエラーが発生: {e}")
@@ -243,9 +212,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
             else:
                 self.main_window.set_progress_indeterminate(fallback_message)
 
-    def _format_detailed_completion_message(
-        self, folder_name: str, statistics: dict
-    ) -> str:
+    def _format_detailed_completion_message(self, folder_name: str, statistics: dict) -> str:
         """詳細な完了メッセージをフォーマット"""
         try:
             files_processed = statistics.get("files_processed", 0)
@@ -257,9 +224,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
                 return f"✅ {folder_name}: 処理対象ファイルなし"
 
             total_files = files_processed + files_failed
-            success_rate = (
-                (files_processed / total_files) * 100 if total_files > 0 else 0
-            )
+            success_rate = (files_processed / total_files) * 100 if total_files > 0 else 0
 
             if files_failed == 0:
                 return f"✅ {folder_name}: {files_processed}ファイル処理完了 ({processing_time:.1f}秒)"
@@ -307,38 +272,28 @@ class ThreadHandlerManager(QObject, LoggerMixin):
                 return f"✅ {message}"
             elif "エラー" in message:
                 return f"❌ {message}"
+            # その他のメッセージ
+            elif total > 0:
+                return f"⚙️ {message} ({current}/{total} - {percentage}%)"
             else:
-                # その他のメッセージ
-                if total > 0:
-                    return f"⚙️ {message} ({current}/{total} - {percentage}%)"
-                else:
-                    return f"⚙️ {message}"
+                return f"⚙️ {message}"
 
         except Exception as e:
             self.logger.warning(f"進捗メッセージのフォーマットに失敗: {e}")
             return message
 
-    def _update_system_info_with_progress(
-        self, folder_name: str, current: int, total: int, percentage: int
-    ) -> None:
+    def _update_system_info_with_progress(self, folder_name: str, current: int, total: int, percentage: int) -> None:
         """システム情報を進捗情報で更新"""
         try:
             # アクティブなスレッド数を取得
             active_threads = 0
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
-                active_threads = (
-                    self.main_window.thread_manager.get_active_thread_count()
-                )
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
+                active_threads = self.main_window.thread_manager.get_active_thread_count()
 
             # インデックス済みフォルダ数を取得
             indexed_count = 0
             if hasattr(self.main_window, "folder_tree_container"):
-                indexed_count = len(
-                    self.main_window.folder_tree_container.get_indexed_folders()
-                )
+                indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
 
             if total > 0:
                 # 定進捗の場合
@@ -365,11 +320,7 @@ class ThreadHandlerManager(QObject, LoggerMixin):
     def cleanup(self) -> None:
         """スレッド処理ハンドラーマネージャーのクリーンアップ"""
         try:
-            self.logger.debug(
-                "スレッド処理ハンドラーマネージャーをクリーンアップしました"
-            )
+            self.logger.debug("スレッド処理ハンドラーマネージャーをクリーンアップしました")
 
         except Exception as e:
-            self.logger.error(
-                f"スレッド処理ハンドラーマネージャーのクリーンアップ中にエラー: {e}"
-            )
+            self.logger.error(f"スレッド処理ハンドラーマネージャーのクリーンアップ中にエラー: {e}")

@@ -3,8 +3,8 @@
 """
 
 import os
-import sys
 from pathlib import Path
+import sys
 from unittest.mock import Mock
 
 import pytest
@@ -59,9 +59,7 @@ def temp_config_dir(tmp_path):
 def sample_text_file(tmp_path):
     """サンプルテキストファイル"""
     file_path = tmp_path / "sample.txt"
-    file_path.write_text(
-        "これはサンプルテキストファイルです。\n検索テスト用の内容が含まれています。"
-    )
+    file_path.write_text("これはサンプルテキストファイルです。\n検索テスト用の内容が含まれています。")
     return str(file_path)
 
 

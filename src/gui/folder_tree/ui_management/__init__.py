@@ -9,4 +9,4 @@ from .context_menu_manager import ContextMenuManager
 from .filter_manager import FilterManager
 from .ui_setup_manager import UISetupManager
 
-__all__ = ["UISetupManager", "FilterManager", "ContextMenuManager"]
+__all__ = ["ContextMenuManager", "FilterManager", "UISetupManager"]

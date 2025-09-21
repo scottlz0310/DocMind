@@ -105,9 +105,7 @@ class TestSignalManager:
     def test_connect_all_signals_with_exception(self, signal_manager):
         """例外発生時のテスト"""
         # 例外を発生させる
-        signal_manager._connect_folder_tree_signals = Mock(
-            side_effect=Exception("Test error")
-        )
+        signal_manager._connect_folder_tree_signals = Mock(side_effect=Exception("Test error"))
         signal_manager._connect_search_results_signals = Mock()
         signal_manager._connect_rebuild_signals = Mock()
 
@@ -142,45 +140,25 @@ class TestSignalManager:
         mock_main_window.thread_manager = mock_thread_manager
 
         def mock_connect_thread_manager_signals():
-            mock_thread_manager.thread_started.connect(
-                mock_main_window._on_thread_started
-            )
-            mock_thread_manager.thread_finished.connect(
-                mock_main_window._on_thread_finished
-            )
+            mock_thread_manager.thread_started.connect(mock_main_window._on_thread_started)
+            mock_thread_manager.thread_finished.connect(mock_main_window._on_thread_finished)
             mock_thread_manager.thread_error.connect(mock_main_window._on_thread_error)
-            mock_thread_manager.thread_progress.connect(
-                mock_main_window._on_rebuild_progress
-            )
-            mock_thread_manager.manager_status_changed.connect(
-                mock_main_window._on_manager_status_changed
-            )
+            mock_thread_manager.thread_progress.connect(mock_main_window._on_rebuild_progress)
+            mock_thread_manager.manager_status_changed.connect(mock_main_window._on_manager_status_changed)
 
-        signal_manager._connect_thread_manager_signals = (
-            mock_connect_thread_manager_signals
-        )
+        signal_manager._connect_thread_manager_signals = mock_connect_thread_manager_signals
         signal_manager._connect_thread_manager_signals()
 
         # シグナル接続の確認
-        mock_thread_manager.thread_started.connect.assert_called_once_with(
-            mock_main_window._on_thread_started
-        )
-        mock_thread_manager.thread_finished.connect.assert_called_once_with(
-            mock_main_window._on_thread_finished
-        )
-        mock_thread_manager.thread_error.connect.assert_called_once_with(
-            mock_main_window._on_thread_error
-        )
-        mock_thread_manager.thread_progress.connect.assert_called_once_with(
-            mock_main_window._on_rebuild_progress
-        )
+        mock_thread_manager.thread_started.connect.assert_called_once_with(mock_main_window._on_thread_started)
+        mock_thread_manager.thread_finished.connect.assert_called_once_with(mock_main_window._on_thread_finished)
+        mock_thread_manager.thread_error.connect.assert_called_once_with(mock_main_window._on_thread_error)
+        mock_thread_manager.thread_progress.connect.assert_called_once_with(mock_main_window._on_rebuild_progress)
         mock_thread_manager.manager_status_changed.connect.assert_called_once_with(
             mock_main_window._on_manager_status_changed
         )
 
-    def test_connect_thread_manager_signals_no_manager(
-        self, signal_manager, mock_main_window
-    ):
+    def test_connect_thread_manager_signals_no_manager(self, signal_manager, mock_main_window):
         """スレッドマネージャーが存在しない場合のテスト"""
         mock_main_window.thread_manager = None
 
@@ -194,13 +172,9 @@ class TestSignalManager:
         mock_main_window.timeout_manager = mock_timeout_manager
 
         def mock_connect_timeout_manager_signals():
-            mock_timeout_manager.timeout_occurred.connect(
-                mock_main_window.index_controller.handle_rebuild_timeout
-            )
+            mock_timeout_manager.timeout_occurred.connect(mock_main_window.index_controller.handle_rebuild_timeout)
 
-        signal_manager._connect_timeout_manager_signals = (
-            mock_connect_timeout_manager_signals
-        )
+        signal_manager._connect_timeout_manager_signals = mock_connect_timeout_manager_signals
         signal_manager._connect_timeout_manager_signals()
 
         # シグナル接続の確認
@@ -208,9 +182,7 @@ class TestSignalManager:
             mock_main_window.index_controller.handle_rebuild_timeout
         )
 
-    def test_connect_timeout_manager_signals_no_manager(
-        self, signal_manager, mock_main_window
-    ):
+    def test_connect_timeout_manager_signals_no_manager(self, signal_manager, mock_main_window):
         """タイムアウトマネージャーが存在しない場合のテスト"""
         mock_main_window.timeout_manager = None
 
@@ -335,9 +307,7 @@ class TestSignalManager:
 
     def test_cleanup_with_exception(self, signal_manager):
         """クリーンアップ時の例外処理テスト"""
-        signal_manager.disconnect_all_signals = Mock(
-            side_effect=Exception("Test error")
-        )
+        signal_manager.disconnect_all_signals = Mock(side_effect=Exception("Test error"))
 
         def mock_cleanup():
             try:

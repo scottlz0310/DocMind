@@ -7,4 +7,4 @@ DocMind フォルダツリーコンポーネント
 
 from .folder_tree_widget import FolderTreeContainer, FolderTreeWidget
 
-__all__ = ["FolderTreeWidget", "FolderTreeContainer"]
+__all__ = ["FolderTreeContainer", "FolderTreeWidget"]

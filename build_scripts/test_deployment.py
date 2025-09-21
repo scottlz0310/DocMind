@@ -3,7 +3,7 @@
 DocMind - デプロイメントテストスクリプト
 Windows環境でのアプリケーション展開テスト
 
-このスクリプトは以下のテストを実行します：
+このスクリプトは以下のテストを実行します:
 1. インストーラーの動作確認
 2. アプリケーションの起動テスト
 3. 基本機能の動作確認
@@ -13,12 +13,12 @@ Windows環境でのアプリケーション展開テスト
 import json
 import logging
 import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
-from pathlib import Path
 from typing import Any
 
 import psutil
@@ -127,12 +127,10 @@ class DeploymentTester:
             windows_version = platform.version()
             logger.info(f"Windows バージョン: {windows_version}")
 
-            # Windows 10以降かチェック（簡易）
+            # Windows 10以降かチェック(簡易)
             version_parts = windows_version.split(".")
             if len(version_parts) >= 1 and int(version_parts[0]) < 10:
-                self._add_test_result(
-                    "前提条件チェック", False, "Windows 10以降が必要です"
-                )
+                self._add_test_result("前提条件チェック", False, "Windows 10以降が必要です")
                 return False
 
         except Exception as e:
@@ -142,7 +140,7 @@ class DeploymentTester:
         try:
             memory = psutil.virtual_memory()
             if memory.total < 4 * 1024 * 1024 * 1024:  # 4GB
-                logger.warning("推奨メモリ容量（4GB）を下回っています")
+                logger.warning("推奨メモリ容量(4GB)を下回っています")
         except Exception as e:
             logger.warning(f"メモリチェックに失敗: {e}")
 
@@ -153,15 +151,13 @@ class DeploymentTester:
                 self._add_test_result(
                     "前提条件チェック",
                     False,
-                    "ディスク容量が不足しています（最低2GB必要）",
+                    "ディスク容量が不足しています(最低2GB必要)",
                 )
                 return False
         except Exception as e:
             logger.warning(f"ディスク容量チェックに失敗: {e}")
 
-        self._add_test_result(
-            "前提条件チェック", True, "すべての前提条件を満たしています"
-        )
+        self._add_test_result("前提条件チェック", True, "すべての前提条件を満たしています")
         return True
 
     def _test_installer(self) -> bool:
@@ -183,6 +179,7 @@ class DeploymentTester:
 
             result = subprocess.run(
                 cmd,
+                check=False,
                 capture_output=True,
                 text=True,
                 timeout=300,  # 5分でタイムアウト
@@ -207,20 +204,14 @@ class DeploymentTester:
                 return False
 
             self.install_dir = install_dir
-            self._add_test_result(
-                "インストーラーテスト", True, f"インストール成功: {install_dir}"
-            )
+            self._add_test_result("インストーラーテスト", True, f"インストール成功: {install_dir}")
             return True
 
         except subprocess.TimeoutExpired:
-            self._add_test_result(
-                "インストーラーテスト", False, "インストールがタイムアウトしました"
-            )
+            self._add_test_result("インストーラーテスト", False, "インストールがタイムアウトしました")
             return False
         except Exception as e:
-            self._add_test_result(
-                "インストーラーテスト", False, f"インストールエラー: {e}"
-            )
+            self._add_test_result("インストーラーテスト", False, f"インストールエラー: {e}")
             return False
 
     def _test_application_startup(self) -> bool:
@@ -228,18 +219,14 @@ class DeploymentTester:
         logger.info("アプリケーション起動をテスト中...")
 
         if not self.install_dir:
-            self._add_test_result(
-                "起動テスト", False, "インストールディレクトリが不明です"
-            )
+            self._add_test_result("起動テスト", False, "インストールディレクトリが不明です")
             return False
 
         try:
             exe_path = self.install_dir / "DocMind.exe"
 
             # アプリケーションを起動
-            self.app_process = subprocess.Popen(
-                [str(exe_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            )
+            self.app_process = subprocess.Popen([str(exe_path)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             # 起動を待機
             time.sleep(10)
@@ -265,9 +252,7 @@ class DeploymentTester:
                     )
                     return True
                 else:
-                    self._add_test_result(
-                        "起動テスト", False, "プロセスが実行されていません"
-                    )
+                    self._add_test_result("起動テスト", False, "プロセスが実行されていません")
                     return False
             except psutil.NoSuchProcess:
                 self._add_test_result("起動テスト", False, "プロセスが見つかりません")
@@ -282,9 +267,7 @@ class DeploymentTester:
         logger.info("基本機能をテスト中...")
 
         if not self.app_process or self.app_process.poll() is not None:
-            self._add_test_result(
-                "基本機能テスト", False, "アプリケーションが実行されていません"
-            )
+            self._add_test_result("基本機能テスト", False, "アプリケーションが実行されていません")
             return False
 
         try:
@@ -308,24 +291,16 @@ class DeploymentTester:
             # 設定ファイルの確認
             config_file = user_data_dir / "config.json"
             if config_file.exists():
-                self._add_test_result(
-                    "設定ファイル作成", True, "設定ファイルが作成されました"
-                )
+                self._add_test_result("設定ファイル作成", True, "設定ファイルが作成されました")
             else:
-                self._add_test_result(
-                    "設定ファイル作成", False, "設定ファイルが作成されませんでした"
-                )
+                self._add_test_result("設定ファイル作成", False, "設定ファイルが作成されませんでした")
 
             # ログファイルの確認
             log_dir = user_data_dir / "logs"
             if log_dir.exists() and any(log_dir.glob("*.log")):
-                self._add_test_result(
-                    "ログファイル作成", True, "ログファイルが作成されました"
-                )
+                self._add_test_result("ログファイル作成", True, "ログファイルが作成されました")
             else:
-                self._add_test_result(
-                    "ログファイル作成", False, "ログファイルが作成されませんでした"
-                )
+                self._add_test_result("ログファイル作成", False, "ログファイルが作成されませんでした")
 
             return True
 
@@ -338,9 +313,7 @@ class DeploymentTester:
         logger.info("パフォーマンスをテスト中...")
 
         if not self.app_process or self.app_process.poll() is not None:
-            self._add_test_result(
-                "パフォーマンステスト", False, "アプリケーションが実行されていません"
-            )
+            self._add_test_result("パフォーマンステスト", False, "アプリケーションが実行されていません")
             return
 
         try:
@@ -351,9 +324,7 @@ class DeploymentTester:
             memory_mb = memory_info.rss / 1024 / 1024
 
             if memory_mb < 500:  # 500MB未満
-                self._add_test_result(
-                    "メモリ使用量", True, f"メモリ使用量: {memory_mb:.1f}MB"
-                )
+                self._add_test_result("メモリ使用量", True, f"メモリ使用量: {memory_mb:.1f}MB")
             else:
                 self._add_test_result(
                     "メモリ使用量",
@@ -364,18 +335,12 @@ class DeploymentTester:
             # CPU使用率の測定
             cpu_percent = process.cpu_percent(interval=5)
             if cpu_percent < 50:  # 50%未満
-                self._add_test_result(
-                    "CPU使用率", True, f"CPU使用率: {cpu_percent:.1f}%"
-                )
+                self._add_test_result("CPU使用率", True, f"CPU使用率: {cpu_percent:.1f}%")
             else:
-                self._add_test_result(
-                    "CPU使用率", False, f"CPU使用率が高すぎます: {cpu_percent:.1f}%"
-                )
+                self._add_test_result("CPU使用率", False, f"CPU使用率が高すぎます: {cpu_percent:.1f}%")
 
         except Exception as e:
-            self._add_test_result(
-                "パフォーマンステスト", False, f"パフォーマンステストエラー: {e}"
-            )
+            self._add_test_result("パフォーマンステスト", False, f"パフォーマンステストエラー: {e}")
 
     def _test_uninstaller(self) -> None:
         """アンインストーラーのテスト"""
@@ -395,13 +360,11 @@ class DeploymentTester:
             if uninstall_script.exists():
                 # バッチファイルによるアンインストール
                 result = subprocess.run(
-                    [str(uninstall_script)], capture_output=True, text=True, timeout=60
+                    [str(uninstall_script)], check=False, capture_output=True, text=True, timeout=60
                 )
 
                 if result.returncode == 0:
-                    self._add_test_result(
-                        "アンインストールテスト", True, "アンインストールが成功しました"
-                    )
+                    self._add_test_result("アンインストールテスト", True, "アンインストールが成功しました")
                 else:
                     self._add_test_result(
                         "アンインストールテスト",
@@ -412,14 +375,10 @@ class DeploymentTester:
                 # 手動でディレクトリを削除
                 if self.install_dir.exists():
                     shutil.rmtree(self.install_dir, ignore_errors=True)
-                self._add_test_result(
-                    "アンインストールテスト", True, "手動でアンインストールしました"
-                )
+                self._add_test_result("アンインストールテスト", True, "手動でアンインストールしました")
 
         except Exception as e:
-            self._add_test_result(
-                "アンインストールテスト", False, f"アンインストールエラー: {e}"
-            )
+            self._add_test_result("アンインストールテスト", False, f"アンインストールエラー: {e}")
 
     def _add_test_result(
         self,
@@ -450,15 +409,13 @@ class DeploymentTester:
         }
 
         for result in self.test_results:
-            report["test_results"].append(
-                {
-                    "test_name": result.test_name,
-                    "success": result.success,
-                    "message": result.message,
-                    "details": result.details,
-                    "timestamp": result.timestamp,
-                }
-            )
+            report["test_results"].append({
+                "test_name": result.test_name,
+                "success": result.success,
+                "message": result.message,
+                "details": result.details,
+                "timestamp": result.timestamp,
+            })
 
         # JSONレポートの保存
         report_file = Path("deployment_test_report.json")
@@ -486,9 +443,7 @@ class DeploymentTester:
         lines.append(f"  総テスト数: {summary['total_tests']}")
         lines.append(f"  成功: {summary['passed']}")
         lines.append(f"  失敗: {summary['failed']}")
-        lines.append(
-            f"  成功率: {summary['passed'] / summary['total_tests'] * 100:.1f}%"
-        )
+        lines.append(f"  成功率: {summary['passed'] / summary['total_tests'] * 100:.1f}%")
         lines.append("")
 
         lines.append("詳細結果:")

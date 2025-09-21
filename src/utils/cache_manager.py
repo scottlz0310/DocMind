@@ -3,16 +3,16 @@
 
 このモジュールは、検索結果、ドキュメント、埋め込みなどの
 頻繁にアクセスされるデータのキャッシュ機能を提供します。
-LRU（Least Recently Used）キャッシュとTTL（Time To Live）機能を実装しています。
+LRU(Least Recently Used)キャッシュとTTL(Time To Live)機能を実装しています。
 """
 
+from collections import OrderedDict
+from dataclasses import dataclass
 import hashlib
+from pathlib import Path
 import pickle
 import threading
 import time
-from collections import OrderedDict
-from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Generic, TypeVar
 
 from ..data.models import Document, SearchResult
@@ -44,9 +44,9 @@ class CacheEntry(Generic[T]):
 
 class LRUCache(Generic[T], LoggerMixin):
     """
-    LRU（Least Recently Used）キャッシュの実装
+    LRU(Least Recently Used)キャッシュの実装
 
-    スレッドセーフで、TTL（Time To Live）機能をサポートします。
+    スレッドセーフで、TTL(Time To Live)機能をサポートします。
     """
 
     def __init__(self, max_size: int = 1000, default_ttl: float | None = None):
@@ -55,7 +55,7 @@ class LRUCache(Generic[T], LoggerMixin):
 
         Args:
             max_size: キャッシュの最大サイズ
-            default_ttl: デフォルトのTTL（秒）
+            default_ttl: デフォルトのTTL(秒)
         """
         self.max_size = max_size
         self.default_ttl = default_ttl
@@ -87,7 +87,7 @@ class LRUCache(Generic[T], LoggerMixin):
                 self._misses += 1
                 return None
 
-            # LRU順序を更新（最後に移動）
+            # LRU順序を更新(最後に移動)
             self._cache.move_to_end(key)
             entry.touch()
             self._hits += 1
@@ -101,7 +101,7 @@ class LRUCache(Generic[T], LoggerMixin):
         Args:
             key: キャッシュキー
             value: 保存する値
-            ttl: TTL（秒）、Noneの場合はデフォルトTTLを使用
+            ttl: TTL(秒)、Noneの場合はデフォルトTTLを使用
         """
         with self._lock:
             current_time = time.time()
@@ -195,15 +195,13 @@ class SearchResultCache(LoggerMixin):
 
         Args:
             max_size: 最大キャッシュサイズ
-            ttl: TTL（秒）
+            ttl: TTL(秒)
         """
         self._cache = LRUCache[list[SearchResult]](max_size=max_size, default_ttl=ttl)
         self._cleanup_interval = 60.0  # 1分間隔でクリーンアップ
         self._last_cleanup = time.time()
 
-    def _generate_cache_key(
-        self, query_text: str, search_type: str, filters: dict[str, Any] | None = None
-    ) -> str:
+    def _generate_cache_key(self, query_text: str, search_type: str, filters: dict[str, Any] | None = None) -> str:
         """
         検索パラメータからキャッシュキーを生成
 
@@ -269,12 +267,10 @@ class SearchResultCache(LoggerMixin):
         cache_key = self._generate_cache_key(query_text, search_type, filters)
         self._cache.put(cache_key, results)
 
-        self.logger.debug(
-            f"検索結果をキャッシュに保存: {query_text} ({len(results)}件)"
-        )
+        self.logger.debug(f"検索結果をキャッシュに保存: {query_text} ({len(results)}件)")
 
     def invalidate_cache(self) -> None:
-        """キャッシュを無効化（クリア）"""
+        """キャッシュを無効化(クリア)"""
         self._cache.clear()
         self.logger.info("検索結果キャッシュを無効化しました")
 
@@ -284,9 +280,7 @@ class SearchResultCache(LoggerMixin):
         if current_time - self._last_cleanup > self._cleanup_interval:
             expired_count = self._cache.cleanup_expired()
             if expired_count > 0:
-                self.logger.debug(
-                    f"期限切れキャッシュエントリを削除: {expired_count}件"
-                )
+                self.logger.debug(f"期限切れキャッシュエントリを削除: {expired_count}件")
             self._last_cleanup = current_time
 
     def get_stats(self) -> dict[str, Any]:
@@ -307,7 +301,7 @@ class DocumentCache(LoggerMixin):
 
         Args:
             max_size: 最大キャッシュサイズ
-            ttl: TTL（秒）
+            ttl: TTL(秒)
         """
         self._cache = LRUCache[Document](max_size=max_size, default_ttl=ttl)
 
@@ -392,9 +386,7 @@ class PersistentCache(LoggerMixin):
             if self.cache_file.exists():
                 with open(self.cache_file, "rb") as f:
                     self._data = pickle.load(f)
-                self.logger.info(
-                    f"永続化キャッシュを読み込み: {self.cache_name} ({len(self._data)}件)"
-                )
+                self.logger.info(f"永続化キャッシュを読み込み: {self.cache_name} ({len(self._data)}件)")
         except Exception as e:
             self.logger.warning(f"永続化キャッシュの読み込みに失敗: {e}")
             self._data = {}

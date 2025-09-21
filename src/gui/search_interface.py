@@ -46,7 +46,7 @@ class SearchInterface(QWidget):
         super().__init__(parent)
         self.logger = logging.getLogger(__name__)
 
-        # 各種マネージャーを初期化（責務分離のため）
+        # 各種マネージャーを初期化(責務分離のため)
         self.search_controller = SearchController(self)  # 検索ロジック制御
         self.ui_manager = SearchUIManager(self)  # UI状態管理
         self.event_manager = SearchEventManager(self)  # イベント処理
@@ -68,8 +68,8 @@ class SearchInterface(QWidget):
         main_search_frame = self.layout_manager.create_search_frame()
 
         # 検索入力エリアを設定
-        self.search_input, self.search_button, self.clear_button = (
-            self.layout_manager.setup_search_input_layout(main_search_frame)
+        self.search_input, self.search_button, self.clear_button = self.layout_manager.setup_search_input_layout(
+            main_search_frame
         )
 
         # ボタンスタイルを適用
@@ -121,9 +121,7 @@ class SearchInterface(QWidget):
 
     def _setup_shortcuts(self) -> None:
         """キーボードショートカットの設定"""
-        self.shortcut_manager.setup_search_shortcuts(
-            self._execute_search, self._toggle_advanced_options
-        )
+        self.shortcut_manager.setup_search_shortcuts(self._execute_search, self._toggle_advanced_options)
 
     def _execute_search(self) -> None:
         query_text = self.search_input.text().strip()
@@ -143,9 +141,7 @@ class SearchInterface(QWidget):
         self.ui_manager.update_search_button_state(self.search_button, is_searching)
 
     def _clear_all(self) -> None:
-        self.ui_manager.clear_search_interface(
-            self.search_input, self.advanced_options, self.progress_widget
-        )
+        self.ui_manager.clear_search_interface(self.search_input, self.advanced_options, self.progress_widget)
 
     def _apply_search_options(self, options: dict[str, Any]) -> None:
         self.options_manager.apply_search_options(options, self.advanced_options)
@@ -160,11 +156,9 @@ class SearchInterface(QWidget):
 
         Args:
             results: 検索結果
-            execution_time: 実行時間（秒）
+            execution_time: 実行時間(秒)
         """
-        self.api_manager.handle_search_completed(
-            results, execution_time, self.progress_widget, self.search_controller
-        )
+        self.api_manager.handle_search_completed(results, execution_time, self.progress_widget, self.search_controller)
 
     def on_search_error(self, error_message: str) -> None:
         """
@@ -173,9 +167,7 @@ class SearchInterface(QWidget):
         Args:
             error_message: エラーメッセージ
         """
-        self.api_manager.handle_search_error(
-            error_message, self.progress_widget, self.search_controller
-        )
+        self.api_manager.handle_search_error(error_message, self.progress_widget, self.search_controller)
 
     def update_search_suggestions(self, suggestions: list[str]) -> None:
         """
@@ -184,9 +176,7 @@ class SearchInterface(QWidget):
         Args:
             suggestions: 提案リスト
         """
-        self.api_manager.update_search_suggestions(
-            suggestions, self.search_input, self.ui_manager
-        )
+        self.api_manager.update_search_suggestions(suggestions, self.search_input, self.ui_manager)
 
     def update_search_history(
         self,

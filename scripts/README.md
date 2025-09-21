@@ -7,7 +7,7 @@
 ```
 scripts/
 ├── tools/          # 有用な開発ツール
-├── archive/        # 旧開発ファイル（参考用）
+├── archive/        # 旧開発ファイル(参考用)
 └── README.md       # このファイル
 ```
 
@@ -28,7 +28,7 @@ python scripts/tools/run_tests.py gui         # GUIテスト
 ```
 
 **機能**:
-- 環境セットアップ（オフスクリーンモード）
+- 環境セットアップ(オフスクリーンモード)
 - テストタイプ別実行
 - 結果サマリー表示
 - カバレッジレポート生成
@@ -44,7 +44,7 @@ python scripts/tools/measure_test_coverage.py
 - ソースファイル分析
 - テストファイル検索・作成
 - カバレッジ測定実行
-- 詳細レポート生成（TEST_COVERAGE_REPORT.md）
+- 詳細レポート生成(TEST_COVERAGE_REPORT.md)
 - 改善提案
 
 

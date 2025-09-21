@@ -105,7 +105,7 @@ class ApplicationStartupValidator:
 
 #### 検証対象
 - `DocumentProcessor`クラス
-- 各ファイル形式の処理（PDF、Word、Excel、テキスト、Markdown）
+- 各ファイル形式の処理(PDF、Word、Excel、テキスト、Markdown)
 - テキスト抽出精度
 - エンコーディング自動検出
 
@@ -135,7 +135,7 @@ class DocumentProcessingValidator:
 #### テストデータセット
 - 各形式の標準的なファイル
 - 破損ファイル
-- 大容量ファイル（100MB以上）
+- 大容量ファイル(100MB以上)
 - 異なるエンコーディングのファイル
 - 特殊文字を含むファイル
 
@@ -143,8 +143,8 @@ class DocumentProcessingValidator:
 
 #### 検証対象
 - `SearchManager`クラス
-- 全文検索（Whoosh）
-- セマンティック検索（sentence-transformers）
+- 全文検索(Whoosh)
+- セマンティック検索(sentence-transformers)
 - ハイブリッド検索
 - 検索フィルター機能
 
@@ -178,7 +178,7 @@ class SearchFunctionalityValidator:
 ```
 
 #### パフォーマンス基準
-- 検索時間: 5秒以内（50,000ドキュメント）
+- 検索時間: 5秒以内(50,000ドキュメント)
 - 検索精度: 関連度上位90%の適合率
 - メモリ使用量: 検索時2GB以下
 
@@ -186,10 +186,10 @@ class SearchFunctionalityValidator:
 
 #### 検証対象
 - `MainWindow`クラス
-- フォルダツリー（`FolderTree`）
-- 検索インターフェース（`SearchInterface`）
-- 検索結果表示（`SearchResults`）
-- ドキュメントプレビュー（`PreviewWidget`）
+- フォルダツリー(`FolderTree`)
+- 検索インターフェース(`SearchInterface`)
+- 検索結果表示(`SearchResults`)
+- ドキュメントプレビュー(`PreviewWidget`)
 
 #### 検証方法
 
@@ -216,7 +216,7 @@ class GUIFunctionalityValidator:
 ```
 
 #### 検証環境
-- 異なる画面解像度（1920x1080、1366x768、4K）
+- 異なる画面解像度(1920x1080、1366x768、4K)
 - 異なるDPI設定
 - 異なるOSテーマ
 
@@ -327,8 +327,8 @@ class PerformanceValidator:
 ```
 
 #### パフォーマンス基準
-- 検索時間: 5秒以内（50,000ドキュメント）
-- インデックス化: 30秒以内（1,000ドキュメント）
+- 検索時間: 5秒以内(50,000ドキュメント)
+- インデックス化: 30秒以内(1,000ドキュメント)
 - メモリ使用量: 2GB以下
 - CPU使用率: アイドル時10%以下
 - 起動時間: 10秒以内

@@ -28,7 +28,7 @@ class DialogManager(LoggerMixin):
         ダイアログマネージャーを初期化
 
         Args:
-            parent: 親ウィンドウ（MainWindow）
+            parent: 親ウィンドウ(MainWindow)
         """
         self.parent = parent
         self.config = Config()
@@ -56,7 +56,7 @@ class DialogManager(LoggerMixin):
         return None
 
     def show_search_dialog(self) -> None:
-        """検索ダイアログを表示（検索インターフェースにフォーカス）"""
+        """検索ダイアログを表示(検索インターフェースにフォーカス)"""
         if hasattr(self.parent, "search_interface"):
             self.parent.search_interface.search_input.setFocus()
             self.parent.search_interface.search_input.selectAll()
@@ -124,9 +124,9 @@ class DialogManager(LoggerMixin):
             "• 既存のインデックスデータを削除\n"
             "• 選択フォルダ内の全ドキュメントを再スキャン\n"
             "• 新しい検索インデックスを作成\n\n"
-            "⏱️ 処理時間: ファイル数により数分～数十分\n"
+            "⏱️ 処理時間: ファイル数により数分~数十分\n"
             "💡 処理中も他の機能は使用可能です\n\n"
-            "続行しますか？"
+            "続行しますか?"
         )
         msg_box.setText(message)
 
@@ -190,7 +190,7 @@ class DialogManager(LoggerMixin):
             "• 検索機能が一時的に利用不可\n"
             "• 再度インデックス作成が必要\n"
             "• この操作は取り消しできません\n\n"
-            "本当にクリアしますか？"
+            "本当にクリアしますか?"
         )
         msg_box.setText(message)
 
@@ -268,24 +268,20 @@ class DialogManager(LoggerMixin):
 
         msg_box.exec()
 
-    def show_system_error_dialog(
-        self, title: str, error_message: str, suggestion: str = ""
-    ) -> None:
+    def show_system_error_dialog(self, title: str, error_message: str, suggestion: str = "") -> None:
         """
         システムエラーダイアログを表示
 
         Args:
             title: エラータイトル
             error_message: エラーメッセージ
-            suggestion: 対処提案（オプション）
+            suggestion: 対処提案(オプション)
         """
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle(f"🚨 {title}")
         msg_box.setIcon(QMessageBox.Critical)
 
-        message = (
-            f"システムエラーが発生しました。\n\n📋 エラー詳細:\n{error_message}\n\n"
-        )
+        message = f"システムエラーが発生しました。\n\n📋 エラー詳細:\n{error_message}\n\n"
 
         if suggestion:
             message += f"🔧 推奨対処:\n{suggestion}\n\n"
@@ -319,16 +315,14 @@ class DialogManager(LoggerMixin):
 
         msg_box.exec()
 
-    def show_operation_failed_dialog(
-        self, operation_name: str, error_message: str, suggestion: str = ""
-    ) -> None:
+    def show_operation_failed_dialog(self, operation_name: str, error_message: str, suggestion: str = "") -> None:
         """
         操作失敗ダイアログを表示
 
         Args:
             operation_name: 失敗した操作名
             error_message: エラーメッセージ
-            suggestion: 対処提案（オプション）
+            suggestion: 対処提案(オプション)
         """
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle(f"❌ {operation_name}に失敗")
@@ -431,24 +425,21 @@ class DialogManager(LoggerMixin):
 
         msg_box.exec()
 
-    def show_partial_failure_dialog(
-        self, operation_name: str, error_message: str, suggestion: str = ""
-    ) -> None:
+    def show_partial_failure_dialog(self, operation_name: str, error_message: str, suggestion: str = "") -> None:
         """
         部分的失敗ダイアログを表示
 
         Args:
             operation_name: 部分的に失敗した操作名
             error_message: エラーメッセージ
-            suggestion: 対処提案（オプション）
+            suggestion: 対処提案(オプション)
         """
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle(f"⚠️ {operation_name}の一部が失敗")
         msg_box.setIcon(QMessageBox.Warning)
 
         message = (
-            f"{operation_name}は部分的に成功しましたが、一部で問題が発生しました。\n\n"
-            f"📋 問題詳細:\n{error_message}\n\n"
+            f"{operation_name}は部分的に成功しましたが、一部で問題が発生しました。\n\n📋 問題詳細:\n{error_message}\n\n"
         )
 
         if suggestion:
@@ -491,7 +482,7 @@ class DialogManager(LoggerMixin):
             thread_id: タイムアウトしたスレッドID
 
         Returns:
-            int: ユーザーの選択（QMessageBox.Yes/No/Retry相当）
+            int: ユーザーの選択(QMessageBox.Yes/No/Retry相当)
         """
         msg_box = QMessageBox(self.parent)
         msg_box.setWindowTitle("⏰ 処理タイムアウト")
@@ -508,14 +499,12 @@ class DialogManager(LoggerMixin):
             "• システムリソースの不足\n"
             "• ファイルアクセス権限の問題\n"
             "• ネットワークドライブの応答遅延\n\n"
-            "どのように対処しますか？"
+            "どのように対処しますか?"
         )
         msg_box.setText(message)
 
         # カスタムボタンの設定
-        force_stop_button = msg_box.addButton(
-            "🛑 強制停止", QMessageBox.DestructiveRole
-        )
+        force_stop_button = msg_box.addButton("🛑 強制停止", QMessageBox.DestructiveRole)
         continue_button = msg_box.addButton("⏳ 継続待機", QMessageBox.AcceptRole)
         restart_button = msg_box.addButton("🔄 再開始", QMessageBox.ActionRole)
 

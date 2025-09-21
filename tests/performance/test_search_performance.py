@@ -4,12 +4,12 @@
 大規模データでの検索性能検証
 """
 
-import shutil
-import tempfile
-import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
+import shutil
+import tempfile
+import time
 from unittest.mock import patch
 
 import pytest
@@ -73,9 +73,7 @@ class TestSearchPerformance:
         start_time = time.time()
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(large_index.search_text, query) for query in queries
-            ]
+            futures = [executor.submit(large_index.search_text, query) for query in queries]
             results = [future.result() for future in futures]
 
         end_time = time.time()

@@ -5,8 +5,8 @@ DocMindプロジェクト用のアイコンファイルを生成します
 """
 
 import io
-import sys
 from pathlib import Path
+import sys
 
 import cairosvg
 from PIL import Image

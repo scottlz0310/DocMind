@@ -103,9 +103,7 @@ class SettingsThemeManager(QObject, LoggerMixin):
 
             if window_width and window_height:
                 self.main_window.resize(window_width, window_height)
-                self.logger.debug(
-                    f"ウィンドウサイズを更新: {window_width}x{window_height}"
-                )
+                self.logger.debug(f"ウィンドウサイズを更新: {window_width}x{window_height}")
 
         except Exception as e:
             self.logger.warning(f"ウィンドウサイズの更新に失敗: {e}")
@@ -153,7 +151,7 @@ class SettingsThemeManager(QObject, LoggerMixin):
         """
         try:
             if theme == "dark":
-                # ダークテーマの適用（将来の拡張用）
+                # ダークテーマの適用(将来の拡張用)
                 self._apply_dark_theme()
             elif theme == "light":
                 # ライトテーマの適用
@@ -171,19 +169,19 @@ class SettingsThemeManager(QObject, LoggerMixin):
             self.logger.error(f"テーマの適用に失敗: {e}")
 
     def _apply_dark_theme(self) -> None:
-        """ダークテーマの適用（将来の拡張用）"""
+        """ダークテーマの適用(将来の拡張用)"""
         # 将来のダークテーマ実装用のプレースホルダー
-        self.logger.debug("ダークテーマ適用（未実装）")
+        self.logger.debug("ダークテーマ適用(未実装)")
 
     def _apply_light_theme(self) -> None:
         """ライトテーマの適用"""
         # 将来のライトテーマ実装用のプレースホルダー
-        self.logger.debug("ライトテーマ適用（未実装）")
+        self.logger.debug("ライトテーマ適用(未実装)")
 
     def _apply_system_theme(self) -> None:
         """システムテーマの適用"""
         # システムのテーマ設定に従う
-        self.logger.debug("システムテーマ適用（未実装）")
+        self.logger.debug("システムテーマ適用(未実装)")
 
     def apply_font_settings(self, settings: dict[str, Any]) -> None:
         """

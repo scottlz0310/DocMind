@@ -90,7 +90,7 @@ class BatchProcessor:
             try:
                 operation()
             except Exception:
-                # エラーログ出力（実装時に追加）
+                # エラーログ出力(実装時に追加)
                 pass
 
         self._pending_operations.clear()

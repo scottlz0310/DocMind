@@ -227,9 +227,7 @@ class FileSystemError(DocMindException):
     問題が発生した場合に発生します。
     """
 
-    def __init__(
-        self, message: str, path: str = None, operation: str = None, details: str = None
-    ):
+    def __init__(self, message: str, path: str = None, operation: str = None, details: str = None):
         """ファイルシステムエラーを初期化
 
         Args:

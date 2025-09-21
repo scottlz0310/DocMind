@@ -35,7 +35,7 @@ def run_unit_tests():
         "not slow",
     ]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
     print(result.stdout)
     if result.stderr:
         print("警告:", result.stderr)
@@ -56,7 +56,7 @@ def run_integration_tests():
         "--maxfail=5",
     ]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
     print(result.stdout)
     if result.stderr:
         print("警告:", result.stderr)
@@ -78,7 +78,7 @@ def run_performance_tests():
         "--benchmark-columns=min,max,mean,stddev",
     ]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
     print(result.stdout)
     if result.stderr:
         print("警告:", result.stderr)
@@ -101,7 +101,7 @@ def run_gui_tests():
         "gui",
     ]
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, check=False, capture_output=True, text=True)
     print(result.stdout)
     if result.stderr:
         print("警告:", result.stderr)

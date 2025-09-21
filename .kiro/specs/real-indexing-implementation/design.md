@@ -48,7 +48,7 @@ graph TD
 
 ## コンポーネント設計
 
-### 1. IndexingWorker（新規作成）
+### 1. IndexingWorker(新規作成)
 
 **責務**: フォルダのインデックス処理を非同期で実行
 
@@ -84,7 +84,7 @@ class IndexingWorker(QObject):
 - `process_single_file()`: 単一ファイルの処理
 - `stop()`: 処理の停止
 
-### 2. MainWindow（修正）
+### 2. MainWindow(修正)
 
 **修正点**: `_on_folder_indexed`メソッドで実際のインデックス処理を開始
 
@@ -101,7 +101,7 @@ def _start_indexing_process(self, folder_path: str):
     # シグナル接続と実行
 ```
 
-### 3. FolderTreeWidget（修正）
+### 3. FolderTreeWidget(修正)
 
 **修正点**: インデックス状態の管理を改善
 
@@ -113,7 +113,7 @@ def _index_folder(self):
     self.folder_indexed.emit(folder_path)
 ```
 
-### 4. FileWatcherIntegration（新規作成）
+### 4. FileWatcherIntegration(新規作成)
 
 **責務**: インデックス化されたフォルダの監視を管理
 
@@ -175,7 +175,7 @@ sequenceDiagram
     IW->>IW: ファイル処理中にエラー
     IW->>MW: error_occurred シグナル
     MW->>MW: エラーログ記録
-    MW->>U: エラー通知（必要に応じて）
+    MW->>U: エラー通知(必要に応じて)
     IW->>IW: 次のファイルの処理を継続
 ```
 
@@ -233,7 +233,7 @@ class IndexingProgress:
     current_file: str       # 現在処理中のファイル
     files_processed: int    # 処理済みファイル数
     total_files: int        # 総ファイル数
-    percentage: int         # 進捗率（0-100）
+    percentage: int         # 進捗率(0-100)
 
     def get_message(self) -> str:
         """進捗メッセージを生成"""

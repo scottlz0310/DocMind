@@ -57,9 +57,7 @@ class ActionManager:
 
         # 内部状態をクリア
         paths_to_remove = [
-            path
-            for path in self.tree_widget.item_map.keys()
-            if path.startswith(folder_path) and path != folder_path
+            path for path in self.tree_widget.item_map.keys() if path.startswith(folder_path) and path != folder_path
         ]
         for path in paths_to_remove:
             self.tree_widget.item_map.pop(path, None)

@@ -16,11 +16,11 @@ class EmbeddingManagerExtended(EmbeddingManager):
     """テスト用に拡張されたEmbeddingManager"""
 
     def clear_embeddings(self) -> None:
-        """埋め込みをクリア（clear_cacheのエイリアス）"""
+        """埋め込みをクリア(clear_cacheのエイリアス)"""
         self.clear_cache()
 
     def get_embedding_stats(self) -> dict[str, Any]:
-        """埋め込み統計情報を取得（get_cache_infoのエイリアス）"""
+        """埋め込み統計情報を取得(get_cache_infoのエイリアス)"""
         return self.get_cache_info()
 
     def document_exists(self, doc_id: str) -> bool:
@@ -63,7 +63,7 @@ class EmbeddingManagerExtended(EmbeddingManager):
         return cosine_similarity(vec1_np.reshape(1, -1), vec2_np.reshape(1, -1))[0][0]
 
     def update_document_embedding(self, doc_id: str, text: str) -> None:
-        """ドキュメントの埋め込みを更新（add_document_embeddingのエイリアス）
+        """ドキュメントの埋め込みを更新(add_document_embeddingのエイリアス)
 
         Args:
             doc_id: ドキュメントID

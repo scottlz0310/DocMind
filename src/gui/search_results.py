@@ -7,9 +7,9 @@ QListWidgetを拡張した検索結果表示機能を実装します。
 結果のソート、フィルタリング、ページネーション機能を提供します。
 """
 
+from enum import Enum
 import logging
 import math
-from enum import Enum
 from typing import Any
 
 from PySide6.QtCore import Qt, Signal
@@ -32,7 +32,7 @@ from src.data.models import FileType, SearchResult, SearchType
 class SortOrder(Enum):
     """ソート順序を定義する列挙型"""
 
-    RELEVANCE_DESC = "relevance_desc"  # 関連度降順（デフォルト）
+    RELEVANCE_DESC = "relevance_desc"  # 関連度降順(デフォルト)
     RELEVANCE_ASC = "relevance_asc"  # 関連度昇順
     TITLE_ASC = "title_asc"  # タイトル昇順
     TITLE_DESC = "title_desc"  # タイトル降順
@@ -83,7 +83,7 @@ class SearchResultItemWidget(QFrame):
         main_layout.setContentsMargins(12, 8, 12, 8)
         main_layout.setSpacing(6)
 
-        # ヘッダー行（タイトルとスコア）
+        # ヘッダー行(タイトルとスコア)
         header_layout = QHBoxLayout()
 
         # タイトルラベル
@@ -220,11 +220,11 @@ class SearchResultItemWidget(QFrame):
     def _get_score_color(self, score: float) -> str:
         """スコアに基づいて色を取得"""
         if score >= 0.8:
-            return "#4caf50"  # 緑（高スコア）
+            return "#4caf50"  # 緑(高スコア)
         elif score >= 0.6:
-            return "#ff9800"  # オレンジ（中スコア）
+            return "#ff9800"  # オレンジ(中スコア)
         else:
-            return "#f44336"  # 赤（低スコア）
+            return "#f44336"  # 赤(低スコア)
 
     def _get_search_type_color(self, search_type: SearchType) -> str:
         """検索タイプに基づいて色を取得"""
@@ -329,7 +329,7 @@ class SearchResultsWidget(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # ツールバー（ソート・フィルター・ページネーション）
+        # ツールバー(ソート・フィルター・ページネーション)
         self.toolbar = self._create_toolbar()
         main_layout.addWidget(self.toolbar)
 
@@ -367,18 +367,16 @@ class SearchResultsWidget(QWidget):
         layout.addWidget(sort_label)
 
         self.sort_combo = QComboBox()
-        self.sort_combo.addItems(
-            [
-                "関連度（高→低）",
-                "関連度（低→高）",
-                "タイトル（A→Z）",
-                "タイトル（Z→A）",
-                "日付（新→古）",
-                "日付（古→新）",
-                "サイズ（大→小）",
-                "サイズ（小→大）",
-            ]
-        )
+        self.sort_combo.addItems([
+            "関連度(高→低)",
+            "関連度(低→高)",
+            "タイトル(A→Z)",
+            "タイトル(Z→A)",
+            "日付(新→古)",
+            "日付(古→新)",
+            "サイズ(大→小)",
+            "サイズ(小→大)",
+        ])
         self.sort_combo.setMinimumWidth(120)
         layout.addWidget(self.sort_combo)
 
@@ -479,12 +477,8 @@ class SearchResultsWidget(QWidget):
 
         # ページネーション
         self.first_page_button.clicked.connect(lambda: self.go_to_page(1))
-        self.prev_page_button.clicked.connect(
-            lambda: self.go_to_page(self.current_page - 1)
-        )
-        self.next_page_button.clicked.connect(
-            lambda: self.go_to_page(self.current_page + 1)
-        )
+        self.prev_page_button.clicked.connect(lambda: self.go_to_page(self.current_page - 1))
+        self.next_page_button.clicked.connect(lambda: self.go_to_page(self.current_page + 1))
         self.last_page_button.clicked.connect(lambda: self.go_to_page(self.total_pages))
         self.page_spin.valueChanged.connect(self.go_to_page)
 
@@ -559,8 +553,7 @@ class SearchResultsWidget(QWidget):
         self.page_spin.setMaximum(self.total_pages)
 
         # 現在のページが範囲外の場合は調整
-        if self.current_page > self.total_pages:
-            self.current_page = self.total_pages
+        self.current_page = min(self.current_page, self.total_pages)
 
         self._update_pagination_controls()
 
@@ -584,9 +577,7 @@ class SearchResultsWidget(QWidget):
         if total_count == filtered_count:
             self.result_count_label.setText(f"結果: {total_count}件")
         else:
-            self.result_count_label.setText(
-                f"結果: {filtered_count}件 (全{total_count}件中)"
-            )
+            self.result_count_label.setText(f"結果: {filtered_count}件 (全{total_count}件中)")
 
     def go_to_page(self, page: int) -> None:
         """

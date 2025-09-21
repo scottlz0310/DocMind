@@ -166,10 +166,10 @@ class RebuildTimeoutManager(QObject):
 #### 3.2 進捗更新パターン
 
 ```python
-# 不定進捗（スキャン中）
+# 不定進捗(スキャン中)
 self.show_progress("ファイルをスキャン中...", 0)
 
-# 定進捗（処理中）
+# 定進捗(処理中)
 self.update_progress(current, total, f"処理中: {filename}")
 
 # 完了

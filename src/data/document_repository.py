@@ -5,9 +5,9 @@
 高レベルなCRUD操作とクエリ機能を提供し、ビジネスロジック層からの要求に応答します。
 """
 
+from datetime import datetime
 import json
 import logging
-from datetime import datetime
 
 from ..utils.exceptions import DatabaseError, DocumentNotFoundError
 from .database import DatabaseManager
@@ -67,9 +67,7 @@ class DocumentRepository:
                 )
                 conn.commit()
 
-                self.logger.info(
-                    f"ドキュメントを追加しました: {document.title} ({document.id})"
-                )
+                self.logger.info(f"ドキュメントを追加しました: {document.title} ({document.id})")
                 return True
 
         except Exception as e:
@@ -174,14 +172,10 @@ class DocumentRepository:
                 )
 
                 if cursor.rowcount == 0:
-                    raise DocumentNotFoundError(
-                        f"ドキュメントが見つかりません: {document.id}"
-                    )
+                    raise DocumentNotFoundError(f"ドキュメントが見つかりません: {document.id}")
 
                 conn.commit()
-                self.logger.info(
-                    f"ドキュメントを更新しました: {document.title} ({document.id})"
-                )
+                self.logger.info(f"ドキュメントを更新しました: {document.title} ({document.id})")
                 return True
 
         except DocumentNotFoundError:
@@ -205,14 +199,10 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute(
-                    "DELETE FROM documents WHERE id = ?", (document_id,)
-                )
+                cursor = conn.execute("DELETE FROM documents WHERE id = ?", (document_id,))
 
                 if cursor.rowcount == 0:
-                    raise DocumentNotFoundError(
-                        f"ドキュメントが見つかりません: {document_id}"
-                    )
+                    raise DocumentNotFoundError(f"ドキュメントが見つかりません: {document_id}")
 
                 conn.commit()
                 self.logger.info(f"ドキュメントを削除しました: {document_id}")
@@ -235,14 +225,10 @@ class DocumentRepository:
         """
         try:
             with self.db_manager.get_connection() as conn:
-                cursor = conn.execute(
-                    "DELETE FROM documents WHERE file_path = ?", (file_path,)
-                )
+                cursor = conn.execute("DELETE FROM documents WHERE file_path = ?", (file_path,))
 
                 if cursor.rowcount == 0:
-                    self.logger.warning(
-                        f"削除対象のドキュメントが見つかりません: {file_path}"
-                    )
+                    self.logger.warning(f"削除対象のドキュメントが見つかりません: {file_path}")
                     return False
 
                 conn.commit()
@@ -253,9 +239,7 @@ class DocumentRepository:
             self.logger.error(f"ドキュメント削除エラー: {e}")
             raise DatabaseError(f"ドキュメントの削除に失敗しました: {e}") from e
 
-    def get_all_documents(
-        self, limit: int | None = None, offset: int = 0
-    ) -> list[Document]:
+    def get_all_documents(self, limit: int | None = None, offset: int = 0) -> list[Document]:
         """すべてのドキュメントを取得
 
         Args:
@@ -347,7 +331,7 @@ class DocumentRepository:
         """タイトルでドキュメントを検索
 
         Args:
-            title_pattern (str): 検索パターン（LIKE演算子用）
+            title_pattern (str): 検索パターン(LIKE演算子用)
 
         Returns:
             List[Document]: 該当するドキュメントのリスト

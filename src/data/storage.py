@@ -113,9 +113,7 @@ class StorageManager:
         """
         return self.document_repository.delete_document_by_path(file_path)
 
-    def list_documents(
-        self, limit: int | None = None, offset: int = 0
-    ) -> list[Document]:
+    def list_documents(self, limit: int | None = None, offset: int = 0) -> list[Document]:
         """ドキュメントをリスト
 
         Args:
@@ -190,14 +188,12 @@ class StorageManager:
             query (str): 検索クエリ
             search_type (SearchType): 検索タイプ
             result_count (int): 結果数
-            execution_time_ms (int): 実行時間（ミリ秒）
+            execution_time_ms (int): 実行時間(ミリ秒)
 
         Returns:
             bool: 成功した場合True
         """
-        return self.search_history_repository.add_search_record(
-            query, search_type, result_count, execution_time_ms
-        )
+        return self.search_history_repository.add_search_record(query, search_type, result_count, execution_time_ms)
 
     def get_recent_searches(self, limit: int = 50) -> list[dict[str, Any]]:
         """最近の検索履歴を取得
@@ -210,13 +206,11 @@ class StorageManager:
         """
         return self.search_history_repository.get_recent_searches(limit)
 
-    def get_popular_queries(
-        self, days: int = 30, limit: int = 20
-    ) -> list[dict[str, Any]]:
+    def get_popular_queries(self, days: int = 30, limit: int = 20) -> list[dict[str, Any]]:
         """人気の検索クエリを取得
 
         Args:
-            days (int): 対象期間（日数）
+            days (int): 対象期間(日数)
             limit (int): 取得する最大件数
 
         Returns:
@@ -234,15 +228,13 @@ class StorageManager:
         Returns:
             List[str]: 検索提案のリスト
         """
-        return self.search_history_repository.get_search_suggestions(
-            partial_query, limit
-        )
+        return self.search_history_repository.get_search_suggestions(partial_query, limit)
 
     def get_search_statistics(self, days: int = 30) -> dict[str, Any]:
         """検索統計情報を取得
 
         Args:
-            days (int): 対象期間（日数）
+            days (int): 対象期間(日数)
 
         Returns:
             Dict[str, Any]: 統計情報
@@ -287,10 +279,7 @@ class StorageManager:
                     "total_size": index_stats.total_size,
                     "formatted_size": index_stats.get_formatted_size(),
                     "last_updated": index_stats.last_updated,
-                    "file_type_counts": {
-                        ft.value: count
-                        for ft, count in index_stats.file_type_counts.items()
-                    },
+                    "file_type_counts": {ft.value: count for ft, count in index_stats.file_type_counts.items()},
                 },
                 "search": search_stats,
                 "storage_path": str(self.data_dir),
@@ -328,9 +317,7 @@ class StorageManager:
                 self.logger.info(f"データベースをバックアップしました: {backup_path}")
                 return True
             else:
-                self.logger.warning(
-                    "バックアップ対象のデータベースファイルが見つかりません"
-                )
+                self.logger.warning("バックアップ対象のデータベースファイルが見つかりません")
                 return False
 
         except Exception as e:
@@ -351,9 +338,7 @@ class StorageManager:
 
             backup_file = Path(backup_path)
             if not backup_file.exists():
-                raise FileNotFoundError(
-                    f"バックアップファイルが見つかりません: {backup_path}"
-                )
+                raise FileNotFoundError(f"バックアップファイルが見つかりません: {backup_path}")
 
             db_path = self.data_dir / "documents.db"
 

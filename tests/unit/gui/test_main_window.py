@@ -1,5 +1,5 @@
 """
-Phase6 MainWindowユニットテスト（モック版）
+Phase6 MainWindowユニットテスト(モック版)
 
 完全にモック化してハングを防止したGUIテスト
 QObject初期化問題を回避

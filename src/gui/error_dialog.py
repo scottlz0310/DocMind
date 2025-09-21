@@ -70,9 +70,7 @@ class ErrorDialog(QDialog, LoggerMixin):
 
         # エラーアイコン
         icon_label = QLabel()
-        icon_label.setPixmap(
-            self.style().standardIcon(self.style().SP_MessageBoxCritical).pixmap(48, 48)
-        )
+        icon_label.setPixmap(self.style().standardIcon(self.style().SP_MessageBoxCritical).pixmap(48, 48))
         icon_label.setAlignment(Qt.AlignTop)
         message_layout.addWidget(icon_label)
 
@@ -97,7 +95,7 @@ class ErrorDialog(QDialog, LoggerMixin):
 
             layout.addWidget(suggestions_group)
 
-        # 詳細情報（折りたたみ可能）
+        # 詳細情報(折りたたみ可能)
         if details:
             self._add_details_section(layout, details)
 
@@ -166,9 +164,7 @@ class SystemStatusDialog(QDialog, LoggerMixin):
 
         # 全体的な健全性表示
         self.overall_health_label = QLabel()
-        self.overall_health_label.setStyleSheet(
-            "font-size: 14px; font-weight: bold; margin: 10px;"
-        )
+        self.overall_health_label.setStyleSheet("font-size: 14px; font-weight: bold; margin: 10px;")
         layout.addWidget(self.overall_health_label)
 
         # プログレスバー
@@ -217,27 +213,15 @@ class SystemStatusDialog(QDialog, LoggerMixin):
                 )
                 health_percentage = 100
             elif overall_health == "degraded":
-                self.overall_health_label.setText(
-                    "⚠️ システムは制限付きで動作しています"
-                )
+                self.overall_health_label.setText("⚠️ システムは制限付きで動作しています")
                 self.overall_health_label.setStyleSheet(
                     "color: orange; font-size: 14px; font-weight: bold; margin: 10px;"
                 )
-                health_percentage = (
-                    int((healthy_count / total_components) * 100)
-                    if total_components > 0
-                    else 0
-                )
+                health_percentage = int((healthy_count / total_components) * 100) if total_components > 0 else 0
             else:
                 self.overall_health_label.setText("❌ システムに重大な問題があります")
-                self.overall_health_label.setStyleSheet(
-                    "color: red; font-size: 14px; font-weight: bold; margin: 10px;"
-                )
-                health_percentage = (
-                    int((healthy_count / total_components) * 100)
-                    if total_components > 0
-                    else 0
-                )
+                self.overall_health_label.setStyleSheet("color: red; font-size: 14px; font-weight: bold; margin: 10px;")
+                health_percentage = int((healthy_count / total_components) * 100) if total_components > 0 else 0
 
             self.health_progress.setValue(health_percentage)
 
@@ -247,9 +231,7 @@ class SystemStatusDialog(QDialog, LoggerMixin):
         except Exception as e:
             self.logger.error(f"システム状態の更新に失敗: {e}")
             self.overall_health_label.setText("❓ システム状態を取得できません")
-            self.overall_health_label.setStyleSheet(
-                "color: gray; font-size: 14px; font-weight: bold; margin: 10px;"
-            )
+            self.overall_health_label.setStyleSheet("color: gray; font-size: 14px; font-weight: bold; margin: 10px;")
 
     def _update_components_display(self, components: dict[str, Any]):
         """コンポーネント表示を更新"""
@@ -261,9 +243,7 @@ class SystemStatusDialog(QDialog, LoggerMixin):
 
         # 各コンポーネントの状態を表示
         for component_name, component_info in components.items():
-            component_widget = self._create_component_widget(
-                component_name, component_info
-            )
+            component_widget = self._create_component_widget(component_name, component_info)
             self.components_layout.addWidget(component_widget)
 
         self.components_layout.addStretch()
@@ -376,9 +356,7 @@ class UserNotificationManager(LoggerMixin):
             recovery_suggestions: 回復のための提案リスト
         """
         try:
-            dialog = ErrorDialog(
-                title, message, details, recovery_suggestions, self.parent_widget
-            )
+            dialog = ErrorDialog(title, message, details, recovery_suggestions, self.parent_widget)
             dialog.exec()
         except Exception as e:
             self.logger.error(f"エラーダイアログの表示に失敗: {e}")
@@ -463,9 +441,7 @@ class UserNotificationManager(LoggerMixin):
         except Exception as e:
             self.logger.error(f"システム劣化警告の表示に失敗: {e}")
 
-    def show_component_failure_notification(
-        self, component_name: str, error_message: str
-    ):
+    def show_component_failure_notification(self, component_name: str, error_message: str):
         """
         コンポーネント障害の通知を表示
 

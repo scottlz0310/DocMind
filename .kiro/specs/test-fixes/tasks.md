@@ -9,7 +9,7 @@
 
 - [x] 2. DatabaseManagerクラスのpublicなinitializeメソッド追加
   - src/data/database.py にpublicな initialize() メソッドを追加
-  - 冪等性を保証する初期化フラグ（_initialized）を実装
+  - 冪等性を保証する初期化フラグ(_initialized)を実装
   - 既存の _initialize_database() 実装を呼び出すラッパーとして実装
   - __init__ メソッドから自動的に initialize() を呼び出して既存動作を維持
   - テストでの明示的な initialize() 呼び出しをサポート

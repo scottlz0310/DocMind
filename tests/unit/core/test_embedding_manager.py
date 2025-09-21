@@ -6,9 +6,9 @@ Phase7強化版の内容を統合済み。
 """
 
 import os
+from pathlib import Path
 import shutil
 import tempfile
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -51,9 +51,9 @@ class TestEmbeddingManager:
             assert not np.isnan(embedding).any()  # NaN値なし
             assert not np.isinf(embedding).any()  # 無限値なし
 
-            # 正規化確認（sentence-transformersは正規化済み）
+            # 正規化確認(sentence-transformersは正規化済み)
             norm = np.linalg.norm(embedding)
-            assert abs(norm - 1.0) < 0.1  # 正規化済みベクトル（許容範囲を広げる）
+            assert abs(norm - 1.0) < 0.1  # 正規化済みベクトル(許容範囲を広げる)
 
     def test_embedding_cache_performance(self, temp_cache_dir, sample_texts):
         """埋め込みキャッシュパフォーマンステスト"""
@@ -62,12 +62,12 @@ class TestEmbeddingManager:
         embeddings_path = str(temp_cache_dir / "embeddings.pkl")
         manager = EmbeddingManager(embeddings_path=embeddings_path)
 
-        # 初回生成時間測定（ドキュメント埋め込みとして追加）
+        # 初回生成時間測定(ドキュメント埋め込みとして追加)
         start_time = time.time()
         manager.add_document_embedding("doc1", sample_texts[0])
         first_time = time.time() - start_time
 
-        # 同じテキストで再度追加（キャッシュヒット）
+        # 同じテキストで再度追加(キャッシュヒット)
         start_time = time.time()
         manager.add_document_embedding("doc1", sample_texts[0])
         cache_time = time.time() - start_time
@@ -88,14 +88,12 @@ class TestEmbeddingManager:
             manager.add_document_embedding(f"doc{i}", text)
             individual_embeddings.append(manager.embeddings[f"doc{i}"].embedding)
 
-        # 新しいマネージャーで同じ処理（キャッシュなし）
-        manager2 = EmbeddingManager(
-            embeddings_path=str(temp_cache_dir / "embeddings2.pkl")
-        )
+        # 新しいマネージャーで同じ処理(キャッシュなし)
+        manager2 = EmbeddingManager(embeddings_path=str(temp_cache_dir / "embeddings2.pkl"))
         for i, text in enumerate(sample_texts):
             manager2.add_document_embedding(f"doc{i}", text)
 
-        # 検証（処理時間の比較）
+        # 検証(処理時間の比較)
         assert len(manager.embeddings) == len(sample_texts)
         assert len(manager2.embeddings) == len(sample_texts)
 
@@ -121,7 +119,7 @@ class TestEmbeddingManager:
 
         # 検証
         assert len(results) > 0
-        # 最初の結果は自分自身（doc1）で類似度が最も高い
+        # 最初の結果は自分自身(doc1)で類似度が最も高い
         assert results[0][0] == "doc1"
         assert results[0][1] > 0.9  # 自分自身との類似度は高い
 
@@ -150,7 +148,7 @@ class TestEmbeddingManager:
         embeddings_path = str(temp_cache_dir / "embeddings.pkl")
         manager = EmbeddingManager(embeddings_path=embeddings_path)
 
-        # 長いテキスト（モデルの最大長を超える可能性）
+        # 長いテキスト(モデルの最大長を超える可能性)
         long_text = "これは非常に長いテキストです。" * 1000
 
         embedding = manager.generate_embedding(long_text)
@@ -180,14 +178,12 @@ class TestEmbeddingManager:
         final_memory = process.memory_info().rss
         memory_increase = final_memory - initial_memory
 
-        # メモリ増加量が500MB以下（モデル読み込みを考慮）
+        # メモリ増加量が500MB以下(モデル読み込みを考慮)
         assert memory_increase < 500 * 1024 * 1024
 
-    @pytest.mark.skipif(
-        True, reason="並行処理テストはPyTorch meta tensor問題のためスキップ"
-    )
+    @pytest.mark.skipif(True, reason="並行処理テストはPyTorch meta tensor問題のためスキップ")
     def test_concurrent_embedding_generation(self, temp_cache_dir):
-        """並行埋め込み生成テスト（スキップ）"""
+        """並行埋め込み生成テスト(スキップ)"""
         # PyTorchのmeta tensor問題のため、並行処理テストはスキップ
         # 実際のアプリケーションではシングルスレッドでの使用を推奨
         pass
@@ -231,9 +227,7 @@ class TestEmbeddingManager:
         """モデル読み込みテスト"""
         from unittest.mock import Mock, patch
 
-        with patch(
-            "src.core.embedding_manager.SentenceTransformer"
-        ) as mock_transformer:
+        with patch("src.core.embedding_manager.SentenceTransformer") as mock_transformer:
             mock_model = Mock()
             mock_model.encode.return_value = np.array([0.1, 0.2, 0.3])
             mock_model.get_sentence_embedding_dimension.return_value = 384

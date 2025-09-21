@@ -959,7 +959,7 @@
       "syntax_check": "構文エラーなし",
       "import_check": "インポート依存関係正常",
       "function_test": "基本機能正常動作",
-      "performance_test": "性能劣化なし（±5%以内）",
+      "performance_test": "性能劣化なし(±5%以内)",
       "memory_test": "メモリリークなし"
     },
     "rollback_strategy": {

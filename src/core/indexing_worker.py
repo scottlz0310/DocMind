@@ -4,11 +4,11 @@
 フォルダのインデックス処理を非同期で実行するワーカークラスを提供します。
 """
 
+from dataclasses import asdict, dataclass
 import logging
 import os
-import time
-from dataclasses import asdict, dataclass
 from pathlib import Path
+import time
 
 from PySide6.QtCore import QObject, Signal
 
@@ -44,7 +44,7 @@ class IndexingProgress:
     current_file: str  # 現在処理中のファイル
     files_processed: int  # 処理済みファイル数
     total_files: int  # 総ファイル数
-    percentage: int  # 進捗率（0-100）
+    percentage: int  # 進捗率(0-100)
 
     def get_message(self) -> str:
         """進捗メッセージを生成"""
@@ -82,18 +82,15 @@ class IndexingProgress:
                 return f"ファイル処理中... ({self.files_processed}/{self.total_files})"
         elif self.stage == "indexing":
             if self.files_processed > 0:
-                return (
-                    f"インデックスを作成中... ({self.files_processed}ファイル処理済み)"
-                )
+                return f"インデックスを作成中... ({self.files_processed}ファイル処理済み)"
             else:
                 return "インデックスを作成中..."
         elif self.stage == "watching":
             return "ファイル監視を開始中..."
+        elif self.total_files > 0:
+            return f"処理中... ({self.files_processed}/{self.total_files})"
         else:
-            if self.total_files > 0:
-                return f"処理中... ({self.files_processed}/{self.total_files})"
-            else:
-                return "処理中..."
+            return "処理中..."
 
 
 class IndexingWorker(QObject):
@@ -160,9 +157,7 @@ class IndexingWorker(QObject):
             self.stats.total_files_found = len(files)
 
             if not files:
-                self.logger.info(
-                    f"処理対象のファイルが見つかりませんでした: {self.folder_path}"
-                )
+                self.logger.info(f"処理対象のファイルが見つかりませんでした: {self.folder_path}")
                 self._emit_completion()
                 return
 
@@ -173,9 +168,7 @@ class IndexingWorker(QObject):
             self._process_files(files)
 
             # 3. インデックス作成段階
-            self._update_progress(
-                "indexing", "", self.stats.files_processed, self.stats.total_files_found
-            )
+            self._update_progress("indexing", "", self.stats.files_processed, self.stats.total_files_found)
 
             # 4. 統計情報の更新
             self.stats.processing_time = time.time() - start_time
@@ -220,11 +213,7 @@ class IndexingWorker(QObject):
 
                 # 定期的に進捗を更新
                 if scanned_dirs % 5 == 0 or total_dirs == 0:
-                    current_dir = (
-                        os.path.basename(root)
-                        if root != self.folder_path
-                        else "ルートフォルダ"
-                    )
+                    current_dir = os.path.basename(root) if root != self.folder_path else "ルートフォルダ"
                     # 現在発見されているファイル数も含めて進捗を更新
                     scan_message = f"スキャン中: {current_dir} ({len(files)}個発見)"
                     self._update_progress(
@@ -267,7 +256,7 @@ class IndexingWorker(QObject):
                 break
 
             try:
-                # 進捗更新（処理開始時）
+                # 進捗更新(処理開始時)
                 self._update_progress("processing", file_path, i, len(files))
 
                 # ファイル処理
@@ -278,7 +267,7 @@ class IndexingWorker(QObject):
 
                 self.stats.files_processed += 1
 
-                # 進捗更新（処理完了時）
+                # 進捗更新(処理完了時)
                 self._update_progress("processing", file_path, i + 1, len(files))
 
                 # バッチ処理
@@ -291,7 +280,7 @@ class IndexingWorker(QObject):
                 # ファイル処理完了シグナル
                 self.file_processed.emit(file_path, True, "")
 
-                # 定期的な進捗更新（10ファイルごと）
+                # 定期的な進捗更新(10ファイルごと)
                 if (i + 1) % 10 == 0:
                     self.logger.info(
                         f"進捗: {i + 1}/{len(files)}ファイル処理完了 ({((i + 1) / len(files)) * 100:.1f}%)"
@@ -323,9 +312,7 @@ class IndexingWorker(QObject):
                 self.logger.debug(f"ファイル処理完了: {file_path}")
                 return document
             else:
-                self.logger.warning(
-                    f"ファイル処理でドキュメントが生成されませんでした: {file_path}"
-                )
+                self.logger.warning(f"ファイル処理でドキュメントが生成されませんでした: {file_path}")
                 return None
 
         except DocumentProcessingError as e:
@@ -368,9 +355,7 @@ class IndexingWorker(QObject):
             self.logger.error(error_msg)
             self.error_occurred.emit("file_watching", error_msg)
 
-    def _update_progress(
-        self, stage: str, current_file: str, processed: int, total: int
-    ) -> None:
+    def _update_progress(self, stage: str, current_file: str, processed: int, total: int) -> None:
         """進捗情報の更新"""
         percentage = int((processed / total) * 100) if total > 0 else 0
 
@@ -401,9 +386,7 @@ class IndexingWorker(QObject):
             except Exception as e:
                 self.logger.debug(f"ファイルサイズ取得エラー: {e}")
 
-            self.logger.debug(
-                f"処理中: {file_name}{file_size} ({processed}/{total} - {percentage}%)"
-            )
+            self.logger.debug(f"処理中: {file_name}{file_size} ({processed}/{total} - {percentage}%)")
         elif stage == "scanning":
             self.logger.debug(f"スキャン進捗: {message}")
         elif stage == "indexing":

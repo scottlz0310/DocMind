@@ -7,10 +7,10 @@ Phase5テスト実行スクリプト
 - 統合テスト: コンポーネント間の接続確認のみ
 """
 
+from pathlib import Path
 import subprocess
 import sys
 import time
-from pathlib import Path
 
 
 def run_command(command: list, description: str) -> bool:
@@ -26,9 +26,7 @@ def run_command(command: list, description: str) -> bool:
             else:
                 command[0] = "python"
 
-        result = subprocess.run(
-            command, capture_output=True, text=True, cwd=Path(__file__).parent
-        )
+        result = subprocess.run(command, check=False, capture_output=True, text=True, cwd=Path(__file__).parent)
 
         time.time() - start_time
 

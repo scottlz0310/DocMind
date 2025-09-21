@@ -78,7 +78,7 @@ Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Fil
 Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "InstallPath"; ValueData: "{app}"; Flags: uninsdeletekey
 Root: HKLM; Subkey: "Software\{#MyAppPublisher}\{#MyAppName}"; ValueType: string; ValueName: "Version"; ValueData: "{#MyAppVersion}"; Flags: uninsdeletekey
 
-; ファイル関連付け（オプション）
+; ファイル関連付け(オプション)
 Root: HKCR; Subkey: ".docmind"; ValueType: string; ValueName: ""; ValueData: "DocMindProject"; Flags: uninsdeletevalue; Tasks: associate
 Root: HKCR; Subkey: "DocMindProject"; ValueType: string; ValueName: ""; ValueData: "DocMind Project File"; Flags: uninsdeletekey; Tasks: associate
 Root: HKCR; Subkey: "DocMindProject\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\{#MyAppExeName},0"; Tasks: associate
@@ -118,7 +118,7 @@ begin
     Exit;
   end;
   
-  // .NET Framework 4.8以降の確認（PySide6の要件）
+  // .NET Framework 4.8以降の確認(PySide6の要件)
   if not RegKeyExists(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full') then
   begin
     if MsgBox('.NET Framework 4.8以降が必要です。インストールを続行しますか？', mbConfirmation, MB_YESNO) = IDNO then
@@ -128,7 +128,7 @@ begin
     end;
   end;
   
-  // 利用可能ディスク容量のチェック（最低2GB）
+  // 利用可能ディスク容量のチェック(最低2GB)
   if GetSpaceOnDisk(ExtractFileDrive(ExpandConstant('{app}')), False, nil, nil, nil) < 2147483648 then
   begin
     MsgBox('インストールには最低2GBの空きディスク容量が必要です。', mbError, MB_OK);
@@ -180,7 +180,7 @@ begin
   // ユーザーデータの削除確認
   if DirExists(ExpandConstant('{userappdata}\{#MyAppName}')) then
   begin
-    if MsgBox('ユーザーデータ（設定、ログ、インデックス）も削除しますか？' + #13#10 + 
+    if MsgBox('ユーザーデータ(設定、ログ、インデックス)も削除しますか？' + #13#10 + 
               '削除しない場合、再インストール時に設定が復元されます。', 
               mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
     begin
@@ -189,7 +189,7 @@ begin
   end;
 end;
 
-// カスタムページの追加（設定オプション）
+// カスタムページの追加(設定オプション)
 var
   ConfigPage: TInputOptionWizardPage;
 
@@ -203,7 +203,7 @@ begin
     
   ConfigPage.Add('初回起動時に自動的にドキュメントフォルダをスキャン');
   ConfigPage.Add('Windows起動時にDocMindを自動起動');
-  ConfigPage.Add('使用統計の匿名収集に協力（プライバシーは保護されます）');
+  ConfigPage.Add('使用統計の匿名収集に協力(プライバシーは保護されます)');
   
   // デフォルト値の設定
   ConfigPage.Values[0] := True;
@@ -227,7 +227,7 @@ begin
       try
         ConfigContent.LoadFromFile(ConfigFile);
         
-        // 設定の適用（簡易的なJSON更新）
+        // 設定の適用(簡易的なJSON更新)
         if ConfigPage.Values[0] then
         begin
           // 自動スキャン設定

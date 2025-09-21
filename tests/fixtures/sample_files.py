@@ -5,8 +5,8 @@
 """
 
 import os
-import tempfile
 from pathlib import Path
+import tempfile
 
 import pytest
 
@@ -152,9 +152,7 @@ def sample_large_file(sample_files_dir):
     # 10,000行の大きなファイルを作成
     with open(large_file, "w", encoding="utf-8") as f:
         for i in range(10000):
-            f.write(
-                f"これは{i}行目のテストデータです。検索機能のパフォーマンステスト用。\n"
-            )
+            f.write(f"これは{i}行目のテストデータです。検索機能のパフォーマンステスト用。\n")
 
     return large_file
 

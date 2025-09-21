@@ -6,8 +6,8 @@
 詳細な検索条件設定機能を提供します。
 """
 
-import logging
 from datetime import datetime
+import logging
 from typing import Any
 
 from PySide6.QtCore import QDate, Qt, Signal
@@ -235,9 +235,7 @@ class AdvancedSearchOptions(QGroupBox):
         """現在の検索オプションを取得"""
         # 選択されたファイルタイプ
         selected_file_types = [
-            file_type
-            for file_type, checkbox in self.file_type_checkboxes.items()
-            if checkbox.isChecked()
+            file_type for file_type, checkbox in self.file_type_checkboxes.items() if checkbox.isChecked()
         ]
 
         # 日付範囲
@@ -246,7 +244,7 @@ class AdvancedSearchOptions(QGroupBox):
         if self.date_filter_enabled.isChecked():
             date_from = self.date_from.date().toPython()
             date_to = self.date_to.date().toPython()
-            # 時刻を設定（開始日は00:00:00、終了日は23:59:59）
+            # 時刻を設定(開始日は00:00:00、終了日は23:59:59)
             date_from = datetime.combine(date_from, datetime.min.time())
             date_to = datetime.combine(date_to, datetime.max.time())
 

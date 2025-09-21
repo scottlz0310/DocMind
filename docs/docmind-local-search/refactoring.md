@@ -62,7 +62,7 @@
 - **main_window.py**: 3,605行 → 395行 (89.0%削減)
 - **search_interface.py**: 1,504行 → 215行 (85.7%削減)
 - **folder_tree.py**: 2,000行以上 → 656行 (67%以上削減)
-- **メソッド数**: 大幅削減（main_window.py: 112個 → 45個）
+- **メソッド数**: 大幅削減(main_window.py: 112個 → 45個)
 - **品質保証**: 全コンポーネント正常動作確認済み
 - **アーキテクチャ**: 完全な責務分離・保守性・拡張性確保
 
@@ -151,7 +151,7 @@ git checkout -b refactor/search-interface-phase2-v2
 
 ### Phase1成果の保護
 ```bash
-# Phase1成果は保護済み（mainブランチにマージ済み）
+# Phase1成果は保護済み(mainブランチにマージ済み)
 # Phase2作業はPhase1成果を基盤として実施
 git checkout -b refactor/search-interface-phase2
 ```
@@ -163,22 +163,22 @@ git checkout -b refactor/search-interface-phase2
 ## 成功指標
 
 ### Phase1-4達成済み指標
-- ✅ main_window.py: 3,605行 → 395行（89.0%削減）
-- ✅ search_interface.py: 1,504行 → 215行（85.7%削減）
+- ✅ main_window.py: 3,605行 → 395行(89.0%削減)
+- ✅ search_interface.py: 1,504行 → 215行(85.7%削減)
 - ✅ folder_tree関連: 大幅な責務分離完了
-- ✅ メソッド数: 大幅削減（main_window.py: 112個 → 45個）
+- ✅ メソッド数: 大幅削減(main_window.py: 112個 → 45個)
 - ✅ 全機能正常動作確認
-- ✅ 品質保証完了（メモリ効率・起動時間・依存関係）
+- ✅ 品質保証完了(メモリ効率・起動時間・依存関係)
 - ✅ 完全な責務分離アーキテクチャ確立
 
 ### Phase5目標指標
-- preview_widget.py: 747行 → 300行以下（60%削減）
-- search_results.py: 756行 → 300行以下（60%削減）
-- settings_dialog.py: 598行 → 250行以下（58%削減）
-- error_dialog.py: 434行 → 200行以下（54%削減）
+- preview_widget.py: 747行 → 300行以下(60%削減)
+- search_results.py: 756行 → 300行以下(60%削減)
+- settings_dialog.py: 598行 → 250行以下(58%削減)
+- error_dialog.py: 434行 → 200行以下(54%削減)
 
-### 全体目標（2025-2026年）
-- 巨大ファイル完全解消（500行以下）
+### 全体目標(2025-2026年)
+- 巨大ファイル完全解消(500行以下)
 - テスト実行時間: 30%短縮
 - 新機能追加時間: 50%短縮
 - コードの可読性・保守性・テスト容易性向上

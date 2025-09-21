@@ -51,7 +51,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             processing_time = statistics.get("processing_time", 0.0)
 
             if files_processed == 0 and files_failed == 0:
-                return "インデックス処理完了（処理対象ファイルなし）"
+                return "インデックス処理完了(処理対象ファイルなし)"
 
             success_rate = (
                 (files_processed / (files_processed + files_failed)) * 100
@@ -68,9 +68,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             self.logger.warning(f"完了メッセージのフォーマットに失敗: {e}")
             return "インデックス処理完了"
 
-    def format_detailed_completion_message(
-        self, folder_name: str, statistics: dict[str, Any]
-    ) -> str:
+    def format_detailed_completion_message(self, folder_name: str, statistics: dict[str, Any]) -> str:
         """
         詳細な完了メッセージをフォーマット
 
@@ -91,9 +89,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
                 return f"✅ {folder_name}: 処理対象ファイルなし"
 
             total_files = files_processed + files_failed
-            success_rate = (
-                (files_processed / total_files) * 100 if total_files > 0 else 0
-            )
+            success_rate = (files_processed / total_files) * 100 if total_files > 0 else 0
 
             if files_failed == 0:
                 return f"✅ {folder_name}: {files_processed}ファイル処理完了 ({processing_time:.1f}秒)"
@@ -104,9 +100,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             self.logger.warning(f"完了メッセージのフォーマットに失敗: {e}")
             return f"✅ {folder_name}: インデックス処理完了"
 
-    def update_system_info_with_progress(
-        self, folder_name: str, current: int, total: int, percentage: int
-    ) -> None:
+    def update_system_info_with_progress(self, folder_name: str, current: int, total: int, percentage: int) -> None:
         """
         システム情報を進捗情報で更新
 
@@ -119,20 +113,13 @@ class ProgressSystemManager(QObject, LoggerMixin):
         try:
             # アクティブなスレッド数を取得
             active_threads = 0
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
-                active_threads = (
-                    self.main_window.thread_manager.get_active_thread_count()
-                )
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
+                active_threads = self.main_window.thread_manager.get_active_thread_count()
 
             # インデックス済みフォルダ数を取得
             indexed_count = 0
             if hasattr(self.main_window, "folder_tree_container"):
-                indexed_count = len(
-                    self.main_window.folder_tree_container.get_indexed_folders()
-                )
+                indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
 
             if total > 0:
                 # 定進捗の場合
@@ -185,7 +172,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             elif "処理中:" in message:
                 # ファイル名を抽出して短縮表示
                 if total > 0:
-                    # ファイル名を抽出（"処理中: filename.pdf" の形式から）
+                    # ファイル名を抽出("処理中: filename.pdf" の形式から)
                     if ":" in message:
                         file_part = message.split(":", 1)[1].strip()
                         # ファイル名が長い場合は短縮
@@ -207,12 +194,11 @@ class ProgressSystemManager(QObject, LoggerMixin):
                 return f"✅ {message}"
             elif "エラー" in message:
                 return f"❌ {message}"
+            # その他のメッセージ
+            elif total > 0:
+                return f"⚙️ {message} ({current}/{total} - {percentage}%)"
             else:
-                # その他のメッセージ
-                if total > 0:
-                    return f"⚙️ {message} ({current}/{total} - {percentage}%)"
-                else:
-                    return f"⚙️ {message}"
+                return f"⚙️ {message}"
 
         except Exception as e:
             self.logger.warning(f"進捗メッセージのフォーマットに失敗: {e}")
@@ -229,18 +215,11 @@ class ProgressSystemManager(QObject, LoggerMixin):
         try:
             indexed_count = 0
             if hasattr(self.main_window, "folder_tree_container"):
-                indexed_count = len(
-                    self.main_window.folder_tree_container.get_indexed_folders()
-                )
+                indexed_count = len(self.main_window.folder_tree_container.get_indexed_folders())
 
             active_threads = 0
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
-                active_threads = (
-                    self.main_window.thread_manager.get_active_thread_count()
-                )
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
+                active_threads = self.main_window.thread_manager.get_active_thread_count()
 
             if active_threads > 0:
                 info_text = f"インデックス: {indexed_count}フォルダ, 処理中: {active_threads}スレッド"
@@ -254,13 +233,11 @@ class ProgressSystemManager(QObject, LoggerMixin):
             if hasattr(self.main_window, "update_system_info"):
                 self.main_window.update_system_info("システム情報取得中...")
 
-    def handle_rebuild_progress(
-        self, thread_id: str, message: str, current: int, total: int
-    ) -> None:
+    def handle_rebuild_progress(self, thread_id: str, message: str, current: int, total: int) -> None:
         """
         インデックス再構築専用の進捗更新処理
 
-        段階別進捗メッセージ（スキャン、処理、インデックス、完了）を提供し、
+        段階別進捗メッセージ(スキャン、処理、インデックス、完了)を提供し、
         既存のshow_progress、update_progress、hide_progressメソッドを活用します。
 
         Args:
@@ -275,10 +252,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             folder_name = "不明"
             folder_path = ""
 
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
                 thread_info = self.main_window.thread_manager.get_thread_info(thread_id)
                 if thread_info:
                     folder_path = thread_info.folder_path
@@ -288,65 +262,52 @@ class ProgressSystemManager(QObject, LoggerMixin):
             stage = self._determine_rebuild_stage(message, current, total)
 
             # 段階別進捗メッセージを生成
-            formatted_message = self._format_rebuild_progress_message(
-                stage, message, folder_name, current, total
-            )
+            formatted_message = self._format_rebuild_progress_message(stage, message, folder_name, current, total)
 
             # 進捗表示を更新
             if stage == "scanning":
-                # スキャン段階：不定進捗
+                # スキャン段階:不定進捗
                 if hasattr(self.main_window, "show_progress"):
                     self.main_window.show_progress(formatted_message, 0)
                 self.logger.info(f"インデックス再構築 - スキャン段階: {folder_name}")
 
             elif stage == "processing":
-                # 処理段階：定進捗
+                # 処理段階:定進捗
                 if total > 0:
                     percentage = min(100, max(0, int((current / total) * 100)))
                     if hasattr(self.main_window, "show_progress"):
-                        self.main_window.show_progress(
-                            formatted_message, percentage, current, total
-                        )
+                        self.main_window.show_progress(formatted_message, percentage, current, total)
 
                     # 処理完了に近い場合は次の段階への準備
                     if current >= total:
                         # 全ファイル処理完了、インデックス作成段階へ移行
                         indexing_message = f"[{folder_name}] 🔍 インデックスを作成中... ({current}ファイル処理済み)"
                         if hasattr(self.main_window, "show_progress"):
-                            self.main_window.show_progress(
-                                indexing_message, 0
-                            )  # 不定進捗でインデックス作成
-                        self.logger.info(
-                            f"インデックス再構築 - ファイル処理完了、インデックス作成開始: {folder_name}"
-                        )
-                else:
-                    if hasattr(self.main_window, "show_progress"):
-                        self.main_window.show_progress(formatted_message, 0)
+                            self.main_window.show_progress(indexing_message, 0)  # 不定進捗でインデックス作成
+                        self.logger.info(f"インデックス再構築 - ファイル処理完了、インデックス作成開始: {folder_name}")
+                elif hasattr(self.main_window, "show_progress"):
+                    self.main_window.show_progress(formatted_message, 0)
 
                 # 処理中のファイル情報をログに記録
                 if "処理中:" in message:
                     self.logger.debug(f"インデックス再構築 - 処理中: {message}")
 
             elif stage == "indexing":
-                # インデックス段階：不定進捗（インデックス作成中）
+                # インデックス段階:不定進捗(インデックス作成中)
                 if hasattr(self.main_window, "show_progress"):
                     self.main_window.show_progress(formatted_message, 0)
-                self.logger.info(
-                    f"インデックス再構築 - インデックス作成段階: {folder_name}"
-                )
+                self.logger.info(f"インデックス再構築 - インデックス作成段階: {folder_name}")
 
             elif stage == "completed":
-                # 完了段階：100%進捗で一時的に表示
+                # 完了段階:100%進捗で一時的に表示
                 if hasattr(self.main_window, "show_progress"):
-                    self.main_window.show_progress(
-                        formatted_message, 100, current, total
-                    )
+                    self.main_window.show_progress(formatted_message, 100, current, total)
                 self.logger.info(f"インデックス再構築 - 完了段階: {folder_name}")
 
                 # 完了メッセージを少し表示してから、実際の完了処理は _on_thread_finished で行う
-                # ここでは進捗バーを非表示にしない（_on_thread_finished で処理）
+                # ここでは進捗バーを非表示にしない(_on_thread_finished で処理)
 
-            # システム情報を更新（再構築専用の情報を含む）
+            # システム情報を更新(再構築専用の情報を含む)
             self._update_rebuild_system_info(folder_name, stage, current, total)
 
             # ステータスメッセージを更新
@@ -364,9 +325,8 @@ class ProgressSystemManager(QObject, LoggerMixin):
             if total > 0:
                 if hasattr(self.main_window, "update_progress"):
                     self.main_window.update_progress(current, total, fallback_message)
-            else:
-                if hasattr(self.main_window, "set_progress_indeterminate"):
-                    self.main_window.set_progress_indeterminate(fallback_message)
+            elif hasattr(self.main_window, "set_progress_indeterminate"):
+                self.main_window.set_progress_indeterminate(fallback_message)
 
     def _determine_rebuild_stage(self, message: str, current: int, total: int) -> str:
         """
@@ -387,9 +347,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             return "scanning"
         elif "処理中:" in message or "processing" in message_lower:
             return "processing"
-        elif "インデックス" in message and (
-            "作成" in message or "creating" in message_lower
-        ):
+        elif "インデックス" in message and ("作成" in message or "creating" in message_lower):
             return "indexing"
         elif current > 0 and total > 0 and current >= total:
             return "completed"
@@ -451,9 +409,7 @@ class ProgressSystemManager(QObject, LoggerMixin):
             # フォールバック
             return f"{folder_prefix}{original_message}"
 
-    def _update_rebuild_system_info(
-        self, folder_name: str, stage: str, current: int, total: int
-    ) -> None:
+    def _update_rebuild_system_info(self, folder_name: str, stage: str, current: int, total: int) -> None:
         """
         インデックス再構築用のシステム情報を更新
 
@@ -466,13 +422,8 @@ class ProgressSystemManager(QObject, LoggerMixin):
         try:
             # アクティブなスレッド数を取得
             active_threads = 0
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
-                active_threads = (
-                    self.main_window.thread_manager.get_active_thread_count()
-                )
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
+                active_threads = self.main_window.thread_manager.get_active_thread_count()
 
             # 段階別のシステム情報を生成
             if stage == "scanning":
@@ -485,14 +436,10 @@ class ProgressSystemManager(QObject, LoggerMixin):
                         f"アクティブ: {active_threads}スレッド"
                     )
                 else:
-                    system_info = (
-                        f"インデックス再構築: {folder_name} (処理中) | "
-                        f"アクティブ: {active_threads}スレッド"
-                    )
+                    system_info = f"インデックス再構築: {folder_name} (処理中) | アクティブ: {active_threads}スレッド"
             elif stage == "indexing":
                 system_info = (
-                    f"インデックス再構築: {folder_name} (インデックス作成中) | "
-                    f"アクティブ: {active_threads}スレッド"
+                    f"インデックス再構築: {folder_name} (インデックス作成中) | アクティブ: {active_threads}スレッド"
                 )
             elif stage == "completed":
                 system_info = (
@@ -509,6 +456,4 @@ class ProgressSystemManager(QObject, LoggerMixin):
             self.logger.error(f"再構築システム情報更新中にエラーが発生: {e}")
             # エラーが発生してもシステム情報は基本情報を表示
             if hasattr(self.main_window, "update_system_info"):
-                self.main_window.update_system_info(
-                    f"インデックス再構築: エラー - {str(e)[:30]}..."
-                )
+                self.main_window.update_system_info(f"インデックス再構築: エラー - {str(e)[:30]}...")

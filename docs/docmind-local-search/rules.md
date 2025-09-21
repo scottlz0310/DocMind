@@ -1,5 +1,5 @@
 
-# AI開発標準ルールまとめ（rules.md）
+# AI開発標準ルールまとめ(rules.md)
 
 ## 1. 日本語での応答・ドキュメント・コメント
 - AIは日本語で応答すること。
@@ -17,7 +17,7 @@
 ## 4. Linter関係
 - PEP8に準拠したスタイルを維持する。
 - `.flake8` や `pyproject.toml` にルールを明記。
-- 自動整形ツール（例：black, isort, ruff）を活用。
+- 自動整形ツール(例：black, isort, ruff)を活用。
 
 ## 5. Test関係
 - テストはpytestを使う。

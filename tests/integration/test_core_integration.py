@@ -4,9 +4,9 @@
 IndexManager・SearchManager・EmbeddingManager・ConfigManagerの連携テスト
 """
 
+from pathlib import Path
 import shutil
 import tempfile
-from pathlib import Path
 
 import pytest
 
@@ -41,9 +41,7 @@ class TestCoreIntegration:
     def integrated_system(self, temp_workspace):
         """統合システム"""
         config = Config(str(temp_workspace["config"]))
-        embedding_manager = EmbeddingManager(
-            embeddings_path=str(temp_workspace["cache"] / "embeddings.pkl")
-        )
+        embedding_manager = EmbeddingManager(embeddings_path=str(temp_workspace["cache"] / "embeddings.pkl"))
         index_manager = IndexManager(str(temp_workspace["index"]))
         search_manager = SearchManager(index_manager, embedding_manager, config)
 
@@ -105,9 +103,7 @@ class TestCoreIntegration:
         # 3. 検索実行
         from src.data.models import SearchQuery, SearchType
 
-        query = SearchQuery(
-            query_text="機械学習", search_type=SearchType.HYBRID, limit=10
-        )
+        query = SearchQuery(query_text="機械学習", search_type=SearchType.HYBRID, limit=10)
         search_result = system["search"].search(query)
 
         # 4. 結果検証
@@ -317,7 +313,7 @@ class TestCoreIntegration:
         # Whooshインデックスは並行書き込みに完全に対応していないため、
         # 一定のエラーは許容する
         success_rate = sum(results) / len(results)
-        assert success_rate >= 0.5  # 50%以上の成功率（並行書き込みの制約を考慮）
+        assert success_rate >= 0.5  # 50%以上の成功率(並行書き込みの制約を考慮)
 
     def test_system_recovery_after_failure(self, integrated_system, temp_workspace):
         """システム障害後復旧テスト"""
@@ -353,15 +349,11 @@ class TestCoreIntegration:
         # Configは初期化時に自動的に設定ファイルを読み込み
         new_system = {
             "config": Config(str(temp_workspace["config"])),
-            "embedding": EmbeddingManager(
-                embeddings_path=str(temp_workspace["cache"] / "embeddings.pkl")
-            ),
+            "embedding": EmbeddingManager(embeddings_path=str(temp_workspace["cache"] / "embeddings.pkl")),
             "index": IndexManager(str(temp_workspace["index"])),
         }
 
-        new_system["search"] = SearchManager(
-            new_system["index"], new_system["embedding"], new_system["config"]
-        )
+        new_system["search"] = SearchManager(new_system["index"], new_system["embedding"], new_system["config"])
 
         # 復旧後の動作確認
         from src.data.models import SearchQuery, SearchType
@@ -380,7 +372,7 @@ class TestCoreIntegration:
 
         system = integrated_system
 
-        # 大量データ追加（テスト用に数を減らした）
+        # 大量データ追加(テスト用に数を減らした)
         start_time = time.time()
 
         for i in range(100):
@@ -424,7 +416,7 @@ class TestCoreIntegration:
 
             assert len(result) > 0
 
-        # パフォーマンス検証（軽量化されたテスト用）
+        # パフォーマンス検証(軽量化されたテスト用)
         assert indexing_time < 30.0  # 30秒以内
         assert max(search_times) < 5.0  # 最大5秒以内
         assert sum(search_times) / len(search_times) < 2.0  # 平均2秒以内

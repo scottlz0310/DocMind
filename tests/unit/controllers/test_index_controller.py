@@ -5,8 +5,8 @@ IndexControllerのユニットテスト
 
 from unittest.mock import Mock, patch
 
-import pytest
 from PySide6.QtWidgets import QMessageBox
+import pytest
 
 from src.gui.controllers.index_controller import IndexController
 
@@ -51,9 +51,7 @@ class TestIndexController:
             def rebuild_index():
                 if not mock_main_window.dialog_manager.show_rebuild_confirmation_dialog():
                     return
-                folder_path = (
-                    mock_main_window.folder_tree_container.get_selected_folder()
-                )
+                folder_path = mock_main_window.folder_tree_container.get_selected_folder()
                 if not folder_path:
                     mock_main_window.dialog_manager.show_folder_not_selected_dialog()
                     return
@@ -63,9 +61,7 @@ class TestIndexController:
                 if thread_id:
                     mock_main_window.timeout_manager.start_timeout(thread_id)
                 else:
-                    mock_main_window.hide_progress(
-                        "インデックス再構築の開始に失敗しました"
-                    )
+                    mock_main_window.hide_progress("インデックス再構築の開始に失敗しました")
                     mock_main_window.dialog_manager.show_operation_failed_dialog()
 
             def clear_index():
@@ -80,9 +76,7 @@ class TestIndexController:
 
             def start_indexing_process(folder_path):
                 if not mock_main_window.document_processor:
-                    mock_main_window.show_status_message(
-                        "エラー: ドキュメントプロセッサーが利用できません", 5000
-                    )
+                    mock_main_window.show_status_message("エラー: ドキュメントプロセッサーが利用できません", 5000)
                     return
                 mock_main_window.thread_manager.start_indexing_thread(
                     folder_path=folder_path,
@@ -97,14 +91,10 @@ class TestIndexController:
                 controller.update_system_info_after_rebuild(statistics)
                 controller.update_folder_tree_after_rebuild(thread_id, statistics)
                 files_processed = statistics.get("files_processed", 0)
-                mock_main_window.show_status_message(
-                    f"インデックス再構築完了 ({files_processed}ファイル処理)", 5000
-                )
+                mock_main_window.show_status_message(f"インデックス再構築完了 ({files_processed}ファイル処理)", 5000)
 
             def handle_rebuild_timeout(thread_id):
-                result = mock_main_window.dialog_manager.show_improved_timeout_dialog(
-                    thread_id
-                )
+                result = mock_main_window.dialog_manager.show_improved_timeout_dialog(thread_id)
                 # QMessageBox.Yesの代わりに数値を使用
                 if result == 16384:  # QMessageBox.Yesの値
                     controller.force_stop_rebuild(thread_id)
@@ -114,9 +104,7 @@ class TestIndexController:
                 thread_info = mock_main_window.thread_manager.get_thread_info(thread_id)
                 error_type = controller._analyze_error_type(error_message)
                 if error_type == "file_access":
-                    controller._handle_file_access_error(
-                        thread_id, error_message, thread_info
-                    )
+                    controller._handle_file_access_error(thread_id, error_message, thread_info)
                 controller._perform_error_cleanup(thread_id, error_type, thread_info)
 
             # メソッドをコントローラーにアタッチ
@@ -151,12 +139,8 @@ class TestIndexController:
         """インデックス再構築成功のテスト"""
         # ダイアログマネージャーの設定
         mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = True
-        mock_main_window.folder_tree_container.get_selected_folder.return_value = (
-            "/test/folder"
-        )
-        mock_main_window.thread_manager.start_indexing_thread.return_value = (
-            "thread_123"
-        )
+        mock_main_window.folder_tree_container.get_selected_folder.return_value = "/test/folder"
+        mock_main_window.thread_manager.start_indexing_thread.return_value = "thread_123"
 
         index_controller.rebuild_index()
 
@@ -170,17 +154,13 @@ class TestIndexController:
         mock_main_window.index_manager.clear_index.assert_called_once()
 
         # 進捗表示の確認
-        mock_main_window.show_progress.assert_called_once_with(
-            "インデックスを再構築中...", 0
-        )
+        mock_main_window.show_progress.assert_called_once_with("インデックスを再構築中...", 0)
 
         # スレッド開始の確認
         mock_main_window.thread_manager.start_indexing_thread.assert_called_once()
 
         # タイムアウト監視開始の確認
-        mock_main_window.timeout_manager.start_timeout.assert_called_once_with(
-            "thread_123"
-        )
+        mock_main_window.timeout_manager.start_timeout.assert_called_once_with("thread_123")
 
     def test_rebuild_index_cancelled(self, index_controller, mock_main_window):
         """インデックス再構築キャンセルのテスト"""
@@ -209,15 +189,11 @@ class TestIndexController:
         # インデックスクリアは呼ばれないことを確認
         mock_main_window.index_manager.clear_index.assert_not_called()
 
-    def test_rebuild_index_thread_start_failed(
-        self, index_controller, mock_main_window
-    ):
+    def test_rebuild_index_thread_start_failed(self, index_controller, mock_main_window):
         """スレッド開始失敗のテスト"""
         # ダイアログマネージャーの設定
         mock_main_window.dialog_manager.show_rebuild_confirmation_dialog.return_value = True
-        mock_main_window.folder_tree_container.get_selected_folder.return_value = (
-            "/test/folder"
-        )
+        mock_main_window.folder_tree_container.get_selected_folder.return_value = "/test/folder"
         mock_main_window.thread_manager.start_indexing_thread.return_value = None
         mock_main_window.thread_manager.get_active_thread_count.return_value = 2
         mock_main_window.thread_manager.max_concurrent_threads = 2
@@ -225,9 +201,7 @@ class TestIndexController:
         index_controller.rebuild_index()
 
         # 進捗非表示の確認
-        mock_main_window.hide_progress.assert_called_once_with(
-            "インデックス再構築の開始に失敗しました"
-        )
+        mock_main_window.hide_progress.assert_called_once_with("インデックス再構築の開始に失敗しました")
 
         # エラーダイアログが表示されることを確認
         mock_main_window.dialog_manager.show_operation_failed_dialog.assert_called_once()
@@ -243,9 +217,7 @@ class TestIndexController:
         mock_main_window.dialog_manager.show_clear_index_confirmation_dialog.assert_called_once()
 
         # 進捗表示の確認
-        mock_main_window.show_progress.assert_called_once_with(
-            "インデックスをクリア中...", 0
-        )
+        mock_main_window.show_progress.assert_called_once_with("インデックスをクリア中...", 0)
 
         # インデックスクリアの確認
         mock_main_window.index_manager.clear_index.assert_called_once()
@@ -260,9 +232,7 @@ class TestIndexController:
         mock_main_window.search_manager.clear_suggestion_cache.assert_called_once()
 
         # 進捗非表示の確認
-        mock_main_window.hide_progress.assert_called_once_with(
-            "インデックスクリアが完了しました"
-        )
+        mock_main_window.hide_progress.assert_called_once_with("インデックスクリアが完了しました")
 
     def test_clear_index_cancelled(self, index_controller, mock_main_window):
         """インデックスクリアキャンセルのテスト"""
@@ -280,9 +250,7 @@ class TestIndexController:
     def test_start_indexing_process_success(self, index_controller, mock_main_window):
         """インデックス処理開始成功のテスト"""
         # 必要なコンポーネントが存在することを設定
-        mock_main_window.thread_manager.start_indexing_thread.return_value = (
-            "thread_456"
-        )
+        mock_main_window.thread_manager.start_indexing_thread.return_value = "thread_456"
 
         index_controller.start_indexing_process("/test/folder")
 
@@ -296,9 +264,7 @@ class TestIndexController:
         # ステータスメッセージの確認
         mock_main_window.show_status_message.assert_called()
 
-    def test_start_indexing_process_no_document_processor(
-        self, index_controller, mock_main_window
-    ):
+    def test_start_indexing_process_no_document_processor(self, index_controller, mock_main_window):
         """DocumentProcessorが存在しない場合のテスト"""
         mock_main_window.document_processor = None
 
@@ -324,38 +290,26 @@ class TestIndexController:
         index_controller.handle_rebuild_completed("thread_123", statistics)
 
         # タイムアウト監視キャンセルの確認
-        mock_main_window.timeout_manager.cancel_timeout.assert_called_once_with(
-            "thread_123"
-        )
+        mock_main_window.timeout_manager.cancel_timeout.assert_called_once_with("thread_123")
 
         # 検索提案キャッシュクリアの確認
         mock_main_window.search_manager.clear_suggestion_cache.assert_called_once()
 
         # システム情報更新の確認
-        index_controller.update_system_info_after_rebuild.assert_called_once_with(
-            statistics
-        )
+        index_controller.update_system_info_after_rebuild.assert_called_once_with(statistics)
 
         # フォルダツリー更新の確認
-        index_controller.update_folder_tree_after_rebuild.assert_called_once_with(
-            "thread_123", statistics
-        )
+        index_controller.update_folder_tree_after_rebuild.assert_called_once_with("thread_123", statistics)
 
         # ステータスメッセージの確認
-        mock_main_window.show_status_message.assert_called_with(
-            "インデックス再構築完了 (100ファイル処理)", 5000
-        )
+        mock_main_window.show_status_message.assert_called_with("インデックス再構築完了 (100ファイル処理)", 5000)
 
     @patch("src.gui.controllers.index_controller.QTimer")
     @patch("src.gui.controllers.index_controller.QMessageBox")
-    def test_handle_rebuild_timeout(
-        self, mock_msgbox, mock_timer, index_controller, mock_main_window
-    ):
+    def test_handle_rebuild_timeout(self, mock_msgbox, mock_timer, index_controller, mock_main_window):
         """インデックス再構築タイムアウト処理のテスト"""
         # ダイアログの戻り値を設定
-        mock_main_window.dialog_manager.show_improved_timeout_dialog.return_value = (
-            QMessageBox.Yes
-        )
+        mock_main_window.dialog_manager.show_improved_timeout_dialog.return_value = QMessageBox.Yes
 
         # force_stop_rebuildをモック化
         index_controller.force_stop_rebuild = Mock()
@@ -363,9 +317,7 @@ class TestIndexController:
         index_controller.handle_rebuild_timeout("thread_123")
 
         # タイムアウトダイアログが表示されることを確認
-        mock_main_window.dialog_manager.show_improved_timeout_dialog.assert_called_once_with(
-            "thread_123"
-        )
+        mock_main_window.dialog_manager.show_improved_timeout_dialog.assert_called_once_with("thread_123")
 
         # 強制停止が呼ばれることを確認
         index_controller.force_stop_rebuild.assert_called_once_with("thread_123")
@@ -388,14 +340,10 @@ class TestIndexController:
         index_controller.force_stop_rebuild("thread_123")
 
         # スレッド停止の確認
-        mock_main_window.thread_manager.stop_thread.assert_called_once_with(
-            "thread_123"
-        )
+        mock_main_window.thread_manager.stop_thread.assert_called_once_with("thread_123")
 
         # タイムアウト監視キャンセルの確認
-        mock_main_window.timeout_manager.cancel_timeout.assert_called_once_with(
-            "thread_123"
-        )
+        mock_main_window.timeout_manager.cancel_timeout.assert_called_once_with("thread_123")
 
         # インデックスクリアの確認
         mock_main_window.index_manager.clear_index.assert_called_once()
@@ -404,9 +352,7 @@ class TestIndexController:
         mock_main_window.search_manager.clear_suggestion_cache.assert_called_once()
 
         # 進捗非表示の確認
-        mock_main_window.hide_progress.assert_called_once_with(
-            "インデックス再構築が中断されました"
-        )
+        mock_main_window.hide_progress.assert_called_once_with("インデックス再構築が中断されました")
 
         # 状態リセットの確認
         index_controller.reset_rebuild_state.assert_called_once()
@@ -426,9 +372,7 @@ class TestIndexController:
         index_controller.reset_rebuild_state()
 
         # システム情報ラベル更新の確認
-        mock_main_window.system_info_label.setText.assert_called_once_with(
-            "インデックス: 未作成"
-        )
+        mock_main_window.system_info_label.setText.assert_called_once_with("インデックス: 未作成")
 
         # 検索結果クリアの確認
         mock_main_window.search_results_widget.clear_results.assert_called_once()
@@ -454,14 +398,10 @@ class TestIndexController:
         index_controller.handle_rebuild_error("thread_123", "File not found error")
 
         # タイムアウト監視キャンセルの確認
-        mock_main_window.timeout_manager.cancel_timeout.assert_called_once_with(
-            "thread_123"
-        )
+        mock_main_window.timeout_manager.cancel_timeout.assert_called_once_with("thread_123")
 
         # エラータイプ分析の確認
-        index_controller._analyze_error_type.assert_called_once_with(
-            "File not found error"
-        )
+        index_controller._analyze_error_type.assert_called_once_with("File not found error")
 
         # ファイルアクセスエラー処理の確認
         index_controller._handle_file_access_error.assert_called_once_with(
@@ -469,9 +409,7 @@ class TestIndexController:
         )
 
         # エラークリーンアップの確認
-        index_controller._perform_error_cleanup.assert_called_once_with(
-            "thread_123", "file_access", thread_info
-        )
+        index_controller._perform_error_cleanup.assert_called_once_with("thread_123", "file_access", thread_info)
 
     def test_analyze_error_type(self, index_controller):
         """エラータイプ分析のテスト"""
@@ -506,9 +444,7 @@ class TestIndexController:
         assert index_controller._analyze_error_type("unknown error") == "system"
 
     @patch("src.gui.controllers.index_controller.QMessageBox")
-    def test_handle_file_access_error(
-        self, mock_msgbox, index_controller, mock_main_window
-    ):
+    def test_handle_file_access_error(self, mock_msgbox, index_controller, mock_main_window):
         """ファイルアクセスエラー処理のテスト"""
         thread_info = Mock()
         thread_info.folder_path = "/test/folder"
@@ -522,9 +458,7 @@ class TestIndexController:
             )
 
         index_controller._handle_file_access_error = handle_file_access_error
-        index_controller._handle_file_access_error(
-            "thread_123", "File access error", thread_info
-        )
+        index_controller._handle_file_access_error("thread_123", "File access error", thread_info)
 
         # 警告ダイアログが表示されることを確認
         mock_msgbox.warning.assert_called_once()
@@ -538,9 +472,7 @@ class TestIndexController:
             mock_main_window.search_results_widget.clear_results()
             mock_main_window.preview_widget.clear_preview()
             mock_main_window.search_manager.clear_suggestion_cache()
-            mock_main_window.system_info_label.setText(
-                "インデックス: エラーによりクリア済み"
-            )
+            mock_main_window.system_info_label.setText("インデックス: エラーによりクリア済み")
 
         index_controller._cleanup_partial_index = cleanup_partial_index
         index_controller._cleanup_partial_index()

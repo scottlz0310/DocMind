@@ -51,14 +51,12 @@ class UISetupManager:
         self.tree_widget.setSortingEnabled(True)  # ソート機能を有効化
         self.tree_widget.sortByColumn(0, Qt.AscendingOrder)  # 名前順でソート
 
-        # ドラッグ&ドロップを無効化（今回は不要）
+        # ドラッグ&ドロップを無効化(今回は不要)
         self.tree_widget.setDragDropMode(QTreeWidget.NoDragDrop)
 
         # アクセシビリティ設定
         self.tree_widget.setAccessibleName("フォルダツリー")
-        self.tree_widget.setAccessibleDescription(
-            "検索対象フォルダの階層構造を表示します"
-        )
+        self.tree_widget.setAccessibleDescription("検索対象フォルダの階層構造を表示します")
 
         # スタイル設定
         self._apply_tree_styles()

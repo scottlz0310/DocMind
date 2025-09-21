@@ -37,7 +37,7 @@
   <!-- 文書の角の折り目 -->
   <path d="M 160 80 L 180 100 L 160 100 Z" fill="#E5E7EB"/>
   
-  <!-- AI知能の表現（脳のシンボル） -->
+  <!-- AI知能の表現(脳のシンボル) -->
   <g transform="translate(100, 110)">
     <!-- 脳の左半球 -->
     <path d="M 20 20 Q 15 30 15 40 Q 15 50 20 60 Q 25 70 30 65 Q 35 60 35 50 Q 35 40 30 35 Q 25 30 20 20 Z" 
@@ -50,13 +50,13 @@
     <!-- 脳の中央部分 -->
     <ellipse cx="30" cy="45" rx="8" ry="12" fill="url(#brainGradient)" opacity="0.6"/>
     
-    <!-- 知能の光（点） -->
+    <!-- 知能の光(点) -->
     <circle cx="25" cy="35" r="2" fill="#FFFFFF" opacity="0.8"/>
     <circle cx="35" cy="35" r="2" fill="#FFFFFF" opacity="0.8"/>
     <circle cx="30" cy="55" r="1.5" fill="#FFFFFF" opacity="0.6"/>
   </g>
   
-  <!-- 検索機能の表現（虫眼鏡） -->
+  <!-- 検索機能の表現(虫眼鏡) -->
   <g transform="translate(140, 150)">
     <!-- 虫眼鏡のレンズ -->
     <circle cx="0" cy="0" r="18" fill="none" stroke="url(#searchGradient)" stroke-width="3" opacity="0.8"/>
@@ -69,12 +69,12 @@
     <path d="M 15 -15 L 25 -25" stroke="url(#searchGradient)" stroke-width="2" opacity="0.6"/>
   </g>
   
-  <!-- 文書の内容（テキストライン） -->
+  <!-- 文書の内容(テキストライン) -->
   <rect x="70" y="180" width="60" height="2" rx="1" fill="#9CA3AF" opacity="0.7"/>
   <rect x="70" y="185" width="80" height="2" rx="1" fill="#9CA3AF" opacity="0.5"/>
   <rect x="70" y="190" width="50" height="2" rx="1" fill="#9CA3AF" opacity="0.6"/>
   
-  <!-- 装飾的な要素（小さな円） -->
+  <!-- 装飾的な要素(小さな円) -->
   <circle cx="85" cy="95" r="3" fill="#8B5CF6" opacity="0.6"/>
   <circle cx="175" cy="125" r="2" fill="#06B6D4" opacity="0.5"/>
   <circle cx="75" cy="200" r="2" fill="#10B981" opacity="0.4"/>

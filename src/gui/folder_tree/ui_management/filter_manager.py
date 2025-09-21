@@ -66,9 +66,7 @@ class FilterManager:
                 self._show_item_and_parents(item)
                 matched_count += 1
 
-        self.logger.debug(
-            f"フィルタリング完了: '{self.current_filter}' - {matched_count}件マッチ"
-        )
+        self.logger.debug(f"フィルタリング完了: '{self.current_filter}' - {matched_count}件マッチ")
 
     def clear_filter(self):
         """フィルターをクリアして全アイテムを表示します"""

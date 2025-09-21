@@ -100,30 +100,19 @@ class SignalManager(QObject, LoggerMixin):
         IndexingThreadManagerの各種シグナルを適切なハンドラーメソッドに接続し、
         インデックス再構築処理の状態変化を監視します。
         """
-        if (
-            hasattr(self.main_window, "thread_manager")
-            and self.main_window.thread_manager
-        ):
+        if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
             try:
                 # スレッド開始シグナル
-                self.main_window.thread_manager.thread_started.connect(
-                    self.main_window._on_thread_started
-                )
+                self.main_window.thread_manager.thread_started.connect(self.main_window._on_thread_started)
 
                 # スレッド完了シグナル
-                self.main_window.thread_manager.thread_finished.connect(
-                    self.main_window._on_thread_finished
-                )
+                self.main_window.thread_manager.thread_finished.connect(self.main_window._on_thread_finished)
 
                 # スレッドエラーシグナル
-                self.main_window.thread_manager.thread_error.connect(
-                    self.main_window._on_thread_error
-                )
+                self.main_window.thread_manager.thread_error.connect(self.main_window._on_thread_error)
 
-                # スレッド進捗シグナル（インデックス再構築専用）
-                self.main_window.thread_manager.thread_progress.connect(
-                    self.main_window._on_rebuild_progress
-                )
+                # スレッド進捗シグナル(インデックス再構築専用)
+                self.main_window.thread_manager.thread_progress.connect(self.main_window._on_rebuild_progress)
 
                 # マネージャー状態変更シグナル
                 self.main_window.thread_manager.manager_status_changed.connect(
@@ -144,19 +133,14 @@ class SignalManager(QObject, LoggerMixin):
         RebuildTimeoutManagerのタイムアウト発生シグナルを適切なハンドラーに接続し、
         長時間実行される再構築処理の監視を行います。
         """
-        if (
-            hasattr(self.main_window, "timeout_manager")
-            and self.main_window.timeout_manager
-        ):
+        if hasattr(self.main_window, "timeout_manager") and self.main_window.timeout_manager:
             try:
                 # タイムアウト発生シグナル
                 self.main_window.timeout_manager.timeout_occurred.connect(
                     self.main_window.index_controller.handle_rebuild_timeout
                 )
 
-                self.logger.debug(
-                    "タイムアウトマネージャーのシグナル接続が完了しました"
-                )
+                self.logger.debug("タイムアウトマネージャーのシグナル接続が完了しました")
 
             except Exception as e:
                 self.logger.error(f"タイムアウトマネージャーシグナル接続エラー: {e}")
@@ -186,10 +170,7 @@ class SignalManager(QObject, LoggerMixin):
         """インデックス再構築関連のシグナル接続を切断"""
         try:
             # スレッドマネージャーのシグナル切断
-            if (
-                hasattr(self.main_window, "thread_manager")
-                and self.main_window.thread_manager
-            ):
+            if hasattr(self.main_window, "thread_manager") and self.main_window.thread_manager:
                 signals_to_disconnect = [
                     ("thread_started", self.main_window._on_thread_started),
                     ("thread_finished", self.main_window._on_thread_finished),
@@ -212,17 +193,12 @@ class SignalManager(QObject, LoggerMixin):
                 self.logger.debug("スレッドマネージャーのシグナルを切断しました")
 
             # タイムアウトマネージャーのシグナル切断
-            if (
-                hasattr(self.main_window, "timeout_manager")
-                and self.main_window.timeout_manager
-            ):
+            if hasattr(self.main_window, "timeout_manager") and self.main_window.timeout_manager:
                 try:
                     self.main_window.timeout_manager.timeout_occurred.disconnect(
                         self.main_window._handle_rebuild_timeout
                     )
-                    self.logger.debug(
-                        "タイムアウトマネージャーのシグナルを切断しました"
-                    )
+                    self.logger.debug("タイムアウトマネージャーのシグナルを切断しました")
                 except (AttributeError, TypeError):
                     # シグナルが接続されていない場合は無視
                     pass
@@ -233,15 +209,12 @@ class SignalManager(QObject, LoggerMixin):
     def _disconnect_ui_signals(self) -> None:
         """UIコンポーネントのシグナル接続を切断"""
         try:
-            # メインウィンドウのシグナル切断（接続されているハンドラーがある場合のみ）
+            # メインウィンドウのシグナル切断(接続されているハンドラーがある場合のみ)
             # これらのシグナルは通常他のコンポーネントに接続されているため、
             # 全切断ではなく特定のハンドラーのみ切断する場合は個別に実装
 
             # フォルダツリーのシグナル切断
-            if (
-                hasattr(self.main_window, "folder_tree_container")
-                and self.main_window.folder_tree_container
-            ):
+            if hasattr(self.main_window, "folder_tree_container") and self.main_window.folder_tree_container:
                 ui_signals_to_disconnect = [
                     ("folder_selected", self.main_window._on_folder_selected),
                     ("folder_indexed", self.main_window._on_folder_indexed),
@@ -251,18 +224,13 @@ class SignalManager(QObject, LoggerMixin):
 
                 for signal_name, handler in ui_signals_to_disconnect:
                     try:
-                        signal = getattr(
-                            self.main_window.folder_tree_container, signal_name
-                        )
+                        signal = getattr(self.main_window.folder_tree_container, signal_name)
                         signal.disconnect(handler)
                     except (AttributeError, TypeError):
                         pass
 
             # 検索インターフェースのシグナル切断
-            if (
-                hasattr(self.main_window, "search_interface")
-                and self.main_window.search_interface
-            ):
+            if hasattr(self.main_window, "search_interface") and self.main_window.search_interface:
                 search_signals_to_disconnect = [
                     ("search_requested", self.main_window._on_search_requested),
                     ("search_cancelled", self.main_window._on_search_cancelled),
@@ -284,10 +252,7 @@ class SignalManager(QObject, LoggerMixin):
                     pass
 
             # 検索結果ウィジェットのシグナル切断
-            if (
-                hasattr(self.main_window, "search_results_widget")
-                and self.main_window.search_results_widget
-            ):
+            if hasattr(self.main_window, "search_results_widget") and self.main_window.search_results_widget:
                 result_signals_to_disconnect = [
                     ("result_selected", self.main_window._on_search_result_selected),
                     ("preview_requested", self.main_window._on_preview_requested),
@@ -298,18 +263,13 @@ class SignalManager(QObject, LoggerMixin):
 
                 for signal_name, handler in result_signals_to_disconnect:
                     try:
-                        signal = getattr(
-                            self.main_window.search_results_widget, signal_name
-                        )
+                        signal = getattr(self.main_window.search_results_widget, signal_name)
                         signal.disconnect(handler)
                     except (AttributeError, TypeError):
                         pass
 
             # プレビューウィジェットのシグナル切断
-            if (
-                hasattr(self.main_window, "preview_widget")
-                and self.main_window.preview_widget
-            ):
+            if hasattr(self.main_window, "preview_widget") and self.main_window.preview_widget:
                 preview_signals_to_disconnect = [
                     ("zoom_changed", self.main_window._on_preview_zoom_changed),
                     ("format_changed", self.main_window._on_preview_format_changed),

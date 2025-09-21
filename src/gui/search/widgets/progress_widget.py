@@ -5,8 +5,8 @@
 検索の進捗状況、キャンセル機能、実行時間表示を提供します。
 """
 
-import logging
 from datetime import datetime
+import logging
 
 from PySide6.QtCore import QTimer, Signal
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QProgressBar, QPushButton, QWidget

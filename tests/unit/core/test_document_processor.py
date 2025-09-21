@@ -6,9 +6,9 @@ Phase7強化版の内容を統合済み。
 """
 
 import os
+from pathlib import Path
 import tempfile
 import time
-from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
@@ -37,9 +37,7 @@ class TestDocumentProcessor:
         """サンプルテキストファイルを作成"""
         file_path = os.path.join(temp_dir, "sample.txt")
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(
-                "これはテスト用のテキストファイルです。\n検索機能のテストに使用します。"
-            )
+            f.write("これはテスト用のテキストファイルです。\n検索機能のテストに使用します。")
         return file_path
 
     @pytest.fixture
@@ -47,9 +45,7 @@ class TestDocumentProcessor:
         """サンプルMarkdownファイルを作成"""
         file_path = os.path.join(temp_dir, "sample.md")
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(
-                "# テストドキュメント\n\n## 概要\n\nこれはテスト用のMarkdownファイルです。"
-            )
+            f.write("# テストドキュメント\n\n## 概要\n\nこれはテスト用のMarkdownファイルです。")
         return file_path
 
     def test_initialization(self, processor):
@@ -195,7 +191,7 @@ class TestDocumentProcessor:
         """依存関係チェックテスト"""
         # _check_dependencies メソッドが正常に実行されることを確認
         processor._check_dependencies()
-        # エラーが発生しないことを確認（ログ出力のみ）
+        # エラーが発生しないことを確認(ログ出力のみ)
         assert True
 
     # Phase7統合: PDF処理精度テスト
@@ -266,9 +262,7 @@ class TestDocumentProcessor:
 
             assert "ヘッダー1" in result
             assert "データ1" in result
-            mock_load_workbook.assert_called_once_with(
-                xlsx_path, read_only=True, data_only=True
-            )
+            mock_load_workbook.assert_called_once_with(xlsx_path, read_only=True, data_only=True)
 
     # Phase7統合: パフォーマンステスト
     def test_large_file_processing_performance(self, processor, temp_dir):
@@ -355,9 +349,7 @@ class TestDocumentProcessor:
         start_time = time.time()
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            futures = [
-                executor.submit(process_file_wrapper, path) for path in file_paths
-            ]
+            futures = [executor.submit(process_file_wrapper, path) for path in file_paths]
             results = [future.result() for future in futures]
 
         end_time = time.time()

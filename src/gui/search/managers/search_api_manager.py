@@ -43,16 +43,12 @@ class SearchAPIManager(QObject):
         progress_widget.finish_search(message)
         search_controller.on_search_completed(results, execution_time)
 
-    def handle_search_error(
-        self, error_message: str, progress_widget, search_controller
-    ) -> None:
+    def handle_search_error(self, error_message: str, progress_widget, search_controller) -> None:
         """検索エラー時の処理"""
         progress_widget.finish_search("検索エラーが発生しました")
         search_controller.on_search_error(error_message)
 
-    def update_search_suggestions(
-        self, suggestions: list[str], search_input, ui_manager
-    ) -> None:
+    def update_search_suggestions(self, suggestions: list[str], search_input, ui_manager) -> None:
         """検索提案を更新"""
         ui_manager.update_search_suggestions(search_input, suggestions)
 
@@ -65,9 +61,7 @@ class SearchAPIManager(QObject):
         ui_manager,
     ) -> None:
         """検索履歴を更新"""
-        ui_manager.update_search_history(
-            history_widget, recent_searches, popular_searches, saved_searches
-        )
+        ui_manager.update_search_history(history_widget, recent_searches, popular_searches, saved_searches)
 
     def set_search_text(self, text: str, search_input) -> None:
         """検索テキストを設定"""
