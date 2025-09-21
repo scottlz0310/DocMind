@@ -16,23 +16,24 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-from PySide6.QtCore import QCoreApplication
-from PySide6.QtWidgets import QApplication, QMessageBox
+# sys.path操作後のインポート
+from PySide6.QtCore import QCoreApplication  # noqa: E402
+from PySide6.QtWidgets import QApplication, QMessageBox  # noqa: E402
 
-from src.utils.background_processor import initialize_task_manager
-from src.utils.cache_manager import initialize_cache_manager
-from src.utils.config import Config
-from src.utils.error_handler import (
+from src.utils.background_processor import initialize_task_manager  # noqa: E402
+from src.utils.cache_manager import initialize_cache_manager  # noqa: E402
+from src.utils.config import Config  # noqa: E402
+from src.utils.error_handler import (  # noqa: E402
     get_global_error_handler,
     setup_global_exception_handler,
 )
-from src.utils.graceful_degradation import (
+from src.utils.graceful_degradation import (  # noqa: E402
     get_global_degradation_manager,
     setup_component_monitoring,
 )
-from src.utils.logging_config import setup_logging
-from src.utils.memory_manager import initialize_memory_manager
-from src.utils.updater import UpdateManager
+from src.utils.logging_config import setup_logging  # noqa: E402
+from src.utils.memory_manager import initialize_memory_manager  # noqa: E402
+from src.utils.updater import UpdateManager  # noqa: E402
 
 
 def main():
@@ -173,7 +174,8 @@ def main():
                 "アプリケーションの起動に失敗しました。システム管理者にお問い合わせください。",
                 attempt_recovery=False,
             )
-        except:
+        except Exception:
+            # エラーハンドラーの初期化に失敗した場合は無視
             pass
 
         # ユーザーにエラーダイアログを表示

@@ -480,13 +480,25 @@ class ProgressSystemManager(QObject, LoggerMixin):
             elif stage == "processing":
                 if total > 0:
                     percentage = min(100, max(0, int((current / total) * 100)))
-                    system_info = f"インデックス再構築: {folder_name} ({current}/{total} - {percentage}%) | アクティブ: {active_threads}スレッド"
+                    system_info = (
+                        f"インデックス再構築: {folder_name} ({current}/{total} - {percentage}%) | "
+                        f"アクティブ: {active_threads}スレッド"
+                    )
                 else:
-                    system_info = f"インデックス再構築: {folder_name} (処理中) | アクティブ: {active_threads}スレッド"
+                    system_info = (
+                        f"インデックス再構築: {folder_name} (処理中) | "
+                        f"アクティブ: {active_threads}スレッド"
+                    )
             elif stage == "indexing":
-                system_info = f"インデックス再構築: {folder_name} (インデックス作成中) | アクティブ: {active_threads}スレッド"
+                system_info = (
+                    f"インデックス再構築: {folder_name} (インデックス作成中) | "
+                    f"アクティブ: {active_threads}スレッド"
+                )
             elif stage == "completed":
-                system_info = f"インデックス再構築: {folder_name} (完了 - {current}ファイル) | アクティブ: {active_threads}スレッド"
+                system_info = (
+                    f"インデックス再構築: {folder_name} (完了 - {current}ファイル) | "
+                    f"アクティブ: {active_threads}スレッド"
+                )
             else:
                 system_info = f"インデックス再構築: {folder_name} | アクティブ: {active_threads}スレッド"
 

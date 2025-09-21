@@ -26,7 +26,7 @@ def check_coverage_tools():
 
     try:
         # coverageパッケージの確認
-        import coverage
+        import coverage  # noqa: F401
 
         log_message("✅ coverage パッケージ利用可能")
         return True

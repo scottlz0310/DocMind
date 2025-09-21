@@ -20,7 +20,7 @@ pytest -q
 - pyupgrade/UP系、B, C90x, I, T20x（print検出）を適用推奨
 
 ### 4.2 スタイルガイド
-- PEP 8準拠。行長: コード88文字、コメント/Docstring 72文字
+- PEP 8準拠。行長: コード120文字、コメント/Docstring 88文字（現代的標準）
 - PEP 257（Docstring）、NumPyもしくはGoogleスタイルをプロジェクトで統一
 - 公開関数/クラス/モジュールにはDocstringを必須
 

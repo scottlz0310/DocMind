@@ -191,7 +191,11 @@ output = "coverage.xml"
 # Ruff設定
 [tool.ruff]
 target-version = "py311"
-line-length = 88
+line-length = 120  # 現代的な標準（88→120に変更）
+exclude = [
+    "archive/",
+    "scripts/archive/",
+]
 
 [tool.ruff.lint]
 select = [

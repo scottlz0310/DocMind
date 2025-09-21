@@ -220,6 +220,8 @@ test_results/
 test_documents/
 validation_results/
 backup/
+scripts/archive/
+archive/
 
 # Quality reports and security scans
 reports/

@@ -127,7 +127,7 @@ class TestRunner:
 
         # PySide6が利用可能かチェック
         try:
-            import PySide6
+            import PySide6  # noqa: F401
         except ImportError:
             return {
                 "type": "gui",

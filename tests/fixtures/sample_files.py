@@ -35,7 +35,9 @@ def sample_text_files(sample_files_dir):
     english_file = os.path.join(sample_files_dir, "english.txt")
     with open(english_file, "w", encoding="utf-8") as f:
         f.write(
-            "This is an English test file.\nIt contains information about machine learning and natural language processing.\nDocMind is an excellent search tool."
+            "This is an English test file.\n"
+            "It contains information about machine learning and natural language processing.\n"
+            "DocMind is an excellent search tool."
         )
     files.append(english_file)
 

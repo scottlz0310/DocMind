@@ -197,16 +197,12 @@ class TestFileWatcher:
     # Phase7統合: エラーハンドリングテスト
     def test_error_handling_invalid_path(self, file_watcher):
         """無効パスのエラーハンドリングテスト"""
+        from src.utils.exceptions import FileSystemError
+
         # 空文字列パス
-        try:
+        with pytest.raises((ValueError, OSError, FileSystemError)):
             file_watcher.add_watch_path("")
-        except (ValueError, OSError):
-            # 適切なエラーが発生したことを確認
-            pass
 
         # Noneパス
-        try:
+        with pytest.raises((TypeError, AttributeError)):
             file_watcher.add_watch_path(None)
-        except (TypeError, AttributeError):
-            # 適切なエラーが発生したことを確認
-            pass

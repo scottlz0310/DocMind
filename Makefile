@@ -33,6 +33,10 @@ help:
 	@echo "  build       Build package"
 	@echo "  clean       Clean build artifacts"
 	@echo "  reset       Reset environment"
+	@echo ""
+	@echo "Development Tools:"
+	@echo "  test-tools    Run comprehensive test suite"
+	@echo "  test-coverage Measure and report test coverage"
 
 # セットアップ
 sync:
@@ -133,6 +137,13 @@ info:
 	@echo ""
 	@echo "=== Virtual Environment ==="
 	uv venv --help | head -5
+
+# 開発ツール
+test-tools:
+	uv run python scripts/tools/run_tests.py
+
+test-coverage:
+	uv run python scripts/tools/measure_test_coverage.py
 
 # プロジェクト初期化（新規開発者向け）
 bootstrap: dev
