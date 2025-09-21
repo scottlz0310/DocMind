@@ -1,7 +1,8 @@
 """
-コアロジック90%カバレッジ達成テスト
+コアロジック統合テスト
 
-実際のインターフェースに合わせた最小限のテスト
+実際のインターフェースに合わせた包括的なテスト
+Phase3統合: simplified版とfixed版の機能を統合
 """
 
 import shutil
@@ -248,3 +249,151 @@ class TestCoreLogicCoverage:
         # 統計確認
         stats = index_manager.get_index_stats()
         assert stats["document_count"] >= 0
+
+    def test_index_manager_batch_operations(self, temp_dir):
+        """IndexManagerのバッチ操作テスト（simplified版から統合）"""
+        index_manager = IndexManager(str(temp_dir / "index"))
+
+        # 複数ドキュメント作成
+        documents = []
+        for i in range(10):
+            from datetime import datetime
+
+            # 実際のファイルを作成（fixed版の改善を採用）
+            test_file = temp_dir / f"doc_{i}.txt"
+            content = f"これはドキュメント{i}の内容です。"
+            test_file.write_text(content)
+
+            doc = Document(
+                id=f"doc_{i}",
+                file_path=str(test_file),
+                title=f"ドキュメント{i}",
+                content=content,
+                file_type=FileType.TEXT,
+                size=100,
+                created_date=datetime.now(),
+                modified_date=datetime.now(),
+                indexed_date=datetime.now(),
+                content_hash=f"hash_{i}",
+            )
+            documents.append(doc)
+
+        # バッチ追加
+        for doc in documents:
+            index_manager.add_document(doc)
+
+        # 結果確認
+        count = index_manager.get_document_count()
+        assert count == 10
+
+        # 統計情報確認
+        stats = index_manager.get_index_stats()
+        assert stats["document_count"] == 10
+        assert stats["index_size"] > 0
+
+    def test_embedding_manager_real_model_operations(self, temp_dir):
+        """EmbeddingManagerの実モデル操作テスト（fixed版から統合）"""
+        # 実際のモデルを使用したテスト（fixed版の改善を採用）
+        embedding_manager = EmbeddingManager(
+            embeddings_path=str(temp_dir / "embeddings.pkl")
+        )
+
+        # 埋め込み生成テスト
+        text = "テスト用のテキストです"
+        embedding = embedding_manager.generate_embedding(text)
+        assert embedding is not None
+        assert len(embedding) == 384  # all-MiniLM-L6-v2の実際の次元数
+
+        # ドキュメント埋め込み追加
+        embedding_manager.add_document_embedding("doc_1", text)
+
+        # 類似度検索テスト
+        results = embedding_manager.search_similar("テスト", limit=5)
+        assert len(results) > 0
+        assert results[0][0] == "doc_1"  # ドキュメントID
+        assert isinstance(results[0][1], float)  # 類似度スコア
+
+    def test_performance_basic(self, temp_dir):
+        """基本的なパフォーマンステスト（simplified版から統合）"""
+        import time
+
+        index_manager = IndexManager(str(temp_dir / "index"))
+
+        # 100ドキュメントの追加時間測定
+        start_time = time.time()
+
+        for i in range(100):
+            from datetime import datetime
+
+            # 実際のファイルを作成（fixed版の改善を採用）
+            test_file = temp_dir / f"perf_doc_{i}.txt"
+            content = f"これはパフォーマンステスト用のドキュメント{i}です。" * 5
+            test_file.write_text(content)
+
+            doc = Document(
+                id=f"perf_doc_{i}",
+                file_path=str(test_file),
+                title=f"パフォーマンステスト{i}",
+                content=content,
+                file_type=FileType.TEXT,
+                size=200,
+                created_date=datetime.now(),
+                modified_date=datetime.now(),
+                indexed_date=datetime.now(),
+                content_hash=f"perf_hash_{i}",
+            )
+            index_manager.add_document(doc)
+
+        end_time = time.time()
+
+        # 100ドキュメントの追加が30秒以内
+        assert (end_time - start_time) < 30.0
+
+        # 検索パフォーマンステスト
+        start_time = time.time()
+        results = index_manager.search_text("パフォーマンステスト", limit=50)
+        end_time = time.time()
+
+        # 検索が5秒以内
+        assert (end_time - start_time) < 5.0
+        assert len(results) > 0
+
+    def test_memory_usage_basic(self, temp_dir):
+        """基本的なメモリ使用量テスト（simplified版から統合）"""
+        import os
+
+        import psutil
+
+        process = psutil.Process(os.getpid())
+        initial_memory = process.memory_info().rss
+
+        index_manager = IndexManager(str(temp_dir / "index"))
+
+        # 500ドキュメント追加
+        for i in range(500):
+            from datetime import datetime
+
+            # 実際のファイルを作成（fixed版の改善を採用）
+            test_file = temp_dir / f"mem_doc_{i}.txt"
+            content = f"メモリテスト用コンテンツ{i}です。" * 20
+            test_file.write_text(content)
+
+            doc = Document(
+                id=f"mem_doc_{i}",
+                file_path=str(test_file),
+                title=f"メモリテスト{i}",
+                content=content,
+                file_type=FileType.TEXT,
+                size=400,
+                created_date=datetime.now(),
+                modified_date=datetime.now(),
+                indexed_date=datetime.now(),
+                content_hash=f"mem_hash_{i}",
+            )
+            index_manager.add_document(doc)
+
+        final_memory = process.memory_info().rss
+        memory_increase = final_memory - initial_memory
+
+        # メモリ増加量が200MB以下
+        assert memory_increase < 200 * 1024 * 1024
