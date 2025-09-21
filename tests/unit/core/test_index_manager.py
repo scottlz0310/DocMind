@@ -158,23 +158,15 @@ class TestIndexManager:
         """インデックス最適化パフォーマンステスト"""
         manager = existing_index
 
-        # optimize_indexメソッドが存在する場合のみテスト
-        if hasattr(manager, "optimize_index"):
-            start_time = time.time()
-            manager.optimize_index()
-            end_time = time.time()
+        # optimize_indexメソッドをテスト（実装済み）
+        start_time = time.time()
+        manager.optimize_index()
+        end_time = time.time()
 
-            # 最適化は30秒以内
-            assert (end_time - start_time) < 30
-        else:
-            # メソッドが存在しない場合はテストをスキップ
-            pytest.skip("optimize_indexメソッドが実装されていません")
+        # 最適化は30秒以内
+        assert (end_time - start_time) < 30
 
-    @pytest.mark.skip(reason="並行処理の競合状態により不安定なためスキップ")
-    def test_concurrent_index_operations(self, temp_index_dir):
-        """並行インデックス操作テスト（スキップ）"""
-        # 並行処理の競合状態により不安定なためスキップ
-        pass
+
 
     def test_index_corruption_recovery(self, temp_index_dir):
         """インデックス破損復旧テスト"""
@@ -261,16 +253,15 @@ class TestIndexManager:
         """インデックス統計情報精度テスト"""
         manager = existing_index
 
-        # get_statisticsメソッドが存在する場合のみテスト
-        if hasattr(manager, "get_statistics"):
-            stats = manager.get_statistics()
+        # get_index_statsメソッドをテスト（実装済み）
+        stats = manager.get_index_stats()
 
-            # 統計情報の検証
-            assert isinstance(stats, dict)
-            # 具体的なキーの存在は実装に依存するため、基本的な検証のみ行う
-        else:
-            # メソッドが存在しない場合はテストをスキップ
-            pytest.skip("get_statisticsメソッドが実装されていません")
+        # 統計情報の検証
+        assert isinstance(stats, dict)
+        assert "document_count" in stats
+        assert "index_size" in stats
+        assert stats["document_count"] >= 0
+        assert stats["index_size"] >= 0
 
     # Phase7統合: ドキュメント更新テスト
     def test_update_document(self, temp_index_dir):

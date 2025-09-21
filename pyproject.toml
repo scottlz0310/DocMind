@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "docmind"
@@ -28,108 +28,46 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     # GUI フレームワーク
-    "pyside6==6.9.2",
+    "pyside6>=6.9.0",
     # 検索エンジン
-    "whoosh==2.7.4",
-    # AI/ML - セマンティック検索（依存関係は自動解決）
-    "sentence-transformers==2.7.0",
+    "whoosh>=2.7.4",
+    # AI/ML - セマンティック検索
+    "sentence-transformers>=2.7.0",
     # ドキュメント処理
-    "pymupdf==1.26.4",
-    "python-docx==1.2.0",
-    "openpyxl==3.1.5",
+    "pymupdf>=1.26.0",
+    "python-docx>=1.2.0",
+    "openpyxl>=3.1.0",
     # ファイルシステム監視
-    "watchdog==6.0.0",
+    "watchdog>=6.0.0",
     # ユーティリティ
-    "chardet==5.2.0",
-    "psutil==7.0.0",
-    "certifi==2025.8.3",
-    "charset-normalizer==3.4.3",
-    "et-xmlfile==2.0.0",
-    "filelock==3.19.1",
-    "fsspec==2025.7.0",
-    "hf-xet==1.1.9",
-    "huggingface-hub==0.34.4",
-    "idna==3.10",
-    "jinja2==3.1.6",
-    "joblib==1.5.2",
-    "lxml==6.0.1",
-    "markupsafe==3.0.2",
-    "mpmath==1.3.0",
-    "networkx==3.5",
-    "numpy==2.3.2",
-    "nvidia-cublas-cu12==12.8.4.1",
-    "nvidia-cuda-cupti-cu12==12.8.90",
-    "nvidia-cuda-nvrtc-cu12==12.8.93",
-    "nvidia-cuda-runtime-cu12==12.8.90",
-    "nvidia-cudnn-cu12==9.10.2.21",
-    "nvidia-cufft-cu12==11.3.3.83",
-    "nvidia-cufile-cu12==1.13.1.3",
-    "nvidia-curand-cu12==10.3.9.90",
-    "nvidia-cusolver-cu12==11.7.3.90",
-    "nvidia-cusparse-cu12==12.5.8.93",
-    "nvidia-cusparselt-cu12==0.7.1",
-    "nvidia-nccl-cu12==2.27.3",
-    "nvidia-nvjitlink-cu12==12.8.93",
-    "nvidia-nvtx-cu12==12.8.90",
-    "packaging==25.0",
-    "pillow==11.3.0",
-    "pyside6-addons==6.9.2",
-    "pyside6-essentials==6.9.2",
-    "pyyaml==6.0.2",
-    "regex==2025.8.29",
-    "requests==2.32.5",
-    "safetensors==0.6.2",
-    "scikit-learn==1.7.1",
-    "scipy==1.16.1",
-    "setuptools==80.9.0",
-    "shiboken6==6.9.2",
-    "sympy==1.14.0",
-    "threadpoolctl==3.6.0",
-    "tokenizers==0.22.0",
-    "torch==2.8.0",
-    "tqdm==4.67.1",
-    "transformers==4.56.0",
-    "triton==3.4.0",
-    "typing-extensions==4.15.0",
-    "urllib3==2.5.0",
-    "pytest>=8.4.2",
-    "pytest-cov>=6.3.0",
-    "pytest-xdist>=3.8.0",
+    "chardet>=5.2.0",
+    "psutil>=7.0.0",
 ]
 
 [project.optional-dependencies]
+test = [
+    "pytest>=8.4.0",
+    "pytest-cov>=6.3.0",
+    "pytest-xdist>=3.8.0",
+    "pytest-mock>=3.12.0",
+    "pytest-timeout>=2.3.0",
+]
 dev = [
-    # テストフレームワーク
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "pytest-mock>=3.11.0",
-    "pytest-timeout>=2.1.0",
+    "docmind[test]",
     # コード品質
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "flake8>=6.0.0",
-    "mypy>=1.5.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
     # セキュリティ
-    "bandit>=1.7.0",
-    "safety>=2.3.0",
+    "bandit>=1.8.0",
+    "safety>=3.3.0",
 ]
 build = [
-    "pyinstaller>=5.13.0",
-    "auto-py-to-exe>=2.40.0",
-    # ビルドスクリプトが必要とする依存関係
-    "PySide6>=6.0.0",
-    "sentence-transformers>=2.2.0,<3.0.0",
-    "whoosh>=2.7.4",
-    "PyMuPDF>=1.20.0",
-    "python-docx>=0.8.11",
-    "openpyxl>=3.0.0",
-    "watchdog>=2.1.0",
-    "chardet>=5.0.0",
-    "psutil>=5.8.0",
+    "pyinstaller>=6.0.0",
+    "hatchling>=1.25.0",
 ]
 security = [
-    "bandit>=1.7.0",
-    "safety>=2.3.0",
+    "bandit>=1.8.0",
+    "safety>=3.3.0",
 ]
 
 [project.scripts]
@@ -140,16 +78,94 @@ Homepage = "https://github.com/docmind/docmind"
 Repository = "https://github.com/docmind/docmind"
 Issues = "https://github.com/docmind/docmind/issues"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
 
-[tool.setuptools.package-data]
-"*" = ["*.ico", "*.svg", "*.png"]
+[tool.hatch.build.targets.wheel.sources]
+"src" = ""
 
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
 
+[tool.hatch.metadata]
+allow-direct-references = true
 
+# uvスクリプト設定
+[tool.uv]
+dev-dependencies = [
+    "docmind[dev]"
+]
+
+[tool.uv.workspace]
+members = ["."]
+
+# 開発用スクリプト
+[tool.uv.scripts]
+# テスト関連
+test = "pytest"
+test-unit = "pytest tests/unit -m unit"
+test-integration = "pytest tests/integration -m integration"
+test-cov = "pytest --cov=src --cov-report=term-missing"
+test-fast = "pytest -x --ff"
+# コード品質
+fmt = "ruff format ."
+fmt-check = "ruff format --check ."
+lint = "ruff check ."
+lint-fix = "ruff check --fix ."
+type-check = "mypy src tests"
+# セキュリティ
+security = "bandit -r src"
+safety-check = "safety check"
+# 統合コマンド
+check = ["fmt-check", "lint", "type-check"]
+fix = ["fmt", "lint-fix"]
+ci = ["check", "test-cov", "security"]
+# ビルド
+build = "python -m build"
+clean = "rm -rf build/ dist/ *.egg-info/ .coverage htmlcov/ .pytest_cache/ .mypy_cache/ .ruff_cache/"
+
+# pytest設定
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--strict-config",
+    "--tb=short",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml:coverage.xml",
+    "--cov-branch",
+    "--timeout=60",
+    "--timeout-method=thread",
+]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "performance: Performance tests",
+    "slow: Slow running tests",
+    "gui: GUI tests requiring display",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+    "ignore:.*QApplication.*:UserWarning",
+    "ignore::UserWarning",
+]
+
+# カバレッジ設定
 [tool.coverage.run]
-# Phase5カバレッジ設定
 source = ["src"]
 branch = true
 parallel = true
@@ -169,7 +185,6 @@ omit = [
 ]
 
 [tool.coverage.report]
-# Phase5カバレッジ目標: ユニット85%、統合100%（接続部分）、全体80%
 show_missing = true
 skip_covered = false
 skip_empty = true
@@ -187,7 +202,6 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
-    # Phase5追加除外
     "def main\\(\\):",
     "if TYPE_CHECKING:",
 ]
@@ -198,30 +212,7 @@ directory = "htmlcov"
 [tool.coverage.xml]
 output = "coverage.xml"
 
-[tool.black]
-line-length = 88
-target-version = ['py311', 'py312', 'py313']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-known_first_party = ["src"]
-
+# Ruff設定
 [tool.ruff]
 target-version = "py311"
 line-length = 88
@@ -245,25 +236,22 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"tests/*" = ["T20", "F841"]  # Allow unused variables in tests
+"tests/*" = ["T20", "F841", "S101"]  # Allow print, unused vars, assert in tests
+"scripts/*" = ["T20"]  # Allow print in scripts
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
+# MyPy設定
 [tool.mypy]
 python_version = "3.11"
-check_untyped_defs = false
-disallow_any_generics = false
-disallow_incomplete_defs = false
+warn_return_any = true
+warn_unused_configs = true
 disallow_untyped_defs = false
-no_implicit_optional = false
-warn_redundant_casts = false
-warn_unused_ignores = false
-warn_return_any = false
-strict_equality = false
-ignore_errors = true
+check_untyped_defs = true
+strict_optional = true
 
 [[tool.mypy.overrides]]
 module = [
@@ -275,3 +263,13 @@ module = [
     "watchdog.*",
 ]
 ignore_missing_imports = true
+
+# Bandit設定
+[tool.bandit]
+exclude_dirs = ["tests", "build", "dist", ".venv"]
+skips = ["B101", "B601"]
+
+# Safety設定
+[tool.safety]
+ignore = []
+full_report = true
